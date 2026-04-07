@@ -39,7 +39,7 @@ def get_named_config(config_name: str = 'production'):
 
     :raise: KeyError: if an unknown configuration is requested
     """
-    if config_name in ['production', 'staging', 'default']:
+    if config_name in ['production', 'prod', 'staging', 'default']:
         config = ProdConfig()
     elif config_name == 'testing':
         config = TestConfig()
@@ -54,6 +54,7 @@ class _Config():  # pylint: disable=too-few-public-methods
     """Base class configuration that should set reasonable defaults for all the other configurations."""
 
     PROJECT_ROOT = os.path.abspath(os.path.dirname(__file__))
+    ENVIRONMENT = os.getenv('ENV', 'production')
 
     # GC Notify
     GC_NOTIFY_API_KEY = os.getenv('GC_NOTIFY_API_KEY')

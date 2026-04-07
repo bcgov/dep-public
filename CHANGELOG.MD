@@ -1,3 +1,10 @@
+## April 1, 2026
+
+- **Chore** Change trigger for environment detection [🎟️ DEP-242](https://citz-gdx.atlassian.net/browse/DEP-242)
+  - Updated Helm templates to set a new environment variable `ENV` in the API deployment, which is then used by the API to determine the current environment (dev/test/prod).
+  - The env variable is loaded in config.py and is available as current_app.config['ENVIRONMENT'] for use in the API codebase.
+  - Also added REACT_APP_ENV variable to the web deployment and updated the web app to use this variable for environment detection on the frontend as well. This is curently used to determine whether to show the EnvironmentBanner that warns users that they are in a non-prod environment, but can be used for other environment-specific frontend logic as needed.
+
 ## March 31, 2026
 
 - **Chore** OpenShift and Helm value changes from MET to DEP [🎟️ DEP-231](https://citz-gdx.atlassian.net/browse/DEP-231)

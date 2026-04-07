@@ -77,7 +77,7 @@ secure_headers = secure.Secure(
 )
 
 
-def create_app(run_mode=os.getenv('FLASK_ENV', 'development')):
+def create_app(run_mode=os.getenv('ENV', 'prod')):
     """Create flask app."""
     from api.resources import API_BLUEPRINT  # pylint: disable=import-outside-toplevel
 
@@ -104,7 +104,7 @@ def create_app(run_mode=os.getenv('FLASK_ENV', 'development')):
     app.register_blueprint(API_BLUEPRINT)
 
     # Setup jwt for keycloak
-    if os.getenv('FLASK_ENV', 'production') != 'testing':
+    if os.getenv('ENV', 'production') != 'testing':
         setup_jwt_manager(app, jwt)
 
     # Database connection initialize

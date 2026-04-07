@@ -132,7 +132,7 @@ def test_delete_failure_engagement_published(session, mocker):
 
 def test_delete_failure_production_environment(db, monkeypatch, mocker):
     """Engagement delete should be blocked in production (403 Forbidden)."""
-    monkeypatch.setenv('FLASK_ENV', 'production')
+    monkeypatch.setenv('ENV', 'prod')
     mocker.patch.object(authorization, 'check_auth', return_value=True)
 
     with pytest.raises(Forbidden) as excinfo:

@@ -13,6 +13,7 @@ const getEnv = (key: string, defaultValue = '') => {
 const API_URL = getEnv('REACT_APP_API_URL');
 const PUBLIC_URL = getEnv('REACT_APP_PUBLIC_URL');
 const REACT_APP_ANALYTICS_API_URL = getEnv('REACT_APP_ANALYTICS_API_URL');
+const REACT_APP_ENVIRONMENT = getEnv('REACT_APP_ENVIRONMENT', 'development');
 
 // Keycloak Environment Variables
 const KC_URL = getEnv('REACT_APP_KEYCLOAK_URL');
@@ -36,6 +37,7 @@ export const AppConfig = {
     apiUrl: API_URL,
     analyticsApiUrl: REACT_APP_ANALYTICS_API_URL,
     publicUrl: PUBLIC_URL,
+    environment: REACT_APP_ENVIRONMENT,
     keycloak: {
         url: KC_URL || '',
         clientId: KC_CLIENT || '',

@@ -3,15 +3,12 @@ import Grid from '@mui/material/Grid2';
 import { faExclamationTriangle } from '@fortawesome/free-solid-svg-icons';
 import { BodyText } from 'components/common/Typography';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { AppConfig } from 'config';
 
 const EnvironmentBanner = () => {
-    const host = window.location.hostname;
-    // TODO: Replace this when implementing DEP-242
-    const isTestEnvironment =
-        host.startsWith('dep-web-dev') ||
-        host.startsWith('dep-web-test') ||
-        host.startsWith('dep-web-demo') ||
-        host.startsWith('localhost');
+    const test_environments = ['test', 'testing', 'dev', 'development'];
+    const current_env = AppConfig.environment.toLowerCase();
+    const isTestEnvironment = test_environments.includes(current_env);
     if (!isTestEnvironment) {
         return <></>;
     }

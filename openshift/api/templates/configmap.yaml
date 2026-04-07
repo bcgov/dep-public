@@ -8,6 +8,7 @@ metadata:
         app-group: engagement-app
 data:
     # Engagement API configuration
+    ENV: {{ .Values.environment | quote }}
     CORS_ORIGINS: {{ .Values.site.url }}
     DEFAULT_TENANT_SHORT_NAME: {{ .Values.tenant.shortName }}
     ACCESS_REQUEST_EMAIL_TEMPLATE_ID: {{ .Values.email.templateID.accessRequest }}
