@@ -10,14 +10,13 @@ import UserDetailsSkeleton from './UserDetailsSkeleton';
 import { USER_COMPOSITE_ROLE, USER_STATUS } from 'models/user';
 import { Button } from 'components/common/Input/Button';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPenToSquare, faSquareDashedCirclePlus, faTrashCan } from '@fortawesome/pro-regular-svg-icons';
+import { faSquareDashedCirclePlus, faTrashCan } from '@fortawesome/pro-regular-svg-icons';
 import { BodyText } from 'components/common/Typography/Body';
 import { Heading2, Heading3 } from 'components/common/Typography';
 import { deleteUser } from 'services/userService/api';
 import { openNotification } from 'services/notificationService/notificationSlice';
 import { USER_ROLES } from 'services/userService/constants';
 import { openNotificationModal } from 'services/notificationModalService/notificationModalSlice';
-import { RoleAssignmentModal } from 'components/userManagement/common/RoleAssignmentModal';
 
 export const UserDetail = ({ label, value }: { label: string; value: JSX.Element }) => {
     return (
@@ -36,7 +35,6 @@ export const UserDetails = () => {
     const dispatch = useAppDispatch();
     const navigate = useNavigate();
 
-    const [roleModalOpen, setRoleModalOpen] = useState(false);
     const [isDeletingUser, setIsDeletingUser] = useState(false);
 
     const isSelf = savedUser?.id === userDetail?.user?.id;
@@ -64,13 +62,6 @@ export const UserDetails = () => {
     if (isUserLoading) {
         return <UserDetailsSkeleton />;
     }
-
-    const openRoleModal = () => {
-        if (!savedUser) return;
-        if (!canEditRole)
-            return dispatch(openNotification({ severity: 'error', text: 'You need permission to change this role.' }));
-        setRoleModalOpen(true);
-    };
 
     const handleDeleteUser = () => {
         if (!savedUser) return;
@@ -165,23 +156,6 @@ export const UserDetails = () => {
                         </Grid>
                     )}
                     <Grid size={12}>
-                        {/* describeChild: Tooltip *describes* its children rather than labeling them, using aria-describedby instead of aria-label under the hood*/}
-                        <Tooltip describeChild followCursor title={canEditRoleMessage}>
-                            {/* wrap the button so the tooltip applies when the button is disabled */}
-                            <div>
-                                <Button
-                                    variant="secondary"
-                                    onClick={openRoleModal}
-                                    icon={<FontAwesomeIcon icon={faPenToSquare} />}
-                                    fullWidth
-                                    disabled={!canEditRole || isSelf}
-                                >
-                                    {savedUser?.main_role ? 'Reassign Role' : 'Assign Role'}
-                                </Button>
-                            </div>
-                        </Tooltip>
-                    </Grid>
-                    <Grid size={12}>
                         <Tooltip
                             describeChild
                             followCursor
@@ -223,13 +197,6 @@ export const UserDetails = () => {
             <Grid size={12} sx={{ mt: 3 }}>
                 <AssignedEngagementsListing />
             </Grid>
-
-            <RoleAssignmentModal
-                open={roleModalOpen}
-                user={savedUser}
-                onClose={() => setRoleModalOpen(false)}
-                onSaved={getUserDetails}
-            />
         </Grid>
     );
 };
