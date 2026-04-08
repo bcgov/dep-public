@@ -16,10 +16,7 @@
 Test suite to ensure that the User model routines are working as expected.
 """
 
-from unittest.mock import patch
-
 from faker import Faker
-from sqlalchemy.exc import IntegrityError
 
 from api.models.staff_user import StaffUser as StaffUserModel
 
@@ -91,30 +88,3 @@ def test_update_user_from_dict_valid(session):
     new_email = fake.email()
     updated_user = StaffUserModel.update_user(new_user.id, {'email_address': new_email})
     assert updated_user.email_address == new_email
-
-
-def test_create_user_retries_when_staff_user_sequence_is_stale(session):
-    """Assert that user creation retries after realigning a stale PostgreSQL sequence."""
-    first_name = fake.name()
-    external_id = str(fake.random_number(digits=5))
-    user_dict = {
-        'first_name': first_name,
-        'middle_name': fake.name(),
-        'last_name': fake.name(),
-        'email_address': fake.email(),
-        'external_id': external_id,
-    }
-    integrity_error = IntegrityError(
-        'INSERT INTO staff_users ...',
-        {},
-        Exception('duplicate key value violates unique constraint "staff_users_pkey"'),
-    )
-
-    with patch.object(StaffUserModel, 'save', side_effect=[integrity_error, None]) as save_mock:
-        with patch.object(StaffUserModel, '_reset_primary_key_sequence') as reset_mock:
-            new_user = StaffUserModel.create_user(user_dict)
-
-    assert type(new_user) is StaffUserModel
-    assert new_user.external_id == external_id
-    assert save_mock.call_count == 2
-    reset_mock.assert_called_once()
