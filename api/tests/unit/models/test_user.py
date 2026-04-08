@@ -88,3 +88,4 @@ def test_update_user_from_dict_valid(session):
     new_email = fake.email()
     updated_user = StaffUserModel.update_user(new_user.id, {'email_address': new_email})
     assert updated_user.email_address == new_email
+
