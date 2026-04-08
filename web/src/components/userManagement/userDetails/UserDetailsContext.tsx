@@ -1,5 +1,6 @@
 import React, { createContext, useState, useEffect, JSX } from 'react';
 import { useNavigate, useParams } from 'react-router';
+import { useLoaderData } from 'react-router';
 import { useAppDispatch } from 'hooks';
 import { openNotification } from 'services/notificationService/notificationSlice';
 import { User, createDefaultUser } from 'models/user';
@@ -22,6 +23,10 @@ export interface UserViewContext {
 export type UserParams = {
     userId: string;
 };
+
+interface UserDetailsLoaderData {
+    user: User;
+}
 
 export const UserDetailsContext = createContext<UserViewContext>({
     savedUser: createDefaultUser,
@@ -46,25 +51,31 @@ export const UserDetailsContext = createContext<UserViewContext>({
 export const UserDetailsContextProvider = ({ children }: { children: JSX.Element | JSX.Element[] }) => {
     const { userId } = useParams<UserParams>();
     const navigate = useNavigate();
+    const { user } = useLoaderData() as UserDetailsLoaderData;
     const dispatch = useAppDispatch();
-    const [savedUser, setSavedUser] = useState<User | undefined>(createDefaultUser);
-    const [isUserLoading, setUserLoading] = useState(true);
+    const [savedUser, setSavedUser] = useState<User | undefined>(user);
+    const [isUserLoading, setUserLoading] = useState(false);
     const [isMembershipLoading, setMembershipLoading] = useState(true);
     const [memberships, setMemberships] = useState<EngagementTeamMember[]>([]);
     const [addUserModalOpen, setAddUserModalOpen] = useState(false);
 
     useEffect(() => {
-        fetchUser();
-    }, [userId]);
+        setSavedUser(user);
+        setUserLoading(false);
+    }, [user]);
 
-    const fetchUser = async () => {
+    const getUserDetails = async () => {
         if (isNaN(Number(userId))) {
-            navigate('/404');
-            return Promise.resolve();
+            navigate('/usermanagement');
+            return;
         }
+        setUserLoading(true);
         try {
-            await getUserDetails();
+            const fetchedUser = await getUser({ user_id: Number(userId), include_roles: true });
+            setSavedUser(fetchedUser);
+            setUserLoading(false);
         } catch {
+            setUserLoading(false);
             dispatch(
                 openNotification({
                     severity: 'error',
@@ -72,13 +83,6 @@ export const UserDetailsContextProvider = ({ children }: { children: JSX.Element
                 }),
             );
         }
-    };
-
-    const getUserDetails = async () => {
-        setUserLoading(true);
-        const fetchedUser = await getUser({ user_id: Number(userId), include_roles: true });
-        setSavedUser(fetchedUser);
-        setUserLoading(false);
     };
 
     useEffect(() => {

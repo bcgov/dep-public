@@ -1,16 +1,20 @@
 """Service for user management."""
 from http import HTTPStatus
+from typing import Optional
 
 from flask import current_app, g
 
 from api.exceptions.business_exception import BusinessException
+from api.models.db import db
+from api.models.membership import Membership
 from api.models.pagination_options import PaginationOptions
 from api.models.staff_user import StaffUser as StaffUserModel
+from api.models.user_group_membership import UserGroupMembership
 from api.schemas.staff_user import StaffUserSchema
 from api.services.user_group_membership_service import UserGroupMembershipService
 from api.utils import notification
 from api.utils.constants import CompositeRoles
-from api.utils.enums import CompositeRoleId, CompositeRoleNames
+from api.utils.enums import CompositeRoleId, CompositeRoleNames, UserStatus
 from api.utils.template import Template
 
 
@@ -170,3 +174,29 @@ class StaffUserService:
             raise BusinessException(
                 error='This user is already an Administrator.',
                 status_code=HTTPStatus.CONFLICT.value)
+
+    @classmethod
+    def delete_deactivated_user(cls, user_id, actor_external_id: Optional[str] = None):
+        """Permanently delete a user after required safeguards are satisfied."""
+        db_user = StaffUserModel.get_by_id(user_id, include_inactive=True)
+        if db_user is None:
+            raise BusinessException(error='User not found.', status_code=HTTPStatus.NOT_FOUND)
+
+        if db_user.status_id != UserStatus.INACTIVE.value:
+            raise BusinessException(
+                error='User must be deactivated before deletion.',
+                status_code=HTTPStatus.BAD_REQUEST,
+            )
+
+        if actor_external_id and db_user.external_id.lower() == actor_external_id.lower():
+            raise BusinessException(
+                error='You cannot delete your own account.',
+                status_code=HTTPStatus.CONFLICT,
+            )
+
+        Membership.query.filter(Membership.user_id == db_user.id).delete(synchronize_session=False)
+        UserGroupMembership.query.filter(
+            UserGroupMembership.staff_user_external_id == db_user.external_id,
+        ).delete(synchronize_session=False)
+        db.session.delete(db_user)
+        db.session.commit()

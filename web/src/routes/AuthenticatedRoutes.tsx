@@ -306,6 +306,7 @@ const AuthenticatedRoutes = resolveLazyRouteTree(
                 />
                 <LazyRoute
                     path=":userId/details"
+                    loaderLazy={() => import('components/userManagement/userDetails/userDetailsLoader')}
                     ComponentLazy={() => import('components/userManagement/userDetails')}
                     handle={{ crumb: () => ({ name: 'User Details' }) }}
                 />
