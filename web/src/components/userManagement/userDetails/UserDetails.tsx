@@ -30,7 +30,7 @@ export const UserDetail = ({ label, value }: { label: string; value: JSX.Element
 };
 
 export const UserDetails = () => {
-    const { savedUser, setAddUserModalOpen, isUserLoading, getUserDetails } = useContext(UserDetailsContext);
+    const { savedUser, setAddUserModalOpen, isUserLoading } = useContext(UserDetailsContext);
     const { userDetail, roles } = useAppSelector((state) => state.user);
     const dispatch = useAppDispatch();
     const navigate = useNavigate();
@@ -43,19 +43,6 @@ export const UserDetails = () => {
     const canAssignToEngagement = !isInactive && !isSelf;
     const canReassignRole = roles.includes(USER_ROLES.UPDATE_USER_GROUP);
     const isAdminUser = savedUser?.main_role === USER_COMPOSITE_ROLE.ADMIN.label;
-
-    const { canEditRole, canEditRoleMessage } = useMemo(() => {
-        if (!savedUser) return { canEditRole: false, canEditRoleMessage: '' };
-        if (isSelf) return { canEditRole: false, canEditRoleMessage: 'You cannot change your own role.' };
-        if (isInactive)
-            return { canEditRole: false, canEditRoleMessage: 'You cannot change the role of an inactive user.' };
-        if (isAdminUser && !isSuperAdmin)
-            return { canEditRole: false, canEditRoleMessage: 'You may not demote an Administrator.' };
-        if (!canReassignRole)
-            return { canEditRole: false, canEditRoleMessage: "You do not have permission to change this user's role." };
-
-        return { canEditRole: true, canEditRoleMessage: '' };
-    }, [savedUser, isSelf, isInactive, isAdminUser, isSuperAdmin, canReassignRole]);
 
     const canDeleteUser = savedUser?.status_id === USER_STATUS.INACTIVE.value && !isSelf;
 
