@@ -1,4 +1,4 @@
-import React, { JSX, useContext, useMemo, useState } from 'react';
+import React, { JSX, useContext, useState } from 'react';
 import { Grid2 as Grid, Link, Paper, Tooltip } from '@mui/material';
 import { useNavigate } from 'react-router';
 import { useAppDispatch, useAppSelector } from 'hooks';
@@ -41,7 +41,6 @@ export const UserDetails = () => {
     const isSuperAdmin = roles.includes(USER_ROLES.SUPER_ADMIN);
     const isInactive = savedUser?.status_id === USER_STATUS.INACTIVE.value;
     const canAssignToEngagement = !isInactive && !isSelf;
-    const canReassignRole = roles.includes(USER_ROLES.UPDATE_USER_GROUP);
     const isAdminUser = savedUser?.main_role === USER_COMPOSITE_ROLE.ADMIN.label;
 
     const canDeleteUser = savedUser?.status_id === USER_STATUS.INACTIVE.value && !isSelf;
