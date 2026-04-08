@@ -52,7 +52,7 @@ jobs:
   testing:
     needs: setup-job
     env:
-      FLASK_ENV: "testing"
+      ENV: "testing"
       DATABASE_TEST_URL: "postgresql://postgres:postgres@localhost:5432/postgres"
       SITE_URL: "http://localhost:3000"
 

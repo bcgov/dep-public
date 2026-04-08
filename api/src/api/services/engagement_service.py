@@ -1,13 +1,13 @@
 """Service for engagement management."""
 
+import os
 from datetime import datetime, timezone
 from http import HTTPStatus
-import os
 from typing import Mapping, Optional, Sequence, Union
 
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import selectinload
-from flask import current_app
+from flask import current_app, has_app_context
 from flask_restx import abort
 from marshmallow import ValidationError
 
@@ -550,7 +550,13 @@ class EngagementService:
         one_of_roles = (Role.SUPER_ADMIN.value, Role.UNPUBLISH_ENGAGEMENT.value)
         authorization.check_auth(one_of_roles=one_of_roles)
 
-        current_env = os.getenv('FLASK_ENV', 'production').lower()
+        current_env = (
+            (current_app.config.get('ENVIRONMENT') if has_app_context() else '') or
+            os.getenv('ENV') or
+            os.getenv('DEPLOYMENT_ENV') or
+            'prod'
+        ).strip().lower()
+
         if current_env in ('prod', 'production'):
             abort(HTTPStatus.FORBIDDEN, 'Cannot delete an engagement in production environment')
 

@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import { Box } from '@mui/material';
-import BannerWithoutImage from './BannerWithoutImage';
+import LandingPageBanner from 'assets/images/LandingPageBanner.png';
 import { BannerProps } from 'components/banner/types';
 
 const BannerWithImage = ({ height, imageUrl, children }: BannerProps) => {
     const [imageError, setImageError] = useState(false);
 
     if (!imageUrl || imageError) {
-        return <BannerWithoutImage>{children}</BannerWithoutImage>;
+        imageUrl = LandingPageBanner;
     }
 
     return (

@@ -46,16 +46,19 @@ def get_named_config(environment: Union[str, None]) -> 'Config':
     :raises: KeyError if the requested configuration is not found.
     """
     config_mapping = {
+        'dev': DevConfig,
         'development': DevConfig,
+        'test': DevConfig,
         'default': ProdConfig,
         'staging': ProdConfig,
+        'prod': ProdConfig,
         'production': ProdConfig,
         'testing': TestConfig,
         'docker': DockerConfig,
     }
     try:
         print(f'Loading configuration: {environment}...')
-        return config_mapping.get(environment or 'production', ProdConfig)()
+        return config_mapping.get(environment or 'prod', ProdConfig)()
     except KeyError as e:
         raise KeyError(f'Configuration "{environment}" not found.') from e
 
@@ -91,7 +94,7 @@ class Config:  # pylint: disable=too-few-public-methods
             setattr(self, f'JWT_OIDC_{key}', value)
 
         # Enable live reload and interactive API debugger for developers
-        os.environ['FLASK_DEBUG'] = str(self.USE_DEBUG)
+        os.environ['FLASK_DEBUG'] = str(self.DEBUG)
 
     @property
     # pylint: disable=invalid-name
@@ -116,7 +119,7 @@ class Config:  # pylint: disable=too-few-public-methods
 
     # If enabled, the interactive debugger will be shown for any
     # unhandled Exceptions, and the server will be reloaded when code changes.
-    USE_DEBUG = env_truthy('FLASK_DEBUG', default=False)
+    DEBUG = env_truthy('FLASK_DEBUG', default=False)
 
     # SQLAlchemy settings
     # Echoes the SQL queries generated - useful for debugging
