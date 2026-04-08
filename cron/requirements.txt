@@ -23,7 +23,7 @@ certifi==2026.2.25
 cffi==2.0.0
 charset-normalizer==3.4.6
 click==8.3.1
-cryptography==46.0.6
+cryptography==46.0.7
 flask-cors==6.0.1
 flask-jwt-oidc==0.9.0
 flask-marshmallow==1.0.0
