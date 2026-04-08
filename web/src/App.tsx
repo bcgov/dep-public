@@ -227,10 +227,10 @@ const App = () => {
                     lazy: () => {
                         return Promise.all([
                             import('routes/AuthenticatedRootRouteLoader'),
-                            import('components/appLayouts/SimplifiedLayout'),
+                            import('components/appLayouts/PublicLayout'),
                         ]).then(([loaderModule, layoutModule]) => ({
-                            Component: layoutModule.default,
                             loader: loaderModule.authenticatedRootLoader,
+                            Component: layoutModule.default,
                         }));
                     },
                     children: [

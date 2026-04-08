@@ -82,7 +82,7 @@ class StaffUserService:
         subject = templates['ACCESS_REQUEST']['SUBJECT']
         grant_access_url = notification.get_tenant_site_url(
             user.tenant_id, paths['USER_MANAGEMENT']
-        )
+        ).replace('{id}', str(user.id))
         email_environment = templates['ENVIRONMENT']
         args = {
             'first_name': user.first_name,

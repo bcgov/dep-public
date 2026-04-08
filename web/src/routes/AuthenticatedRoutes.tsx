@@ -311,7 +311,11 @@ const AuthenticatedRoutes = resolveLazyRouteTree(
                     handle={{ crumb: () => ({ name: 'User Details' }) }}
                 />
             </LazyRoute>
-            <LazyRoute path="/unauthorized" ComponentLazy={() => import('routes/Unauthorized')} />
+            <LazyRoute
+                path="/unauthorized"
+                ComponentLazy={() => import('routes/Unauthorized')}
+                handle={{ crumb: () => ({ name: 'Not Authorized' }) }}
+            />
             <LazyRoute path="/not-found" ComponentLazy={() => import('routes/NotFound')} />
             <LazyRoute path="*" ComponentLazy={() => import('routes/NotFound')} />
         </LazyRoute>

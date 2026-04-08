@@ -1,38 +1,25 @@
-import React, { useContext, useEffect, useRef, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import Modal from '@mui/material/Modal';
-import {
-    Autocomplete,
-    CircularProgress,
-    FormControl,
-    FormControlLabel,
-    FormHelperText,
-    FormLabel,
-    Grid2 as Grid,
-    Paper,
-    Radio,
-    Stack,
-    TextField,
-} from '@mui/material';
+import { FormControl, FormControlLabel, FormHelperText, FormLabel, Grid2 as Grid, Paper, Radio } from '@mui/material';
 import { modalStyle } from 'components/common';
 import { BodyText, Heading3 } from 'components/common/Typography';
-import { Button } from 'components/common/Input/Button';
 import { USER_COMPOSITE_ROLE } from 'models/user';
 import { UserDetailsContext } from './UserDetailsContext';
 import { useForm, FormProvider, SubmitHandler, Controller, Resolver } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
-import { getEngagements } from 'services/engagementService';
 import { addUserToRole } from 'services/userService/api';
 import { addTeamMemberToEngagement } from 'services/membershipService';
 import { When } from 'react-if';
 import { openNotification } from 'services/notificationService/notificationSlice';
 import { useAppDispatch } from 'hooks';
-import { debounce } from 'lodash';
-import { Engagement } from 'models/engagement';
 import axios, { AxiosError } from 'axios';
 import { Palette } from 'styles/Theme';
+import { Engagement } from 'models/engagement';
 import ControlledRadioGroup from 'components/common/ControlledInputComponents/ControlledRadioGroup';
 import { HTTP_STATUS_CODES } from 'constants/httpResponseCodes';
+import { EngagementAutocomplete } from 'components/userManagement/common/EngagementAutocomplete';
+import { ModalActions } from 'components/userManagement/common/ModalActions';
 
 export const AddToEngagementModal = () => {
     const { savedUser, addUserModalOpen, setAddUserModalOpen, getUserMemberships, getUserDetails } =
@@ -40,7 +27,7 @@ export const AddToEngagementModal = () => {
     const userHasRole = savedUser?.composite_roles && savedUser?.composite_roles.length > 0;
     const schema = yup
         .object({
-            engagement: yup.object().nullable(),
+            engagement: yup.mixed<Engagement>().nullable(),
             role: yup.string().when([], {
                 is: () => savedUser?.composite_roles.length === 0,
                 then: yup.string().required('A role must be specified'),
@@ -53,8 +40,6 @@ export const AddToEngagementModal = () => {
 
     const dispatch = useAppDispatch();
     const [isAssigningRole, setIsAssigningRole] = useState(false);
-    const [engagements, setEngagements] = useState<Engagement[]>([]);
-    const [engagementsLoading, setEngagementsLoading] = useState(false);
     const [backendError, setBackendError] = useState('');
 
     const methods = useForm<AddUserForm>({
@@ -85,37 +70,6 @@ export const AddToEngagementModal = () => {
         reset({});
         setBackendError('');
     };
-
-    const loadEngagements = async (searchText: string) => {
-        if (searchText.length < 3) {
-            return;
-        }
-        try {
-            setEngagementsLoading(true);
-            const response = await getEngagements({
-                search_text: searchText,
-                has_team_access: true,
-            });
-            setEngagements(response.items);
-            setEngagementsLoading(false);
-        } catch {
-            dispatch(
-                openNotification({
-                    severity: 'error',
-                    text: 'Error occurred while trying to fetch engagements, please refresh the page or try again at a later time',
-                }),
-            );
-            setEngagementsLoading(false);
-        }
-    };
-
-    const debounceLoadEngagements = useRef(
-        debounce((searchText: string) => {
-            loadEngagements(searchText).catch((error) => {
-                console.error('Error in debounceLoadEngagements:', error);
-            });
-        }, 1000),
-    ).current;
 
     const addUserToEngagement = async (data: AddUserForm) => {
         if (userHasRole) {
@@ -251,45 +205,13 @@ export const AddToEngagementModal = () => {
                                         <Controller
                                             control={control}
                                             name="engagement"
-                                            render={({ field: { ref, onChange, ...field } }) => (
-                                                <Autocomplete
-                                                    options={engagements || []}
-                                                    onChange={(_, data) => {
-                                                        onChange(data);
-                                                    }}
-                                                    onInputChange={(_event, newInputValue) => {
-                                                        debounceLoadEngagements(newInputValue);
-                                                    }}
-                                                    renderInput={(params) => (
-                                                        <TextField
-                                                            {...params}
-                                                            {...field}
-                                                            inputRef={ref}
-                                                            fullWidth
-                                                            placeholder="Type at least 3 letters of the engagement's name"
-                                                            error={Boolean(engagementErrors)}
-                                                            helperText={String(engagementErrors?.message || '')}
-                                                            slotProps={{
-                                                                input: {
-                                                                    ...params.InputProps,
-                                                                    endAdornment: (
-                                                                        <>
-                                                                            {engagementsLoading && (
-                                                                                <CircularProgress
-                                                                                    color="primary"
-                                                                                    size={20}
-                                                                                    sx={{ marginRight: '2em' }}
-                                                                                />
-                                                                            )}
-                                                                            {params.InputProps.endAdornment}
-                                                                        </>
-                                                                    ),
-                                                                },
-                                                            }}
-                                                        />
-                                                    )}
-                                                    getOptionLabel={(engagement: Engagement) => engagement.name}
-                                                    loading={engagementsLoading}
+                                            render={({ field: { onChange, value } }) => (
+                                                <EngagementAutocomplete
+                                                    value={(value as Engagement | null) ?? null}
+                                                    onChange={onChange}
+                                                    error={Boolean(engagementErrors)}
+                                                    helperText={String(engagementErrors?.message || '')}
+                                                    hasTeamAccess
                                                 />
                                             )}
                                         />
@@ -303,27 +225,7 @@ export const AddToEngagementModal = () => {
                                     </BodyText>
                                 </Grid>
                             </When>
-
-                            <Grid
-                                container
-                                size={12}
-                                direction="row"
-                                justifyContent="flex-end"
-                                spacing={1}
-                                sx={{ mt: '1em' }}
-                            >
-                                <Stack
-                                    direction={{ md: 'column-reverse', lg: 'row' }}
-                                    spacing={1}
-                                    width="100%"
-                                    justifyContent="flex-end"
-                                >
-                                    <Button onClick={handleClose}>Cancel</Button>
-                                    <Button variant="primary" loading={isAssigningRole} type="submit">
-                                        Submit
-                                    </Button>
-                                </Stack>
-                            </Grid>
+                            <ModalActions onClose={handleClose} loading={isAssigningRole} />
                         </Grid>
                     </form>
                 </FormProvider>

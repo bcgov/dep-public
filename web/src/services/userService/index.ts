@@ -6,7 +6,7 @@ import {
     userRoles,
     assignedEngagements,
 } from './userSlice';
-import { Action, AnyAction, Dispatch } from 'redux';
+import { Action, Dispatch } from 'redux';
 import { UserDetail } from './types';
 import { AppConfig } from 'config';
 import Endpoints from 'apiManager/endpoints';
@@ -28,7 +28,7 @@ const setKeycloakInstance = (instance: Keycloak) => {
 /**
  * Setting user authentication data in storage
  */
-const setAuthData = async (dispatch: Dispatch<AnyAction>) => {
+const setAuthData = async (dispatch: Dispatch<Action>) => {
     try {
         const authenticated = !!KeycloakData.token;
         if (!authenticated) {
@@ -52,7 +52,7 @@ const setAuthData = async (dispatch: Dispatch<AnyAction>) => {
 
         const userDetail: UserDetail = await KeycloakData.loadUserInfo();
         const updateUserResponse = await updateUser();
-        if (updateUserResponse.data && updateUserResponse.data.status_id == USER_STATUS.ACTIVE) {
+        if (updateUserResponse.data) {
             userDetail.user = updateUserResponse.data;
             const engagementsIds = await getAssignedEngagements(userDetail.sub || '', userDetail.user?.roles || []);
             dispatch(userDetails(userDetail));
