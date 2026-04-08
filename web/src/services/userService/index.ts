@@ -13,7 +13,7 @@ import Endpoints from 'apiManager/endpoints';
 import http from 'apiManager/httpRequestHandler';
 import { User } from 'models/user';
 import { getMembershipsByUser } from 'services/membershipService';
-import { USER_ROLES, USER_STATUS } from 'services/userService/constants';
+import { USER_ROLES } from 'services/userService/constants';
 import { getBaseUrl } from 'helper';
 import Keycloak from 'keycloak';
 
