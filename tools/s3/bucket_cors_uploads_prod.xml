@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CORSConfiguration xmlns="http://s3.amazonaws.com/doc/2006-03-01/">
+    <CORSRule>
+        <AllowedHeader>*</AllowedHeader>
+        <AllowedMethod>GET</AllowedMethod>
+        <AllowedMethod>PUT</AllowedMethod>
+        <AllowedMethod>POST</AllowedMethod>
+        <AllowedMethod>DELETE</AllowedMethod>
+        <AllowedOrigin>https://dep-web-demo.apps.gold.devops.gov.bc.ca</AllowedOrigin>
+    </CORSRule>
+    <CORSRule>
+        <AllowedHeader>*</AllowedHeader>
+        <AllowedMethod>GET</AllowedMethod>
+        <AllowedMethod>PUT</AllowedMethod>
+        <AllowedMethod>POST</AllowedMethod>
+        <AllowedMethod>DELETE</AllowedMethod>
+        <AllowedOrigin>https://dep.gov.bc.ca</AllowedOrigin>
+    </CORSRule>
+</CORSConfiguration>
