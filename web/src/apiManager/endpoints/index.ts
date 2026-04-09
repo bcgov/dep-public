@@ -46,6 +46,7 @@ const Endpoints = {
     },
     User: {
         GET: `${AppConfig.apiUrl}/user/user_id`,
+        DELETE: `${AppConfig.apiUrl}/user/user_id`,
         CREATE_UPDATE: `${AppConfig.apiUrl}/user/`,
         GET_LIST: `${AppConfig.apiUrl}/user/`,
         ADD_TO_COMPOSITE_ROLE: `${AppConfig.apiUrl}/user/user_id/roles`,

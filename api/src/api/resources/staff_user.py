@@ -86,7 +86,7 @@ class StaffUsers(Resource):
         return jsonify(users), HTTPStatus.OK
 
 
-@cors_preflight('GET')
+@cors_preflight('GET, DELETE')
 @API.route('/<user_id>')
 class StaffUser(Resource):
     """User controller class."""
@@ -103,6 +103,18 @@ class StaffUser(Resource):
             include_inactive=True,
         )
         return user, HTTPStatus.OK
+
+    @staticmethod
+    @cross_origin(origins=allowedorigins())
+    @require_role([Role.SUPER_ADMIN.value])
+    def delete(user_id):
+        """Permanently delete an inactive user."""
+        try:
+            user_data = TokenInfo.get_user_data()
+            StaffUserService.delete_deactivated_user(user_id, user_data.get('external_id'))
+            return {'message': 'User deleted successfully.'}, HTTPStatus.OK
+        except BusinessException as err:
+            return {'message': err.error}, err.status_code
 
 
 @cors_preflight('PATCH')

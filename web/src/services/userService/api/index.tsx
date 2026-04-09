@@ -80,3 +80,8 @@ export const toggleUserStatus = async (user_id: string, active: boolean): Promis
     const responseData = await http.PatchRequest<User>(url, data);
     return responseData.data;
 };
+
+export const deleteUser = async (user_id: number): Promise<void> => {
+    const url = replaceUrl(Endpoints.User.DELETE, 'user_id', String(user_id));
+    await http.DeleteRequest<void>(url);
+};

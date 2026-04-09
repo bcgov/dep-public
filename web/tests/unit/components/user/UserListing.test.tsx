@@ -35,11 +35,19 @@ jest.mock('@mui/material', () => ({
 
 jest.mock('react-redux', () => ({
     ...jest.requireActual('react-redux'),
-    useSelector: jest.fn(() => {
-        return {
-            assignedEngagements: [draftEngagement.id],
-        };
-    }),
+    useSelector: jest.fn((callback) =>
+        callback({
+            user: {
+                assignedEngagements: [draftEngagement.id],
+                roles: [],
+                userDetail: {
+                    user: {
+                        id: 999,
+                    },
+                },
+            },
+        }),
+    ),
     useDispatch: jest.fn(() => jest.fn()),
 }));
 

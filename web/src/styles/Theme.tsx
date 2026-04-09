@@ -555,8 +555,8 @@ export const AdminTheme = createTheme({
                         fontSize: '1.25rem',
                         '&[data-testid=RadioButtonCheckedIcon]': {
                             fontSize: '1rem',
-                            marginTop: '0.1rem',
-                            marginLeft: '0.1rem',
+                            marginTop: '0.125rem',
+                            marginLeft: '0.125rem',
                         },
                     },
                     '&.Mui-checked': {

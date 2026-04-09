@@ -1,21 +1,19 @@
-import React, { useContext, useEffect, useRef, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import Modal from '@mui/material/Modal';
-import { Autocomplete, CircularProgress, Grid2 as Grid, Paper, Stack, TextField, useTheme } from '@mui/material';
+import { Grid2 as Grid, Paper } from '@mui/material';
 import { modalStyle } from 'components/common';
 import { Heading3, BodyText } from 'components/common/Typography';
-import { Button } from 'components/common/Input/Button';
 import { UserManagementContext } from './UserManagementContext';
 import { useForm, FormProvider, SubmitHandler, Controller, Resolver } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
-import { getEngagements } from 'services/engagementService';
 import { addTeamMemberToEngagement } from 'services/membershipService';
 import { When } from 'react-if';
 import { openNotification } from 'services/notificationService/notificationSlice';
 import { useAppDispatch } from 'hooks';
-import { debounce } from 'lodash';
-import { Engagement } from 'models/engagement';
 import axios, { AxiosError } from 'axios';
+import { EngagementAutocomplete } from 'components/userManagement/common/EngagementAutocomplete';
+import { ModalActions } from 'components/userManagement/common/ModalActions';
 
 const schema = yup
     .object({
@@ -35,11 +33,7 @@ export const AddUserModal = () => {
     const dispatch = useAppDispatch();
     const { addUserModalOpen, setAddUserModalOpen, user, loadUserListing } = useContext(UserManagementContext);
     const [isAddingToEngagement, setIsAddingToEngagement] = useState(false);
-    const [engagements, setEngagements] = useState<Engagement[]>([]);
-    const [engagementsLoading, setEngagementsLoading] = useState(false);
     const [backendError, setBackendError] = useState('');
-
-    const theme = useTheme();
 
     const methods = useForm<AddUserForm>({
         resolver: yupResolver(schema) as unknown as Resolver<AddUserForm>,
@@ -67,37 +61,6 @@ export const AddUserModal = () => {
         reset({});
         setBackendError('');
     };
-
-    const loadEngagements = async (searchText: string) => {
-        if (searchText.length < 3) {
-            return;
-        }
-        try {
-            setEngagementsLoading(true);
-            const response = await getEngagements({
-                search_text: searchText,
-                has_team_access: true,
-            });
-            setEngagements(response.items);
-            setEngagementsLoading(false);
-        } catch {
-            dispatch(
-                openNotification({
-                    severity: 'error',
-                    text: 'Error occurred while trying to fetch engagements, please refresh the page or try again at a later time',
-                }),
-            );
-            setEngagementsLoading(false);
-        }
-    };
-
-    const debounceLoadEngagements = useRef(
-        debounce((searchText: string) => {
-            loadEngagements(searchText).catch((error) => {
-                console.error('Error in debounceLoadEngagements:', error);
-            });
-        }, 1000),
-    ).current;
 
     const addUserToEngagement = async (data: AddUserForm) => {
         await addTeamMemberToEngagement({
@@ -163,43 +126,13 @@ export const AddUserModal = () => {
                                     <Controller
                                         control={control}
                                         name="engagement"
-                                        render={({ field: { ref, onChange, ...field } }) => (
-                                            <Autocomplete
-                                                options={engagements || []}
-                                                onChange={(_, data) => {
-                                                    onChange(data);
-                                                }}
-                                                onInputChange={(_event, newInputValue) => {
-                                                    debounceLoadEngagements(newInputValue);
-                                                }}
-                                                renderInput={(params) => (
-                                                    <TextField
-                                                        {...params}
-                                                        {...field}
-                                                        inputRef={ref}
-                                                        fullWidth
-                                                        placeholder="Type at least 3 letters of the engagement's name"
-                                                        error={Boolean(engagementErrors)}
-                                                        helperText={String(engagementErrors?.message || '')}
-                                                        InputProps={{
-                                                            ...params.InputProps,
-                                                            endAdornment: (
-                                                                <>
-                                                                    {engagementsLoading && (
-                                                                        <CircularProgress
-                                                                            color="primary"
-                                                                            size={20}
-                                                                            sx={{ marginRight: '2em' }}
-                                                                        />
-                                                                    )}
-                                                                    {params.InputProps.endAdornment}
-                                                                </>
-                                                            ),
-                                                        }}
-                                                    />
-                                                )}
-                                                getOptionLabel={(engagement: Engagement) => engagement.name}
-                                                loading={engagementsLoading}
+                                        render={({ field: { onChange, value } }) => (
+                                            <EngagementAutocomplete
+                                                value={value}
+                                                onChange={onChange}
+                                                error={Boolean(engagementErrors)}
+                                                helperText={String(engagementErrors?.message || '')}
+                                                hasTeamAccess
                                             />
                                         )}
                                     />
@@ -207,32 +140,13 @@ export const AddUserModal = () => {
                             </Grid>
                             <When condition={backendError}>
                                 <Grid size={12}>
-                                    <BodyText size="small" sx={{ color: theme.palette.error.main }}>
+                                    <BodyText size="small" color="error">
                                         {backendError}
                                     </BodyText>
                                 </Grid>
                             </When>
 
-                            <Grid
-                                container
-                                size={12}
-                                direction="row"
-                                justifyContent="flex-end"
-                                spacing={1}
-                                sx={{ mt: '1em' }}
-                            >
-                                <Stack
-                                    direction={{ md: 'column-reverse', lg: 'row' }}
-                                    spacing={1}
-                                    width="100%"
-                                    justifyContent="flex-end"
-                                >
-                                    <Button onClick={handleClose}>Cancel</Button>
-                                    <Button variant="primary" loading={isAddingToEngagement} type="submit">
-                                        Submit
-                                    </Button>
-                                </Stack>
-                            </Grid>
+                            <ModalActions onClose={handleClose} loading={isAddingToEngagement} />
                         </Grid>
                     </form>
                 </FormProvider>
