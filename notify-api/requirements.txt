@@ -5,7 +5,7 @@ attrs==23.2.0
 click==8.1.7
 flasgger==0.9.5
 Flask==2.3.3
-flask-marshmallow==1.0.0
+flask-marshmallow==1.3.0
 Flask-Migrate==2.7.0
 Flask-Script==2.0.5
 flask-restplus==0.13.0
@@ -16,7 +16,7 @@ Jinja2==3.1.6
 jsonschema==4.21.1
 Mako==1.3.3
 MarkupSafe==2.1.5
-marshmallow==3.26.2
+marshmallow==4.3.0
 marshmallow-sqlalchemy==1.0.0
 mistune==2.0.3
 psycopg2-binary==2.9.9

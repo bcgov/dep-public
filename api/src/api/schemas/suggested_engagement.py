@@ -24,7 +24,7 @@ class SuggestedEngagementSyncItemSchema(Schema):
         validate=validate.Range(min=1, error='sort_index must be 1 or greater'),
     )
 
-    @pre_load(pass_many=True)
+    @pre_load(pass_collection=True)
     def normalize_sort_index(self, data, many, **kwargs):
         """Normalize sort_index from payload order when omitted."""
         rows = data if many else [data]
@@ -35,7 +35,7 @@ class SuggestedEngagementSyncItemSchema(Schema):
             normalized_rows.append(item)
         return normalized_rows if many else normalized_rows[0]
 
-    @validates_schema(pass_many=True)
+    @validates_schema(pass_collection=True)
     def validate_uniqueness(self, data, many, **kwargs):
         """Ensure payload does not contain duplicate slots or duplicate targets."""
         rows = data if many else [data]

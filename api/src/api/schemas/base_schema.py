@@ -42,8 +42,8 @@ class BaseSchema(ma.SQLAlchemyAutoSchema):  # pylint: disable=too-many-ancestors
                                                                                        None) else None
     )
 
-    @post_dump(pass_many=True)
-    def _remove_empty(self, data, many):
+    @post_dump(pass_collection=True)
+    def _remove_empty(self, data, many, **kwargs):
         """Remove all empty values and versions from the dumped dict."""
         if not many:
             for key in list(data):

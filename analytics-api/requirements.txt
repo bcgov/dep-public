@@ -23,7 +23,7 @@ charset-normalizer==3.1.0
 click==8.1.7
 ecdsa==0.19.2
 flask_jwt_oidc==0.8.0
-flask-marshmallow==1.0.0
+flask-marshmallow==1.3.0
 flask-restx==1.3.2
 gunicorn==23.0.0
 idna==3.7
@@ -33,7 +33,7 @@ itsdangerous==2.2.0
 jaeger-client==4.8.0
 jsonschema==4.21.1
 marshmallow-sqlalchemy==1.0.0
-marshmallow==3.26.2
+marshmallow==4.3.0
 opentracing==2.4.0
 packaging==23.0
 pkgutil_resolve_name==1.3.10
