@@ -1,3 +1,9 @@
+## April 9, 2026
+
+- **Chore** Track CORS config files in-repository and update docs [🎟️ DEP-220](https://citz-gdx.atlassian.net/browse/DEP-220)
+  - Added the CORS configuration files for the S3 buckets used for uploads in the Digital Engagement Platform to the repository under `tools/s3/`.
+  - Updated documentation in `tools/s3/README.md` to provide instructions on how to use these CORS configuration files when creating new buckets, including example commands for applying the CORS configuration using the `mc` CLI tool.
+
 ## April 8, 2026
 
 - **Chore** Removed all references to CAC Forms [🎟️ DEP-232](https://citz-gdx.atlassian.net/browse/DEP-232)
