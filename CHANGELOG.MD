@@ -11,6 +11,14 @@
   - Modified subscribe widget to remove CAC form option
 - Fixed small styling issues with container width in Authoring: More Engagements component
 
+## April 7, 2026
+
+- **Feature** Add "delete user" functionality to user management section [🎟️ DEP-239](https://citz-gdx.atlassian.net/browse/DEP-239)
+  - Added a "Delete User" button to the user details page in the admin view, visible only to super admins.
+  - Updated the API to include a DELETE endpoint for users, which checks for appropriate permissions and handles cascading deletions of related data (e.g. role assignments).
+  - Added success and error messages to provide feedback on the deletion process.
+  - Reworked the user details component to rearrange the existing layout and accommodate the new delete button, while ensuring a clear and intuitive user experience.
+
 ## April 1, 2026
 
 - **Chore** Change trigger for environment detection [🎟️ DEP-242](https://citz-gdx.atlassian.net/browse/DEP-242)

@@ -43,28 +43,39 @@ export const UserDetailsContext = createContext<UserViewContext>({
     isMembershipLoading: true,
 });
 
-export const UserDetailsContextProvider = ({ children }: { children: JSX.Element | JSX.Element[] }) => {
+export const UserDetailsContextProvider = ({
+    children,
+    initialUser,
+}: {
+    children: JSX.Element | JSX.Element[];
+    initialUser: User;
+}) => {
     const { userId } = useParams<UserParams>();
     const navigate = useNavigate();
     const dispatch = useAppDispatch();
-    const [savedUser, setSavedUser] = useState<User | undefined>(createDefaultUser);
-    const [isUserLoading, setUserLoading] = useState(true);
+    const [savedUser, setSavedUser] = useState<User | undefined>(initialUser);
+    const [isUserLoading, setUserLoading] = useState(false);
     const [isMembershipLoading, setMembershipLoading] = useState(true);
     const [memberships, setMemberships] = useState<EngagementTeamMember[]>([]);
     const [addUserModalOpen, setAddUserModalOpen] = useState(false);
 
     useEffect(() => {
-        fetchUser();
-    }, [userId]);
+        setSavedUser(initialUser);
+        setUserLoading(false);
+    }, [initialUser]);
 
-    const fetchUser = async () => {
+    const getUserDetails = async () => {
         if (isNaN(Number(userId))) {
-            navigate('/404');
-            return Promise.resolve();
+            navigate('/usermanagement');
+            return;
         }
+        setUserLoading(true);
         try {
-            await getUserDetails();
+            const fetchedUser = await getUser({ user_id: Number(userId), include_roles: true });
+            setSavedUser(fetchedUser);
+            setUserLoading(false);
         } catch {
+            setUserLoading(false);
             dispatch(
                 openNotification({
                     severity: 'error',
@@ -74,29 +85,25 @@ export const UserDetailsContextProvider = ({ children }: { children: JSX.Element
         }
     };
 
-    const getUserDetails = async () => {
-        setUserLoading(true);
-        const fetchedUser = await getUser({ user_id: Number(userId), include_roles: true });
-        setSavedUser(fetchedUser);
-        setUserLoading(false);
-    };
-
     useEffect(() => {
         getUserMemberships();
-    }, [savedUser]);
+    }, [savedUser?.external_id]);
 
     const getUserMemberships = async () => {
         if (!savedUser) {
             return;
         }
-        const userMemberships = await getMembershipsByUser({
-            user_external_id: savedUser.external_id,
-            include_engagement_details: true,
-            include_revoked: true,
-        });
-
-        setMemberships(userMemberships);
-        setMembershipLoading(false);
+        setMembershipLoading(true);
+        try {
+            const userMemberships = await getMembershipsByUser({
+                user_external_id: savedUser.external_id,
+                include_engagement_details: true,
+                include_revoked: true,
+            });
+            setMemberships(userMemberships);
+        } finally {
+            setMembershipLoading(false);
+        }
     };
 
     return (

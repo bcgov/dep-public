@@ -55,6 +55,9 @@ jest.mock('react-redux', () => ({
                 userDetail: { ...mockUser1 },
                 roles: [USER_ROLES.TOGGLE_USER_STATUS],
             },
+            tenant: {
+                short_name: 'TEST',
+            },
         }),
     ),
     useDispatch: jest.fn(() => jest.fn()),
@@ -64,6 +67,7 @@ jest.mock('react-router', () => ({
     ...jest.requireActual('react-router'),
     useNavigate: jest.fn(),
     useParams: jest.fn(() => ({ userId: '1' })),
+    useLoaderData: jest.fn(() => ({ user: mockUser1 })),
 }));
 
 const router = createMemoryRouter(

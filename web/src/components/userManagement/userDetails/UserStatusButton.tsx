@@ -7,11 +7,12 @@ import { toggleUserStatus } from 'services/userService/api';
 import { USER_ROLES } from 'services/userService/constants';
 import { USER_COMPOSITE_ROLE } from 'models/user';
 import { Button } from 'components/common/Input/Button';
-import { faUserPlus, faUserSlash } from '@fortawesome/pro-regular-svg-icons';
+import { faUserCheck, faUserXmark } from '@fortawesome/pro-regular-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
-const UserStatusButton = () => {
+const UserStatusButton = ({ size = 'medium' }: { size?: 'small' | 'medium' | 'large' }) => {
     const { roles, userDetail } = useAppSelector((state) => state.user);
+    const { short_name: tenantName } = useAppSelector((state) => state.tenant);
     const { savedUser, getUserDetails } = useContext(UserDetailsContext);
     const [userStatus, setUserStatus] = useState(false);
     const [togglingUserStatus, setTogglingUserStatus] = useState(false);
@@ -70,10 +71,11 @@ const UserStatusButton = () => {
             openNotificationModal({
                 open: true,
                 data: {
-                    header: `Deactivate ${savedUser?.first_name} ${savedUser?.last_name}`,
+                    style: 'warning',
+                    header: `Deactivate ${savedUser?.first_name} ${savedUser?.last_name} in ${tenantName}?`,
                     subText: [
                         {
-                            text: `You will be deactivating this user from the system. This user will lose all access to the system.`,
+                            text: `This user will lose all access to resources within this organization. You can reactivate this user at any time to restore their access.`,
                         },
                         {
                             text: 'Do you want to deactivate this user?',
@@ -93,18 +95,17 @@ const UserStatusButton = () => {
             openNotificationModal({
                 open: true,
                 data: {
-                    header: `Reactivate ${savedUser?.first_name} ${savedUser?.last_name}`,
+                    style: 'warning',
+                    header: `Reactivate ${savedUser?.first_name} ${savedUser?.last_name}?`,
                     subText: [
                         {
                             text:
-                                'You will be Reactivating this user in the system. ' +
-                                'This user will regain access to the system. Once reactivated, ' +
-                                'the user will be reassigned to their role and you will have to add them ' +
-                                'back to engagements if Team Member/Reviewer.',
+                                'This user will regain access to the system with the ' +
+                                'same permission level they had before deactivation. ' +
+                                'You may need to reinstate their access to some engagements manually.',
                         },
-                        {
-                            text: 'Do you want to Reactivate this user?',
-                        },
+                        { text: 'Ensure that reactivating this user complies with your organization’s policies.' },
+                        { text: 'Do you want to reactivate this user?' },
                     ],
                     handleConfirm: () => {
                         handleUpdateActiveStatus(true);
@@ -117,11 +118,13 @@ const UserStatusButton = () => {
 
     return (
         <Button
+            size={size}
+            fullWidth
             data-testid="user-status-toggle"
             loading={togglingUserStatus}
             onClick={() => handleToggleUserStatus(!userStatus)}
             disabled={disabled}
-            icon={<FontAwesomeIcon icon={userStatus ? faUserSlash : faUserPlus} />}
+            icon={<FontAwesomeIcon icon={userStatus ? faUserXmark : faUserCheck} />}
         >
             {userStatus ? 'Deactivate User' : 'Reactivate User'}
         </Button>

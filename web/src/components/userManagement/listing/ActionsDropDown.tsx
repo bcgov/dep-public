@@ -76,6 +76,8 @@ export const ActionsDropDown = ({ selectedUser }: { selectedUser: User }) => {
                 condition:
                     !hasNoRole() &&
                     roles.includes(USER_ROLES.UPDATE_USER_GROUP) &&
+                    (selectedUser.main_role !== USER_COMPOSITE_ROLE.ADMIN.label ||
+                        roles.includes(USER_ROLES.SUPER_ADMIN)) &&
                     selectedUser.status_id == USER_STATUS.ACTIVE.value &&
                     selectedUser.id != userDetail?.user?.id,
             },
