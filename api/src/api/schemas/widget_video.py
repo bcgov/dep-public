@@ -15,14 +15,15 @@
 
 from api.models.widget_video import WidgetVideo as WidgetVideoModel
 
-from marshmallow import Schema
+from .base_schema import BaseSchema
 
 
-class WidgetVideoSchema(Schema):  # pylint: disable=too-many-ancestors, too-few-public-methods
+class WidgetVideoSchema(BaseSchema):  # pylint: disable=too-many-ancestors, too-few-public-methods
     """This is the schema for the video model."""
 
-    class Meta:  # pylint: disable=too-few-public-methods
+    class Meta(BaseSchema.Meta):  # pylint: disable=too-few-public-methods
         """Videos all of the Widget Video fields to a default schema."""
 
         model = WidgetVideoModel
+        include_fk = True
         fields = ('id', 'widget_id', 'engagement_id', 'video_url', 'description')

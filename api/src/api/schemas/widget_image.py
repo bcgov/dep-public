@@ -15,16 +15,17 @@
 
 from api.models.widget_image import WidgetImage as WidgetImageModel
 
-from marshmallow import Schema
+from .base_schema import BaseSchema
 
 
-class WidgetImageSchema(Schema):
+class WidgetImageSchema(BaseSchema):
     """This is the schema for the image model."""
 
-    class Meta:  # pylint: disable=too-few-public-methods
+    class Meta(BaseSchema.Meta):  # pylint: disable=too-few-public-methods
         """Images all of the Widget Image fields to a default schema."""
 
         model = WidgetImageModel
+        include_fk = True
         fields = (
             'id',
             'widget_id',

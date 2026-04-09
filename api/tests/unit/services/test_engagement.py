@@ -104,8 +104,9 @@ def test_patch_engagement(session, monkeypatch):  # pylint:disable=unused-argume
         assert updated_engagement_record.created_date.strftime(date_format) == engagement_edits.get('created_date')
 
 
-def test_delete_success(session, mocker):
+def test_delete_success(session, mocker, monkeypatch):
     """Assert that an engagement can be deleted."""
+    monkeypatch.setenv('ENV', 'dev')
     eng = factory_engagement_model(status=Status.Draft.value)
     db.session.add(eng)
     db.session.commit()
@@ -116,8 +117,9 @@ def test_delete_success(session, mocker):
     assert isinstance(result, dict) and result.get('id') == eid
 
 
-def test_delete_failure_engagement_published(session, mocker):
+def test_delete_failure_engagement_published(session, mocker, monkeypatch):
     """Assert that an engagement cannot be deleted if it is published."""
+    monkeypatch.setenv('ENV', 'dev')
     eng = factory_engagement_model(status=Status.Published.value)
     db.session.add(eng)
     db.session.commit()

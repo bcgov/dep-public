@@ -15,14 +15,15 @@
 
 from api.models.widget_map import WidgetMap as WidgetMapModel
 
-from marshmallow import Schema
+from .base_schema import BaseSchema
 
 
-class WidgetMapSchema(Schema):  # pylint: disable=too-many-ancestors, too-few-public-methods
+class WidgetMapSchema(BaseSchema):  # pylint: disable=too-many-ancestors, too-few-public-methods
     """This is the schema for the map model."""
 
-    class Meta:  # pylint: disable=too-few-public-methods
+    class Meta(BaseSchema.Meta):  # pylint: disable=too-few-public-methods
         """Maps all of the Widget Map fields to a default schema."""
 
         model = WidgetMapModel
+        include_fk = True
         fields = ('id', 'widget_id', 'engagement_id', 'marker_label', 'latitude', 'longitude', 'geojson', 'file_name')

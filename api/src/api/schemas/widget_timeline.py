@@ -16,27 +16,29 @@
 from api.models.widget_timeline import WidgetTimeline as WidgetTimelineModel
 from api.models.timeline_event import TimelineEvent as TimelineEventModel
 
-from marshmallow import Schema
 from marshmallow_sqlalchemy.fields import Nested
+from .base_schema import BaseSchema
 
 
-class TimelineEventSchema(Schema):  # pylint: disable=too-many-ancestors, too-few-public-methods
+class TimelineEventSchema(BaseSchema):  # pylint: disable=too-many-ancestors, too-few-public-methods
     """This is the schema for the timeline event model."""
 
-    class Meta:  # pylint: disable=too-few-public-methods
+    class Meta(BaseSchema.Meta):  # pylint: disable=too-few-public-methods
         """All of the fields in the Timeline Event schema."""
 
         model = TimelineEventModel
+        include_fk = True
         fields = ('id', 'engagement_id', 'widget_id', 'timeline_id', 'description', 'time', 'position', 'status')
 
 
-class WidgetTimelineSchema(Schema):  # pylint: disable=too-many-ancestors, too-few-public-methods
+class WidgetTimelineSchema(BaseSchema):  # pylint: disable=too-many-ancestors, too-few-public-methods
     """This is the schema for the widget timeline model."""
 
-    class Meta:  # pylint: disable=too-few-public-methods
+    class Meta(BaseSchema.Meta):  # pylint: disable=too-few-public-methods
         """All of the fields in the Widget Timeline schema."""
 
         model = WidgetTimelineModel
+        include_fk = True
         fields = ('id', 'engagement_id', 'widget_id', 'title', 'description', 'events')
 
     events = Nested(TimelineEventSchema, many=True)

@@ -15,14 +15,15 @@
 
 from api.models.widget_listening import WidgetListening as WidgetListeningModel
 
-from marshmallow import Schema
+from .base_schema import BaseSchema
 
 
-class WidgetListeningSchema(Schema):  # pylint: disable=too-many-ancestors, too-few-public-methods
+class WidgetListeningSchema(BaseSchema):  # pylint: disable=too-many-ancestors, too-few-public-methods
     """This is the schema for the widget listening model."""
 
-    class Meta:  # pylint: disable=too-few-public-methods
+    class Meta(BaseSchema.Meta):  # pylint: disable=too-few-public-methods
         """All of the fields in the Widget Listening schema."""
 
         model = WidgetListeningModel
+        include_fk = True
         fields = ('id', 'engagement_id', 'widget_id', 'description')
