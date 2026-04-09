@@ -6,6 +6,17 @@
 
 ## April 8, 2026
 
+- **Chore** Removed all references to CAC Forms [🎟️ DEP-232](https://citz-gdx.atlassian.net/browse/DEP-232)
+  - Removed model, resource, and service from API
+  - Added a migration for removing the table from the Postgres db
+  - Removed any CAC-related constants
+  - Removed any CAC-related values from enums but preserved positioning
+  - Removed unneeded components from the front end, and references to the components
+  - Removed translation strings
+  - Removed any associated unit tests
+  - Modified subscribe widget to remove CAC form option
+- Fixed small styling issues with container width in Authoring: More Engagements component
+
 - **Bugfix** Make sure user listing page only shows users from the current tenant, even for super admins [🎟️ DEP-246](https://citz-gdx.atlassian.net/browse/DEP-246)
   - Updated the API endpoint for listing users to filter results based on the current tenant, even for users with the SUPER_ADMIN role. This ensures that super admins only see users from their currently selected tenant, rather than all users across all tenants.
   - Updated unit tests to reflect this change and ensure that the user listing behaves as expected for super admins.

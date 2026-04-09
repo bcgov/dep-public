@@ -125,6 +125,8 @@ const SettingsForm = () => {
                                 disabled
                                 value={engagementUrl}
                                 sx={{
+                                    pt: 0,
+                                    pb: 0,
                                     '.MuiInputBase-input': {
                                         marginRight: 0,
                                     },

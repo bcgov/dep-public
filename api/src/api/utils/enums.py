@@ -49,7 +49,7 @@ class GeneratedDocumentTypes(IntEnum):
     """Document Types."""
 
     COMMENT_SHEET_STAFF = 1
-    CAC_FORM_SHEET = 2
+    # CAC_FORM_SHEET Removed
     COMMENT_SHEET_PROPONENT = 3
 
 

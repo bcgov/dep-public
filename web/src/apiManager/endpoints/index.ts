@@ -193,10 +193,6 @@ const Endpoints = {
     AnalyticsSurveyResult: {
         GET: `${AppConfig.analyticsApiUrl}/surveyresult/engagement_id/dashboard_type`,
     },
-    CACForm: {
-        CREATE: `${AppConfig.apiUrl}/engagements/engagement_id/cacform/widget_id`,
-        GET_SHEET: `${AppConfig.apiUrl}/engagements/engagement_id/cacform/sheet`,
-    },
     PollWidgets: {
         GET: `${AppConfig.apiUrl}/widgets/widget_id/polls`,
         CREATE: `${AppConfig.apiUrl}/widgets/widget_id/polls`,

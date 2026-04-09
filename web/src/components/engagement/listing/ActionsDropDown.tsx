@@ -1,14 +1,11 @@
 import React, { useMemo, useState } from 'react';
 import { USER_ROLES } from 'services/userService/constants';
-import { CircularProgress, MenuItem, Modal, Select } from '@mui/material';
+import { MenuItem, Modal, Select } from '@mui/material';
 import { Engagement } from 'models/engagement';
 import { useNavigate, useRevalidator } from 'react-router';
 import { useAppDispatch, useAppSelector } from 'hooks';
 import { SubmissionStatus, EngagementStatus } from 'constants/engagementStatus';
-import { getFormsSheet } from 'services/FormCAC';
 import { openNotification } from 'services/notificationService/notificationSlice';
-import { formatToUTC } from 'components/common/dateHelper';
-import { downloadFile } from 'utils';
 import ConfirmModal from 'components/common/Modals/ConfirmModal';
 import { deleteEngagement } from 'services/engagementService';
 
@@ -22,7 +19,6 @@ export const ActionsDropDown = ({ engagement }: { engagement: Engagement }) => {
     const navigate = useNavigate();
     const dispatch = useAppDispatch();
     const revalidator = useRevalidator();
-    const [isExportingCacForms, setIsExportingCacForms] = useState(false);
     const [deleteEngagementModalOpen, setDeleteEngagementModalOpen] = useState(false);
     const { roles, assignedEngagements } = useAppSelector((state) => state.user);
     const submissionHasBeenOpened = [SubmissionStatus.Open, SubmissionStatus.Closed].includes(
@@ -76,20 +72,6 @@ export const ActionsDropDown = ({ engagement }: { engagement: Engagement }) => {
         }
 
         return roles.includes(USER_ROLES.VIEW_ALL_SURVEYS) || assignedEngagements.includes(engagement.id);
-    };
-
-    const exportCacFormSheet = async () => {
-        setIsExportingCacForms(true);
-        try {
-            const response = await getFormsSheet({ engagement_id: engagement.id });
-            downloadFile(response, `cac-${engagement.name}-${formatToUTC(Date())}.csv`);
-        } catch {
-            dispatch(
-                openNotification({ text: 'Error occured while exporting cac form submissions', severity: 'error' }),
-            );
-        } finally {
-            setIsExportingCacForms(false);
-        }
     };
 
     const removeEngagement = async () => {
@@ -163,17 +145,6 @@ export const ActionsDropDown = ({ engagement }: { engagement: Engagement }) => {
                         assignedEngagements.includes(engagement.id)),
             },
             {
-                value: 6,
-                label: 'Export Form Sign-Up Data',
-                action: () => {
-                    exportCacFormSheet();
-                },
-                condition:
-                    roles.includes(USER_ROLES.EXPORT_ALL_CAC_FORM_TO_SHEET) ||
-                    (roles.includes(USER_ROLES.EXPORT_CAC_FORM_TO_SHEET) &&
-                        assignedEngagements.includes(engagement.id)),
-            },
-            {
                 value: 7,
                 label: 'Delete Engagement',
                 action: () => {
@@ -186,10 +157,6 @@ export const ActionsDropDown = ({ engagement }: { engagement: Engagement }) => {
         ],
         [engagement.id],
     );
-
-    if (isExportingCacForms) {
-        return <CircularProgress />;
-    }
 
     return (
         <>

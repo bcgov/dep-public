@@ -109,7 +109,7 @@ const AuthoringMore = () => {
             <UnsavedWorkConfirmation blockNavigationWhen={hasUnsavedWork} />
 
             {/* More Engagements form */}
-            <AuthoringFormContainer>
+            <AuthoringFormContainer size={12}>
                 <AuthoringFormSection
                     name="Section Heading"
                     required={true}

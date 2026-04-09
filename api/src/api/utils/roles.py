@@ -53,8 +53,6 @@ class Role(Enum):
     VIEW_FEEDBACKS = 'view_feedbacks'
     VIEW_ALL_ENGAGEMENTS = 'view_all_engagements'  # Allows user access to all engagements including draft
     SHOW_ALL_COMMENT_STATUS = 'show_all_comment_status'  # Allows user to see all comment status
-    EXPORT_ALL_CAC_FORM_TO_SHEET = 'export_all_cac_form_to_sheet'  # Allows users to export CAC form to csv
-    EXPORT_CAC_FORM_TO_SHEET = 'export_cac_form_to_sheet'  # Allows users to export CAC form to csv
     VIEW_ALL_SURVEY_RESULTS = 'view_all_survey_results'  # Allows users to view results to all questions
     UNPUBLISH_ENGAGEMENT = 'unpublish_engagement'
     EXPORT_ALL_TO_CSV = 'export_all_to_csv'

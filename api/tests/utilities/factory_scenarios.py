@@ -812,19 +812,6 @@ class TestSubscribeInfo(Enum):
     }
 
 
-class TestCACForm(dict, Enum):
-    """Test scenarios of cac form."""
-
-    form_data = {
-        'understand': True,
-        'terms_of_reference': True,
-        'first_name': fake.name(),
-        'last_name': fake.name(),
-        'city': 'City',
-        'email': fake.email(),
-    }
-
-
 class TestWidgetMap(dict, Enum):
     """Test scenarios of video widget."""
 
