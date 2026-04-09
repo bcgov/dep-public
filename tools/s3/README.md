@@ -1,6 +1,6 @@
 This folder contains the CORS configuration files for the S3 buckets used for uploads in the Digital Engagement Platform. (The backup buckets do not require CORS configuration, as files are uploaded by service accounts and not accessed directly from the browser.)
 
-The `bucket_cors_uploads_<env>.xml` files contain the CORS configuration forthe respective environments (dev, test, prod). When creating a new bucket, ensure that the appropriate CORS configuration file is updated with the new web URL and any necessary allowed methods.
+The `bucket_cors_uploads_<env>.xml` files contain the CORS configuration for the respective environments (dev, test, prod). When creating a new bucket, ensure that the appropriate CORS configuration file is updated with the new web URL and any necessary allowed methods.
 
 Example:
 
