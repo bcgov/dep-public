@@ -11,6 +11,10 @@
   - Modified subscribe widget to remove CAC form option
 - Fixed small styling issues with container width in Authoring: More Engagements component
 
+- **Bugfix** Make sure user listing page only shows users from the current tenant, even for super admins [🎟️ DEP-246](https://citz-gdx.atlassian.net/browse/DEP-246)
+  - Updated the API endpoint for listing users to filter results based on the current tenant, even for users with the SUPER_ADMIN role. This ensures that super admins only see users from their currently selected tenant, rather than all users across all tenants.
+  - Updated unit tests to reflect this change and ensure that the user listing behaves as expected for super admins.
+
 ## April 7, 2026
 
 - **Feature** Add "delete user" functionality to user management section [🎟️ DEP-239](https://citz-gdx.atlassian.net/browse/DEP-239)
