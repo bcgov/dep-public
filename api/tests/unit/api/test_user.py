@@ -86,14 +86,14 @@ def test_get_staff_users(client, jwt, session, setup_admin_user_and_claims, setu
     assert rv.json.get('total') == 5
     assert len(rv.json.get('items')) == 5
 
-    # Check that super admins can see all users, even across tenants
+    # Check that super admins only see users from their currently selected tenant
     _, claims = setup_super_admin_user_and_claims
     headers = factory_auth_header(jwt=jwt, claims=claims)
     rv = client.get('/api/user/', headers=headers, content_type=ContentType.JSON.value)
     assert rv.status_code == HTTPStatus.OK
-    assert rv.json.get('total') == 6
-    # There is one more user, from the other tenant
-    assert len(rv.json.get('items')) == 6
+    assert rv.json.get('total') == 5
+    # Users from other tenants should not be included
+    assert len(rv.json.get('items')) == 5
 
 
 @pytest.mark.parametrize(

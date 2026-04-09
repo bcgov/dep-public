@@ -14,8 +14,6 @@ from sqlalchemy.sql.operators import ilike_op
 
 from api.models.user_group_membership import UserGroupMembership
 from api.utils.enums import UserStatus
-from api.utils.roles import Role
-from api.utils.token_info import TokenInfo
 
 from .base_model import TENANT_ID, BaseModel
 from .db import db
@@ -43,10 +41,8 @@ class StaffUser(BaseModel):
     @classmethod
     def get_all_paginated(cls, pagination_options: PaginationOptions, search_text='', include_inactive=False):
         """Fetch list of users by access type."""
-        query = cls.query
-        # Don't filter out users from other tenants if the user is a super admin; show everything
-        if Role.SUPER_ADMIN.value not in TokenInfo.get_user_roles():
-            query = cls._add_tenant_filter(query)
+        # don't return users that are not members of the tenant from which the request originates
+        query = cls._add_tenant_filter(cls.query)
 
         if pagination_options.sort_key:
             sort = asc(text(pagination_options.sort_key)) if pagination_options.sort_order == 'asc' \
