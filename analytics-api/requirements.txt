@@ -42,7 +42,7 @@ pyasn1==0.6.3
 pyrsistent==0.19.3
 python-dotenv==1.0.1
 python-jose==3.5.0
-pytz==2024.1
+pytz==2026.1.post1
 requests==2.33.0
 rsa==4.9
 secure==0.3.0
