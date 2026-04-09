@@ -61,9 +61,9 @@ const AuthoringTemplate = () => {
             </Grid>
 
             {/* Portal target for anything that needs to be rendered before the section title + content */}
-            <div id="pre-authoring-content">
+            <Grid size={12} id="pre-authoring-content">
                 {pageName === 'more' && <AuthoringMorePreform languages={languages} />}
-            </div>
+            </Grid>
 
             <Grid size={12}>
                 <Heading2 decorated style={{ paddingTop: '1rem' }}>
@@ -71,7 +71,7 @@ const AuthoringTemplate = () => {
                 </Heading2>
             </Grid>
 
-            <Grid>
+            <Grid size={12}>
                 <Form onSubmit={handleSubmit(onSubmit)} id="authoring-form">
                     <Suspense>
                         <Await resolve={engagement}>

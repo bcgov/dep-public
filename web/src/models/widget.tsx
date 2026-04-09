@@ -22,7 +22,7 @@ export enum WidgetType {
     Events = 5,
     Map = 6,
     Video = 7,
-    CACForm = 8,
+    // CAC Form was previously 8 but has been removed.
     Timeline = 9,
     Poll = 10,
     Image = 11,

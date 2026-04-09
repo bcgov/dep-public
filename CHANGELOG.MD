@@ -1,3 +1,16 @@
+## April 8, 2026
+
+- **Chore** Removed all references to CAC Forms [🎟️ DEP-232](https://citz-gdx.atlassian.net/browse/DEP-232)
+  - Removed model, resource, and service from API
+  - Added a migration for removing the table from the Postgres db
+  - Removed any CAC-related constants
+  - Removed any CAC-related values from enums but preserved positioning
+  - Removed unneeded components from the front end, and references to the components
+  - Removed translation strings
+  - Removed any associated unit tests
+  - Modified subscribe widget to remove CAC form option
+- Fixed small styling issues with container width in Authoring: More Engagements component
+
 ## April 1, 2026
 
 - **Chore** Change trigger for environment detection [🎟️ DEP-242](https://citz-gdx.atlassian.net/browse/DEP-242)

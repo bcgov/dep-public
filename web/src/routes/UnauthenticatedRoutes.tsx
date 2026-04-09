@@ -35,10 +35,6 @@ const UnauthenticatedRoutes = resolveLazyRouteTree(
                 }
                 loaderLazy={() => import('components/survey/building/SurveyLoader')}
             />
-            <LazyRoute
-                path="cacform/:widgetId/:language"
-                ComponentLazy={() => import('components/FormCAC').then((m) => withLanguageParam(m.default))}
-            />
             <LazyRoute path="*" ComponentLazy={() => import('routes/NotFound')} />
         </Route>
         <Route path="/engagements">
@@ -82,10 +78,6 @@ const UnauthenticatedRoutes = resolveLazyRouteTree(
                 <LazyRoute
                     path="form/:language"
                     ComponentLazy={() => import('routes/RedirectLogin').then((m) => withLanguageParam(m.default))}
-                />
-                <LazyRoute
-                    path="cacform/:widgetId/:language"
-                    ComponentLazy={() => import('components/FormCAC').then((m) => withLanguageParam(m.default))}
                 />
             </Route>
         </Route>

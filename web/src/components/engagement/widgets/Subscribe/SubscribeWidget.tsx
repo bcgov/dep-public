@@ -5,11 +5,10 @@ import { useAppDispatch } from 'hooks';
 import { Widget } from 'models/widget';
 import { getSubscriptionsForms } from 'services/subscriptionService';
 import { openNotification } from 'services/notificationService/notificationSlice';
-import { SUBSCRIBE_TYPE, SubscribeForm } from 'models/subscription';
-import { Case, Switch, Unless } from 'react-if';
+import { SubscribeForm } from 'models/subscription';
+import { Unless } from 'react-if';
 import EmailListSection from './EmailListSection';
 import EmailListModal from './EmailListModal';
-import FormSignUpSection from './FormSignUpSection';
 import { Heading2 } from 'components/common/Typography';
 import { useLoaderData } from 'react-router';
 import { EngagementLoaderPublicData } from 'engagements/public/view';
@@ -61,14 +60,7 @@ const SubscribeWidget = ({ widget }: { widget: Widget }) => {
                     {subscribeItems?.map((item, index) => {
                         return (
                             <>
-                                <Switch>
-                                    <Case condition={item.type == SUBSCRIBE_TYPE.EMAIL_LIST}>
-                                        <EmailListSection subscribeOption={item} setOpen={setOpen} />
-                                    </Case>
-                                    <Case condition={item.type == SUBSCRIBE_TYPE.SIGN_UP}>
-                                        <FormSignUpSection subscribeOption={item} widget={widget} />
-                                    </Case>
-                                </Switch>
+                                <EmailListSection subscribeOption={item} setOpen={setOpen} />
                                 <Unless condition={index == subscribeItems.length - 1}>
                                     <Grid size={12}>
                                         <Divider />

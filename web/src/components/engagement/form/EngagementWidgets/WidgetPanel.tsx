@@ -14,7 +14,6 @@ import {
     faCalendarStar,
     faMapLocationDot,
     faClapperboardPlay,
-    faPeopleGroup,
     faListTimeline,
     faPoll,
 } from '@fortawesome/pro-regular-svg-icons';
@@ -40,7 +39,6 @@ const icons: Record<WidgetType, IconDefinition> = {
     [WidgetType.Events]: faCalendarStar,
     [WidgetType.Map]: faMapLocationDot,
     [WidgetType.Video]: faClapperboardPlay,
-    [WidgetType.CACForm]: faPeopleGroup,
     [WidgetType.Timeline]: faListTimeline,
     [WidgetType.Poll]: faPoll,
 };
