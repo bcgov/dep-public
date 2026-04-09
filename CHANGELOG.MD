@@ -1,4 +1,11 @@
+## April 9, 2026
+
+- **Chore** Track CORS config files in-repository and update docs [🎟️ DEP-220](https://citz-gdx.atlassian.net/browse/DEP-220)
+  - Added the CORS configuration files for the S3 buckets used for uploads in the Digital Engagement Platform to the repository under `tools/s3/`.
+  - Updated documentation in `tools/s3/README.md` to provide instructions on how to use these CORS configuration files when creating new buckets, including example commands for applying the CORS configuration using the `mc` CLI tool.
+
 ## April 8, 2026
+
 - **Bugfix** Make sure user listing page only shows users from the current tenant, even for super admins [🎟️ DEP-246](https://citz-gdx.atlassian.net/browse/DEP-246)
   - Updated the API endpoint for listing users to filter results based on the current tenant, even for users with the SUPER_ADMIN role. This ensures that super admins only see users from their currently selected tenant, rather than all users across all tenants.
   - Updated unit tests to reflect this change and ensure that the user listing behaves as expected for super admins.
