@@ -15,9 +15,9 @@ for candidate in (PROJECT_ROOT, LEGACY_ROOT):
         if candidate_str not in sys.path:
             sys.path.insert(0, candidate_str)
 
-from etl_project.services.jobs.engagement_data_ingestion import engagement_data_ingestion  # noqa: E402
+from etl_project.services.jobs.engagement_data_ingestion import engagement_data_ingestion  # noqa: E402, E501
 from etl_project.services.jobs.test_db import job_sample_db_test  # noqa: E402
-from etl_project.services.jobs.cleanup_old_logs import cleanup_old_logs, vacuum_dagster_db  # noqa: E402
+from etl_project.services.jobs.cleanup_old_logs import cleanup_old_logs, vacuum_dagster_db  # noqa: E402, E501
 from etl_project.services.schedules.engagement_data_ingestion_schedule import (  # noqa: E402
     engagement_data_ingestion_schedule,
 )
