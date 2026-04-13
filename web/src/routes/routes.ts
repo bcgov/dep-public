@@ -102,7 +102,9 @@ type ExtractRouteParams<T extends string> = T extends `${string}:${infer Param}/
  * If no params, returns {}; otherwise returns record of required params.
  */
 type RouteParams<Path extends string> =
-    ExtractRouteParams<Path> extends never ? {} : { [P in ExtractRouteParams<Path>]: string | number };
+    ExtractRouteParams<Path> extends never
+        ? Record<string, never>
+        : { [P in ExtractRouteParams<Path>]: string | number };
 
 /**
  * Type-safe route path generator. (wraps react-router's generatePath)
