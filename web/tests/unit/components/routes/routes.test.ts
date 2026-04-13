@@ -27,7 +27,9 @@ describe('routes/getPath', () => {
 });
 
 // Compile-time type checks.
-// These are intentionally not runtime assertions.
+// These are intentionally not runtime assertions -
+// they will cause TypeScript compilation errors if the types are not correct,
+// which is the main point of these tests.
 const typeSafetyChecks = () => {
     getPath(ROUTES.SURVEY_BUILD, { surveyId: '1' });
     getPath(ROUTES.HOME);
@@ -41,5 +43,3 @@ const typeSafetyChecks = () => {
     // @ts-expect-error - USER_DETAILS requires userId.
     getPath(ROUTES.USER_DETAILS, {});
 };
-
-void typeSafetyChecks;
