@@ -46,6 +46,7 @@ const EngagementSurveyContent = ({}) => {
     const baseSurveyStatus = getStatusFromStatusId(loadedEngagement.submission_status);
     const [currentPanel, setCurrentPanel] = React.useState('email');
     const [isEmailModalOpen, setIsEmailModalOpen] = React.useState(false);
+    const languageId = sessionStorage.getItem('languageId') ?? language ?? AppConfig.language.defaultLanguageId;
     const handleOpenEmailModal = () => {
         setCurrentPanel('email');
         setIsEmailModalOpen(true);
@@ -163,10 +164,7 @@ const EngagementSurveyContent = ({}) => {
                                                 : getPath(ROUTES.PUBLIC_DASHBOARD_BY_SLUG, {
                                                       slug: slug ?? '',
                                                       dashboardType: 'public',
-                                                      language:
-                                                          language ??
-                                                          sessionStorage.getItem('languageId') ??
-                                                          AppConfig.language.defaultLanguageId,
+                                                      language: languageId,
                                                   })
                                         }
                                     >
