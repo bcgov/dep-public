@@ -18,6 +18,7 @@ import {
 import { Tenant } from 'models/tenant';
 import { Await, useNavigate, useRouteLoaderData } from 'react-router';
 import { ROUTES, getPath } from 'routes/routes';
+import { RouterLinkRenderer } from 'components/common/Navigation/Link';
 // Prevents page load fail due to waiting for engagement title on refresh
 const AutoBreadcrumbs = React.lazy(() =>
     import('components/common/Navigation/Breadcrumb').then((m) => ({ default: m.AutoBreadcrumbs })),
@@ -48,11 +49,10 @@ const TenantListingPage = () => {
                 </Grid>
                 <Grid size="auto">
                     <Button
+                        LinkComponent={RouterLinkRenderer}
                         variant="primary"
                         icon={circlePlusIcon}
-                        onClick={() => {
-                            navigate(getPath(ROUTES.TENANT_ADMIN_CREATE));
-                        }}
+                        href={getPath(ROUTES.TENANT_ADMIN_CREATE)}
                     >
                         Add Tenant
                     </Button>

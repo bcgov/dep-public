@@ -1,7 +1,6 @@
 import React, { useMemo } from 'react';
 import { USER_ROLES } from 'services/userService/constants';
 import { MenuItem, Modal, Select } from '@mui/material';
-import { useNavigate } from 'react-router';
 import { useAppSelector } from 'hooks';
 import { SubmissionStatus, EngagementStatus } from 'constants/engagementStatus';
 import { Survey } from 'models/survey';
@@ -11,15 +10,16 @@ import { deleteSurvey } from 'services/surveyService';
 import ConfirmModal from 'components/common/Modals/ConfirmModal';
 import { getEngagement } from 'services/engagementService';
 import { ROUTES, getPath } from 'routes/routes';
+import { RouterLinkRenderer } from 'components/common/Navigation/Link';
 
 interface ActionDropDownItem {
     value: number;
     label: string;
     action?: () => void;
     condition?: boolean;
+    href: string;
 }
 export const ActionsDropDown = ({ survey, loadSurveys }: { survey: Survey; loadSurveys: () => void }) => {
-    const navigate = useNavigate();
     const dispatch = useDispatch();
     const { roles, assignedEngagements } = useAppSelector((state) => state.user);
     const [deleteSurveyModalOpen, setDeleteSurveyModalOpen] = React.useState(false);
@@ -100,46 +100,31 @@ export const ActionsDropDown = ({ survey, loadSurveys }: { survey: Survey; loadS
             {
                 value: 1,
                 label: 'Edit Survey',
-                action: () => {
-                    navigate(getPath(ROUTES.SURVEY_BUILD, { surveyId: survey.id }));
-                },
+                href: getPath(ROUTES.SURVEY_BUILD, { surveyId: survey.id }),
                 condition: canEditSurvey(),
             },
             {
                 value: 2,
                 label: 'View Report - Public',
-                action: () => {
-                    navigate(getPath(ROUTES.ENGAGEMENT_DASHBOARD, { engagementId, dashboardType: 'public' }));
-                },
+                href: getPath(ROUTES.ENGAGEMENT_DASHBOARD, { engagementId, dashboardType: 'public' }),
                 condition: canViewReport(),
             },
             {
                 value: 3,
                 label: 'View Report - Internal',
-                action: () => {
-                    navigate(
-                        getPath(ROUTES.ENGAGEMENT_DASHBOARD, {
-                            engagementId,
-                            dashboardType: 'internal',
-                        }),
-                    );
-                },
+                href: getPath(ROUTES.ENGAGEMENT_DASHBOARD, { engagementId, dashboardType: 'internal' }),
                 condition: canViewInternalReport(),
             },
             {
                 value: 4,
                 label: 'View All Comments',
-                action: () => {
-                    navigate(getPath(ROUTES.SURVEY_COMMENTS, { surveyId: survey.id }));
-                },
+                href: getPath(ROUTES.SURVEY_COMMENTS, { surveyId: survey.id }),
                 condition: canViewAllComments(),
             },
             {
                 value: 5,
                 label: 'Edit Settings',
-                action: () => {
-                    navigate(getPath(ROUTES.SURVEY_REPORT, { surveyId: survey.id }));
-                },
+                href: getPath(ROUTES.SURVEY_REPORT, { surveyId: survey.id }),
                 condition: canEditSurvey(),
             },
             {
@@ -148,6 +133,7 @@ export const ActionsDropDown = ({ survey, loadSurveys }: { survey: Survey; loadS
                 action: () => {
                     removeSurvey();
                 },
+                href: '#',
                 condition: roles.includes(USER_ROLES.SUPER_ADMIN) || roles.includes(USER_ROLES.EDIT_ALL_SURVEYS),
             },
         ],
@@ -187,7 +173,13 @@ export const ActionsDropDown = ({ survey, loadSurveys }: { survey: Survey; loadS
                     {'(Select One)'}
                 </MenuItem>
                 {ITEMS.filter((item) => item.condition).map((item) => (
-                    <MenuItem key={item.value} value={item.value} onClick={item.action}>
+                    <MenuItem
+                        component={RouterLinkRenderer}
+                        key={item.value}
+                        href={item.href}
+                        // value={item.value}
+                        onClick={item.action ?? undefined}
+                    >
                         {item.label}
                     </MenuItem>
                 ))}

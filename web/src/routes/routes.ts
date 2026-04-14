@@ -26,7 +26,6 @@ export const ROUTES = {
     ENGAGEMENTS: '/engagements',
     ENGAGEMENT: '/engagements/:engagementId',
     ENGAGEMENT_SEARCH: '/engagements/search',
-    ENGAGEMENT_FORM: '/engagements/:engagementId/form',
     ENGAGEMENT_CREATE: '/engagements/create',
     ENGAGEMENT_CREATE_WIZARD: '/engagements/create/wizard',
     ENGAGEMENT_DETAILS: '/engagements/:engagementId/details',

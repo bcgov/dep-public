@@ -78,9 +78,7 @@ const DrawerBox = ({ isMediumScreenOrLarger, setOpen, engagementId }: DrawerBoxP
                         }}
                         data-testid={`SideNav/${route.name}-button`}
                         href={route.path}
-                        onClick={() => {
-                            setOpen(false);
-                        }}
+                        onClick={() => setOpen(false)}
                     >
                         <BodyText
                             sx={{

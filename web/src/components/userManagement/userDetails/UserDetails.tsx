@@ -66,7 +66,7 @@ const EditableField = ({ label, value, controls }: { label: string; value: React
                         <BodyText bold>{label}</BodyText>
                     </Grid>
                     <Grid size={12}>
-                        <BodyText>{value}</BodyText>
+                        <BodyText component="div">{value}</BodyText>
                     </Grid>
                 </Grid>
             </Grid>

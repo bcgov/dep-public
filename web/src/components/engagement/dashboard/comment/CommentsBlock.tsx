@@ -46,8 +46,8 @@ export const CommentsBlock: React.FC<CommentsBlockProps> = ({ dashboardType }) =
     const handleViewDashboard = () => {
         /* check to ensure that users with role access_dashboard can access the dashboard while engagement not closed*/
         if (canAccessDashboard) {
-            if (!engagementId) return;
-            navigate(publicEngagementDashboardLink);
+            if (!engagementId && isLoggedIn) return;
+            navigate(isLoggedIn ? engagementDashboardLink : publicEngagementDashboardLink);
             return;
         }
 
@@ -81,8 +81,7 @@ export const CommentsBlock: React.FC<CommentsBlockProps> = ({ dashboardType }) =
         <>
             <Grid size={12} container direction="row" justifyContent="flex-end" paddingBottom={'8px'}>
                 <Link to={isLoggedIn ? adminEngagementViewLink : publicEngagementLink} style={{ color: '#1A5A96' }}>
-                    {translate('commentDashboard.block.link.0')} {engagement.name}{' '}
-                    {translate('commentDashboard.block.link.1')}
+                    {translate('commentDashboard.block.engagementLink')}
                 </Link>
             </Grid>
             <Grid size={12}>
@@ -101,7 +100,6 @@ export const CommentsBlock: React.FC<CommentsBlockProps> = ({ dashboardType }) =
                                 icon={<FontAwesomeIcon icon={faFileChartPie} />}
                                 variant="primary"
                                 size="small"
-                                data-testid="SurveyBlock/take-me-to-survey-button"
                                 onClick={handleViewDashboard}
                             >
                                 {translate('commentDashboard.block.buttonText')}

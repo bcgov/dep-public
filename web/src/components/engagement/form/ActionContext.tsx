@@ -168,7 +168,7 @@ export const ActionProvider = ({ children }: { children: JSX.Element }) => {
             setEngagement(result);
             dispatch(openNotification({ severity: 'success', text: 'Engagement has been created' }));
             setSaving(false);
-            navigate(getPath(ROUTES.ENGAGEMENT_FORM, { engagementId: result.id }));
+            navigate(getPath(ROUTES.ENGAGEMENT_DETAILS_AUTHORING, { engagementId: result.id }));
             return Promise.resolve(result);
         } catch (error) {
             dispatch(

@@ -44,7 +44,7 @@ export const SurveyForm = () => {
             navigate(
                 getPath(ROUTES.PUBLIC_ENGAGEMENT_BY_SLUG, {
                     slug: slug.slug,
-                    language: language,
+                    language,
                 }),
             );
         }
@@ -76,13 +76,9 @@ export const SurveyForm = () => {
                 navigate(
                     getPath(ROUTES.PUBLIC_ENGAGEMENT_BY_SLUG, {
                         slug: slug.slug,
-                        language: language,
+                        language,
                     }),
-                    {
-                        state: {
-                            open: true,
-                        },
-                    },
+                    { state: { open: true } },
                 );
             }
         } catch {

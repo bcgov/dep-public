@@ -303,9 +303,7 @@ const TenantDetail = () => {
                                     <Button
                                         color="danger"
                                         icon={trashCanIcon}
-                                        onClick={() => {
-                                            handleDeleteClick(resolvedTenant);
-                                        }}
+                                        onClick={() => handleDeleteClick(resolvedTenant)}
                                         sx={{ marginTop: '20px' }}
                                     >
                                         Delete Tenant Instance

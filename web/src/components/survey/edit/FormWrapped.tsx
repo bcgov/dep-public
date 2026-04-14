@@ -24,7 +24,7 @@ const FormWrapped = () => {
     const language = sessionStorage.getItem('languageId') ?? AppConfig.language.defaultLanguageId;
     const engagementPath = getPath(ROUTES.PUBLIC_ENGAGEMENT_BY_SLUG, {
         slug: slug.slug,
-        language: language,
+        language,
     });
 
     return (

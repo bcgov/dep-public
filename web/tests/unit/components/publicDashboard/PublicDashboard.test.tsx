@@ -112,7 +112,7 @@ describe('Public Dashboard page tests', () => {
     });
 
     test('Navigation links work correctly', async () => {
-        const returnLink = screen.getByText(`<<Return to ${closedEngagement.name} Engagement`);
+        const returnLink = screen.getByText('dashboard.engagementLink');
         expect(returnLink).toBeInTheDocument();
         const user = userEvent.setup();
         await user.click(returnLink);

@@ -2,22 +2,23 @@ import React, { useMemo, useState } from 'react';
 import { USER_ROLES } from 'services/userService/constants';
 import { MenuItem, Modal, Select } from '@mui/material';
 import { Engagement } from 'models/engagement';
-import { useNavigate, useRevalidator } from 'react-router';
+import { useRevalidator } from 'react-router';
 import { useAppDispatch, useAppSelector } from 'hooks';
 import { SubmissionStatus, EngagementStatus } from 'constants/engagementStatus';
 import { openNotification } from 'services/notificationService/notificationSlice';
 import ConfirmModal from 'components/common/Modals/ConfirmModal';
 import { deleteEngagement } from 'services/engagementService';
 import { ROUTES, getPath } from 'routes/routes';
+import { RouterLinkRenderer } from 'components/common/Navigation/Link';
 
 interface ActionDropDownItem {
     value: number;
     label: string;
     action?: () => void;
     condition?: boolean;
+    href: string;
 }
 export const ActionsDropDown = ({ engagement }: { engagement: Engagement }) => {
-    const navigate = useNavigate();
     const dispatch = useAppDispatch();
     const revalidator = useRevalidator();
     const [deleteEngagementModalOpen, setDeleteEngagementModalOpen] = useState(false);
@@ -99,30 +100,22 @@ export const ActionsDropDown = ({ engagement }: { engagement: Engagement }) => {
             {
                 value: 1,
                 label: 'Edit Engagement',
-                action: () => {
-                    navigate(getPath(ROUTES.ENGAGEMENT_FORM, { engagementId: engagement.id }));
-                },
+                href: getPath(ROUTES.ENGAGEMENT_DETAILS_AUTHORING, { engagementId: engagement.id }),
                 condition: canEditEngagement(),
             },
             {
                 value: 2,
                 label: 'View Survey',
-                action: () => {
-                    navigate(getPath(ROUTES.SURVEY_ADMIN_SUBMIT, { surveyId: engagement.surveys[0].id }));
-                },
+                href: getPath(ROUTES.ENGAGEMENT_DASHBOARD, { engagementId: engagement.id, dashboardType: 'public' }),
                 condition: canViewSurvey(),
             },
             {
                 value: 3,
                 label: 'View Report - Public',
-                action: () => {
-                    navigate(
-                        getPath(ROUTES.ENGAGEMENT_COMMENTS_DASHBOARD, {
-                            engagementId: engagement.id,
-                            dashboardType: 'public',
-                        }),
-                    );
-                },
+                href: getPath(ROUTES.ENGAGEMENT_COMMENTS_DASHBOARD, {
+                    engagementId: engagement.id,
+                    dashboardType: 'public',
+                }),
                 condition:
                     submissionHasBeenOpened &&
                     (roles.includes(USER_ROLES.ACCESS_DASHBOARD) || assignedEngagements.includes(engagement.id)),
@@ -130,14 +123,10 @@ export const ActionsDropDown = ({ engagement }: { engagement: Engagement }) => {
             {
                 value: 4,
                 label: 'View Report - Internal',
-                action: () => {
-                    navigate(
-                        getPath(ROUTES.ENGAGEMENT_COMMENTS_DASHBOARD, {
-                            engagementId: engagement.id,
-                            dashboardType: 'internal',
-                        }),
-                    );
-                },
+                href: getPath(ROUTES.ENGAGEMENT_COMMENTS_DASHBOARD, {
+                    engagementId: engagement.id,
+                    dashboardType: 'internal',
+                }),
                 condition:
                     submissionHasBeenOpened &&
                     roles.includes(USER_ROLES.VIEW_ALL_SURVEY_RESULTS) &&
@@ -146,9 +135,7 @@ export const ActionsDropDown = ({ engagement }: { engagement: Engagement }) => {
             {
                 value: 5,
                 label: 'View All Comments',
-                action: () => {
-                    navigate(getPath(ROUTES.SURVEY_COMMENTS, { surveyId: engagement.surveys[0].id }));
-                },
+                href: getPath(ROUTES.SURVEY_COMMENTS, { surveyId: engagement.surveys[0]?.id ?? '' }),
                 condition:
                     submissionHasBeenOpened &&
                     (roles.includes(USER_ROLES.REVIEW_COMMENTS) ||
@@ -161,6 +148,7 @@ export const ActionsDropDown = ({ engagement }: { engagement: Engagement }) => {
                 action: () => {
                     removeEngagement();
                 },
+                href: '#',
                 condition:
                     roles.includes(USER_ROLES.SUPER_ADMIN) ||
                     (roles.includes(USER_ROLES.UNPUBLISH_ENGAGEMENT) && assignedEngagements.includes(engagement.id)),
@@ -202,7 +190,13 @@ export const ActionsDropDown = ({ engagement }: { engagement: Engagement }) => {
                     {'(Select One)'}
                 </MenuItem>
                 {ITEMS.filter((item) => item.condition).map((item) => (
-                    <MenuItem key={item.value} value={item.value} onClick={item.action}>
+                    <MenuItem
+                        component={RouterLinkRenderer}
+                        href={item.href}
+                        key={item.value}
+                        // value={item.value}
+                        onClick={item.action}
+                    >
                         {item.label}
                     </MenuItem>
                 ))}

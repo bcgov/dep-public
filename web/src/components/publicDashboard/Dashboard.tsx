@@ -104,7 +104,7 @@ const Dashboard = () => {
                                 to={isLoggedIn ? engagementAuthoringLink : publicEngagementLink}
                                 data-testid="link-container"
                             >
-                                {translate('dashboard.link.0')} {engagement.name} {translate('dashboard.link.1')}
+                                {translate('dashboard.engagementLink')}
                             </Link>
                         </Grid>
                         <Paper elevation={1} sx={{ padding: { md: '2em 2em 1em 2em', sm: '1em', xs: '0.5em' } }}>

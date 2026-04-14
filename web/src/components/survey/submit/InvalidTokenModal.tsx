@@ -7,6 +7,7 @@ import { Button } from 'components/common/Input/Button';
 import { BodyText } from 'components/common/Typography/Body';
 import { AppConfig } from 'config';
 import { getPath, ROUTES } from 'routes/routes';
+import { RouterLinkRenderer } from 'components/common/Navigation/Link';
 
 export const InvalidTokenModal = () => {
     const { t: translate } = useAppTranslation();
@@ -14,9 +15,10 @@ export const InvalidTokenModal = () => {
     const navigate = useNavigate();
     const { verification, slug } = useRouteLoaderData('survey');
     const language = sessionStorage.getItem('languageId') ?? AppConfig.language.defaultLanguageId;
+    const engagementPath = getPath(ROUTES.PUBLIC_ENGAGEMENT_BY_SLUG, { slug: slug.slug, language: language });
 
     const navigateToEngagement = () => {
-        navigate(getPath(ROUTES.PUBLIC_ENGAGEMENT_BY_SLUG, { slug: slug.slug, language: language }));
+        navigate(engagementPath);
     };
 
     return (
@@ -52,7 +54,7 @@ export const InvalidTokenModal = () => {
                     </BodyText>
                 </Grid>
                 <Grid container size={12} justifyContent="flex-end" spacing={1} sx={{ mt: '1em' }}>
-                    <Button variant="primary" onClick={navigateToEngagement}>
+                    <Button variant="primary" href={engagementPath} LinkComponent={RouterLinkRenderer}>
                         {translate('surveySubmit.inValidToken.button')}
                     </Button>
                 </Grid>
