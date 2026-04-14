@@ -78,26 +78,42 @@ const TileBlock = () => {
                 size={12}
                 maxWidth="xl"
             >
-                {engagements.map((engagement) => {
-                    return (
+                {engagements.map((engagement) => (
+                    <Grid
+                        component="li"
+                        container
+                        key={engagement.id}
+                        size="auto"
+                        sx={{
+                            flexBasis: '320px',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            listStyleType: 'none',
+                        }}
+                    >
+                        <Grid width="320px">
+                            <EngagementTile passedEngagement={engagement} engagementId={engagement.id} />
+                        </Grid>
+                    </Grid>
+                ))}
+                {/* Add 3 empty grid items to make sure final row is left aligned */}
+                {Array(3)
+                    .fill(0)
+                    .map((_, index) => (
                         <Grid
                             component="li"
-                            container
-                            key={engagement.id}
+                            key={`empty-${index}`}
                             size="auto"
                             sx={{
+                                height: '1px',
                                 flexBasis: '320px',
                                 alignItems: 'center',
                                 justifyContent: 'center',
+                                justifySelf: 'start',
                                 listStyleType: 'none',
                             }}
-                        >
-                            <Grid width="320px">
-                                <EngagementTile passedEngagement={engagement} engagementId={engagement.id} />
-                            </Grid>
-                        </Grid>
-                    );
-                })}
+                        />
+                    ))}
                 <Grid
                     size={12}
                     container

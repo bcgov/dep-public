@@ -12,7 +12,7 @@ import SurveyBar from '../publicDashboard/SurveyBar';
 import { DashboardType } from 'constants/dashboardType';
 import { Map } from 'models/analytics/map';
 
-const EngagementsAccordion = ({
+const EngagementAccordionContent = ({
     engagements,
     bgColor,
     borderColor,
@@ -39,12 +39,16 @@ const EngagementsAccordion = ({
     const handleChange = (engagementId: number) => {
         if (!openedEngagements.some((id) => id == engagementId)) {
             setOpenedEngagements([...openedEngagements, engagementId]);
+        } else {
+            setOpenedEngagements(openedEngagements.filter((id) => id != engagementId));
         }
     };
 
     const handleProjectMapData = (data: Map) => {
         setProjectMapData(data);
     };
+
+    const isExpanded = (engagementId: number) => openedEngagements.some((id) => id == engagementId);
 
     return (
         <>
@@ -64,6 +68,7 @@ const EngagementsAccordion = ({
                             '&.Mui-disabled': {
                                 background: 'initial',
                             },
+                            overflow: 'clip',
                         }}
                     >
                         <AccordionSummary
@@ -72,8 +77,8 @@ const EngagementsAccordion = ({
                                 '&.Mui-disabled': {
                                     opacity: 1,
                                 },
+
                                 backgroundColor: bgColor,
-                                borderBottom: `solid 1px ${borderColor}`,
                             }}
                         >
                             <Grid container size={12} direction={isMobile ? 'column' : 'row'}>
@@ -89,8 +94,8 @@ const EngagementsAccordion = ({
                                 </Grid>
                             </Grid>
                         </AccordionSummary>
-                        <AccordionDetails>
-                            <When condition={openedEngagements.some((id) => id == engagement.id)}>
+                        <AccordionDetails sx={{ borderTop: `2px solid ${borderColor}` }}>
+                            <When condition={isExpanded(engagement.id)}>
                                 <Grid container size={12} spacing={3} data-testid={`dashboard-frame-${engagement.id}`}>
                                     <Grid size={{ xs: 12, sm: mapExists ? 4 : 6 }}>
                                         <SurveyEmailsSent engagement={engagement} engagementIsLoading={false} />
@@ -123,4 +128,4 @@ const EngagementsAccordion = ({
     );
 };
 
-export default EngagementsAccordion;
+export default EngagementAccordionContent;

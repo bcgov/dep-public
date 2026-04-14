@@ -3,6 +3,8 @@ import React, { Suspense, useMemo } from 'react';
 import { BodyText } from '../Typography';
 import { Link } from '.';
 import { Await, UIMatch, useMatches } from 'react-router';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faHome } from '@fortawesome/pro-regular-svg-icons';
 
 type BreadcrumbProps = {
     name: string;
@@ -103,6 +105,7 @@ export const AutoBreadcrumbs: React.FC<{ smallScreenOnly?: boolean }> = ({ small
                                     to={link}
                                     sx={{ lineHeight: '24px' }}
                                 >
+                                    {index === 0 && <FontAwesomeIcon icon={faHome} style={{ marginRight: '4px' }} />}
                                     {name}
                                 </Link>
                             ) : (
@@ -112,6 +115,7 @@ export const AutoBreadcrumbs: React.FC<{ smallScreenOnly?: boolean }> = ({ small
                                     key={matches[index].pathname + name}
                                     sx={{ lineHeight: '24px' }}
                                 >
+                                    {index === 0 && <FontAwesomeIcon icon={faHome} style={{ marginRight: '4px' }} />}
                                     {name}
                                 </BodyText>
                             );

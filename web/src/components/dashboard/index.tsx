@@ -1,11 +1,11 @@
 import React from 'react';
 import { DashboardContextProvider } from './DashboardContext';
-import EngagementList from './EngagementList';
+import EngagementAccordions from './EngagementList';
 
 export const Dashboard = () => {
     return (
         <DashboardContextProvider>
-            <EngagementList />
+            <EngagementAccordions />
         </DashboardContextProvider>
     );
 };
