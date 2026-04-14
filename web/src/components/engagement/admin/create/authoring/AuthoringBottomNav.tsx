@@ -88,7 +88,7 @@ const AuthoringBottomNav = ({
     };
 
     const getTargetPreviewBasePath = () =>
-        `${getBasePathPrefix()}/${getPath(ROUTES.ADMIN_ENGAGEMENT_PREVIEW, { engagementId: engagementId ?? '' })}`;
+        `${getBasePathPrefix()}${getPath(ROUTES.ADMIN_ENGAGEMENT_PREVIEW, { engagementId: engagementId ?? '' })}`;
 
     const postPreviewScrollMessage = (previewWindow: Window, section?: string) => {
         const targetHash = getPreviewSectionHash(section);
