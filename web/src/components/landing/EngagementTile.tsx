@@ -183,8 +183,8 @@ const EngagementTile = ({ passedEngagement, engagementId }: EngagementTileProps)
                             <Grid size="auto" alignContent={'flex-start'} alignItems={'flex-start'}>
                                 <EngagementStatusChip statusId={loadedEngagement.submission_status} />
                             </Grid>
-                            <Grid size="auto" container flexDirection="column">
-                                <BodyText bold size="small" sx={{ lineHeight: 1 }}>
+                            <Grid size="auto" maxWidth="50%" container flexDirection="column">
+                                <BodyText bold size="small" sx={{ lineHeight: 1, textWrap: 'nowrap' }}>
                                     <time dateTime={`${startDate.format(semanticDateFormat)}`}>
                                         {startDate.format(dateFormat)}
                                     </time>{' '}
