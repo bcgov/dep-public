@@ -15,6 +15,7 @@ import { Engagement } from 'models/engagement';
 import { previewValue } from 'engagements/preview/PreviewSwitch';
 import { usePreview } from 'engagements/preview/PreviewContext';
 import { EngagementPreviewTag } from './EngagementPreviewTag';
+import { getPath, ROUTES } from 'routes/routes';
 
 export const SuggestedEngagements = () => {
     const { suggestions, engagement } = useLoaderData() as EngagementLoaderPublicData;
@@ -148,7 +149,7 @@ export const SuggestedEngagements = () => {
                                     })}
                                 </Grid>
                                 <Grid size={12} mt="64px" textAlign={'center'}>
-                                    <Link to="/" sx={{ color: 'text.primary' }}>
+                                    <Link to={getPath(ROUTES.HOME)} sx={{ color: 'text.primary' }}>
                                         <FontAwesomeIcon icon={faArrowLeftLong} style={{ paddingRight: '8px' }} />
                                         All engagements
                                     </Link>

@@ -2,6 +2,7 @@ import React from 'react';
 import { useAppSelector } from 'hooks';
 import { useLocation, Navigate, Outlet } from 'react-router';
 import { USER_COMPOSITE_ROLE } from 'models/user';
+import { getPath, ROUTES } from './routes';
 
 const AuthGate = ({ allowedRoles }: { allowedRoles: string[] }) => {
     const permissions = useAppSelector((state) => state.user.roles);
@@ -16,7 +17,7 @@ const AuthGate = ({ allowedRoles }: { allowedRoles: string[] }) => {
         permissions?.includes('/' + USER_COMPOSITE_ROLE.TEAM_MEMBER.value) ? (
         <Outlet />
     ) : (
-        <Navigate to="/unauthorized" state={{ from: location }} replace />
+        <Navigate to={getPath(ROUTES.UNAUTHORIZED)} state={{ from: location }} replace />
     );
 };
 
