@@ -3,7 +3,7 @@ import { BodyText, Heading2 } from 'components/common/Typography';
 import { Engagement } from 'models/engagement';
 import { Grid2 as Grid, Skeleton, ThemeProvider } from '@mui/material';
 import { colors } from 'components/common';
-import { Await } from 'react-router';
+import { Await, Routes } from 'react-router';
 import { getEditorStateFromRaw } from 'components/common/RichTextEditor/utils';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowLeftLong } from '@fortawesome/pro-light-svg-icons';
@@ -18,6 +18,7 @@ import { EngagementPreviewTag } from './EngagementPreviewTag';
 import { EngagementWidgetDisplay } from './EngagementWidgetDisplay';
 import { useEngagementLoaderData } from 'components/engagement/preview/PreviewLoaderDataContext';
 import { RouterLinkRenderer } from 'components/common/Navigation/Link';
+import { getPath, ROUTES } from 'routes/routes';
 
 export const EngagementDescription = () => {
     const { engagement } = useEngagementLoaderData();
@@ -49,7 +50,13 @@ export const EngagementDescription = () => {
                     }}
                 >
                     <Grid size={12}>
-                        <Grid container component={RouterLinkRenderer} href={'/'} alignItems="center" display="flex">
+                        <Grid
+                            container
+                            component={RouterLinkRenderer}
+                            href={getPath(ROUTES.PUBLIC_LANDING)}
+                            alignItems="center"
+                            display="flex"
+                        >
                             <FontAwesomeIcon
                                 icon={faArrowLeftLong}
                                 color={colors.surface.white}

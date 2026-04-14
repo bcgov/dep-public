@@ -254,7 +254,7 @@ const SideNav = ({ open, setOpen, isMediumScreen }: SideNavProps) => {
                             </BodyText>
                         </Grid>
                         <Grid sx={{ marginLeft: 'auto', marginRight: '32px' }}>
-                            <Link onClick={UserService.doLogout} href={'#'}>
+                            <Link onClick={UserService.doLogout} href="#">
                                 Logout
                                 <FontAwesomeIcon style={{ marginLeft: '4px' }} icon={faArrowRight} />
                             </Link>

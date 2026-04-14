@@ -282,7 +282,7 @@ const AuthoringSideNav = ({ open, setOpen, isMediumScreen, engagementId }: Autho
                             </BodyText>
                         </Grid>
                         <Grid sx={{ marginLeft: 'auto', marginRight: '2rem' }}>
-                            <Link onClick={UserService.doLogout} href={'#'}>
+                            <Link onClick={UserService.doLogout} href="#">
                                 Logout
                                 <FontAwesomeIcon style={{ marginLeft: '0.25rem' }} icon={faArrowRight} />
                             </Link>
