@@ -7,7 +7,7 @@ from __future__ import annotations
 from typing import Optional
 
 from flask import g
-from sqlalchemy import Column, ForeignKey, String, asc, desc, func
+from sqlalchemy import Column, ForeignKey, String, asc, desc, func, or_
 from sqlalchemy.orm import column_property
 from sqlalchemy.sql import text
 from sqlalchemy.sql.operators import ilike_op
@@ -70,9 +70,16 @@ class StaffUser(BaseModel):
         has_tenant_id = hasattr(cls, TENANT_ID)
         has_g_tenant_id = hasattr(g, TENANT_ID) and g.tenant_id
         if has_tenant_id and has_g_tenant_id:
-            return query.join(
-                UserGroupMembership, UserGroupMembership.staff_user_external_id == cls.external_id
-            ).filter(UserGroupMembership.tenant_id == g.tenant_id)
+            return query.outerjoin(
+                UserGroupMembership,
+                (UserGroupMembership.staff_user_external_id == cls.external_id)
+                & (UserGroupMembership.tenant_id == g.tenant_id)
+            ).filter(
+                or_(
+                    UserGroupMembership.id != None,  # noqa: E711  # user has a role in this tenant
+                    cls.tenant_id == g.tenant_id,   # new user, no role yet
+                )
+            )
         return query
 
     @classmethod
