@@ -1,5 +1,5 @@
 import { render, waitFor, screen } from '@testing-library/react';
-import React from 'react';
+import React, { ReactNode } from 'react';
 import '@testing-library/jest-dom';
 import Dashboard from 'components/publicDashboard/Dashboard';
 import { setupEnv } from '../setEnvVars';
@@ -45,6 +45,10 @@ jest.mock('hooks', () => {
 jest.mock('@mui/material', () => ({
     ...jest.requireActual('@mui/material'),
     useMediaQuery: jest.fn(() => true),
+}));
+
+jest.mock('components/common/Navigation/Breadcrumb', () => ({
+    AutoBreadcrumbs: ({ children }: { children: ReactNode }) => <div>{children}</div>,
 }));
 
 jest.mock('components/publicDashboard/KPI/SurveyEmailsSent', () => {
