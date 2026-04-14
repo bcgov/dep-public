@@ -33,15 +33,20 @@ const Dashboard = () => {
     const isLoggedIn = useAppSelector((state) => state.user.authentication.authenticated);
     const engagementId = engagement?.id;
     const engagementAuthoringLink = getPath(ROUTES.ENGAGEMENT_DETAILS_AUTHORING, { engagementId: engagementId ?? '' });
+    const languageID = language ?? sessionStorage.getItem('languageId') ?? AppConfig.language.defaultLanguageId;
     const publicEngagementLink = getPath(ROUTES.PUBLIC_ENGAGEMENT_BY_SLUG, {
         slug: slug ?? '',
-        language: language ?? sessionStorage.getItem('languageId') ?? AppConfig.language.defaultLanguageId,
+        language: languageID,
     });
     const commentViewPath = getPath(ROUTES.ENGAGEMENT_COMMENTS_DASHBOARD, {
         dashboardType,
         engagementId: engagementId ?? '',
     });
-    const commentViewPublicPath = getPath(ROUTES.PUBLIC_COMMENTS_BY_SLUG, { dashboardType, slug: slug ?? '' });
+    const commentViewPublicPath = getPath(ROUTES.PUBLIC_COMMENTS_BY_SLUG, {
+        dashboardType,
+        slug: slug ?? '',
+        language: languageID,
+    });
     const mapExists = projectMapData?.latitude !== null && projectMapData?.longitude !== null;
 
     const handleProjectMapData = (data: Map) => {

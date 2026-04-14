@@ -5,7 +5,7 @@ export const ROUTES = {
     PUBLIC_LANDING: '/',
     PUBLIC_ENGAGEMENT_BY_SLUG: '/:slug/:language',
     PUBLIC_DASHBOARD_BY_SLUG: '/:slug/dashboard/:dashboardType/:language',
-    PUBLIC_COMMENTS_BY_SLUG: '/:slug/comments/:dashboardType/',
+    PUBLIC_COMMENTS_BY_SLUG: '/:slug/comments/:dashboardType/:language',
     PUBLIC_SURVEY_EDIT_BY_SLUG: '/:slug/edit/:token/:language',
     PUBLIC_MANAGE_SUBSCRIPTION: '/engagements/:engagementId/:subscriptionStatus/:scriptionKey/:language',
     PUBLIC_SURVEY_SUBMIT: '/surveys/submit/:surveyId/:token/:language',

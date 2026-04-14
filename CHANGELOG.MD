@@ -3,6 +3,9 @@
 - **Feature** Migrate all links to use getPath() [🎟️ DEP-255](https://citz-gdx.atlassian.net/browse/DEP-255)
   - Updated all hardcoded links in the codebase to use the new `getPath()` function from `routes/routes.ts`, which generates URLs based on a centralized ROUTES constant. This ensures that all links are consistent and automatically updated if route paths change in the future.
   - This includes links in components, API calls, navigation, and anywhere else URLs are generated or used in the application.
+  - Also updated links to use RouterLinkRenderer where appropriate to take advantage of client-side routing and prevent full page reloads.
+  - Leveraged new routing system to remove redundant routes in public view and restructure public engagement URLs to use the slug-based format
+  - Fixed several bugs related to link construction
 
 ## April 13, 2026
 
