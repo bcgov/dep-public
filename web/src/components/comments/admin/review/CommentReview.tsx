@@ -38,6 +38,7 @@ import { faMessageCheck } from '@fortawesome/pro-solid-svg-icons/faMessageCheck'
 import { faMessageSlash } from '@fortawesome/pro-solid-svg-icons/faMessageSlash';
 import { LanguageState } from 'reduxSlices/languageSlice';
 import { TenantState } from 'reduxSlices/tenantSlice';
+import { ROUTES, getPath } from 'routes/routes';
 
 const CommentReview = () => {
     const [submission, setSubmission] = useState<SurveySubmission>(createDefaultSubmission());
@@ -107,7 +108,7 @@ const CommentReview = () => {
             setIsLoading(false);
         } catch {
             dispatch(openNotification({ severity: 'error', text: 'Error occurred while fetching comments' }));
-            navigate('/');
+            navigate(getPath(ROUTES.PUBLIC_LANDING));
         }
     };
 
@@ -169,7 +170,7 @@ const CommentReview = () => {
             });
             setIsSaving(false);
             dispatch(openNotification({ severity: 'success', text: 'Comments successfully reviewed.' }));
-            navigate(`/surveys/${submission.survey_id}/comments`);
+            navigate(getPath(ROUTES.SURVEY_COMMENTS, { surveyId: submission.survey_id }));
         } catch {
             dispatch(openNotification({ severity: 'error', text: 'Error occurred while sending comments review.' }));
             setIsSaving(false);

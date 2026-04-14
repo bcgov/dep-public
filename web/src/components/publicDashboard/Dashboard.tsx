@@ -18,10 +18,12 @@ import { When } from 'react-if';
 import { useAppSelector, useAppTranslation } from 'hooks';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faComments, faFileArrowDown } from '@fortawesome/pro-regular-svg-icons';
+import { ROUTES, getPath } from 'routes/routes';
+import { AppConfig } from 'config';
 
 const Dashboard = () => {
+    const { language, slug } = useParams();
     const { t: translate } = useAppTranslation();
-    const { slug } = useParams();
     const isTablet = useMediaQuery((theme: Theme) => theme.breakpoints.down('md'));
     const navigate = useNavigate();
     const { engagement, isEngagementLoading, dashboardType } = useContext(DashboardContext);
@@ -29,8 +31,17 @@ const Dashboard = () => {
     const [projectMapData, setProjectMapData] = React.useState<Map | null>(null);
     const [pdfExportProgress, setPdfExportProgress] = React.useState(0);
     const isLoggedIn = useAppSelector((state) => state.user.authentication.authenticated);
-    const languagePath = `/${sessionStorage.getItem('languageId')}`;
-    const basePath = slug ? `/${slug}` : `/engagements/${engagement?.id}`;
+    const engagementId = engagement?.id;
+    const engagementAuthoringLink = getPath(ROUTES.ENGAGEMENT_DETAILS_AUTHORING, { engagementId: engagementId ?? '' });
+    const publicEngagementLink = getPath(ROUTES.PUBLIC_ENGAGEMENT_BY_SLUG, {
+        slug: slug ?? '',
+        language: language ?? sessionStorage.getItem('languageId') ?? AppConfig.language.defaultLanguageId,
+    });
+    const commentViewPath = getPath(ROUTES.ENGAGEMENT_COMMENTS_DASHBOARD, {
+        dashboardType,
+        engagementId: engagementId ?? '',
+    });
+    const commentViewPublicPath = getPath(ROUTES.PUBLIC_COMMENTS_BY_SLUG, { dashboardType, slug: slug ?? '' });
     const mapExists = projectMapData?.latitude !== null && projectMapData?.longitude !== null;
 
     const handleProjectMapData = (data: Map) => {
@@ -39,9 +50,10 @@ const Dashboard = () => {
 
     const handleReadComments = () => {
         if (isLoggedIn) {
-            navigate(`${basePath}/comments/${dashboardType}`);
+            if (!engagementId) return;
+            navigate(commentViewPath);
         } else {
-            navigate(`${basePath}/comments/${dashboardType}${languagePath}`);
+            navigate(commentViewPublicPath);
         }
     };
 
@@ -84,10 +96,10 @@ const Dashboard = () => {
                     <Grid container size={12} flexDirection="column">
                         <Grid size={12} container justifyContent="flex-end" paddingBottom={'8px'}>
                             <Link
-                                to={isLoggedIn ? `${basePath}/view` : `${basePath}/view${languagePath}`}
+                                to={isLoggedIn ? engagementAuthoringLink : publicEngagementLink}
                                 data-testid="link-container"
                             >
-                                {translate('dashboard.link.0') + engagement.name + translate('dashboard.link.1')}
+                                {translate('dashboard.link.0')} {engagement.name} {translate('dashboard.link.1')}
                             </Link>
                         </Grid>
                         <Paper elevation={1} sx={{ padding: { md: '2em 2em 1em 2em', sm: '1em', xs: '0.5em' } }}>

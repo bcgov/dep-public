@@ -1,27 +1,27 @@
 import React, { Suspense, useEffect, useRef, useState } from 'react';
 import {
     AppBar,
-    Box,
-    Toolbar,
-    useMediaQuery,
-    Theme,
-    ThemeProvider,
-    ButtonBase,
-    Grid2 as Grid,
     Avatar,
-    MenuItem,
-    Drawer,
-    MenuList,
+    ButtonBase,
+    Box,
     Collapse,
     CssBaseline,
-    LinearProgress,
+    Drawer,
+    Grid2 as Grid,
     Grow,
+    LinearProgress,
+    Link,
+    MenuList,
+    MenuItem,
+    Theme,
+    ThemeProvider,
+    Toolbar,
+    useMediaQuery,
 } from '@mui/material';
 import { colors, AdminDarkTheme, Palette } from 'styles/Theme';
 import { ReactComponent as BCLogo } from 'assets/images/BritishColumbiaLogoDark.svg';
 import { useAppSelector } from '../../../hooks';
 import { BodyText } from 'components/common/Typography/Body';
-import { Link } from 'components/common/Navigation';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBars, faChevronDown, faClose, faSignOut } from '@fortawesome/pro-regular-svg-icons';
 import UserService from 'services/userService';
@@ -37,6 +37,8 @@ import SideNav from '../SideNav/SideNav';
 import { USER_ROLES } from 'services/userService/constants';
 import AuthoringSideNav from '../../engagement/admin/create/authoring/AuthoringSideNav';
 import { getAuthoringRoutes } from '../../engagement/admin/create/authoring/AuthoringNavElements';
+import { ROUTES, getPath } from 'routes/routes';
+import { RouterLinkRenderer } from 'components/common/Navigation/Link';
 
 const InternalHeader = () => {
     const isMediumScreenOrLarger = useMediaQuery((theme: Theme) => theme.breakpoints.up('md'));
@@ -315,7 +317,7 @@ const TenantSelector = ({
 
     if (noOtherTenants) {
         return (
-            <Link to="/home">
+            <Link component={RouterLinkRenderer} href={getPath(ROUTES.HOME)}>
                 <BodyText sx={{ userSelect: 'none' }}>{currentTenant.name}</BodyText>
             </Link>
         );
@@ -324,8 +326,11 @@ const TenantSelector = ({
     const tenantList = tenants.map((tenant) => (
         <MenuItem
             key={tenant.short_name}
-            component={Link}
-            href={`/${tenant.short_name}/home`}
+            // Don't use a React Router link here - we need to escape the current
+            // React Router context and navigate to a new base URL to pass the new
+            // tenant in the path and trigger a full reload of the app with the
+            // new tenant's context
+            href={`/${tenant.short_name}${getPath(ROUTES.HOME)}`}
             sx={{
                 paddingLeft: 2,
                 paddingRight: 2,

@@ -5,16 +5,18 @@ import { useAppSelector, useAppTranslation } from 'hooks';
 import { useNavigate, useRouteLoaderData } from 'react-router';
 import { Button } from 'components/common/Input/Button';
 import { BodyText } from 'components/common/Typography/Body';
+import { AppConfig } from 'config';
+import { getPath, ROUTES } from 'routes/routes';
 
 export const InvalidTokenModal = () => {
     const { t: translate } = useAppTranslation();
     const isLoggedIn = useAppSelector((state) => state.user.authentication.authenticated);
     const navigate = useNavigate();
     const { verification, slug } = useRouteLoaderData('survey');
-    const languagePath = `/${sessionStorage.getItem('languageId')}`;
+    const language = sessionStorage.getItem('languageId') ?? AppConfig.language.defaultLanguageId;
 
     const navigateToEngagement = () => {
-        navigate(`/${slug}/${languagePath}`);
+        navigate(getPath(ROUTES.PUBLIC_ENGAGEMENT_BY_SLUG, { slug: slug.slug, language: language }));
     };
 
     return (

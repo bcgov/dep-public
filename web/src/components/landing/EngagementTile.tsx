@@ -13,6 +13,7 @@ import { faArrowRight } from '@fortawesome/pro-regular-svg-icons';
 import { colors, elevations, globalFocusShadow } from 'components/common';
 import { BaseTheme, DarkTheme } from 'styles/Theme';
 import { RouterLinkRenderer } from 'components/common/Navigation/Link';
+import { getPath, ROUTES } from 'routes/routes';
 
 interface EngagementTileProps {
     passedEngagement?: Engagement;
@@ -31,8 +32,7 @@ const EngagementTile = ({ passedEngagement, engagementId }: EngagementTileProps)
     const dateFormat = 'MMMM DD, YYYY';
     const semanticDateFormat = 'YYYY-MM-DD';
     const language = sessionStorage.getItem('languageId');
-    const engagementPath = slug ? '/' + slug : '';
-    const engagementUrl = `${engagementPath}/${language}`;
+    const engagementUrl = getPath(ROUTES.PUBLIC_ENGAGEMENT_BY_SLUG, { slug: slug, language: language ?? '' });
 
     const loadEngagement = async () => {
         if (passedEngagement) {
@@ -183,14 +183,14 @@ const EngagementTile = ({ passedEngagement, engagementId }: EngagementTileProps)
                             <Grid size="auto" alignContent={'flex-start'} alignItems={'flex-start'}>
                                 <EngagementStatusChip statusId={loadedEngagement.submission_status} />
                             </Grid>
-                            <Grid size="auto" container flexDirection="column">
-                                <BodyText bold size="small" sx={{ lineHeight: 1 }}>
+                            <Grid size="grow" container flexDirection="column" sx={{ '& time': { display: 'inline' } }}>
+                                <BodyText bold size="small" sx={{ lineHeight: 1, textWrap: 'nowrap' }}>
                                     <time dateTime={`${startDate.format(semanticDateFormat)}`}>
                                         {startDate.format(dateFormat)}
                                     </time>{' '}
                                     to
                                 </BodyText>
-                                <BodyText bold size="small" sx={{ lineHeight: 2 }}>
+                                <BodyText bold size="small" sx={{ lineHeight: 2, textWrap: 'nowrap' }}>
                                     <time dateTime={`${endDate.format(semanticDateFormat)}`}>
                                         {endDate.format(dateFormat)}
                                     </time>

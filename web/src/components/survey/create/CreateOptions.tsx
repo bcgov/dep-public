@@ -10,6 +10,7 @@ import { FORMIO_FORM, FORMIO_WIZARD } from './constants';
 import { Engagement } from 'models/engagement';
 import { BodyText } from 'components/common/Typography';
 import { Button, PrimaryButton } from 'components/common/Input/Button';
+import { ROUTES, getPath } from 'routes/routes';
 
 export const CreateOptions = () => {
     const navigate = useNavigate();
@@ -74,7 +75,7 @@ export const CreateOptions = () => {
                     text: 'Survey created, please proceed to building it',
                 }),
             );
-            navigate(`/surveys/${createdSurvey.id}/build`);
+            navigate(getPath(ROUTES.SURVEY_BUILD, { surveyId: createdSurvey.id }));
         } catch {
             dispatch(
                 openNotification({

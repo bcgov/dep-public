@@ -10,6 +10,7 @@ import { Tenant } from 'models/tenant';
 import { useAppDispatch } from 'hooks';
 import { openNotification } from 'services/notificationService/notificationSlice';
 import { useNavigate, useRevalidator } from 'react-router';
+import { ROUTES, getPath } from 'routes/routes';
 // Prevents page load fail due to waiting for engagement title on refresh
 const AutoBreadcrumbs = React.lazy(() =>
     import('components/common/Navigation/Breadcrumb').then((m) => ({ default: m.AutoBreadcrumbs })),
@@ -25,7 +26,7 @@ const TenantCreationPage = () => {
             await createTenant(data);
             dispatch(openNotification({ text: 'Tenant created successfully!', severity: 'success' }));
             revalidator.revalidate();
-            navigate('/tenantadmin');
+            navigate(getPath(ROUTES.TENANT_ADMIN));
         } catch (error) {
             dispatch(openNotification({ text: 'Unknown error while creating tenant', severity: 'error' }));
             console.error(error);
@@ -33,7 +34,7 @@ const TenantCreationPage = () => {
     };
 
     const onCancel = () => {
-        navigate('/tenantadmin');
+        navigate(getPath(ROUTES.TENANT_ADMIN));
     };
 
     return (

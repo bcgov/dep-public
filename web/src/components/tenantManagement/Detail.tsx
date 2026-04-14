@@ -14,6 +14,7 @@ import { faPenToSquare, faTrashCan, faCopy } from '@fortawesome/pro-regular-svg-
 import { openNotificationModal } from 'services/notificationModalService/notificationModalSlice';
 import LandingPageBanner from 'assets/images/LandingPageBanner.png';
 import { globalFocusVisible } from 'components/common';
+import { ROUTES, getPath } from 'routes/routes';
 
 const TenantDetail = () => {
     const tenant = useRouteLoaderData('tenant') as Promise<Tenant>;
@@ -34,7 +35,7 @@ const TenantDetail = () => {
                 }),
             );
             revalidator.revalidate();
-            navigate('/tenantadmin');
+            navigate(getPath(ROUTES.TENANT_ADMIN));
         } catch (error) {
             console.log(error);
             dispatch(
@@ -194,7 +195,11 @@ const TenantDetail = () => {
                                     variant="primary"
                                     icon={penToSquareIcon}
                                     onClick={() => {
-                                        navigate(`/tenantadmin/${resolvedTenant.short_name}/edit`);
+                                        navigate(
+                                            getPath(ROUTES.TENANT_ADMIN_EDIT, {
+                                                tenantShortName: resolvedTenant.short_name,
+                                            }),
+                                        );
                                     }}
                                 >
                                     Edit

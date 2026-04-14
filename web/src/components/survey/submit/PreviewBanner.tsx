@@ -1,16 +1,17 @@
 import React from 'react';
 import { Box, Grid2 as Grid, Stack } from '@mui/material';
-import { useNavigate, useRouteLoaderData } from 'react-router';
+import { useRouteLoaderData } from 'react-router';
 import { useAppSelector } from 'hooks';
 import { PermissionsGate } from 'components/permissionsGate';
 import { USER_ROLES } from 'services/userService/constants';
 import { Heading1 } from 'components/common/Typography';
 import { Button } from 'components/common/Input';
+import { ROUTES, getPath } from 'routes/routes';
+import { RouterLinkRenderer } from 'components/common/Navigation/Link';
 
 export const PreviewBanner = () => {
     const { survey } = useRouteLoaderData('survey');
     const isLoggedIn = useAppSelector((state) => state.user.authentication.authenticated);
-    const navigate = useNavigate();
 
     if (!isLoggedIn || !survey) {
         return null;
@@ -25,7 +26,12 @@ export const PreviewBanner = () => {
                 <Grid sx={{ pt: 2 }} size={12} container direction="row">
                     <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} width="100%" justifyContent="flex-start">
                         <PermissionsGate scopes={[USER_ROLES.EDIT_ENGAGEMENT]} errorProps={{ disabled: true }}>
-                            <Button onClick={() => navigate(`/surveys/${survey.id}/build`)}>Edit Survey</Button>
+                            <Button
+                                LinkComponent={RouterLinkRenderer}
+                                href={getPath(ROUTES.SURVEY_BUILD, { surveyId: survey.id })}
+                            >
+                                Edit Survey
+                            </Button>
                         </PermissionsGate>
                     </Stack>
                 </Grid>

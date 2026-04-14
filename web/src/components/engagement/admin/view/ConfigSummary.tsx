@@ -15,9 +15,13 @@ import { Button } from 'components/common/Input/Button';
 import { faPen } from '@fortawesome/pro-regular-svg-icons';
 import { LiveAnnouncer, LiveMessage } from 'react-aria-live';
 import { EngagementLoaderAdminData } from '../EngagementLoaderAdmin';
+import { getPath, ROUTES } from 'routes/routes';
+import { LanguageState } from 'reduxSlices/languageSlice';
+import { useAppSelector } from 'hooks';
 
 export const ConfigSummary = () => {
     const siteUrl = getBaseUrl();
+    const language: LanguageState = useAppSelector((state) => state.language);
     const { engagement, teamMembers, slug } = useRouteLoaderData('single-engagement') as EngagementLoaderAdminData;
     const [tooltipOpen, setTooltipOpen] = React.useState(false);
 
@@ -48,32 +52,38 @@ export const ConfigSummary = () => {
                                 <LiveAnnouncer>
                                     <LiveMessage aria-live="assertive" message={tooltipOpen ? 'Copied!' : ''} />
                                     <Tooltip arrow open={tooltipOpen} title="Copied!" placement="top">
-                                        <IconButton
-                                            size="small"
-                                            sx={{
-                                                backgroundColor: 'primary.light',
-                                                color: 'white',
-                                                width: '32px',
-                                                height: '32px',
-                                                '&:hover': {
-                                                    backgroundColor: 'primary.main',
-                                                },
-                                                ...globalFocusVisible,
-                                                display: 'inline-block',
-                                                marginRight: '0.5rem',
-                                            }}
-                                            onClick={() => {
-                                                navigator.clipboard.writeText(`${siteUrl}/${slug}`);
-                                                setTooltipOpen(true);
-                                            }}
-                                            aria-label="Press enter to copy engagement URL to clipboard"
-                                        >
-                                            <FontAwesomeIcon
-                                                fontSize={16}
-                                                icon={faCopy}
-                                                style={{ position: 'relative', bottom: '4px' }}
-                                            />
-                                        </IconButton>
+                                        <Await resolve={slug}>
+                                            {(slug: string) => (
+                                                <IconButton
+                                                    size="small"
+                                                    sx={{
+                                                        backgroundColor: 'primary.light',
+                                                        color: 'white',
+                                                        width: '32px',
+                                                        height: '32px',
+                                                        '&:hover': {
+                                                            backgroundColor: 'primary.main',
+                                                        },
+                                                        ...globalFocusVisible,
+                                                        display: 'inline-block',
+                                                        marginRight: '0.5rem',
+                                                    }}
+                                                    onClick={() => {
+                                                        navigator.clipboard.writeText(
+                                                            `${siteUrl}${getPath(ROUTES.PUBLIC_ENGAGEMENT_BY_SLUG, { slug, language: language.id })}`,
+                                                        );
+                                                        setTooltipOpen(true);
+                                                    }}
+                                                    aria-label="Press enter to copy engagement URL to clipboard"
+                                                >
+                                                    <FontAwesomeIcon
+                                                        fontSize={16}
+                                                        icon={faCopy}
+                                                        style={{ position: 'relative', bottom: '4px' }}
+                                                    />
+                                                </IconButton>
+                                            )}
+                                        </Await>
                                     </Tooltip>
                                     <BodyText sx={{ display: 'inline' }}>
                                         <BodyText bold component="span">
@@ -94,7 +104,17 @@ export const ConfigSummary = () => {
                                                 </Skeleton>
                                             }
                                         >
-                                            <Await resolve={slug}>{(slug: string) => slug}</Await>
+                                            <Await resolve={slug}>
+                                                {(slug: string) => {
+                                                    const path = getPath(ROUTES.PUBLIC_ENGAGEMENT_BY_SLUG, {
+                                                        slug,
+                                                        language: language.id,
+                                                    });
+                                                    // remove leading slash from path if it exists to prevent double slashes in URL
+                                                    const formattedPath = path.startsWith('/') ? path.slice(1) : path;
+                                                    return formattedPath;
+                                                }}
+                                            </Await>
                                         </Suspense>
                                     </BodyText>
                                 </LiveAnnouncer>

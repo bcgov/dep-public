@@ -21,6 +21,8 @@ import { EngagementWidgetDisplay } from './EngagementWidgetDisplay';
 import { TextPlaceholder } from 'components/engagement/preview/placeholders/TextPlaceholder';
 import { previewValue, PreviewSwitch } from 'engagements/preview/PreviewSwitch';
 import { BodyText, Heading2 } from 'components/common/Typography';
+import { ROUTES, getPath } from 'routes/routes';
+import { AppConfig } from 'config';
 
 const gridContainerStyles = {
     bgcolor: 'blue.90',
@@ -35,7 +37,7 @@ const gridContainerStyles = {
 const EngagementSurveyContent = ({}) => {
     const isLoggedIn = useAppSelector((state) => state.user.authentication.authenticated);
     const { t: translate } = useAppTranslation();
-    const { language } = useParams();
+    const { language, slug } = useParams();
     const { isPreviewMode, previewStateType } = usePreview();
     const { engagement, widgets } = useEngagementLoaderData();
     const loadedEngagement = React.use(engagement);
@@ -154,8 +156,18 @@ const EngagementSurveyContent = ({}) => {
                                         iconPosition="right"
                                         href={
                                             isLoggedIn
-                                                ? `/engagements/${loadedEngagement.id}/dashboard/public`
-                                                : `/engagements/${loadedEngagement.id}/dashboard/public/${language}`
+                                                ? getPath(ROUTES.ENGAGEMENT_DASHBOARD, {
+                                                      engagementId: loadedEngagement.id,
+                                                      dashboardType: 'public',
+                                                  })
+                                                : getPath(ROUTES.PUBLIC_DASHBOARD_BY_SLUG, {
+                                                      slug: slug ?? '',
+                                                      dashboardType: 'public',
+                                                      language:
+                                                          language ??
+                                                          sessionStorage.getItem('languageId') ??
+                                                          AppConfig.language.defaultLanguageId,
+                                                  })
                                         }
                                     >
                                         {translate('buttonText.viewFeedback')}

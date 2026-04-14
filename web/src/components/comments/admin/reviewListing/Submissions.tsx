@@ -1,11 +1,11 @@
 import React, { useState, useContext } from 'react';
 import CustomTable from 'components/common/Table';
 import Grid from '@mui/material/Grid2';
-import { Link, useLocation } from 'react-router';
+import { useLocation } from 'react-router';
 import { ResponsiveContainer } from 'components/common/Layout';
 import { HeadCell, PaginationOptions } from 'components/common/Table/types';
 import { formatDate } from 'components/common/dateHelper';
-import { Collapse, Link as MuiLink } from '@mui/material';
+import { Collapse, Link } from '@mui/material';
 import TextField from '@mui/material/TextField';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faMagnifyingGlass } from '@fortawesome/pro-regular-svg-icons/faMagnifyingGlass';
@@ -21,6 +21,7 @@ import { USER_COMPOSITE_ROLE } from 'models/user';
 import { Heading1 } from 'components/common/Typography';
 import { Button } from 'components/common/Input/Button';
 import { RouterLinkRenderer } from 'components/common/Navigation/Link';
+import { ROUTES, getPath } from 'routes/routes';
 
 const Submissions = () => {
     const {
@@ -61,9 +62,15 @@ const Submissions = () => {
                         userDetail.composite_roles?.includes('/' + USER_COMPOSITE_ROLE.TEAM_MEMBER.value))
                 ) {
                     return (
-                        <MuiLink component={Link} to={`/surveys/${Number(row.survey_id)}/submissions/${row.id}/review`}>
+                        <Link
+                            component={RouterLinkRenderer}
+                            href={getPath(ROUTES.SURVEY_SUBMISSION_REVIEW, {
+                                surveyId: Number(row.survey_id),
+                                submissionId: row.id,
+                            })}
+                        >
                             {row.id}
-                        </MuiLink>
+                        </Link>
                     );
                 }
                 return row.id;
@@ -153,7 +160,7 @@ const Submissions = () => {
                             size="small"
                             variant="primary"
                             component={RouterLinkRenderer}
-                            href={`/surveys/${survey.id}/comments/all`}
+                            href={getPath(ROUTES.SURVEY_COMMENTS_ALL, { surveyId: survey.id })}
                         >
                             Read All Comments
                         </Button>

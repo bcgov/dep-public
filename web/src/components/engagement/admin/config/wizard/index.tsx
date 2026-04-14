@@ -11,11 +11,13 @@ import { DateRangePickerWithCalculation } from '../DateRangePickerWithCalculatio
 import { LanguageManager } from '../LanguageManager';
 import { UserManager } from '../UserManager';
 import { User } from 'models/user';
+import { Engagement } from 'models/engagement';
 import { Language } from 'models/language';
 import { FormStep } from 'components/common/Layout/FormStep';
 import { Modal, CircularProgress } from '@mui/material';
 import { modalStyle } from 'components/common';
 import UnsavedWorkConfirmation from 'components/common/Navigation/UnsavedWorkConfirmation';
+import { ROUTES, getPath } from 'routes/routes';
 
 export interface EngagementConfigurationData {
     // 1. Title
@@ -38,10 +40,10 @@ export interface EngagementConfigurationData {
 
 const EngagementForm = ({
     onSubmit,
-    isNewEngagement,
+    engagement,
 }: {
     onSubmit: (data: EngagementConfigurationData) => void;
-    isNewEngagement?: boolean;
+    engagement: Engagement | null;
 }) => {
     const engagementForm = useFormContext<EngagementConfigurationData>();
 
@@ -54,10 +56,14 @@ const EngagementForm = ({
 
     const [nameHasBeenEdited, setNameHasBeenEdited] = useState(false);
 
+    const parentPageLink = engagement
+        ? getPath(ROUTES.ENGAGEMENT_DETAILS_CONFIG, { engagementId: engagement.id })
+        : getPath(ROUTES.ENGAGEMENTS);
+
     return (
         <Form onSubmit={handleSubmit(onSubmit)} id="engagement-config-form">
             <Grid container sx={{ maxWidth: '49.25rem' }}>
-                <Heading2 decorated>{isNewEngagement ? 'Configure Engagement' : 'Edit Configuration'}</Heading2>
+                <Heading2 decorated>{engagement ? 'Edit Configuration' : 'Configure Engagement'}</Heading2>
                 <Controller
                     control={control}
                     name="name"
@@ -152,9 +158,9 @@ const EngagementForm = ({
                     variant="primary"
                     type="submit"
                 >
-                    {isNewEngagement ? 'Create Engagement' : 'Save Changes'}
+                    {engagement ? 'Save Changes' : 'Create Engagement'}
                 </Button>
-                <Button href={isNewEngagement ? '/engagements' : '../'}>Cancel</Button>
+                <Button href={parentPageLink}>Cancel</Button>
             </Grid>
             <UnsavedWorkConfirmation blockNavigationWhen={isDirty && !isSubmitting} />
             <Modal open={isSubmitting || isSubmitted}>

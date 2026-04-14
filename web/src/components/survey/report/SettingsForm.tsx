@@ -13,6 +13,9 @@ import { openNotification } from 'services/notificationService/notificationSlice
 import { updatedDiff } from 'deep-object-diff';
 import { SurveyLoaderData } from '../building/SurveyLoader';
 import { BodyText, Heading3 } from 'components/common/Typography';
+import { ROUTES, getPath } from 'routes/routes';
+import { RouterLinkRenderer } from 'components/common/Navigation/Link';
+import { AppConfig } from 'config';
 
 const SettingsFormPage = () => {
     return (
@@ -38,6 +41,7 @@ const SettingsForm = () => {
     const navigate = useNavigate();
     const dispatch = useAppDispatch();
     const { revalidate } = useRevalidator();
+    const language = sessionStorage.getItem('languageId') ?? AppConfig.language.defaultLanguageId;
 
     if (!reportSettings) navigate(-1);
 
@@ -46,7 +50,7 @@ const SettingsForm = () => {
             navigate(-1);
             return;
         }
-        navigate(`/surveys`);
+        navigate(getPath(ROUTES.SURVEYS));
     };
 
     const handleSaveSettings = async () => {
@@ -88,7 +92,7 @@ const SettingsForm = () => {
     const baseUrl = getBaseUrl();
     const engagementUrl = !engagementSlug
         ? 'Link will appear when the survey is linked to an engagement'
-        : `${baseUrl}/${engagementSlug}/dashboard/public`;
+        : `${baseUrl}/${getPath(ROUTES.PUBLIC_DASHBOARD_BY_SLUG, { slug: engagementSlug, dashboardType: 'report', language })}`;
 
     const handleTooltipClose = () => {
         setCopyTooltip(false);
@@ -177,7 +181,12 @@ const SettingsForm = () => {
                     <Button variant="primary" onClick={handleSaveSettings} data-testid="survey/report/save-button">
                         Save
                     </Button>
-                    <Button onClick={() => navigate(`/surveys/${survey?.id}/build`)}>Back</Button>
+                    <Button
+                        LinkComponent={RouterLinkRenderer}
+                        href={getPath(ROUTES.SURVEY_BUILD, { surveyId: survey?.id })}
+                    >
+                        Back
+                    </Button>
                 </Stack>
             </Grid>
         </Grid>

@@ -19,6 +19,7 @@ import { OptionsFormSkeleton } from './OptionsFormSkeleton';
 import { When } from 'react-if';
 import { Disclaimer } from './Disclaimer';
 import { RouterLinkRenderer } from 'components/common/Navigation/Link';
+import { ROUTES, getPath } from 'routes/routes';
 
 const OptionsForm = () => {
     const { loading } = useContext(CreateSurveyContext);
@@ -81,7 +82,7 @@ const OptionsForm = () => {
                         <Button variant="primary" disabled={true}>
                             Save &amp; Continue
                         </Button>
-                        <Button href="/surveys" LinkComponent={RouterLinkRenderer}>
+                        <Button href={getPath(ROUTES.SURVEYS)} LinkComponent={RouterLinkRenderer}>
                             Cancel
                         </Button>
                     </Stack>

@@ -11,6 +11,7 @@ import {
     getTeamMembers,
 } from 'services/membershipService';
 import { store } from 'store';
+import { ROUTES, getPath } from 'routes/routes';
 
 export const engagementUpdateAction: ActionFunction = async ({ request, params }) => {
     const formData = (await request.formData()) as FormData;
@@ -72,7 +73,7 @@ export const engagementUpdateAction: ActionFunction = async ({ request, params }
         console.error('Error updating team members', e);
     }
 
-    return redirect(`/engagements/${engagementId}/details/config`);
+    return redirect(getPath(ROUTES.ENGAGEMENT_DETAILS_CONFIG, { engagementId }));
 };
 
 export default engagementUpdateAction;

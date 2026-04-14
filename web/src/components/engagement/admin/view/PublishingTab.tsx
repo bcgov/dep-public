@@ -17,6 +17,7 @@ import ConfirmModal from 'components/common/Modals/ConfirmModal';
 import { useAppDispatch } from 'hooks';
 import { openNotification } from 'services/notificationService/notificationSlice';
 import { AlertColor } from 'services/notificationService/types';
+import { ROUTES, getPath } from 'routes/routes';
 
 export interface PublishEngagementData {
     id: number;
@@ -132,7 +133,7 @@ export const PublishingTab = () => {
             }),
             {
                 method: 'post',
-                action: `/engagements/${data.id}/details/publish`,
+                action: getPath(ROUTES.ENGAGEMENT_DETAILS_PUBLISH, { engagementId: data.id }),
             },
         );
     };

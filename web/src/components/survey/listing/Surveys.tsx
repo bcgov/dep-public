@@ -1,12 +1,12 @@
 import React, { useContext, useState } from 'react';
 import CustomTable from 'components/common/Table';
 import Grid from '@mui/material/Grid2';
-import { Link, useNavigate } from 'react-router';
+import { useNavigate } from 'react-router';
 import { ResponsiveContainer } from 'components/common/Layout';
 import { Survey } from 'models/survey';
 import { HeadCell, PaginationOptions } from 'components/common/Table/types';
 import { formatDate } from 'components/common/dateHelper';
-import { Collapse, Link as MuiLink, Theme, Tooltip, useMediaQuery } from '@mui/material';
+import { Collapse, Link, Theme, Tooltip, useMediaQuery } from '@mui/material';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faMagnifyingGlass } from '@fortawesome/pro-regular-svg-icons/faMagnifyingGlass';
 import { faCircleExclamation } from '@fortawesome/pro-regular-svg-icons/faCircleExclamation';
@@ -31,6 +31,8 @@ import { SurveyListingContext } from './SurveyListingContext';
 import { USER_ROLES } from 'services/userService/constants';
 import { Button, TextInput } from 'components/common/Input';
 import { faPlus } from '@fortawesome/pro-regular-svg-icons';
+import { ROUTES, getPath } from 'routes/routes';
+import { RouterLinkRenderer } from 'components/common/Navigation/Link';
 // Prevents page load fail due to waiting for engagement title on refresh
 const AutoBreadcrumbs = React.lazy(() =>
     import('components/common/Navigation/Breadcrumb').then((m) => ({ default: m.AutoBreadcrumbs })),
@@ -84,9 +86,12 @@ const Surveys = () => {
             label: 'Survey Name',
             allowSort: true,
             renderCell: (row: Survey) => (
-                <MuiLink component={Link} to={`/surveys/${Number(row.id)}/submit`}>
+                <Link
+                    component={RouterLinkRenderer}
+                    href={getPath(ROUTES.SURVEY_ADMIN_SUBMIT, { surveyId: Number(row.id) })}
+                >
                     {row.name}
-                </MuiLink>
+                </Link>
             ),
         },
         {
@@ -204,9 +209,12 @@ const Surveys = () => {
                 }
 
                 return (
-                    <MuiLink component={Link} to={`/engagements/${row.engagement.id}/`}>
+                    <Link
+                        component={RouterLinkRenderer}
+                        href={getPath(ROUTES.ENGAGEMENT, { engagementId: row.engagement.id })}
+                    >
                         {row.engagement.name}
-                    </MuiLink>
+                    </Link>
                 );
             },
         },
@@ -234,7 +242,7 @@ const Surveys = () => {
                         <span>
                             <ApprovedIcon
                                 onClick={() => {
-                                    navigate(`/surveys/${row.id}/comments`, {
+                                    navigate(getPath(ROUTES.SURVEY_COMMENTS, { surveyId: row.id }), {
                                         state: {
                                             status: CommentStatus.Approved,
                                         },
@@ -277,7 +285,7 @@ const Surveys = () => {
                         <span>
                             <NFRIcon
                                 onClick={() => {
-                                    navigate(`/surveys/${row.id}/comments`, {
+                                    navigate(getPath(ROUTES.SURVEY_COMMENTS, { surveyId: row.id }), {
                                         state: {
                                             status: CommentStatus.NeedsFurtherReview,
                                         },
@@ -320,7 +328,7 @@ const Surveys = () => {
                         <span>
                             <RejectedIcon
                                 onClick={() => {
-                                    navigate(`/surveys/${row.id}/comments`, {
+                                    navigate(getPath(ROUTES.SURVEY_COMMENTS, { surveyId: row.id }), {
                                         state: {
                                             status: CommentStatus.Rejected,
                                         },
@@ -363,7 +371,7 @@ const Surveys = () => {
                         <span>
                             <NewIcon
                                 onClick={() => {
-                                    navigate(`/surveys/${row.id}/comments`, {
+                                    navigate(getPath(ROUTES.SURVEY_COMMENTS, { surveyId: row.id }), {
                                         state: {
                                             status: CommentStatus.Pending,
                                         },
@@ -458,7 +466,8 @@ const Surveys = () => {
                             sx={{ minWidth: 'max-content' }}
                             type="button"
                             icon={<FontAwesomeIcon icon={faPlus} />}
-                            onClick={() => navigate('/surveys/create')}
+                            LinkComponent={RouterLinkRenderer}
+                            href={getPath(ROUTES.SURVEY_CREATE)}
                         >
                             Create Survey
                         </Button>

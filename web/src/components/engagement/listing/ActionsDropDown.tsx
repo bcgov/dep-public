@@ -8,6 +8,7 @@ import { SubmissionStatus, EngagementStatus } from 'constants/engagementStatus';
 import { openNotification } from 'services/notificationService/notificationSlice';
 import ConfirmModal from 'components/common/Modals/ConfirmModal';
 import { deleteEngagement } from 'services/engagementService';
+import { ROUTES, getPath } from 'routes/routes';
 
 interface ActionDropDownItem {
     value: number;
@@ -99,7 +100,7 @@ export const ActionsDropDown = ({ engagement }: { engagement: Engagement }) => {
                 value: 1,
                 label: 'Edit Engagement',
                 action: () => {
-                    navigate(`/engagements/${engagement.id}/form`);
+                    navigate(getPath(ROUTES.ENGAGEMENT_FORM, { engagementId: engagement.id }));
                 },
                 condition: canEditEngagement(),
             },
@@ -107,7 +108,7 @@ export const ActionsDropDown = ({ engagement }: { engagement: Engagement }) => {
                 value: 2,
                 label: 'View Survey',
                 action: () => {
-                    navigate(`/surveys/${engagement.surveys[0].id}/submit`);
+                    navigate(getPath(ROUTES.SURVEY_ADMIN_SUBMIT, { surveyId: engagement.surveys[0].id }));
                 },
                 condition: canViewSurvey(),
             },
@@ -115,7 +116,12 @@ export const ActionsDropDown = ({ engagement }: { engagement: Engagement }) => {
                 value: 3,
                 label: 'View Report - Public',
                 action: () => {
-                    navigate(`/engagements/${engagement.id}/dashboard/public`);
+                    navigate(
+                        getPath(ROUTES.ENGAGEMENT_COMMENTS_DASHBOARD, {
+                            engagementId: engagement.id,
+                            dashboardType: 'public',
+                        }),
+                    );
                 },
                 condition:
                     submissionHasBeenOpened &&
@@ -125,7 +131,12 @@ export const ActionsDropDown = ({ engagement }: { engagement: Engagement }) => {
                 value: 4,
                 label: 'View Report - Internal',
                 action: () => {
-                    navigate(`/engagements/${engagement.id}/dashboard/internal`);
+                    navigate(
+                        getPath(ROUTES.ENGAGEMENT_COMMENTS_DASHBOARD, {
+                            engagementId: engagement.id,
+                            dashboardType: 'internal',
+                        }),
+                    );
                 },
                 condition:
                     submissionHasBeenOpened &&
@@ -136,7 +147,7 @@ export const ActionsDropDown = ({ engagement }: { engagement: Engagement }) => {
                 value: 5,
                 label: 'View All Comments',
                 action: () => {
-                    navigate(`/surveys/${engagement.surveys[0].id}/comments`);
+                    navigate(getPath(ROUTES.SURVEY_COMMENTS, { surveyId: engagement.surveys[0].id }));
                 },
                 condition:
                     submissionHasBeenOpened &&

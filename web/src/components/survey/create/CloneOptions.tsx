@@ -10,6 +10,7 @@ import { Engagement } from 'models/engagement';
 import { Disclaimer } from './Disclaimer';
 import { BodyText } from 'components/common/Typography';
 import { Button, PrimaryButton } from 'components/common/Input/Button';
+import { ROUTES, getPath } from 'routes/routes';
 
 export type EngagementParams = {
     engagementId: string;
@@ -99,7 +100,7 @@ const CloneOptions = () => {
                     text: 'Survey created, please proceed to building it',
                 }),
             );
-            navigate(`/surveys/${createdSurvey.id}/build`);
+            navigate(getPath(ROUTES.SURVEY_BUILD, { surveyId: createdSurvey.id }));
         } catch {
             dispatch(
                 openNotification({

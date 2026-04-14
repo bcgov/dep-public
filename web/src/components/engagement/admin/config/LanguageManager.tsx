@@ -13,6 +13,7 @@ import MultiSelect from './MultiSelect';
 import { SystemMessage } from 'components/common/Layout/SystemMessage';
 import { LanguageLoaderData } from './LanguageLoader';
 import { Awaited } from 'utils';
+import { ROUTES, getPath } from 'routes/routes';
 
 export const LanguageManager = () => {
     const SINGLE_LANGUAGE = [{ code: 'en', name: 'English' }] as Language[];
@@ -39,7 +40,7 @@ export const LanguageManager = () => {
     const isSingleLanguage = determineSingleLanguage(selectedLanguages);
 
     useEffect(() => {
-        fetcher.load('/languages/');
+        fetcher.load(`${getPath(ROUTES.LANGUAGES)}/`);
     }, []);
 
     return (

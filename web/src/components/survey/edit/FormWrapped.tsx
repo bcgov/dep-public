@@ -9,18 +9,23 @@ import { Await, useAsyncValue, useNavigate } from 'react-router';
 import { EmailVerification } from 'models/emailVerification';
 import { Engagement } from 'models/engagement';
 import { SurveySubmission } from 'models/surveySubmission';
+import { getPath, ROUTES } from 'routes/routes';
+import { AppConfig } from 'config';
 
 const FormWrapped = () => {
     const navigate = useNavigate();
-    const languagePath = `/${sessionStorage.getItem('languageId')}`;
     const [verification, slug, engagement, submission] = useAsyncValue() as [
         EmailVerification | null,
         { slug: string },
         Engagement,
         SurveySubmission,
     ];
-    const engagementPath = slug ? `${slug}/${languagePath}` : `engagements/${engagement?.id}/view/${languagePath}`;
     const isTokenValid = !!verification;
+    const language = sessionStorage.getItem('languageId') ?? AppConfig.language.defaultLanguageId;
+    const engagementPath = getPath(ROUTES.PUBLIC_ENGAGEMENT_BY_SLUG, {
+        slug: slug.slug,
+        language: language,
+    });
 
     return (
         <Grid container direction="row" justifyContent="flex-start" alignItems="flex-start">

@@ -10,13 +10,13 @@ import { faCircleExclamation } from '@fortawesome/pro-regular-svg-icons/faCircle
 import { faXmark } from '@fortawesome/pro-regular-svg-icons/faXmark';
 import { faCommentsQuestionCheck } from '@fortawesome/pro-regular-svg-icons/faCommentsQuestionCheck';
 import Collapse from '@mui/material/Collapse';
-import { Link, useNavigate, useFetcher, createSearchParams, useSearchParams } from 'react-router';
+import { useNavigate, useFetcher, createSearchParams, useSearchParams } from 'react-router';
 import { ResponsiveContainer } from 'components/common/Layout';
 import { Engagement } from 'models/engagement';
 import { useAppSelector } from 'hooks';
 import { createDefaultPageInfo, HeadCell, PageInfo, PaginationOptions } from 'components/common/Table/types';
 import { formatDate } from 'components/common/dateHelper';
-import { Link as MuiLink, useMediaQuery, Theme, Tooltip } from '@mui/material';
+import { Link, useMediaQuery, Theme, Tooltip } from '@mui/material';
 import Stack from '@mui/material/Stack';
 import CustomTable from 'components/common/Table';
 import { EngagementStatus, SubmissionStatus } from 'constants/engagementStatus';
@@ -31,6 +31,8 @@ import { Button, TextInput } from 'components/common/Input';
 import { faPlus } from '@fortawesome/pro-regular-svg-icons';
 import { EngagementListLoaderData } from 'engagements/public/view/EngagementListLoader';
 import { AutoBreadcrumbs } from 'components/common/Navigation/Breadcrumb';
+import { ROUTES, getPath } from 'routes/routes';
+import { RouterLinkRenderer } from 'components/common/Navigation/Link';
 
 interface SearchFilter {
     key?: string;
@@ -108,7 +110,7 @@ const EngagementListing = () => {
         );
         const searchParams = createSearchParams(filteredSearchData);
         setSearchParams(searchParams);
-        fetcher.load(`/engagements/search?${searchParams}`);
+        fetcher.load(`${getPath(ROUTES.ENGAGEMENT_SEARCH)}?${searchParams}`);
     }, [paginationOptions, searchFilter, searchOptions]);
 
     const submissionHasBeenOpened = (engagement: Engagement) => {
@@ -131,9 +133,12 @@ const EngagementListing = () => {
             label: 'Engagement Name',
             allowSort: true,
             renderCell: (row: Engagement) => (
-                <MuiLink component={Link} to={`/engagements/${Number(row.id)}/details/authoring`}>
+                <Link
+                    component={RouterLinkRenderer}
+                    href={getPath(ROUTES.ENGAGEMENT_DETAILS_AUTHORING, { engagementId: Number(row.id) })}
+                >
                     {row.name}
-                </MuiLink>
+                </Link>
             ),
         },
         {
@@ -224,7 +229,7 @@ const EngagementListing = () => {
                             <ApprovedIcon
                                 onClick={() => {
                                     if (row.surveys.length === 0) return;
-                                    navigate(`/surveys/${row.surveys[0].id}/comments`, {
+                                    navigate(getPath(ROUTES.SURVEY_COMMENTS, { surveyId: row.surveys[0].id }), {
                                         state: {
                                             status: CommentStatus.Approved,
                                         },
@@ -268,7 +273,7 @@ const EngagementListing = () => {
                             <NFRIcon
                                 onClick={() => {
                                     if (row.surveys.length === 0) return;
-                                    navigate(`/surveys/${row.surveys[0].id}/comments`, {
+                                    navigate(getPath(ROUTES.SURVEY_COMMENTS, { surveyId: row.surveys[0].id }), {
                                         state: {
                                             status: CommentStatus.NeedsFurtherReview,
                                         },
@@ -312,7 +317,7 @@ const EngagementListing = () => {
                             <RejectedIcon
                                 onClick={() => {
                                     if (row.surveys.length === 0) return;
-                                    navigate(`/surveys/${row.surveys[0].id}/comments`, {
+                                    navigate(getPath(ROUTES.SURVEY_COMMENTS, { surveyId: row.surveys[0].id }), {
                                         state: {
                                             status: CommentStatus.Rejected,
                                         },
@@ -356,7 +361,7 @@ const EngagementListing = () => {
                             <NewIcon
                                 onClick={() => {
                                     if (row.surveys.length === 0) return;
-                                    navigate(`/surveys/${row.surveys[0].id}/comments`, {
+                                    navigate(getPath(ROUTES.SURVEY_COMMENTS, { surveyId: row.surveys[0].id }), {
                                         state: {
                                             status: CommentStatus.Pending,
                                         },
@@ -481,7 +486,7 @@ const EngagementListing = () => {
                             size="small"
                             variant="primary"
                             icon={<FontAwesomeIcon icon={faPlus} />}
-                            href="/engagements/create/wizard"
+                            href={getPath(ROUTES.ENGAGEMENT_CREATE_WIZARD)}
                             sx={{ minWidth: 'max-content' }}
                             fullWidth={isMediumScreen}
                         >

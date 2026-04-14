@@ -10,6 +10,7 @@ import { useDispatch } from 'react-redux';
 import { deleteSurvey } from 'services/surveyService';
 import ConfirmModal from 'components/common/Modals/ConfirmModal';
 import { getEngagement } from 'services/engagementService';
+import { ROUTES, getPath } from 'routes/routes';
 
 interface ActionDropDownItem {
     value: number;
@@ -100,7 +101,7 @@ export const ActionsDropDown = ({ survey, loadSurveys }: { survey: Survey; loadS
                 value: 1,
                 label: 'Edit Survey',
                 action: () => {
-                    navigate(`/surveys/${survey.id}/build`);
+                    navigate(getPath(ROUTES.SURVEY_BUILD, { surveyId: survey.id }));
                 },
                 condition: canEditSurvey(),
             },
@@ -108,7 +109,7 @@ export const ActionsDropDown = ({ survey, loadSurveys }: { survey: Survey; loadS
                 value: 2,
                 label: 'View Report - Public',
                 action: () => {
-                    navigate(`/engagements/${engagementId}/dashboard/public`);
+                    navigate(getPath(ROUTES.ENGAGEMENT_DASHBOARD, { engagementId, dashboardType: 'public' }));
                 },
                 condition: canViewReport(),
             },
@@ -116,7 +117,12 @@ export const ActionsDropDown = ({ survey, loadSurveys }: { survey: Survey; loadS
                 value: 3,
                 label: 'View Report - Internal',
                 action: () => {
-                    navigate(`/engagements/${engagementId}/dashboard/internal`);
+                    navigate(
+                        getPath(ROUTES.ENGAGEMENT_DASHBOARD, {
+                            engagementId,
+                            dashboardType: 'internal',
+                        }),
+                    );
                 },
                 condition: canViewInternalReport(),
             },
@@ -124,7 +130,7 @@ export const ActionsDropDown = ({ survey, loadSurveys }: { survey: Survey; loadS
                 value: 4,
                 label: 'View All Comments',
                 action: () => {
-                    navigate(`/surveys/${survey.id}/comments`);
+                    navigate(getPath(ROUTES.SURVEY_COMMENTS, { surveyId: survey.id }));
                 },
                 condition: canViewAllComments(),
             },
@@ -132,7 +138,7 @@ export const ActionsDropDown = ({ survey, loadSurveys }: { survey: Survey; loadS
                 value: 5,
                 label: 'Edit Settings',
                 action: () => {
-                    navigate(`/surveys/${survey.id}/report`);
+                    navigate(getPath(ROUTES.SURVEY_REPORT, { surveyId: survey.id }));
                 },
                 condition: canEditSurvey(),
             },
