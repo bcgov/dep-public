@@ -49,6 +49,10 @@ jest.mock('hooks', () => ({
     }),
 }));
 
+jest.mock('components/common/Navigation/Breadcrumb', () => ({
+    AutoBreadcrumbs: ({ children }: { children: ReactNode }) => <div>{children}</div>,
+}));
+
 jest.mock('components/publicDashboard/KPI/SurveyEmailsSent', () => {
     const React = require('react');
     return () => React.createElement('div', null, 'Survey Emails Sent');

@@ -1,5 +1,5 @@
 import { render, waitFor, screen } from '@testing-library/react';
-import React from 'react';
+import React, { ReactNode } from 'react';
 import '@testing-library/jest-dom';
 import Dashboard from 'components/publicDashboard/Dashboard';
 import { setupEnv } from '../setEnvVars';
@@ -7,6 +7,7 @@ import { DashboardContext } from 'components/publicDashboard/DashboardContext';
 import { closedEngagement } from '../factory';
 import userEvent from '@testing-library/user-event';
 import { BrowserRouter } from 'react-router';
+import { ROUTES, getPath } from 'routes/routes';
 
 jest.mock('axios');
 
@@ -44,6 +45,10 @@ jest.mock('hooks', () => {
 jest.mock('@mui/material', () => ({
     ...jest.requireActual('@mui/material'),
     useMediaQuery: jest.fn(() => true),
+}));
+
+jest.mock('components/common/Navigation/Breadcrumb', () => ({
+    AutoBreadcrumbs: ({ children }: { children: ReactNode }) => <div>{children}</div>,
 }));
 
 jest.mock('components/publicDashboard/KPI/SurveyEmailsSent', () => {
@@ -111,12 +116,14 @@ describe('Public Dashboard page tests', () => {
     });
 
     test('Navigation links work correctly', async () => {
-        const returnLink = screen.getByText(`<<Return to ${closedEngagement.name} Engagement`);
+        const returnLink = screen.getByText('dashboard.engagementLink');
         expect(returnLink).toBeInTheDocument();
         const user = userEvent.setup();
         await user.click(returnLink);
         await waitFor(() => {
-            expect(window.location.pathname).toBe(`/engagements/${closedEngagement.id}/view`);
+            expect(window.location.pathname).toBe(
+                getPath(ROUTES.ENGAGEMENT_DETAILS_AUTHORING, { engagementId: closedEngagement.id }),
+            );
         });
     });
 

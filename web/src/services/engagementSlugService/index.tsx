@@ -7,7 +7,7 @@ export interface GetSlugByEngagementIdResponse {
 }
 export const getSlugByEngagementId = async (engagementId: number): Promise<GetSlugByEngagementIdResponse> => {
     if (!engagementId || isNaN(Number(engagementId))) {
-        return Promise.reject('Invalid Slug' + engagementId);
+        return Promise.reject(`Invalid ID: ${engagementId}`);
     }
 
     const url = replaceUrl(Endpoints.EngagementSlug.GET_ENG_ID, 'engagement_id', String(engagementId));
@@ -24,7 +24,7 @@ interface GetEngagementIdBySlugResponse {
 export const getEngagementIdBySlug = async (slug: string): Promise<GetEngagementIdBySlugResponse> => {
     const url = replaceUrl(Endpoints.EngagementSlug.GET, 'slug_id', slug);
     if (!slug) {
-        return Promise.reject('Invalid Slug' + slug);
+        return Promise.reject(`Invalid Slug: ${slug}`);
     }
     const response = await http.GetRequest<GetEngagementIdBySlugResponse>(url);
     if (response.data) {

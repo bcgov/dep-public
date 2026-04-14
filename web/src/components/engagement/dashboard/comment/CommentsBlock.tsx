@@ -12,6 +12,8 @@ import { openNotificationModal } from 'services/notificationModalService/notific
 import { useAppTranslation } from 'hooks';
 import { faFileChartPie } from '@fortawesome/pro-regular-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { ROUTES as R, getPath } from 'routes/routes';
+import { AppConfig } from 'config';
 
 interface CommentsBlockProps {
     dashboardType: string;
@@ -19,19 +21,33 @@ interface CommentsBlockProps {
 
 export const CommentsBlock: React.FC<CommentsBlockProps> = ({ dashboardType }) => {
     const { t: translate } = useAppTranslation();
-    const { slug } = useParams();
+    const { slug, language } = useParams();
     const { engagement, isEngagementLoading } = useContext(CommentViewContext);
     const navigate = useNavigate();
     const dispatch = useAppDispatch();
     const canAccessDashboard = useAppSelector((state) => state.user.roles.includes('access_dashboard'));
     const isLoggedIn = useAppSelector((state) => state.user.authentication.authenticated);
-    const languagePath = `/${sessionStorage.getItem('languageId')}`;
-    const basePath = slug ? `/${slug}` : `/engagements/${engagement?.id}`;
+    const publicEngagementLink = getPath(R.PUBLIC_ENGAGEMENT_BY_SLUG, {
+        slug: slug ?? '',
+        language: language ?? sessionStorage.getItem('languageId') ?? AppConfig.language.defaultLanguageId,
+    });
+    const adminEngagementViewLink = getPath(R.ENGAGEMENT_DETAILS_AUTHORING, { engagementId: engagement?.id ?? '' });
+    const engagementId = engagement?.id;
+    const publicEngagementDashboardLink = getPath(R.PUBLIC_DASHBOARD_BY_SLUG, {
+        slug: slug ?? '',
+        dashboardType,
+        language: language ?? sessionStorage.getItem('languageId') ?? AppConfig.language.defaultLanguageId,
+    });
+    const engagementDashboardLink = getPath(R.ENGAGEMENT_DASHBOARD, {
+        engagementId: engagementId ?? '',
+        dashboardType,
+    });
 
     const handleViewDashboard = () => {
         /* check to ensure that users with role access_dashboard can access the dashboard while engagement not closed*/
         if (canAccessDashboard) {
-            navigate(`/engagements/${engagement?.id}/dashboard/${dashboardType}`);
+            if (!engagementId && isLoggedIn) return;
+            navigate(isLoggedIn ? engagementDashboardLink : publicEngagementDashboardLink);
             return;
         }
 
@@ -42,11 +58,7 @@ export const CommentsBlock: React.FC<CommentsBlockProps> = ({ dashboardType }) =
                     open: true,
                     data: {
                         header: translate('commentDashboard.block.notification.header'),
-                        subText: [
-                            {
-                                text: translate('commentDashboard.block.notification.text'),
-                            },
-                        ],
+                        subText: [{ text: translate('commentDashboard.block.notification.text') }],
                     },
                     type: 'update',
                 }),
@@ -55,10 +67,10 @@ export const CommentsBlock: React.FC<CommentsBlockProps> = ({ dashboardType }) =
         }
 
         if (isLoggedIn) {
-            navigate(`${basePath}/dashboard/public`);
-        } else {
-            navigate(`${basePath}/dashboard/public${languagePath}`);
+            if (!engagementId) return;
+            navigate(engagementDashboardLink);
         }
+        navigate(publicEngagementDashboardLink);
     };
 
     if (isEngagementLoading || !engagement) {
@@ -68,13 +80,8 @@ export const CommentsBlock: React.FC<CommentsBlockProps> = ({ dashboardType }) =
     return (
         <>
             <Grid size={12} container direction="row" justifyContent="flex-end" paddingBottom={'8px'}>
-                <Link
-                    to={isLoggedIn ? `${basePath}/view` : `${basePath}/view${languagePath}`}
-                    style={{ color: '#1A5A96' }}
-                >
-                    {translate('commentDashboard.block.link.0') +
-                        engagement.name +
-                        translate('commentDashboard.block.link.1')}
+                <Link to={isLoggedIn ? adminEngagementViewLink : publicEngagementLink} style={{ color: '#1A5A96' }}>
+                    {translate('commentDashboard.block.engagementLink')}
                 </Link>
             </Grid>
             <Grid size={12}>
@@ -93,7 +100,6 @@ export const CommentsBlock: React.FC<CommentsBlockProps> = ({ dashboardType }) =
                                 icon={<FontAwesomeIcon icon={faFileChartPie} />}
                                 variant="primary"
                                 size="small"
-                                data-testid="SurveyBlock/take-me-to-survey-button"
                                 onClick={handleViewDashboard}
                             >
                                 {translate('commentDashboard.block.buttonText')}

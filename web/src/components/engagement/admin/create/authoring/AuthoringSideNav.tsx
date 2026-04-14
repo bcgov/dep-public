@@ -1,5 +1,6 @@
 import React, { useLayoutEffect, useState } from 'react';
 import {
+    Link,
     ListItemButton,
     List,
     ListItem,
@@ -18,7 +19,7 @@ import { When } from 'react-if';
 import { useAppSelector } from 'hooks';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPencil } from '@fortawesome/pro-light-svg-icons/faPencil';
-import { Link } from 'components/common/Navigation';
+import { RouterLinkRenderer } from 'components/common/Navigation/Link';
 import { BodyText } from 'components/common/Typography/Body';
 import { USER_ROLES } from 'services/userService/constants';
 import UserService from 'services/userService';
@@ -67,7 +68,7 @@ const DrawerBox = ({ isMediumScreenOrLarger, setOpen, engagementId }: DrawerBoxP
                     }}
                 >
                     <ListItemButton
-                        component={Link}
+                        component={RouterLinkRenderer}
                         disableRipple
                         sx={{
                             '&:hover, &:active, &:focus': {
@@ -76,10 +77,8 @@ const DrawerBox = ({ isMediumScreenOrLarger, setOpen, engagementId }: DrawerBoxP
                             padding: 2,
                         }}
                         data-testid={`SideNav/${route.name}-button`}
-                        to={route.path}
-                        onClick={() => {
-                            setOpen(false);
-                        }}
+                        href={route.path}
+                        onClick={() => setOpen(false)}
                     >
                         <BodyText
                             sx={{
@@ -143,7 +142,8 @@ const DrawerBox = ({ isMediumScreenOrLarger, setOpen, engagementId }: DrawerBoxP
             <List sx={{ pt: { xs: 4, md: 0 }, pb: '0' }}>
                 {/* Engagement Home link */}
                 <Link
-                    to={getRoutes(Number(engagementId))[0].path}
+                    component={RouterLinkRenderer}
+                    href={getRoutes(Number(engagementId))[0].path}
                     sx={{
                         height: '3rem',
                         color: 'text.primary',
@@ -282,7 +282,7 @@ const AuthoringSideNav = ({ open, setOpen, isMediumScreen, engagementId }: Autho
                             </BodyText>
                         </Grid>
                         <Grid sx={{ marginLeft: 'auto', marginRight: '2rem' }}>
-                            <Link onClick={UserService.doLogout} to={'#'}>
+                            <Link onClick={UserService.doLogout} href="#">
                                 Logout
                                 <FontAwesomeIcon style={{ marginLeft: '0.25rem' }} icon={faArrowRight} />
                             </Link>

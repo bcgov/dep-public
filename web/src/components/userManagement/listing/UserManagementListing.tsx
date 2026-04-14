@@ -8,13 +8,14 @@ import { USER_STATUS, User } from 'models/user';
 import { HeadCell } from 'components/common/Table/types';
 import { Button } from 'components/common/Input/Button';
 import { ResponsiveContainer } from 'components/common/Layout';
-import { Link } from 'react-router';
-import { Link as MuiLink } from '@mui/material';
+import { Link } from '@mui/material';
+import { RouterLinkRenderer } from 'components/common/Navigation/Link';
 import CustomTable from 'components/common/Table';
 import { formatDate } from 'components/common/dateHelper';
 import { UserManagementContext } from './UserManagementContext';
 import { ActionsDropDown } from './ActionsDropDown';
 import { AutoBreadcrumbs } from 'components/common/Navigation/Breadcrumb';
+import { ROUTES, getPath } from 'routes/routes';
 
 const UserManagementListing = () => {
     const { pageInfo, paginationOptions, setPaginationOptions, users, usersLoading, setSearchText } =
@@ -34,9 +35,9 @@ const UserManagementListing = () => {
             label: 'User Name',
             allowSort: true,
             renderCell: (row: User) => (
-                <MuiLink to={`/usermanagement/${row.id}/details`} component={Link}>
+                <Link href={getPath(ROUTES.USER_DETAILS, { userId: row.id })} component={RouterLinkRenderer}>
                     {row.last_name + ', ' + row.first_name}
-                </MuiLink>
+                </Link>
             ),
         },
         {

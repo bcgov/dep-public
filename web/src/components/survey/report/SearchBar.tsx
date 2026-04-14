@@ -41,9 +41,7 @@ const SearchBar = ({
                                 variant="primary"
                                 data-testid="survey/report/search-button"
                                 disableElevation
-                                onClick={() => {
-                                    setSearchTerm(searchValue);
-                                }}
+                                onClick={() => setSearchTerm(searchValue)}
                             >
                                 <FontAwesomeIcon icon={faMagnifyingGlass} style={{ fontSize: '20px' }} />
                             </Button>

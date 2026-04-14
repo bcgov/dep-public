@@ -302,7 +302,6 @@ export const BaseTheme = createTheme({
                 },
             ],
             defaultProps: {
-                disableUnderline: true,
                 IconComponent: CustomSelectIcon,
                 MenuProps: {
                     sx: {

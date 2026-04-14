@@ -16,6 +16,7 @@ import { saveLanguage } from 'reduxSlices/languageSlice';
 import Grid from '@mui/material/Grid2';
 import { StatusLabel } from './StatusLabel';
 import AuthoringMorePreform from './AuthoringMorePreform';
+import { ROUTES } from 'routes/routes';
 
 export const getLanguageValue = (languageCode: string, languages: Language[]) => {
     if (languageCode === 'en') {
@@ -35,7 +36,7 @@ const AuthoringTemplate = () => {
         [dispatch],
     );
     const authoringRoutes = getAuthoringRoutes(Number(engagementId));
-    const pageName = useMatch('/engagements/:engagementId/details/authoring/:page')?.params.page;
+    const pageName = useMatch(ROUTES.AUTHORING_PAGE)?.params.page;
     const pageTitle = authoringRoutes.find((route) => {
         const pathArray = route.path.split('/');
         return pathArray[pathArray.length - 1] === pageName;

@@ -11,6 +11,7 @@ import { openNotification } from 'services/notificationService/notificationSlice
 import { saveObject } from 'services/objectStorageService';
 import { FormDetailsTab } from './types';
 import { AuthoringPreviewWindowProvider } from './AuthoringPreviewWindowContext';
+import { ROUTES, getPath } from 'routes/routes';
 
 const tabSchema = yup.object({
     id: yup.number().required(),
@@ -274,7 +275,7 @@ export const AuthoringContext = () => {
             fetcher.data = undefined;
         }
     }, [fetcher.data]);
-    const pageName = useMatch('/engagements/:engagementId/details/authoring/:page')?.params.page;
+    const pageName = useMatch(ROUTES.AUTHORING_PAGE)?.params.page;
     /* Changes the resolver based on the page name. 
     If you require more complex validation, you can 
     define your own resolver and add a case for it here.
@@ -380,7 +381,7 @@ export const AuthoringContext = () => {
             }),
             {
                 method: 'post',
-                action: `/engagements/${data.id}/details/authoring/${pageName}`,
+                action: getPath(ROUTES.AUTHORING_PAGE, { engagementId: data.id, page: pageName ?? 'banner' }),
             },
         );
     };

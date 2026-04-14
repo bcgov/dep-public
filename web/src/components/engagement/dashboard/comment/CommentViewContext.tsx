@@ -10,6 +10,7 @@ import { getCommentsPage } from 'services/commentService';
 import { Comment } from 'models/comment';
 import { createDefaultPageInfo, PageInfo, PaginationOptions } from 'components/common/Table/types';
 import { getEngagementIdBySlug } from 'services/engagementSlugService';
+import { ROUTES, getPath } from 'routes/routes';
 
 export interface TransformedComment {
     submission_id: number;
@@ -75,7 +76,7 @@ export const CommentViewProvider = ({ children }: { children: JSX.Element | JSX.
             const result = await getEngagementIdBySlug(slug);
             setEngagementId(result.engagement_id);
         } catch {
-            navigate('/not-found');
+            navigate(getPath(ROUTES.PUBLIC_NOT_FOUND));
         }
     };
 
@@ -88,7 +89,7 @@ export const CommentViewProvider = ({ children }: { children: JSX.Element | JSX.
             return;
         }
         if (isNaN(Number(engagementId))) {
-            navigate('/');
+            navigate(getPath(ROUTES.PUBLIC_LANDING));
             return;
         }
         try {
@@ -98,7 +99,7 @@ export const CommentViewProvider = ({ children }: { children: JSX.Element | JSX.
         } catch (error) {
             console.log(error);
             if ((error as AxiosError)?.response?.status === 500) {
-                navigate('/not-available');
+                navigate(getPath(ROUTES.PUBLIC_NOT_AVAILABLE));
             } else {
                 dispatch(
                     openNotification({
@@ -106,7 +107,7 @@ export const CommentViewProvider = ({ children }: { children: JSX.Element | JSX.
                         text: getErrorMessage(error) || 'Error occurred while fetching Engagement information',
                     }),
                 );
-                navigate('/');
+                navigate(getPath(ROUTES.PUBLIC_LANDING));
             }
         }
     };

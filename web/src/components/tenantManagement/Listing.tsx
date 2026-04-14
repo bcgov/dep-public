@@ -17,6 +17,8 @@ import {
 
 import { Tenant } from 'models/tenant';
 import { Await, useNavigate, useRouteLoaderData } from 'react-router';
+import { ROUTES, getPath } from 'routes/routes';
+import { RouterLinkRenderer } from 'components/common/Navigation/Link';
 // Prevents page load fail due to waiting for engagement title on refresh
 const AutoBreadcrumbs = React.lazy(() =>
     import('components/common/Navigation/Breadcrumb').then((m) => ({ default: m.AutoBreadcrumbs })),
@@ -47,11 +49,10 @@ const TenantListingPage = () => {
                 </Grid>
                 <Grid size="auto">
                     <Button
+                        LinkComponent={RouterLinkRenderer}
                         variant="primary"
                         icon={circlePlusIcon}
-                        onClick={() => {
-                            navigate('./create');
-                        }}
+                        href={getPath(ROUTES.TENANT_ADMIN_CREATE)}
                     >
                         Add Tenant
                     </Button>
@@ -97,12 +98,20 @@ const TenantListingPage = () => {
                                             return (
                                                 <TableRow
                                                     onClick={() => {
-                                                        navigate(`/tenantadmin/${tenant.short_name}/detail`);
+                                                        navigate(
+                                                            getPath(ROUTES.TENANT_ADMIN_DETAIL, {
+                                                                tenantShortName: tenant.short_name,
+                                                            }),
+                                                        );
                                                     }}
                                                     onKeyDown={(event) => {
                                                         if (event.key === 'Enter' || event.key === ' ') {
                                                             event.preventDefault();
-                                                            navigate(`/tenantadmin/${tenant.short_name}/detail`);
+                                                            navigate(
+                                                                getPath(ROUTES.TENANT_ADMIN_DETAIL, {
+                                                                    tenantShortName: tenant.short_name,
+                                                                }),
+                                                            );
                                                         }
                                                     }}
                                                     key={tenant.name}

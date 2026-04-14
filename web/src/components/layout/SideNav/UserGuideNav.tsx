@@ -6,38 +6,71 @@ import { Palette } from 'styles/Theme';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBookOpen } from '@fortawesome/pro-regular-svg-icons/faBookOpen';
 import { routeItemStyle } from './SideNav';
+import { ROUTES, getPath } from 'routes/routes';
 
 const THRESHOLD_SIMILARITY_SCORE = 10;
 const HELP_URL = 'https://bcgov.github.io/dep-guide';
+const SAMPLE_IDS = {
+    engagementId: 1,
+    surveyId: 1,
+    submissionId: 1,
+    userId: 1,
+    tenantShortName: 'aaa',
+    slug: 'aaaa',
+    languageId: 'en',
+} as const;
 
 const UserGuideNav = () => {
     const { pathname } = useLocation();
 
     const helpPaths: { [key: string]: string } = {
-        '/': `${HELP_URL}/posts/home/`,
-        '/engagements': `${HELP_URL}/posts/engagement-listing/`,
-        '/surveys': `${HELP_URL}/posts/survey-listing/`,
-        '/surveys/create': `${HELP_URL}/posts/create-survey/`,
-        '/surveys/1/build': `${HELP_URL}/posts/survey-builder/`,
-        '/surveys/1/submit': `${HELP_URL}/posts/survey-builder/`,
-        '/surveys/1/comments': `${HELP_URL}/posts/comments-listing/`,
-        '/surveys/1/comments/all': `${HELP_URL}/posts/read-all-comments/`,
-        '/surveys/1/submissions/1/review': `${HELP_URL}/posts/comment-review-page/`,
-        '/engagements/create/wizard': `${HELP_URL}/posts/create-engagement/`,
-        '/engagements/1/details/authoring': `${HELP_URL}/posts/engagement-details/`,
-        '/engagements/1/preview': `${HELP_URL}/posts/preview-engagement/`,
-        '/engagements/1/details/activity': `${HELP_URL}/posts/preview-engagement/`,
-        '/engagements/1/dashboard/public': `${HELP_URL}/posts/report/`,
-        '/engagements/1/dashboard/internal': `${HELP_URL}/posts/report/`,
-        '/feedback': `${HELP_URL}/posts/website-feedback-tool/`,
-        '/calendar': HELP_URL,
-        '/reporting': `${HELP_URL}/posts/report/`,
-        '/usermanagement': `${HELP_URL}/posts/user-management/`,
-        '/usermanagement/1/details': `${HELP_URL}/posts/user-details/`,
-        '/tenantadmin': `${HELP_URL}/posts/tenant-admin/`,
-        '/tenantadmin/create': `${HELP_URL}/posts/tenant-admin/#create-tenant`,
-        '/tenantadmin/aaa/detail': `${HELP_URL}/posts/tenant-admin/#view-tenant-details`,
-        '/tenantadmin/aaa/edit': `${HELP_URL}/posts/tenant-details/#edit-tenant`,
+        [getPath(ROUTES.PUBLIC_LANDING)]: `${HELP_URL}/posts/home/`,
+        [getPath(ROUTES.ENGAGEMENTS)]: `${HELP_URL}/posts/engagement-listing/`,
+        [getPath(ROUTES.SURVEYS)]: `${HELP_URL}/posts/survey-listing/`,
+        [getPath(ROUTES.SURVEY_CREATE)]: `${HELP_URL}/posts/create-survey/`,
+        [getPath(ROUTES.SURVEY_BUILD, { surveyId: SAMPLE_IDS.surveyId })]: `${HELP_URL}/posts/survey-builder/`,
+        [getPath(ROUTES.SURVEY_ADMIN_SUBMIT, { surveyId: SAMPLE_IDS.surveyId })]: `${HELP_URL}/posts/survey-builder/`,
+        [getPath(ROUTES.SURVEY_COMMENTS, { surveyId: SAMPLE_IDS.surveyId })]: `${HELP_URL}/posts/comments-listing/`,
+        [getPath(ROUTES.SURVEY_COMMENTS_ALL, { surveyId: SAMPLE_IDS.surveyId })]:
+            `${HELP_URL}/posts/read-all-comments/`,
+        [getPath(ROUTES.SURVEY_SUBMISSION_REVIEW, {
+            surveyId: SAMPLE_IDS.surveyId,
+            submissionId: SAMPLE_IDS.submissionId,
+        })]: `${HELP_URL}/posts/comment-review-page/`,
+        [getPath(ROUTES.ENGAGEMENT_CREATE_WIZARD)]: `${HELP_URL}/posts/create-engagement/`,
+        [getPath(ROUTES.ENGAGEMENT_DETAILS_AUTHORING, { engagementId: SAMPLE_IDS.engagementId })]:
+            `${HELP_URL}/posts/engagement-details/`,
+        [getPath(ROUTES.ADMIN_ENGAGEMENT_PREVIEW, { engagementId: SAMPLE_IDS.engagementId })]:
+            `${HELP_URL}/posts/preview-engagement/`,
+        [getPath(ROUTES.ENGAGEMENT_DETAILS_ACTIVITY, { engagementId: SAMPLE_IDS.engagementId })]:
+            `${HELP_URL}/posts/preview-engagement/`,
+        [getPath(ROUTES.PUBLIC_DASHBOARD_BY_SLUG, {
+            slug: SAMPLE_IDS.slug,
+            dashboardType: 'public',
+            language: SAMPLE_IDS.languageId,
+        })]: `${HELP_URL}/posts/report/`,
+        [getPath(ROUTES.PUBLIC_DASHBOARD_BY_SLUG, {
+            slug: SAMPLE_IDS.slug,
+            dashboardType: 'internal',
+            language: SAMPLE_IDS.languageId,
+        })]: `${HELP_URL}/posts/report/`,
+        [getPath(ROUTES.ENGAGEMENT_COMMENTS_DASHBOARD, {
+            engagementId: SAMPLE_IDS.engagementId,
+            dashboardType: 'public',
+        })]: `${HELP_URL}/posts/report/`,
+        [getPath(ROUTES.PUBLIC_DASHBOARD_BY_SLUG, {
+            slug: SAMPLE_IDS.slug,
+            dashboardType: 'internal',
+            language: SAMPLE_IDS.languageId,
+        })]: `${HELP_URL}/posts/report/`,
+        [getPath(ROUTES.USER_MANAGEMENT)]: `${HELP_URL}/posts/user-management/`,
+        [getPath(ROUTES.USER_DETAILS, { userId: SAMPLE_IDS.userId })]: `${HELP_URL}/posts/user-details/`,
+        [getPath(ROUTES.TENANT_ADMIN)]: `${HELP_URL}/posts/tenant-admin/`,
+        [getPath(ROUTES.TENANT_ADMIN_CREATE)]: `${HELP_URL}/posts/tenant-admin/#create-tenant`,
+        [getPath(ROUTES.TENANT_ADMIN_DETAIL, { tenantShortName: SAMPLE_IDS.tenantShortName })]:
+            `${HELP_URL}/posts/tenant-admin/#view-tenant-details`,
+        [getPath(ROUTES.TENANT_ADMIN_EDIT, { tenantShortName: SAMPLE_IDS.tenantShortName })]:
+            `${HELP_URL}/posts/tenant-details/#edit-tenant`,
     };
 
     const handleSimilarityScore = () => {

@@ -6,6 +6,7 @@ import { User, createDefaultUser } from 'models/user';
 import { getUser } from 'services/userService/api';
 import { getMembershipsByUser } from 'services/membershipService';
 import { EngagementTeamMember } from 'models/engagementTeamMember';
+import { ROUTES, getPath } from 'routes/routes';
 
 export interface UserViewContext {
     savedUser: User | undefined;
@@ -66,7 +67,7 @@ export const UserDetailsContextProvider = ({
 
     const getUserDetails = async () => {
         if (isNaN(Number(userId))) {
-            navigate('/usermanagement');
+            navigate(getPath(ROUTES.USER_MANAGEMENT));
             return;
         }
         setUserLoading(true);

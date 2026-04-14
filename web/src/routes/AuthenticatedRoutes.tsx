@@ -226,13 +226,16 @@ const AuthenticatedRoutes = resolveLazyRouteTree(
                             </LazyRoute>
                         </LazyRoute>
                     </LazyRoute>
+                    <LazyRoute
+                        path="comments/:dashboardType"
+                        ComponentLazy={() => import('engagements/dashboard/comment')}
+                    />
+                    <LazyRoute
+                        path="dashboard/:dashboardType"
+                        ComponentLazy={() => import('components/publicDashboard')}
+                    />
                     <LazyRoute path="*" ComponentLazy={() => import('routes/NotFound')} />
                 </LazyRoute>
-                <LazyRoute
-                    path="comments/:dashboardType"
-                    ComponentLazy={() => import('engagements/dashboard/comment')}
-                />
-                <LazyRoute path="dashboard/:dashboardType" ComponentLazy={() => import('components/publicDashboard')} />
             </LazyRoute>
             <LazyRoute path=":slug">
                 <LazyRoute index loaderLazy={() => import('engagements/admin/EngagementLoaderAdmin')} />

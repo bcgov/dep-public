@@ -11,6 +11,7 @@ import { Heading1, Heading2 } from 'components/common/Typography';
 import dayjs from 'dayjs';
 import { Language } from 'models/language';
 import { Grid2 as Grid, Skeleton } from '@mui/material';
+import { ROUTES, getPath } from 'routes/routes';
 
 const EngagementConfigurationWizard = () => {
     const { engagement, teamMembers, slug } = useRouteLoaderData('single-engagement') as EngagementLoaderAdminData;
@@ -84,7 +85,7 @@ const ConfigForm = ({
             }),
             {
                 method: 'patch',
-                action: `/engagements/${engagement.id}/details/config/edit`,
+                action: getPath(ROUTES.ENGAGEMENT_DETAILS_CONFIG_EDIT, { engagementId: engagement.id }),
             },
         );
     };
@@ -104,7 +105,7 @@ const ConfigForm = ({
 
     return (
         <FormProvider {...engagementConfigForm}>
-            <EngagementForm onSubmit={onSubmit} />
+            <EngagementForm engagement={engagement} onSubmit={onSubmit} />
         </FormProvider>
     );
 };

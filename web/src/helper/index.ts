@@ -15,6 +15,11 @@ export const replaceAllInURL = ({ URL, params }: { URL: string; params: Params }
     });
 };
 
+/*
+ * Constructs the full base URL for the application, taking into account the public URL and any basename specified in session storage.
+ * This can be combined with the getPath function to generate complete URLs for shared links or other scenarios where the full URL is needed.
+ * This is useful for ensuring that all API requests and links are correctly prefixed with the appropriate base URL, especially in cases where the application is deployed under a subpath.
+ */
 export const getBaseUrl = () => {
     const basename = sessionStorage.getItem('basename');
     const domain = AppConfig.publicUrl ? AppConfig.publicUrl : window.location.origin;

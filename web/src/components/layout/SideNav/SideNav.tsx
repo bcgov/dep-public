@@ -1,5 +1,6 @@
 import React, { useLayoutEffect, useState } from 'react';
 import {
+    Link,
     ListItemButton,
     List,
     ListItem,
@@ -22,7 +23,7 @@ import UserGuideNav from './UserGuideNav';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faLinkSlash } from '@fortawesome/pro-regular-svg-icons/faLinkSlash';
 import { faCheck } from '@fortawesome/pro-solid-svg-icons/faCheck';
-import { Link } from 'components/common/Navigation';
+import { RouterLinkRenderer } from 'components/common/Navigation/Link';
 import { BodyText } from 'components/common/Typography/Body';
 import { USER_ROLES } from 'services/userService/constants';
 import UserService from 'services/userService';
@@ -74,7 +75,7 @@ const DrawerBox = ({ isMediumScreenOrLarger, setOpen }: DrawerBoxProps) => {
                     }}
                 >
                     <ListItemButton
-                        component={Link}
+                        LinkComponent={RouterLinkRenderer}
                         disableRipple
                         sx={{
                             '&:hover, &:active, &:focus': {
@@ -85,7 +86,7 @@ const DrawerBox = ({ isMediumScreenOrLarger, setOpen }: DrawerBoxProps) => {
                         }}
                         draggable={false}
                         data-testid={`SideNav/${route.name}-button`}
-                        to={route.path}
+                        href={route.path}
                         onClick={() => {
                             setOpen(false);
                         }}
@@ -253,7 +254,7 @@ const SideNav = ({ open, setOpen, isMediumScreen }: SideNavProps) => {
                             </BodyText>
                         </Grid>
                         <Grid sx={{ marginLeft: 'auto', marginRight: '32px' }}>
-                            <Link onClick={UserService.doLogout} to={'#'}>
+                            <Link onClick={UserService.doLogout} href="#">
                                 Logout
                                 <FontAwesomeIcon style={{ marginLeft: '4px' }} icon={faArrowRight} />
                             </Link>

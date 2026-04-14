@@ -100,9 +100,6 @@ jest.mock('axios');
 
 jest.mock('@mui/material', () => ({
     ...jest.requireActual('@mui/material'),
-    Link: ({ children }: { children: ReactNode }) => {
-        return <a>{children}</a>;
-    },
     useMediaQuery: () => false,
 }));
 
@@ -372,7 +369,6 @@ describe('Engagement listing page tests', () => {
 
         await openActionsFor(mockEngagementTwo.id);
         fireEvent.click(await screen.findByRole('option', { name: /Delete Engagement/i }));
-
         const confirm = await screen.findByRole('button', { name: /Delete Engagement/i });
         fireEvent.click(confirm);
 

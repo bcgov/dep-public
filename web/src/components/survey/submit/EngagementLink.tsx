@@ -6,6 +6,7 @@ import { Link } from 'components/common/Navigation';
 import UnsavedWorkConfirmation from 'components/common/Navigation/UnsavedWorkConfirmation';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowLeftLong } from '@fortawesome/pro-regular-svg-icons';
+import { ROUTES, getPath } from 'routes/routes';
 
 export const EngagementLink = () => {
     const engagement = useAsyncValue() as Engagement | null;
@@ -13,7 +14,7 @@ export const EngagementLink = () => {
     return (
         <When condition={!engagement}>
             <UnsavedWorkConfirmation blockNavigationWhen />
-            <Link to="/surveys">
+            <Link to={getPath(ROUTES.SURVEYS)}>
                 <FontAwesomeIcon icon={faArrowLeftLong} /> Back to Surveys
             </Link>
         </When>

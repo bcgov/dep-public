@@ -11,6 +11,7 @@ import { useAppDispatch } from 'hooks';
 import { openNotification } from 'services/notificationService/notificationSlice';
 import { useRouteLoaderData, useNavigate, Await, useRevalidator } from 'react-router';
 import { MidScreenLoader } from 'components/common';
+import { ROUTES, getPath } from 'routes/routes';
 // Prevents page load fail due to waiting for engagement title on refresh
 const AutoBreadcrumbs = React.lazy(() =>
     import('components/common/Navigation/Breadcrumb').then((m) => ({ default: m.AutoBreadcrumbs })),
@@ -28,14 +29,14 @@ const TenantEditPage = () => {
                 {(resolvedTenant) => {
                     const shortName = resolvedTenant?.short_name;
                     const onCancel = () => {
-                        navigate(`/tenantadmin/${shortName}/detail`);
+                        navigate(getPath(ROUTES.TENANT_ADMIN_DETAIL, { tenantShortName: shortName }));
                     };
                     const onSubmit: SubmitHandler<Tenant> = async (data) => {
                         try {
                             await updateTenant(data, shortName);
                             dispatch(openNotification({ text: 'Tenant updated successfully!', severity: 'success' }));
                             revalidator.revalidate();
-                            navigate(`/tenantadmin/${shortName}/detail`);
+                            navigate(getPath(ROUTES.TENANT_ADMIN_DETAIL, { tenantShortName: shortName }));
                         } catch (error) {
                             dispatch(
                                 openNotification({ text: 'Unknown error while saving tenant', severity: 'error' }),
