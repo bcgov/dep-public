@@ -537,10 +537,19 @@ export const AdminTheme = createTheme({
     },
     components: {
         ...BaseTheme.components,
+        MuiChip: {
+            styleOverrides: {
+                root: {
+                    borderRadius: '0.25rem',
+                    padding: '0 0.25rem',
+                    fontSize: '0.875rem',
+                },
+            },
+        },
         MuiButton: {
             styleOverrides: {
                 root: {
-                    borderRadius: '8px',
+                    borderRadius: '0.5rem',
                 },
             },
             defaultProps: {
@@ -575,16 +584,6 @@ export const AdminDarkTheme = createTheme({
     components: {
         ...DarkTheme.components,
         ...AdminTheme.components,
-        MuiButton: {
-            styleOverrides: {
-                root: {
-                    borderRadius: '8px',
-                },
-            },
-            defaultProps: {
-                disableRipple: true,
-            },
-        },
     },
 });
 

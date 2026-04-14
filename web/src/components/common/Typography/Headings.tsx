@@ -85,7 +85,7 @@ export const Heading2 = ({
                 {
                     '&::before': decorated
                         ? {
-                              backgroundColor: '#FCBA19',
+                              backgroundColor: 'gold.60',
                               content: '""',
                               display: 'block',
                               width: '40px',

@@ -31,7 +31,7 @@ const AuthenticatedRoutes = resolveLazyRouteTree(
             ComponentLazy={() => import('components/appLayouts/AuthenticatedLayout')}
             ErrorBoundaryLazy={() => import('./NotFound')}
             loaderLazy={() => import('routes/AuthenticatedRootRouteLoader')}
-            handle={{ crumb: () => ({ name: 'Dashboard', link: '/home' }) }}
+            handle={{ crumb: () => ({ name: 'Home', link: '/home' }) }}
             shouldRevalidate={() => false} // Cache the root loader data for the authenticated area
         >
             <LazyRoute path="/home" ComponentLazy={() => import('components/dashboard')} />
