@@ -63,7 +63,7 @@ const PublicHeader = () => {
                     }}
                 />
 
-                <Link to={getPath(ROUTES.HOME)} underline="none">
+                <Link to={getPath(ROUTES.PUBLIC_LANDING)} underline="none">
                     {/* engageBC Branding */}
                     <BodyText thin sx={{ color: colors.surface.blue[80], userSelect: 'none' }}>
                         engage{/*no space*/}

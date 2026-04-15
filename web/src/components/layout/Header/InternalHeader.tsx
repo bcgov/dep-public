@@ -325,6 +325,7 @@ const TenantSelector = ({
 
     const tenantList = tenants.map((tenant) => (
         <MenuItem
+            component="a"
             key={tenant.short_name}
             // Don't use a React Router link here - we need to escape the current
             // React Router context and navigate to a new base URL to pass the new
@@ -533,7 +534,7 @@ const UserButtonContent = ({ isOpen }: { isOpen: boolean }) => {
                 <BodyText size="small" sx={{ userSelect: 'none' }}>
                     Hello {currentUser?.first_name}
                 </BodyText>
-                <BodyText sx={{ fontSize: '10px', lineHeight: 1 }}>
+                <BodyText textAlign="left" lineHeight={1} sx={{ fontSize: '10px' }}>
                     {currentUser?.roles.includes(USER_ROLES.SUPER_ADMIN)
                         ? 'Super Admin'
                         : (currentUser?.main_role ?? 'User')}
