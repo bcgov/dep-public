@@ -240,7 +240,7 @@ class Config:  # pylint: disable=too-few-public-methods
     PATH_CONFIG = PATHS = {
         'SITE': os.getenv('SITE_URL'),
         'SURVEY': os.getenv('SURVEY_PATH', '/surveys/submit/{survey_id}/{token}/{lang}'),
-        'USER_MANAGEMENT': os.getenv('USER_MANAGEMENT_PATH', '/usermanagement/{id}/details'),
+        'USER_MANAGEMENT': os.getenv('USER_MANAGEMENT_PATH', '/manage/users/{id}/details'),
         'SUBMISSION': os.getenv(
             'SUBMISSION_PATH', '/engagements/{engagement_id}/edit/{token}/{lang}'
         ),

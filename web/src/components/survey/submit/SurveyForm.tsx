@@ -5,13 +5,13 @@ import { FormSubmissionData } from 'components/Form/types';
 import { useAppDispatch, useAppSelector, useAppTranslation } from 'hooks';
 import { When } from 'react-if';
 import { submitSurvey } from 'services/submissionService';
-import { useNavigate, useRouteLoaderData } from 'react-router';
+import { useNavigate } from 'react-router';
 import { Button } from 'components/common/Input/Button';
 import { openNotification } from 'services/notificationService/notificationSlice';
 import UnsavedWorkConfirmation from 'components/common/Navigation/UnsavedWorkConfirmation';
-import { SurveyLoaderData } from '../building/SurveyLoader';
 import { getPath, ROUTES } from 'routes/routes';
 import { AppConfig } from 'config';
+import { useSurveyLoaderData } from './useSurveyLoaderData';
 
 export const SurveyForm = () => {
     const { t: translate } = useAppTranslation();
@@ -25,7 +25,7 @@ export const SurveyForm = () => {
     const [isValid, setIsValid] = useState(false);
     const [isChanged, setIsChanged] = useState(false);
 
-    const { survey, verification, slug } = useRouteLoaderData('survey') as SurveyLoaderData;
+    const { survey, verification, slug } = useSurveyLoaderData();
 
     const token = verification?.verification_token;
 

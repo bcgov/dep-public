@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import dayjs, { Dayjs } from 'dayjs';
 import { FormProvider, useForm, Resolver } from 'react-hook-form';
-import { createSearchParams, useFetcher, Outlet, useMatch } from 'react-router';
+import { createSearchParams, useFetcher, useMatch } from 'react-router';
 import { convertToRaw, EditorState } from 'draft-js';
 import * as yup from 'yup';
 import { EngagementViewSections } from 'components/engagement/public/view';
@@ -12,6 +12,8 @@ import { saveObject } from 'services/objectStorageService';
 import { FormDetailsTab } from './types';
 import { AuthoringPreviewWindowProvider } from './AuthoringPreviewWindowContext';
 import { ROUTES, getPath } from 'routes/routes';
+import AuthoringTemplate from './AuthoringTemplate';
+import { AuthoringFormContext } from './AuthoringFormContext';
 
 const tabSchema = yup.object({
     id: yup.number().required(),
@@ -387,11 +389,13 @@ export const AuthoringContext = () => {
     };
 
     return (
-        <AuthoringPreviewWindowProvider>
-            <FormProvider key={pageName || 'authoring-form'} {...engagementUpdateForm}>
-                <Outlet context={{ onSubmit, defaultValues, setDefaultValues, fetcher }} />
-            </FormProvider>
-        </AuthoringPreviewWindowProvider>
+        <AuthoringFormContext.Provider value={{ onSubmit, defaultValues, setDefaultValues, fetcher }}>
+            <AuthoringPreviewWindowProvider>
+                <FormProvider key={pageName || 'authoring-form'} {...engagementUpdateForm}>
+                    <AuthoringTemplate />
+                </FormProvider>
+            </AuthoringPreviewWindowProvider>
+        </AuthoringFormContext.Provider>
     );
 };
 

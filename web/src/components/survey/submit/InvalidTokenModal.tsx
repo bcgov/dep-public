@@ -2,20 +2,24 @@ import React from 'react';
 import { Grid2 as Grid, Modal } from '@mui/material';
 import { modalStyle } from 'components/common';
 import { useAppSelector, useAppTranslation } from 'hooks';
-import { useNavigate, useRouteLoaderData } from 'react-router';
+import { useNavigate } from 'react-router';
 import { Button } from 'components/common/Input/Button';
 import { BodyText } from 'components/common/Typography/Body';
 import { AppConfig } from 'config';
 import { getPath, ROUTES } from 'routes/routes';
 import { RouterLinkRenderer } from 'components/common/Navigation/Link';
+import { useSurveyLoaderData } from './useSurveyLoaderData';
 
 export const InvalidTokenModal = () => {
     const { t: translate } = useAppTranslation();
     const isLoggedIn = useAppSelector((state) => state.user.authentication.authenticated);
     const navigate = useNavigate();
-    const { verification, slug } = useRouteLoaderData('survey');
+    const { verification, slug } = useSurveyLoaderData();
     const language = sessionStorage.getItem('languageId') ?? AppConfig.language.defaultLanguageId;
-    const engagementPath = getPath(ROUTES.PUBLIC_ENGAGEMENT_BY_SLUG, { slug: slug.slug, language: language });
+    const engagementPath =
+        slug !== null
+            ? getPath(ROUTES.PUBLIC_ENGAGEMENT_BY_SLUG, { slug: slug.slug, language })
+            : getPath(ROUTES.PUBLIC_LANDING);
 
     const navigateToEngagement = () => navigate(engagementPath);
 

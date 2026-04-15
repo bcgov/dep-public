@@ -2,13 +2,13 @@ import { ROUTES, getPath } from 'routes/routes';
 
 describe('routes/getPath', () => {
     test('returns static route without params', () => {
-        expect(getPath(ROUTES.HOME)).toEqual('/home');
+        expect(getPath(ROUTES.HOME)).toEqual('/manage');
         expect(getPath(ROUTES.PUBLIC_LANDING)).toEqual('/');
     });
 
     test('interpolates route params', () => {
-        expect(getPath(ROUTES.SURVEY_BUILD, { surveyId: '123' })).toEqual('/surveys/123/build');
-        expect(getPath(ROUTES.USER_DETAILS, { userId: 42 })).toEqual('/usermanagement/42/details');
+        expect(getPath(ROUTES.SURVEY_BUILD, { surveyId: '123' })).toEqual('/manage/surveys/123/build');
+        expect(getPath(ROUTES.USER_DETAILS, { userId: 42 })).toEqual('/manage/users/42/details');
         expect(getPath(ROUTES.PUBLIC_ENGAGEMENT_BY_SLUG, { slug: 'my-engagement', language: 'en' })).toEqual(
             '/my-engagement/en',
         );
