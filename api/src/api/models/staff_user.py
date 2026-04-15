@@ -72,11 +72,11 @@ class StaffUser(BaseModel):
         if has_tenant_id and has_g_tenant_id:
             return query.outerjoin(
                 UserGroupMembership,
-                (UserGroupMembership.staff_user_external_id == cls.external_id)
-                & (UserGroupMembership.tenant_id == g.tenant_id)
+                (UserGroupMembership.staff_user_external_id == cls.external_id) &
+                (UserGroupMembership.tenant_id == g.tenant_id)
             ).filter(
                 or_(
-                    UserGroupMembership.id != None,  # noqa: E711  # user has a role in this tenant
+                    UserGroupMembership.id != None,  # noqa: E711  # pylint: disable=C0121
                     cls.tenant_id == g.tenant_id,   # new user, no role yet
                 )
             )
