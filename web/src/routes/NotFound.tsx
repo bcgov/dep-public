@@ -22,19 +22,19 @@ const notFoundFallback = {
     list5: 'If you would like to email us, please contact *************@gov.bc.ca.',
 };
 
-const SuggestionsList = () => {
+const translateOrFallback = (key: string, fallback: string) => {
     const { t: translate, i18n } = useAppTranslation();
+    if (!i18n.exists(`default:${key}`) && !i18n.exists(`common:${key}`)) {
+        return fallback;
+    }
+    return translate(key);
+};
+
+const SuggestionsList = () => {
     const invalidTenant = findTenantInPath().toLowerCase() !== sessionStorage.getItem('tenantId')?.toLowerCase();
     const isLoggedIn = useAppSelector((state) => state.user.authentication.authenticated);
     const homeLink = getPath(isLoggedIn ? ROUTES.HOME : ROUTES.PUBLIC_LANDING);
     const { href, to } = invalidTenant ? { href: '/' } : { to: homeLink };
-
-    const translateOrFallback = (key: string, fallback: string) => {
-        if (!i18n.exists(`default:${key}`) && !i18n.exists(`common:${key}`)) {
-            return fallback;
-        }
-        return translate(key);
-    };
 
     return (
         <Box>
@@ -57,55 +57,44 @@ const SuggestionsList = () => {
     );
 };
 
-const NotFound = () => {
-    const { t: translate, i18n } = useAppTranslation();
-
-    const translateOrFallback = (key: string, fallback: string) => {
-        if (!i18n.exists(`default:${key}`) && !i18n.exists(`common:${key}`)) {
-            return fallback;
-        }
-        return translate(key);
-    };
-
-    return (
-        <Grid
-            mt={4}
-            container
-            direction={'column'}
-            justifyContent="center"
-            alignItems="center"
-            spacing={1}
-            padding={'2em 2em 1em 2em'}
-        >
-            <Grid sx={{ ...marginStyle, marginBottom: 3 }}>
-                <Heading1 bold fontSize="2em">
-                    {translateOrFallback('notFound.header.0', notFoundFallback.header0)}
-                </Heading1>
-            </Grid>
-            <Grid sx={{ marginStyle, marginBottom: 2 }}>
-                <SvgIcon
-                    fontSize="inherit"
-                    component={ErrorSvg}
-                    viewBox="0 0 404 320"
-                    sx={{
-                        width: '25em', // adjust these values as per your needs
-                        height: '15em',
-                        marginX: 1,
-                        boxSizing: 'border-box',
-                        padding: '0px',
-                    }}
-                />
-            </Grid>
-            <Grid size={6} justifyContent="center" mb={4}>
-                <Heading4 align="left" bold>
-                    {translateOrFallback('notFound.header.1', notFoundFallback.header1)}
-                </Heading4>
-            </Grid>
-            <Grid size={6} justifyContent={'left'}>
-                <SuggestionsList />
-            </Grid>
+const NotFound = () => (
+    <Grid
+        mt={4}
+        container
+        direction={'column'}
+        justifyContent="center"
+        alignItems="center"
+        spacing={1}
+        padding={'2em 2em 1em 2em'}
+    >
+        <Grid sx={{ ...marginStyle, marginBottom: 3 }}>
+            <Heading1 bold fontSize="2em">
+                {translateOrFallback('notFound.header.0', notFoundFallback.header0)}
+            </Heading1>
         </Grid>
-    );
-};
+        <Grid sx={{ marginStyle, marginBottom: 2 }}>
+            <SvgIcon
+                fontSize="inherit"
+                component={ErrorSvg}
+                viewBox="0 0 404 320"
+                sx={{
+                    width: '25em', // adjust these values as per your needs
+                    height: '15em',
+                    marginX: 1,
+                    boxSizing: 'border-box',
+                    padding: '0px',
+                }}
+            />
+        </Grid>
+        <Grid size={6} justifyContent="center" mb={4}>
+            <Heading4 align="left" bold>
+                {translateOrFallback('notFound.header.1', notFoundFallback.header1)}
+            </Heading4>
+        </Grid>
+        <Grid size={6} justifyContent={'left'}>
+            <SuggestionsList />
+        </Grid>
+    </Grid>
+);
 
 export default NotFound;
