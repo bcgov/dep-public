@@ -243,7 +243,7 @@ const AuthenticatedRoutes = resolveLazyRouteTree(
                 <LazyRoute path="dashboard/:dashboardType" ComponentLazy={() => import('components/publicDashboard')} />
             </LazyRoute>
             <LazyRoute
-                path="metadatamanagement"
+                path="metadata"
                 ComponentLazy={() => import('components/metadataManagement')}
                 handle={{ crumb: () => ({ name: 'Metadata Management' }) }}
             />

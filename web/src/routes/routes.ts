@@ -47,7 +47,7 @@ export const ROUTES = {
     ENGAGEMENT_DASHBOARD: '/manage/engagements/:engagementId/dashboard/:dashboardType',
     SLUG_COMMENTS_DASHBOARD: '/manage/:slug/comments/:dashboardType',
     SLUG_DASHBOARD: '/manage/:slug/dashboard/:dashboardType',
-    METADATA_MANAGEMENT: '/manage/metadatamanagement',
+    METADATA_MANAGEMENT: '/manage/metadata',
     LANGUAGES: '/manage/languages',
     TENANT_ADMIN: '/manage/tenantadmin',
     TENANT_ADMIN_CREATE: '/manage/tenantadmin/create',
