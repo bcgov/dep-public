@@ -19,7 +19,7 @@ const AdminAuthGuard = () => {
 
         if (!isAuthenticated && keycloakInstance && attemptedLoginForPathRef.current !== targetPath) {
             attemptedLoginForPathRef.current = targetPath;
-            void UserService.doLogin(window.location.href);
+            UserService.doLogin(window.location.href);
         }
     }, [isAuthenticated, keycloakInstance, location.hash, location.pathname, location.search]);
 

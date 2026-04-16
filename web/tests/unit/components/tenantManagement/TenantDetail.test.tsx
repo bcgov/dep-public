@@ -113,13 +113,13 @@ jest.mock('components/common/Navigation/Breadcrumb', () => ({
 const router = createMemoryRouter(
     [
         {
-            path: '/tenantadmin/:tenantShortName/detail',
+            path: '/manage/tenantadmin/:tenantShortName/detail',
             element: <TenantDetail />,
             id: 'tenant',
             loader: () => Promise.resolve(mockTenant),
         },
     ],
-    { initialEntries: ['/tenantadmin/tenantone/detail'] },
+    { initialEntries: ['/manage/tenantadmin/tenantone/detail'] },
 );
 
 describe('Tenant Detail Page tests', () => {

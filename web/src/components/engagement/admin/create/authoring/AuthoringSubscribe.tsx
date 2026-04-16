@@ -32,6 +32,9 @@ const AuthoringSubscribe = () => {
     const hasUnsavedWork = isDirty && !isSubmitting;
 
     useEffect(() => {
+        if (typeof fetcher.data !== 'string' || fetcher.data !== 'success') {
+            return;
+        }
         const newDefaults = getValues();
         setDefaultValues(newDefaults);
         reset(newDefaults);

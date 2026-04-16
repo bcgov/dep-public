@@ -62,12 +62,12 @@ jest.mock('react-router', () => ({
 const router = reactRouter.createMemoryRouter(
     [
         {
-            path: '/usermanagement',
+            path: '/manage/users',
             element: <UserManagementListing />,
         },
     ],
     {
-        initialEntries: ['/usermanagement'],
+        initialEntries: ['/manage/users'],
     },
 );
 

@@ -28,11 +28,14 @@ const RootRoute = () => {
         const applyTranslations = async () => {
             try {
                 const loadedTranslations = await translations;
-                const activeLanguageId = loadedTranslations[selectedLanguageId]
-                    ? selectedLanguageId
-                    : loadedTranslations[preferredLanguageId]
-                      ? preferredLanguageId
-                      : AppConfig.language.defaultLanguageId;
+                let activeLanguageId;
+                if (loadedTranslations[selectedLanguageId]) {
+                    activeLanguageId = selectedLanguageId;
+                } else if (loadedTranslations[preferredLanguageId]) {
+                    activeLanguageId = preferredLanguageId;
+                } else {
+                    activeLanguageId = AppConfig.language.defaultLanguageId;
+                }
 
                 i18n.changeLanguage(activeLanguageId);
                 i18n.addResourceBundle(activeLanguageId, 'default', loadedTranslations[activeLanguageId], true, true);

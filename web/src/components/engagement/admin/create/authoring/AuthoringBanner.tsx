@@ -94,6 +94,9 @@ const AuthoringBanner = () => {
 
     // Set current values to default state after saving form
     useEffect(() => {
+        if (typeof fetcher.data !== 'string' || fetcher.data !== 'success') {
+            return;
+        }
         const newDefaults = getValues();
         setDefaultValues(newDefaults);
         reset(newDefaults);

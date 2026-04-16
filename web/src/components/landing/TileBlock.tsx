@@ -27,7 +27,6 @@ const TileBlock = () => {
                 justifyContent={'space-between'}
                 rowSpacing={4}
                 size={12}
-                maxWidth="xl"
             >
                 <RepeatedGrid
                     times={8}
@@ -76,7 +75,6 @@ const TileBlock = () => {
                 justifyContent={'space-between'}
                 rowSpacing={4}
                 size={12}
-                maxWidth="xl"
             >
                 {engagements.map((engagement) => (
                     <Grid

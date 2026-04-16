@@ -17,9 +17,9 @@ export const InvalidTokenModal = () => {
     const { verification, slug } = useSurveyLoaderData();
     const language = sessionStorage.getItem('languageId') ?? AppConfig.language.defaultLanguageId;
     const engagementPath =
-        slug !== null
-            ? getPath(ROUTES.PUBLIC_ENGAGEMENT_BY_SLUG, { slug: slug.slug, language })
-            : getPath(ROUTES.PUBLIC_LANDING);
+        slug === null
+            ? getPath(ROUTES.PUBLIC_LANDING)
+            : getPath(ROUTES.PUBLIC_ENGAGEMENT_BY_SLUG, { slug: slug.slug, language });
 
     const navigateToEngagement = () => navigate(engagementPath);
 
