@@ -22,7 +22,7 @@ const notFoundFallback = {
     list5: 'If you would like to email us, please contact *************@gov.bc.ca.',
 };
 
-const translateOrFallback = (key: string, fallback: string) => {
+const useTranslateOrFallback = (key: string, fallback: string) => {
     const { t: translate, i18n } = useAppTranslation();
     if (!i18n.exists(`default:${key}`) && !i18n.exists(`common:${key}`)) {
         return fallback;
@@ -39,19 +39,19 @@ const SuggestionsList = () => {
     return (
         <Box>
             <p style={{ ...listItemStyle, fontWeight: 'bold' }}>
-                {translateOrFallback('notFound.paragraph', notFoundFallback.paragraph)}
+                {useTranslateOrFallback('notFound.paragraph', notFoundFallback.paragraph)}
             </p>
             <ul>
-                <li style={listItemStyle}>{translateOrFallback('notFound.list.0', notFoundFallback.list0)}</li>
+                <li style={listItemStyle}>{useTranslateOrFallback('notFound.list.0', notFoundFallback.list0)}</li>
                 <li style={listItemStyle}>
-                    {translateOrFallback('notFound.list.1', notFoundFallback.list1)}{' '}
+                    {useTranslateOrFallback('notFound.list.1', notFoundFallback.list1)}{' '}
                     <Link href={href} to={to}>
-                        {translateOrFallback('notFound.list.2', notFoundFallback.list2)}
+                        {useTranslateOrFallback('notFound.list.2', notFoundFallback.list2)}
                     </Link>{' '}
-                    {translateOrFallback('notFound.list.3', notFoundFallback.list3)}
+                    {useTranslateOrFallback('notFound.list.3', notFoundFallback.list3)}
                 </li>
-                <li style={listItemStyle}>{translateOrFallback('notFound.list.4', notFoundFallback.list4)}</li>
-                <li style={listItemStyle}>{translateOrFallback('notFound.list.5', notFoundFallback.list5)}</li>
+                <li style={listItemStyle}>{useTranslateOrFallback('notFound.list.4', notFoundFallback.list4)}</li>
+                <li style={listItemStyle}>{useTranslateOrFallback('notFound.list.5', notFoundFallback.list5)}</li>
             </ul>
         </Box>
     );
@@ -69,7 +69,7 @@ const NotFound = () => (
     >
         <Grid sx={{ ...marginStyle, marginBottom: 3 }}>
             <Heading1 bold fontSize="2em">
-                {translateOrFallback('notFound.header.0', notFoundFallback.header0)}
+                {useTranslateOrFallback('notFound.header.0', notFoundFallback.header0)}
             </Heading1>
         </Grid>
         <Grid sx={{ marginStyle, marginBottom: 2 }}>
@@ -88,7 +88,7 @@ const NotFound = () => (
         </Grid>
         <Grid size={6} justifyContent="center" mb={4}>
             <Heading4 align="left" bold>
-                {translateOrFallback('notFound.header.1', notFoundFallback.header1)}
+                {useTranslateOrFallback('notFound.header.1', notFoundFallback.header1)}
             </Heading4>
         </Grid>
         <Grid size={6} justifyContent={'left'}>
