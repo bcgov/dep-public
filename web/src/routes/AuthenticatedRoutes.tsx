@@ -3,16 +3,14 @@ import { Navigate, Route } from 'react-router';
 
 import { USER_ROLES } from 'services/userService/constants';
 import LazyRoute, { resolveLazyRouteTree } from './LazyRoute';
-
-// Load this synchronously because the route tree must be complete before rendering
-import AuthGate from './AuthGate';
 import { getPath, ROUTES } from './routes';
 
 const AuthenticatedRoutes = resolveLazyRouteTree(
     <Route path="/manage">
         {/* Preview Route with Simplified Layout */}
         <LazyRoute
-            element={<AuthGate allowedRoles={[USER_ROLES.VIEW_ENGAGEMENT, USER_ROLES.VIEW_ASSIGNED_ENGAGEMENTS]} />}
+            ComponentLazy={() => import('routes/AuthGateRoute')}
+            handle={{ allowedRoles: [USER_ROLES.VIEW_ENGAGEMENT, USER_ROLES.VIEW_ASSIGNED_ENGAGEMENTS] }}
         >
             <LazyRoute
                 path="engagements/:engagementId/preview"
