@@ -223,7 +223,7 @@ describe('Tenant Editing Page tests', () => {
         await user.click(screen.getByText('Cancel'));
         await waitFor(() => {
             expect(navigate).toHaveBeenCalledTimes(1);
-            expect(navigate).toHaveBeenCalledWith(`/tenantadmin/${mockTenant.short_name}/detail`);
+            expect(navigate).toHaveBeenCalledWith(`/manage/tenantadmin/${mockTenant.short_name}/detail`);
         });
     });
 

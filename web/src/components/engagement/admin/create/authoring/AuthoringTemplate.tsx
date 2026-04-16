@@ -1,9 +1,8 @@
 import React, { Suspense } from 'react';
-import { useOutletContext, Form, useParams, Await, Outlet, useMatch, useRouteLoaderData } from 'react-router';
+import { Form, useParams, Await, Outlet, useMatch, useRouteLoaderData } from 'react-router';
 import AuthoringBottomNav from './AuthoringBottomNav';
-import { EngagementUpdateData } from './AuthoringContext';
+import type { EngagementUpdateData } from './AuthoringContext';
 import { useFormContext } from 'react-hook-form';
-import { AuthoringContextType } from './types';
 import { AutoBreadcrumbs } from 'components/common/Navigation/Breadcrumb';
 import { ResponsiveContainer } from 'components/common/Layout';
 import { Heading1, Heading2 } from 'components/common/Typography';
@@ -17,6 +16,7 @@ import Grid from '@mui/material/Grid2';
 import { StatusLabel } from './StatusLabel';
 import AuthoringMorePreform from './AuthoringMorePreform';
 import { ROUTES } from 'routes/routes';
+import { useAuthoringFormContext } from './AuthoringFormContext';
 
 export const getLanguageValue = (languageCode: string, languages: Language[]) => {
     if (languageCode === 'en') {
@@ -26,7 +26,7 @@ export const getLanguageValue = (languageCode: string, languages: Language[]) =>
 };
 
 const AuthoringTemplate = () => {
-    const { onSubmit, defaultValues, setDefaultValues, fetcher }: AuthoringContextType = useOutletContext();
+    const { onSubmit, defaultValues, setDefaultValues, fetcher } = useAuthoringFormContext();
     const { engagementId } = useParams() as { engagementId: string }; // We need the engagement ID quickly, so let's grab it from useParams
     const { engagement, languages } = useRouteLoaderData('single-engagement') as EngagementLoaderAdminData;
     const dispatch = useAppDispatch();

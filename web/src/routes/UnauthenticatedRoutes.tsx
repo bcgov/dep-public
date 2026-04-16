@@ -12,9 +12,10 @@ const UnauthenticatedRoutes = resolveLazyRouteTree(
     >
         <LazyRoute index ComponentLazy={() => import('components/landing')} />
         <Route path=":slug">
+            <LazyRoute index ComponentLazy={() => import('routes/SlugLanguageRedirect')} />
             <LazyRoute
                 path=":language"
-                id="single-engagement"
+                id="public-single-engagement"
                 ComponentLazy={() =>
                     import('engagements/public/view').then((module) => withLanguageParam(module.default))
                 }
@@ -53,7 +54,7 @@ const UnauthenticatedRoutes = resolveLazyRouteTree(
         </Route>
         <LazyRoute
             path="/surveys/submit/:surveyId/:token/:language"
-            id="survey"
+            id="public-survey"
             ComponentLazy={() => import('components/survey/submit').then((module) => withLanguageParam(module.default))}
             loaderLazy={() =>
                 import('components/survey/building/SurveyLoader').then((loaderModule) => loaderModule.SurveyLoader)

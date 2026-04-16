@@ -1,6 +1,6 @@
 import React, { useState, useEffect, Suspense } from 'react';
 import { FormControlLabel, Grid2 as Grid, MenuItem, Radio, RadioGroup, Select } from '@mui/material';
-import { Await, useLoaderData, useOutletContext } from 'react-router';
+import { Await, useOutletContext, useRouteLoaderData } from 'react-router';
 import { TextField } from 'components/common/Input';
 import { AuthoringTemplateOutletContext } from './types';
 import { BodyText, ErrorMessage } from 'components/common/Typography/Body';
@@ -44,7 +44,7 @@ const AuthoringBanner = () => {
         control,
         formState: { errors, isDirty, isSubmitting },
     } = useFormContext<EngagementUpdateData>();
-    const { engagement } = useLoaderData() as EngagementLoaderAdminData;
+    const { engagement } = useRouteLoaderData('single-engagement') as EngagementLoaderAdminData;
 
     const [upcomingEditorState, setUpcomingEditorState] = useState<EditorState>(getEditorStateFromRaw(''));
     const [closedEditorState, setClosedEditorState] = useState<EditorState>(getEditorStateFromRaw(''));
@@ -94,6 +94,9 @@ const AuthoringBanner = () => {
 
     // Set current values to default state after saving form
     useEffect(() => {
+        if (typeof fetcher.data !== 'string' || fetcher.data !== 'success') {
+            return;
+        }
         const newDefaults = getValues();
         setDefaultValues(newDefaults);
         reset(newDefaults);

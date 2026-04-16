@@ -2,6 +2,7 @@ import React, { createContext, useState, useEffect, JSX } from 'react';
 import { useAppDispatch } from 'hooks';
 import UserService from '../../services/userService';
 import { KeycloakClient } from 'constants/tenantConstants';
+import { userAuthentication } from 'services/userService/userSlice';
 
 export interface AuthKeyCloakContextProps {
     isAuthenticated: boolean;
@@ -31,9 +32,12 @@ export const AuthKeyCloakContextProvider = ({ children }: { children: JSX.Elemen
                 });
                 setIsAuthenticated(authenticated); // Update authentication state
                 UserService.setKeycloakInstance(KeycloakClient);
-                UserService.setAuthData(dispatch);
+                if (!authenticated) {
+                    dispatch(userAuthentication(false));
+                }
             } catch (error) {
                 console.error('Authentication initialization failed:', error);
+                dispatch(userAuthentication(false));
             } finally {
                 setIsAuthenticating(false); // Indicate that authentication process is complete
             }

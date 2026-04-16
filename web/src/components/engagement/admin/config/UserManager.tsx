@@ -10,6 +10,7 @@ import { useFormContext } from 'react-hook-form';
 import { useAppSelector } from 'hooks';
 import { debounce } from 'lodash';
 import MultiSelect from './MultiSelect';
+import { getPath, ROUTES } from 'routes/routes';
 
 export const UserManager = () => {
     const currentUser = useAppSelector((state) => state.user);
@@ -30,7 +31,7 @@ export const UserManager = () => {
                     page: '1',
                     size: '100',
                 });
-                fetcher.load(`/usermanagement/search?${searchOptions.toString()}`);
+                fetcher.load(`${getPath(ROUTES.USER_MANAGEMENT_SEARCH)}?${searchOptions.toString()}`);
             },
             500,
             { maxWait: 1000, leading: true, trailing: true },

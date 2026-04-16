@@ -1,10 +1,10 @@
 import React from 'react';
 import { Banner } from 'components/banner/Banner';
 import EngagementInfoSection from 'components/publicDashboard/EngagementInfoSection';
-import { useRouteLoaderData } from 'react-router';
+import { useSurveyLoaderData } from './useSurveyLoaderData';
 
 export const SurveyBanner = () => {
-    const { engagement } = useRouteLoaderData('survey');
+    const { engagement } = useSurveyLoaderData();
 
     if (!engagement) return null;
 

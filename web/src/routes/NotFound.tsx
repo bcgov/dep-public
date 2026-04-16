@@ -10,73 +10,91 @@ import { getPath, ROUTES } from './routes';
 const listItemStyle = { marginBottom: 1 };
 const marginStyle = { mr: 2 };
 
+const notFoundFallback = {
+    header0: "The page you're looking for cannot be found.",
+    header1: "The page you're looking for might have been removed, moved or is temporarily unavailable.",
+    paragraph: "Suggestions to help you find what you're looking for:",
+    list0: 'Check that the web URL has been entered correctly.',
+    list1: 'Go to our',
+    list2: 'homepage',
+    list3: 'and browse through our past and current engagements',
+    list4: 'Telephone Device for the Deaf (TDD) across B.C.: 711',
+    list5: 'If you would like to email us, please contact *************@gov.bc.ca.',
+};
+
+const useTranslateOrFallback = (key: string, fallback: string) => {
+    const { t: translate, i18n } = useAppTranslation();
+    if (!i18n.exists(`default:${key}`) && !i18n.exists(`common:${key}`)) {
+        return fallback;
+    }
+    return translate(key);
+};
+
 const SuggestionsList = () => {
-    const { t: translate } = useAppTranslation();
     const invalidTenant = findTenantInPath().toLowerCase() !== sessionStorage.getItem('tenantId')?.toLowerCase();
     const isLoggedIn = useAppSelector((state) => state.user.authentication.authenticated);
     const homeLink = getPath(isLoggedIn ? ROUTES.HOME : ROUTES.PUBLIC_LANDING);
     const { href, to } = invalidTenant ? { href: '/' } : { to: homeLink };
+
     return (
         <Box>
-            <p style={{ ...listItemStyle, fontWeight: 'bold' }}>{translate('notFound.paragraph')}</p>
+            <p style={{ ...listItemStyle, fontWeight: 'bold' }}>
+                {useTranslateOrFallback('notFound.paragraph', notFoundFallback.paragraph)}
+            </p>
             <ul>
-                <li style={listItemStyle}>{translate('notFound.list.0')}</li>
+                <li style={listItemStyle}>{useTranslateOrFallback('notFound.list.0', notFoundFallback.list0)}</li>
                 <li style={listItemStyle}>
-                    {translate('notFound.list.1')}{' '}
+                    {useTranslateOrFallback('notFound.list.1', notFoundFallback.list1)}{' '}
                     <Link href={href} to={to}>
-                        {translate('notFound.list.2')}
+                        {useTranslateOrFallback('notFound.list.2', notFoundFallback.list2)}
                     </Link>{' '}
-                    {translate('notFound.list.3')}
+                    {useTranslateOrFallback('notFound.list.3', notFoundFallback.list3)}
                 </li>
-                <li style={listItemStyle}>{translate('notFound.list.4')}</li>
-                <li style={listItemStyle}>{translate('notFound.list.5')}</li>
+                <li style={listItemStyle}>{useTranslateOrFallback('notFound.list.4', notFoundFallback.list4)}</li>
+                <li style={listItemStyle}>{useTranslateOrFallback('notFound.list.5', notFoundFallback.list5)}</li>
             </ul>
         </Box>
     );
 };
 
-const NotFound = () => {
-    const { t: translate } = useAppTranslation();
-
-    return (
-        <Grid
-            mt={4}
-            container
-            direction={'column'}
-            justifyContent="center"
-            alignItems="center"
-            spacing={1}
-            padding={'2em 2em 1em 2em'}
-        >
-            <Grid sx={{ ...marginStyle, marginBottom: 3 }}>
-                <Heading1 bold fontSize="2em">
-                    {translate('notFound.header.0')}
-                </Heading1>
-            </Grid>
-            <Grid sx={{ marginStyle, marginBottom: 2 }}>
-                <SvgIcon
-                    fontSize="inherit"
-                    component={ErrorSvg}
-                    viewBox="0 0 404 320"
-                    sx={{
-                        width: '25em', // adjust these values as per your needs
-                        height: '15em',
-                        marginX: 1,
-                        boxSizing: 'border-box',
-                        padding: '0px',
-                    }}
-                />
-            </Grid>
-            <Grid size={6} justifyContent="center" mb={4}>
-                <Heading4 align="left" bold>
-                    {translate('notFound.header.1')}
-                </Heading4>
-            </Grid>
-            <Grid size={6} justifyContent={'left'}>
-                <SuggestionsList />
-            </Grid>
+const NotFound = () => (
+    <Grid
+        mt={4}
+        container
+        direction={'column'}
+        justifyContent="center"
+        alignItems="center"
+        spacing={1}
+        padding={'2em 2em 1em 2em'}
+    >
+        <Grid sx={{ ...marginStyle, marginBottom: 3 }}>
+            <Heading1 bold fontSize="2em">
+                {useTranslateOrFallback('notFound.header.0', notFoundFallback.header0)}
+            </Heading1>
         </Grid>
-    );
-};
+        <Grid sx={{ marginStyle, marginBottom: 2 }}>
+            <SvgIcon
+                fontSize="inherit"
+                component={ErrorSvg}
+                viewBox="0 0 404 320"
+                sx={{
+                    width: '25em', // adjust these values as per your needs
+                    height: '15em',
+                    marginX: 1,
+                    boxSizing: 'border-box',
+                    padding: '0px',
+                }}
+            />
+        </Grid>
+        <Grid size={6} justifyContent="center" mb={4}>
+            <Heading4 align="left" bold>
+                {useTranslateOrFallback('notFound.header.1', notFoundFallback.header1)}
+            </Heading4>
+        </Grid>
+        <Grid size={6} justifyContent={'left'}>
+            <SuggestionsList />
+        </Grid>
+    </Grid>
+);
 
 export default NotFound;

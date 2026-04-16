@@ -1,6 +1,5 @@
 import React from 'react';
 import { Box, Grid2 as Grid, Stack } from '@mui/material';
-import { useRouteLoaderData } from 'react-router';
 import { useAppSelector } from 'hooks';
 import { PermissionsGate } from 'components/permissionsGate';
 import { USER_ROLES } from 'services/userService/constants';
@@ -8,9 +7,10 @@ import { Heading1 } from 'components/common/Typography';
 import { Button } from 'components/common/Input';
 import { ROUTES, getPath } from 'routes/routes';
 import { RouterLinkRenderer } from 'components/common/Navigation/Link';
+import { useSurveyLoaderData } from './useSurveyLoaderData';
 
 export const PreviewBanner = () => {
-    const { survey } = useRouteLoaderData('survey');
+    const { survey } = useSurveyLoaderData();
     const isLoggedIn = useAppSelector((state) => state.user.authentication.authenticated);
 
     if (!isLoggedIn || !survey) {

@@ -58,7 +58,7 @@ export const Routes: Route[] = [
     {
         name: 'User Admin',
         path: getPath(ROUTES.USER_MANAGEMENT),
-        base: 'usermanagement',
+        base: 'users',
         authenticated: true,
         allowedRoles: [USER_ROLES.VIEW_USERS],
         icon: faUserGear,

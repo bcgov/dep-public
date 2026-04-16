@@ -7,6 +7,7 @@ import { Heading2 } from 'components/common/Typography/Headings';
 import { ResponsiveContainer } from 'components/common/Layout';
 import { useMatches } from 'react-router';
 import { BreadcrumbTrail } from 'components/common/Navigation/Breadcrumb';
+import { getPath, ROUTES } from './routes';
 
 const UnderConstruction = React.memo(({ errorMessage = 'This page is under construction' }: IProps) => {
     const matches = useMatches();
@@ -20,7 +21,7 @@ const UnderConstruction = React.memo(({ errorMessage = 'This page is under const
                         crumbs={[
                             {
                                 name: 'Home',
-                                link: '/home',
+                                link: getPath(ROUTES.HOME),
                             },
                             {
                                 name: '[Page Under Construction]',
