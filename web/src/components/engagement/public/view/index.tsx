@@ -22,14 +22,14 @@ export const PublicEngagementView = () => {
     const { slug, engagementId, language } = useParams();
     const viewKey = `${slug ?? engagementId ?? 'engagement'}-${language ?? 'default'}`;
     return (
-        <main key={viewKey}>
+        <React.Fragment key={viewKey}>
             <EngagementHero />
             <EngagementDescription />
             <EngagementDetailsTabs />
             <EngagementSurveyBlock />
             <EngagementSubscribeBlock />
             <SuggestedEngagements />
-        </main>
+        </React.Fragment>
     );
 };
 

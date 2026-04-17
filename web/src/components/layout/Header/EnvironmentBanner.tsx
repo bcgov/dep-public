@@ -25,6 +25,7 @@ const EnvironmentBanner = () => {
             borderColor="warning.main"
             textAlign="left"
             alignItems="center"
+            flexWrap="nowrap"
             lineHeight="28px"
         >
             <BodyText component="span" fontSize="22px" color="warning.dark">

@@ -582,8 +582,8 @@ export const AdminDarkTheme = createTheme({
         ...DarkTheme.palette,
     },
     components: {
-        ...DarkTheme.components,
         ...AdminTheme.components,
+        ...DarkTheme.components,
     },
 });
 

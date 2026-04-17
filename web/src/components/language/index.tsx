@@ -86,7 +86,7 @@ const LanguageAdminPanel = () => {
     }, []);
 
     return (
-        <ResponsiveContainer component="main" data-testid="language-admin-panel">
+        <ResponsiveContainer data-testid="language-admin-panel">
             <AutoBreadcrumbs />
             <Grid size={12}>
                 <Heading1>Languages</Heading1>

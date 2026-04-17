@@ -90,6 +90,7 @@ export const TextInput: React.FC<TextInputProps> = ({
                 border: 'none',
                 ...inputProps,
                 sx: {
+                    padding: 0,
                     '&::placeholder': {
                         color: colors.type.regular.secondary,
                     },
