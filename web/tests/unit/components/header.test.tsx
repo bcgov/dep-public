@@ -22,6 +22,7 @@ jest.mock('hooks', () => ({
         callback({
             user: staffUserState,
             tenant: tenant,
+            language: { id: 'en', name: 'English' },
         }),
 }));
 
@@ -35,6 +36,9 @@ jest.mock('react-router', () => ({
         }
     },
     useNavigation: jest.fn(() => ({ state: 'idle' })),
+    useMatches: jest.fn(() => []),
+    useLocation: jest.fn(() => ({ pathname: '/manage' })),
+    useParams: jest.fn(() => ({})),
 }));
 
 jest.mock('@mui/material', () => ({

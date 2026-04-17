@@ -1,4 +1,4 @@
-import React, { useLayoutEffect, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useState } from 'react';
 import {
     Link,
     ListItemButton,
@@ -13,7 +13,7 @@ import {
     Avatar,
     ThemeProvider,
 } from '@mui/material';
-import { useLocation } from 'react-router';
+import { useLocation, useMatches } from 'react-router';
 import { Routes, Route } from './SideNavElements';
 import { AdminDarkTheme, Palette, colors, ZIndex } from '../../../styles/Theme';
 import { SideNavProps, DrawerBoxProps } from './types';
@@ -21,13 +21,18 @@ import { When } from 'react-if';
 import { useAppSelector } from 'hooks';
 import UserGuideNav from './UserGuideNav';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faIdCardClip } from '@fortawesome/pro-regular-svg-icons';
 import { faLinkSlash } from '@fortawesome/pro-regular-svg-icons/faLinkSlash';
 import { faCheck } from '@fortawesome/pro-solid-svg-icons/faCheck';
+import { faUserSecret } from '@fortawesome/pro-solid-svg-icons/faUserSecret';
 import { RouterLinkRenderer } from 'components/common/Navigation/Link';
 import { BodyText } from 'components/common/Typography/Body';
 import { USER_ROLES } from 'services/userService/constants';
 import UserService from 'services/userService';
 import { faArrowRight } from '@fortawesome/free-solid-svg-icons';
+import { ROUTES, getPath } from 'routes/routes';
+import { AppConfig } from 'config';
+import { ViewSwitcherHandle } from 'routes/ViewSwitcherHandle';
 
 export const routeItemStyle = {
     padding: 0,
@@ -159,7 +164,52 @@ const DrawerBox = ({ isMediumScreenOrLarger, setOpen }: DrawerBoxProps) => {
 
 const SideNav = ({ open, setOpen, isMediumScreen }: SideNavProps) => {
     const currentUser = useAppSelector((state) => state.user.userDetail.user);
+    const currentLanguageId = useAppSelector((state) => state.language.id) || AppConfig.language.defaultLanguageId;
+    const matches = useMatches();
+    const location = useLocation();
     const [sideNavOffset, setSideNavOffset] = useState(0);
+    const [switchTarget, setSwitchTarget] = useState<{ label: string; href: string } | null>(null);
+
+    useEffect(() => {
+        let cancelled = false;
+        const isAdminPath = location.pathname === '/manage' || location.pathname.startsWith('/manage/');
+        const defaultTarget = isAdminPath
+            ? { label: 'View Public Page', href: getPath(ROUTES.PUBLIC_LANDING) }
+            : { label: 'View Admin Page', href: getPath(ROUTES.HOME) };
+
+        const setSwitchTargetIfChanged = (nextTarget: { label: string; href: string } | null) => {
+            setSwitchTarget((currentTarget) => {
+                if (currentTarget?.href === nextTarget?.href && currentTarget?.label === nextTarget?.label) {
+                    return currentTarget;
+                }
+                return nextTarget;
+            });
+        };
+
+        const compute = async () => {
+            for (let i = matches.length - 1; i >= 0; i--) {
+                const match = matches[i];
+                const viewSwitcher = (match.handle as { viewSwitcher?: ViewSwitcherHandle })?.viewSwitcher;
+
+                if (viewSwitcher) {
+                    try {
+                        const target = await viewSwitcher(match.data, match.params, currentLanguageId);
+                        if (!cancelled) setSwitchTargetIfChanged(target ?? defaultTarget);
+                    } catch {
+                        if (!cancelled) setSwitchTargetIfChanged(defaultTarget);
+                    }
+                    return;
+                }
+            }
+
+            if (!cancelled) setSwitchTargetIfChanged(defaultTarget);
+        };
+
+        compute();
+        return () => {
+            cancelled = true;
+        };
+    }, [matches, currentLanguageId, location.pathname]);
 
     useLayoutEffect(() => {
         if (!isMediumScreen) return;
@@ -261,7 +311,22 @@ const SideNav = ({ open, setOpen, isMediumScreen }: SideNavProps) => {
                                     : (currentUser?.main_role ?? 'User')}
                             </BodyText>
                         </Grid>
-                        <Grid sx={{ marginLeft: 'auto', marginRight: '32px' }}>
+                        {switchTarget && (
+                            <Grid sx={{ marginLeft: 'auto', marginRight: '8px' }}>
+                                <Link
+                                    component={RouterLinkRenderer}
+                                    href={switchTarget.href}
+                                    onClick={() => setOpen(false)}
+                                >
+                                    {switchTarget.label}
+                                    <FontAwesomeIcon
+                                        style={{ marginLeft: '4px' }}
+                                        icon={switchTarget.label.includes('Admin') ? faIdCardClip : faUserSecret}
+                                    />
+                                </Link>
+                            </Grid>
+                        )}
+                        <Grid sx={{ marginLeft: switchTarget ? 0 : 'auto', marginRight: '32px' }}>
                             <Link onClick={UserService.doLogout} href="#">
                                 Logout
                                 <FontAwesomeIcon style={{ marginLeft: '4px' }} icon={faArrowRight} />
