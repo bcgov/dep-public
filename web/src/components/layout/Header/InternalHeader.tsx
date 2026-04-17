@@ -38,11 +38,10 @@ import { USER_ROLES } from 'services/userService/constants';
 import AuthoringSideNav from '../../engagement/admin/create/authoring/AuthoringSideNav';
 import { getAuthoringRoutes } from '../../engagement/admin/create/authoring/AuthoringNavElements';
 import { ROUTES, getPath } from 'routes/routes';
-import { RouterLinkRenderer } from 'components/common/Navigation/Link';
+import { RouterLinkRenderer, Link } from 'components/common/Navigation/Link';
 import { AppConfig } from 'config';
 import { ViewSwitcherHandle } from 'routes/ViewSwitcherHandle';
 import { getMyTenants } from 'services/tenantService';
-import { Link } from 'components/common/Navigation/Link';
 
 let fallbackMyTenantsPromise: Promise<Tenant[]> | null = null;
 
