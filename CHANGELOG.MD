@@ -1,3 +1,8 @@
+## April 20, 2026
+
+- **Bugfix** Ensure Upcoming and Closed state texts appear in the hero banner (and nowhere else) [🎟️ DEP-260](https://citz-gdx.atlassian.net/browse/DEP-260)
+  - Fixed a bug where the Upcoming and Closed state texts could appear in the Provide Feedback section of the engagement details page, which was not the intended behavior. These status texts are now only displayed in the hero banner of the engagement page when the engagement is in the corresponding status.
+
 ## April 15, 2026
 
 - **Feature** Merge routers, move authenticated routes to /manage and add AdminAuthGuard [🎟️ DEP-255](https://citz-gdx.atlassian.net/browse/DEP-255)

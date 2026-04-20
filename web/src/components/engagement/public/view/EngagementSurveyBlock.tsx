@@ -3,26 +3,26 @@ import { Button } from 'components/common/Input/Button';
 import { Box, Grid2 as Grid, Skeleton, ThemeProvider } from '@mui/material';
 import { useParams } from 'react-router';
 import { SubmissionStatus } from 'constants/engagementStatus';
-import { RichTextArea } from 'components/common/Input/RichTextArea';
-import { getStatusFromStatusId, getSubmissionStatusFromPreviewState } from 'components/common/Indicators';
-import { getEditorStateFromRaw } from 'components/common/RichTextEditor/utils';
+import { getSubmissionStatusFromPreviewState } from 'components/common/Indicators';
 import { WidgetLocation } from 'models/widget';
 import { BaseTheme, DarkTheme } from 'styles/Theme';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faChevronRight } from '@fortawesome/pro-regular-svg-icons';
 import { Switch, Case } from 'react-if';
 import { useAppSelector, useAppTranslation } from 'hooks';
-import EmailModal from 'engagements/public/email/EmailModal';
+import EmailModal from 'components/engagement/public/email/EmailModal';
 import { EngagementViewSections } from '.';
-import { EngagementPreviewTag } from 'engagements/public/view/EngagementPreviewTag';
+import { EngagementPreviewTag } from './EngagementPreviewTag';
 import { usePreview } from 'components/engagement/preview/PreviewContext';
 import { useEngagementLoaderData } from 'components/engagement/preview/PreviewLoaderDataContext';
 import { EngagementWidgetDisplay } from './EngagementWidgetDisplay';
 import { TextPlaceholder } from 'components/engagement/preview/placeholders/TextPlaceholder';
-import { previewValue, PreviewSwitch } from 'engagements/preview/PreviewSwitch';
+import { previewValue, PreviewSwitch } from 'components/engagement/preview/PreviewSwitch';
 import { BodyText, Heading2 } from 'components/common/Typography';
 import { ROUTES, getPath } from 'routes/routes';
 import { AppConfig } from 'config';
+import { RichTextArea } from 'components/common/Input/RichTextArea';
+import { getEditorStateFromRaw } from 'components/common/RichTextEditor/utils';
 
 const gridContainerStyles = {
     bgcolor: 'blue.90',
@@ -43,7 +43,6 @@ const EngagementSurveyContent = ({}) => {
     const loadedEngagement = React.use(engagement);
     const loadedWidgets = React.use(widgets);
     const hasWidget = loadedWidgets.some((widget) => widget.location === WidgetLocation.Feedback);
-    const baseSurveyStatus = getStatusFromStatusId(loadedEngagement.submission_status);
     const [currentPanel, setCurrentPanel] = React.useState('email');
     const [isEmailModalOpen, setIsEmailModalOpen] = React.useState(false);
     const languageId = sessionStorage.getItem('languageId') ?? language ?? AppConfig.language.defaultLanguageId;
@@ -61,13 +60,6 @@ const EngagementSurveyContent = ({}) => {
         setIsEmailModalOpen(false);
     };
 
-    const effectiveSurveyStatus =
-        previewValue<string>({
-            isPreviewMode,
-            hasValue: Boolean(isPreviewMode && previewStateType),
-            value: previewStateType ?? baseSurveyStatus,
-            fallback: baseSurveyStatus,
-        }) ?? baseSurveyStatus;
     const effectiveStatus =
         previewValue<SubmissionStatus>({
             isPreviewMode,
@@ -75,20 +67,16 @@ const EngagementSurveyContent = ({}) => {
             value: getSubmissionStatusFromPreviewState(previewStateType),
             fallback: loadedEngagement.submission_status,
         }) ?? loadedEngagement.submission_status;
-    const isErrorMessage = isPreviewMode && (previewStateType === 'Upcoming' || previewStateType === 'Closed');
-    const statusBlockEditorState = getEditorStateFromRaw(
-        loadedEngagement.status_block.find((block) => block.survey_status === effectiveSurveyStatus)?.block_text ?? '',
-    );
-    const hasStatusBlockText = Boolean(statusBlockEditorState?.getCurrentContent()?.hasText?.());
     const feedbackBodyEditorState = getEditorStateFromRaw(loadedEngagement.feedback_body || '');
     const hasFeedbackContent =
         Boolean(loadedEngagement.feedback_heading?.trim()) ||
         Boolean(feedbackBodyEditorState?.getCurrentContent()?.hasText?.());
     const shouldDisplayFeedbackColumn =
-        isPreviewMode || (hasStatusBlockText && !isErrorMessage) || effectiveStatus !== SubmissionStatus.Upcoming;
+        isPreviewMode || hasFeedbackContent || effectiveStatus !== SubmissionStatus.Upcoming;
 
-    // Outside preview mode, skip if there's nothing to show.
-    if (!isPreviewMode && !hasStatusBlockText && !hasWidget && !hasFeedbackContent) return null;
+    // Outside preview mode, skip when the page has no feedback content, widgets, or status-specific feedback actions.
+    if (!isPreviewMode && !hasWidget && !hasFeedbackContent && effectiveStatus === SubmissionStatus.Upcoming)
+        return null;
 
     return (
         <Grid container size={12} spacing={4} justifyContent="space-between" sx={gridContainerStyles}>
@@ -120,10 +108,6 @@ const EngagementSurveyContent = ({}) => {
                             previewFallback={<TextPlaceholder type="paragraph" />}
                         />
                     </BodyText>
-                    {/* block_text only shown when it's not in the hero (not Upcoming/Closed in preview) */}
-                    {!isPreviewMode && !isErrorMessage && hasStatusBlockText && (
-                        <RichTextArea readOnly toolbarHidden editorState={statusBlockEditorState} />
-                    )}
                     <ThemeProvider theme={BaseTheme}>
                         <EmailModal
                             engagement={loadedEngagement}

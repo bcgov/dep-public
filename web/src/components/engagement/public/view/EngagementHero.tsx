@@ -6,7 +6,11 @@ import { getEditorStateFromRaw } from 'components/common/RichTextEditor/utils';
 import { Engagement } from 'models/engagement';
 import { Box, Grid2 as Grid, Skeleton } from '@mui/material';
 import { colors } from 'components/common';
-import { EngagementStatusChip, getSubmissionStatusFromPreviewState } from 'components/common/Indicators';
+import {
+    EngagementStatusChip,
+    getStatusFromStatusId,
+    getSubmissionStatusFromPreviewState,
+} from 'components/common/Indicators';
 import dayjs from 'dayjs';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faChevronRight } from '@fortawesome/pro-regular-svg-icons';
@@ -17,7 +21,7 @@ import { usePreview } from 'components/engagement/preview/PreviewContext';
 import { SubmissionStatus } from 'constants/engagementStatus';
 import { BlueprintImagePlaceholder } from 'components/engagement/preview/placeholders/BlueprintImagePlaceholder';
 import { TextPlaceholder } from 'components/engagement/preview/placeholders/TextPlaceholder';
-import { previewValue, PreviewRender, PreviewSwitch } from 'engagements/preview/PreviewSwitch';
+import { previewValue, PreviewRender, PreviewSwitch } from 'components/engagement/preview/PreviewSwitch';
 import { EngagementPreviewTag } from './EngagementPreviewTag';
 import { useEngagementLoaderData } from 'components/engagement/preview/PreviewLoaderDataContext';
 
@@ -121,6 +125,13 @@ export const EngagementHero = () => {
                     <Await resolve={engagementInfo}>
                         {([engagement, startDate, endDate]: [Engagement, dayjs.Dayjs | null, dayjs.Dayjs | null]) => {
                             const usePreviewState = Boolean(isPreviewMode && previewStateType);
+                            const effectiveSurveyStatus =
+                                previewValue<string | null>({
+                                    isPreviewMode,
+                                    hasValue: usePreviewState,
+                                    value: previewStateType ?? null,
+                                    fallback: getStatusFromStatusId(engagement.submission_status),
+                                }) ?? getStatusFromStatusId(engagement.submission_status);
 
                             const effectiveStatusId =
                                 previewValue<SubmissionStatus>({
@@ -130,28 +141,29 @@ export const EngagementHero = () => {
                                     fallback: engagement.submission_status,
                                 }) ?? engagement.submission_status;
 
-                            const effectiveBlock = previewValue({
-                                isPreviewMode,
-                                hasValue: usePreviewState,
-                                value: engagement.status_block.find(
-                                    (block) =>
-                                        block.survey_status === previewStateType && block.link_type === 'internal',
-                                ),
-                                fallback: engagement.status_block.find((block) => block.link_type === 'internal'),
-                            });
-
-                            const stateMessageBlock =
-                                previewValue({
-                                    isPreviewMode,
-                                    hasValue: usePreviewState,
-                                    value: engagement.status_block.find(
-                                        (block) => block.survey_status === previewStateType,
-                                    ),
-                                    fallback: null,
-                                }) ?? null;
-
+                            const activeStatusBlock = effectiveSurveyStatus
+                                ? engagement.status_block.find((block) => block.survey_status === effectiveSurveyStatus)
+                                : null;
                             const shouldShowStateMessage =
-                                isPreviewMode && (previewStateType === 'Upcoming' || previewStateType === 'Closed');
+                                effectiveSurveyStatus === 'Upcoming' || effectiveSurveyStatus === 'Closed';
+                            const heroButtonContent =
+                                activeStatusBlock && activeStatusBlock.link_type !== 'none'
+                                    ? {
+                                          href:
+                                              activeStatusBlock.link_type === 'external'
+                                                  ? activeStatusBlock.external_link || '#'
+                                                  : `#${activeStatusBlock.internal_link || 'detailsTabs'}`,
+                                          label: activeStatusBlock.button_text || 'Learn More',
+                                      }
+                                    : null;
+                            const previewHeroButtonFallback =
+                                isPreviewMode && (previewStateType === 'Open' || previewStateType === 'ViewResults')
+                                    ? {
+                                          href:
+                                              previewStateType === 'ViewResults' ? '#viewResults' : '#provideFeedback',
+                                          label: previewStateType === 'ViewResults' ? 'View results' : 'Learn More',
+                                      }
+                                    : null;
 
                             return (
                                 <>
@@ -185,17 +197,17 @@ export const EngagementHero = () => {
                                             </BodyText>
                                         </Grid>
                                     </Grid>
-                                    {/* State message for Upcoming / Closed in preview mode */}
                                     {shouldShowStateMessage && (
                                         <Box sx={{ color: 'error.main', mt: '24px', mb: '8px' }}>
                                             <PreviewSwitch
-                                                hasValue={Boolean(stateMessageBlock?.block_text)}
+                                                hasValue={Boolean(activeStatusBlock?.block_text)}
                                                 value={
                                                     <RichTextArea
+                                                        key={effectiveSurveyStatus}
                                                         readOnly
                                                         toolbarHidden
                                                         editorState={getEditorStateFromRaw(
-                                                            stateMessageBlock?.block_text || '',
+                                                            activeStatusBlock?.block_text || '',
                                                         )}
                                                     />
                                                 }
@@ -203,28 +215,27 @@ export const EngagementHero = () => {
                                             />
                                         </Box>
                                     )}
-                                    <PreviewRender
-                                        hasValue={Boolean(effectiveBlock)}
-                                        value={{
-                                            href: effectiveBlock?.internal_link || '#detailsTabs',
-                                            label: effectiveBlock?.button_text || 'Learn More',
-                                        }}
-                                        previewFallback={{ href: '#detailsTabs', label: 'Learn More' }}
-                                    >
-                                        {(buttonContent) => (
-                                            <Button
-                                                href={buttonContent.href}
-                                                LinkComponent={'a'}
-                                                variant="primary"
-                                                size="large"
-                                                icon={<FontAwesomeIcon fontSize={24} icon={faChevronRight} />}
-                                                iconPosition="right"
-                                                sx={{ borderRadius: '8px' }}
-                                            >
-                                                {buttonContent.label}
-                                            </Button>
-                                        )}
-                                    </PreviewRender>
+                                    {(heroButtonContent || previewHeroButtonFallback) && (
+                                        <PreviewRender<{ href: string; label: string }>
+                                            hasValue={Boolean(heroButtonContent)}
+                                            value={(heroButtonContent ?? previewHeroButtonFallback)!}
+                                            previewFallback={previewHeroButtonFallback ?? undefined}
+                                        >
+                                            {(buttonContent) => (
+                                                <Button
+                                                    href={buttonContent.href}
+                                                    LinkComponent={'a'}
+                                                    variant="primary"
+                                                    size="large"
+                                                    icon={<FontAwesomeIcon fontSize={24} icon={faChevronRight} />}
+                                                    iconPosition="right"
+                                                    sx={{ borderRadius: '8px' }}
+                                                >
+                                                    {buttonContent.label}
+                                                </Button>
+                                            )}
+                                        </PreviewRender>
+                                    )}
                                 </>
                             );
                         }}
