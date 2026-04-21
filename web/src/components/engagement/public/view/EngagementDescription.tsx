@@ -1,6 +1,5 @@
 import React, { Suspense } from 'react';
 import { BodyText, Heading2 } from 'components/common/Typography';
-import { Link } from 'components/common/Navigation';
 import { Engagement } from 'models/engagement';
 import { Grid2 as Grid, Skeleton, ThemeProvider } from '@mui/material';
 import { colors } from 'components/common';
@@ -18,6 +17,8 @@ import { PreviewSwitch } from 'engagements/preview/PreviewSwitch';
 import { EngagementPreviewTag } from './EngagementPreviewTag';
 import { EngagementWidgetDisplay } from './EngagementWidgetDisplay';
 import { useEngagementLoaderData } from 'components/engagement/preview/PreviewLoaderDataContext';
+import { RouterLinkRenderer } from 'components/common/Navigation/Link';
+import { getPath, ROUTES } from 'routes/routes';
 
 export const EngagementDescription = () => {
     const { engagement } = useEngagementLoaderData();
@@ -49,7 +50,13 @@ export const EngagementDescription = () => {
                     }}
                 >
                     <Grid size={12}>
-                        <Grid container component={Link} to={'/'} alignItems="center" display="flex">
+                        <Grid
+                            container
+                            component={RouterLinkRenderer}
+                            href={getPath(ROUTES.PUBLIC_LANDING)}
+                            alignItems="center"
+                            display="flex"
+                        >
                             <FontAwesomeIcon
                                 icon={faArrowLeftLong}
                                 color={colors.surface.white}

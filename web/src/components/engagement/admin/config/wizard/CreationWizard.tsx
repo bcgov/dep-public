@@ -7,6 +7,7 @@ import EngagementForm, { EngagementConfigurationData } from '.';
 import { Heading1, Heading2 } from 'components/common/Typography';
 import { SystemMessage } from 'components/common/Layout/SystemMessage';
 import Grid from '@mui/material/Grid2';
+import { ROUTES, getPath } from 'routes/routes';
 
 const EngagementCreationWizard = () => {
     const fetcher = useFetcher({ key: 'config-update' });
@@ -42,7 +43,7 @@ const EngagementCreationWizard = () => {
             }),
             {
                 method: 'post',
-                action: '/engagements/create/',
+                action: `${getPath(ROUTES.ENGAGEMENT_CREATE)}/`,
             },
         );
     };
@@ -66,7 +67,7 @@ const EngagementCreationWizard = () => {
             </Grid>
             <Grid size={12} mt={5}>
                 <FormProvider {...engagementCreationForm}>
-                    <EngagementForm isNewEngagement onSubmit={onSubmit} />
+                    <EngagementForm engagement={null} onSubmit={onSubmit} />
                 </FormProvider>
             </Grid>
         </ResponsiveContainer>

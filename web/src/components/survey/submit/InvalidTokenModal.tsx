@@ -2,20 +2,26 @@ import React from 'react';
 import { Grid2 as Grid, Modal } from '@mui/material';
 import { modalStyle } from 'components/common';
 import { useAppSelector, useAppTranslation } from 'hooks';
-import { useNavigate, useRouteLoaderData } from 'react-router';
+import { useNavigate } from 'react-router';
 import { Button } from 'components/common/Input/Button';
 import { BodyText } from 'components/common/Typography/Body';
+import { AppConfig } from 'config';
+import { getPath, ROUTES } from 'routes/routes';
+import { RouterLinkRenderer } from 'components/common/Navigation/Link';
+import { useSurveyLoaderData } from './useSurveyLoaderData';
 
 export const InvalidTokenModal = () => {
     const { t: translate } = useAppTranslation();
     const isLoggedIn = useAppSelector((state) => state.user.authentication.authenticated);
     const navigate = useNavigate();
-    const { verification, slug } = useRouteLoaderData('survey');
-    const languagePath = `/${sessionStorage.getItem('languageId')}`;
+    const { verification, slug } = useSurveyLoaderData();
+    const language = sessionStorage.getItem('languageId') ?? AppConfig.language.defaultLanguageId;
+    const engagementPath =
+        slug === null
+            ? getPath(ROUTES.PUBLIC_LANDING)
+            : getPath(ROUTES.PUBLIC_ENGAGEMENT_BY_SLUG, { slug: slug.slug, language });
 
-    const navigateToEngagement = () => {
-        navigate(`/${slug}/${languagePath}`);
-    };
+    const navigateToEngagement = () => navigate(engagementPath);
 
     return (
         <Modal
@@ -50,7 +56,7 @@ export const InvalidTokenModal = () => {
                     </BodyText>
                 </Grid>
                 <Grid container size={12} justifyContent="flex-end" spacing={1} sx={{ mt: '1em' }}>
-                    <Button variant="primary" onClick={navigateToEngagement}>
+                    <Button variant="primary" href={engagementPath} LinkComponent={RouterLinkRenderer}>
                         {translate('surveySubmit.inValidToken.button')}
                     </Button>
                 </Grid>

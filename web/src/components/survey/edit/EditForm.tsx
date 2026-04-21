@@ -5,8 +5,7 @@ import { SurveyFormProps } from '../types';
 import { useAppDispatch, useAppTranslation } from 'hooks';
 import { updateSubmission } from 'services/submissionService';
 import { openNotification } from 'services/notificationService/notificationSlice';
-import { useAsyncValue, useNavigate } from 'react-router';
-import { Engagement } from 'models/engagement';
+import { useAsyncValue } from 'react-router';
 import { SurveySubmission } from 'models/surveySubmission';
 import { EmailVerification } from 'models/emailVerification';
 import { Button } from 'components/common/Input/Button';
@@ -16,15 +15,12 @@ import UnsavedWorkConfirmation from 'components/common/Navigation/UnsavedWorkCon
 export const EditForm = ({ handleClose }: SurveyFormProps) => {
     const { t: translate } = useAppTranslation();
     const dispatch = useAppDispatch();
-    const navigate = useNavigate();
-    const [verification, , engagement, initialSubmission] = useAsyncValue() as [
+    const [verification, , , initialSubmission] = useAsyncValue() as [
         EmailVerification,
         unknown,
-        Engagement,
+        unknown,
         SurveySubmission,
     ];
-
-    const languagePath = `/${sessionStorage.getItem('languageId')}`;
 
     const [submission, setSubmission] = useState<SurveySubmission>(initialSubmission);
 
@@ -45,11 +41,7 @@ export const EditForm = ({ handleClose }: SurveyFormProps) => {
                     text: translate('surveyEdit.surveyEditNotification.success'),
                 }),
             );
-            navigate(`/engagements/${engagement?.id}/view/${languagePath}`, {
-                state: {
-                    open: true,
-                },
-            });
+            handleClose();
         } catch {
             dispatch(
                 openNotification({

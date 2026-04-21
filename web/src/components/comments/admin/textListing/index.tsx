@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import CustomTable from 'components/common/Table';
-import { Link, useLocation, useParams } from 'react-router';
+import { useLocation, useParams } from 'react-router';
 import { ResponsiveContainer } from 'components/common/Layout';
 import { HeadCell, PageInfo, PaginationOptions } from 'components/common/Table/types';
-import { Link as MuiLink, Grid2 as Grid, Stack, TextField, Menu, MenuItem, Tooltip } from '@mui/material';
+import { Link, Grid2 as Grid, Stack, TextField, Menu, MenuItem, Tooltip } from '@mui/material';
 import { Button } from 'components/common/Input/Button';
 import { RouterLinkRenderer } from 'components/common/Navigation/Link';
 import { BodyText } from 'components/common/Typography/Body';
@@ -30,6 +30,7 @@ import { Survey, createDefaultSurvey } from 'models/survey';
 import { PermissionsGate } from 'components/permissionsGate';
 import { HTTP_STATUS_CODES } from 'constants/httpResponseCodes';
 import axios from 'axios';
+import { ROUTES, getPath } from 'routes/routes';
 
 const CommentTextListing = () => {
     const { roles, userDetail, assignedEngagements } = useAppSelector((state) => state.user);
@@ -184,9 +185,15 @@ const CommentTextListing = () => {
                         userDetail.composite_roles?.includes('/' + USER_COMPOSITE_ROLE.TEAM_MEMBER.value))
                 ) {
                     return (
-                        <MuiLink component={Link} to={`/surveys/${Number(row.survey_id)}/submissions/${row.id}/review`}>
+                        <Link
+                            component={RouterLinkRenderer}
+                            href={getPath(ROUTES.SURVEY_SUBMISSION_REVIEW, {
+                                surveyId: Number(row.survey_id),
+                                submissionId: row.id,
+                            })}
+                        >
                             {row.id}
-                        </MuiLink>
+                        </Link>
                     );
                 }
                 return row.id;
@@ -363,7 +370,7 @@ const CommentTextListing = () => {
                     <Button
                         variant="primary"
                         LinkComponent={RouterLinkRenderer}
-                        href={`/surveys/${submissions[0]?.survey_id || 0}/comments`}
+                        href={getPath(ROUTES.SURVEY_COMMENTS, { surveyId: submissions[0]?.survey_id || 0 })}
                     >
                         Return to Comments List
                     </Button>

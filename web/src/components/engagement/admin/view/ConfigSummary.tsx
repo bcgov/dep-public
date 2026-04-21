@@ -6,7 +6,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCopy } from '@fortawesome/pro-light-svg-icons';
 import { globalFocusVisible } from 'components/common';
 import { getBaseUrl } from 'helper';
-import { Await, useRouteLoaderData } from 'react-router';
+import { Await, useParams, useRouteLoaderData } from 'react-router';
 import { EngagementStatusChip } from 'components/common/Indicators';
 import { SubmissionStatus } from 'constants/engagementStatus';
 import dayjs from 'dayjs';
@@ -15,9 +15,15 @@ import { Button } from 'components/common/Input/Button';
 import { faPen } from '@fortawesome/pro-regular-svg-icons';
 import { LiveAnnouncer, LiveMessage } from 'react-aria-live';
 import { EngagementLoaderAdminData } from '../EngagementLoaderAdmin';
+import { getPath, ROUTES } from 'routes/routes';
+import { LanguageState } from 'reduxSlices/languageSlice';
+import { useAppSelector } from 'hooks';
+import { RouterLinkRenderer } from 'components/common/Navigation/Link';
 
 export const ConfigSummary = () => {
     const siteUrl = getBaseUrl();
+    const engagementId = useParams().engagementId;
+    const language: LanguageState = useAppSelector((state) => state.language);
     const { engagement, teamMembers, slug } = useRouteLoaderData('single-engagement') as EngagementLoaderAdminData;
     const [tooltipOpen, setTooltipOpen] = React.useState(false);
 
@@ -44,38 +50,55 @@ export const ConfigSummary = () => {
                                     Engagement URL
                                 </BodyText>
                             </Grid>
-                            <Grid>
+                            <Grid container columnSpacing={1} alignItems="center">
                                 <LiveAnnouncer>
                                     <LiveMessage aria-live="assertive" message={tooltipOpen ? 'Copied!' : ''} />
-                                    <Tooltip arrow open={tooltipOpen} title="Copied!" placement="top">
-                                        <IconButton
-                                            size="small"
-                                            sx={{
-                                                backgroundColor: 'primary.light',
-                                                color: 'white',
-                                                width: '32px',
-                                                height: '32px',
-                                                '&:hover': {
-                                                    backgroundColor: 'primary.main',
-                                                },
-                                                ...globalFocusVisible,
-                                                display: 'inline-block',
-                                                marginRight: '0.5rem',
-                                            }}
-                                            onClick={() => {
-                                                navigator.clipboard.writeText(`${siteUrl}/${slug}`);
-                                                setTooltipOpen(true);
-                                            }}
-                                            aria-label="Press enter to copy engagement URL to clipboard"
-                                        >
-                                            <FontAwesomeIcon
-                                                fontSize={16}
-                                                icon={faCopy}
-                                                style={{ position: 'relative', bottom: '4px' }}
-                                            />
-                                        </IconButton>
-                                    </Tooltip>
-                                    <BodyText sx={{ display: 'inline' }}>
+                                    <BodyText component="span" display="inline" alignItems="center">
+                                        <Tooltip arrow open={tooltipOpen} title="Copied!" placement="top">
+                                            <Suspense
+                                                fallback={
+                                                    <Skeleton
+                                                        sx={{ display: 'inline-block', verticalAlign: 'middle', mr: 1 }}
+                                                        variant="circular"
+                                                        height="32px"
+                                                        width="32px"
+                                                    />
+                                                }
+                                            >
+                                                <Await resolve={slug}>
+                                                    {(slug: string) => (
+                                                        <IconButton
+                                                            size="small"
+                                                            sx={{
+                                                                mr: 1,
+                                                                backgroundColor: 'primary.light',
+                                                                color: 'white',
+                                                                width: '32px',
+                                                                height: '32px',
+                                                                '&:hover': {
+                                                                    backgroundColor: 'primary.main',
+                                                                },
+                                                                ...globalFocusVisible,
+                                                                display: 'inline-block',
+                                                            }}
+                                                            onClick={() => {
+                                                                navigator.clipboard.writeText(
+                                                                    `${siteUrl}${getPath(ROUTES.PUBLIC_ENGAGEMENT_BY_SLUG, { slug, language: language.id })}`,
+                                                                );
+                                                                setTooltipOpen(true);
+                                                            }}
+                                                            aria-label="Press enter to copy engagement URL to clipboard"
+                                                        >
+                                                            <FontAwesomeIcon
+                                                                fontSize={16}
+                                                                icon={faCopy}
+                                                                style={{ position: 'relative', bottom: '4px' }}
+                                                            />
+                                                        </IconButton>
+                                                    )}
+                                                </Await>
+                                            </Suspense>
+                                        </Tooltip>
                                         <BodyText bold component="span">
                                             {siteUrl}/
                                         </BodyText>
@@ -94,7 +117,17 @@ export const ConfigSummary = () => {
                                                 </Skeleton>
                                             }
                                         >
-                                            <Await resolve={slug}>{(slug: string) => slug}</Await>
+                                            <Await resolve={slug}>
+                                                {(slug: string) => {
+                                                    const path = getPath(ROUTES.PUBLIC_ENGAGEMENT_BY_SLUG, {
+                                                        slug,
+                                                        language: language.id,
+                                                    });
+                                                    // remove leading slash from path if it exists to prevent double slashes in URL
+                                                    const formattedPath = path.startsWith('/') ? path.slice(1) : path;
+                                                    return formattedPath;
+                                                }}
+                                            </Await>
                                         </Suspense>
                                     </BodyText>
                                 </LiveAnnouncer>
@@ -231,7 +264,11 @@ export const ConfigSummary = () => {
                     </OutlineBox>
                 </Grid>
                 <Grid pt={3}>
-                    <Button href="../config/edit" icon={<FontAwesomeIcon icon={faPen} />}>
+                    <Button
+                        href={getPath(ROUTES.ENGAGEMENT_DETAILS_CONFIG_EDIT, { engagementId: Number(engagementId) })}
+                        LinkComponent={RouterLinkRenderer}
+                        icon={<FontAwesomeIcon icon={faPen} />}
+                    >
                         Edit Configuration
                     </Button>
                 </Grid>

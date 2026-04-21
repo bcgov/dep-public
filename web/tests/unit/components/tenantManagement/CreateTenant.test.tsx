@@ -225,13 +225,13 @@ describe('Tenant Creation Page tests', () => {
         await user.click(screen.getByText('Cancel'));
         expect(
             shouldBlockNavigation({
-                nextLocation: { pathname: '/tenantadmin' },
-                currentLocation: { pathname: '/tenantadmin/1/detail' },
+                nextLocation: { pathname: '/manage/tenantadmin' },
+                currentLocation: { pathname: '/manage/tenantadmin/1/detail' },
             }),
             // Navigation should not be blocked since the form is untouched
         ).toBe(false);
         await waitFor(() => {
-            expect(navigate).toHaveBeenNthCalledWith(1, '/tenantadmin');
+            expect(navigate).toHaveBeenNthCalledWith(1, '/manage/tenantadmin');
         });
     });
 
@@ -239,21 +239,21 @@ describe('Tenant Creation Page tests', () => {
         editField('Name', 'New Name');
         await user.click(screen.getByText('Cancel'));
         await waitFor(() => {
-            expect(navigate).toHaveBeenNthCalledWith(1, '/tenantadmin');
+            expect(navigate).toHaveBeenNthCalledWith(1, '/manage/tenantadmin');
         });
         // navigate() is a mock fn, so we have to simulate the blocker ourselves
         expect(
             shouldBlockNavigation({
-                nextLocation: { pathname: '/tenantadmin' },
-                currentLocation: { pathname: '/tenantadmin/1/detail' },
+                nextLocation: { pathname: '/manage/tenantadmin' },
+                currentLocation: { pathname: '/manage/tenantadmin/1/detail' },
             }),
             // Navigation should be blocked since the form is dirty and the path is different
         ).toBe(true);
         const blocker = {
             state: 'blocked' as const,
             location: {
-                pathname: '/tenantadmin',
-                state: { from: '/tenantadmin/1/detail' },
+                pathname: '/manage/tenantadmin',
+                state: { from: '/manage/tenantadmin/1/detail' },
                 search: '',
                 hash: '',
                 key: 'foo',

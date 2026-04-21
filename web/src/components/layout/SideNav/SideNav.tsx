@@ -1,5 +1,6 @@
 import React, { useLayoutEffect, useState } from 'react';
 import {
+    Link,
     ListItemButton,
     List,
     ListItem,
@@ -22,7 +23,7 @@ import UserGuideNav from './UserGuideNav';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faLinkSlash } from '@fortawesome/pro-regular-svg-icons/faLinkSlash';
 import { faCheck } from '@fortawesome/pro-solid-svg-icons/faCheck';
-import { Link } from 'components/common/Navigation';
+import { RouterLinkRenderer } from 'components/common/Navigation/Link';
 import { BodyText } from 'components/common/Typography/Body';
 import { USER_ROLES } from 'services/userService/constants';
 import UserService from 'services/userService';
@@ -51,6 +52,7 @@ export const routeItemStyle = {
 const DrawerBox = ({ isMediumScreenOrLarger, setOpen }: DrawerBoxProps) => {
     const location = useLocation();
     const permissions = useAppSelector((state) => state.user.roles);
+    const bottomRouteNames = new Set(['Tenant Admin', 'Site Feedback']);
 
     const currentBaseRoute = Routes.map((route) => route.base)
         .filter((route) => location.pathname.includes(route))
@@ -59,13 +61,12 @@ const DrawerBox = ({ isMediumScreenOrLarger, setOpen }: DrawerBoxProps) => {
     const allowedRoutes = Routes.filter((route) => {
         return !route.authenticated || route.allowedRoles.some((role) => permissions.includes(role));
     });
+    const topRoutes = allowedRoutes.filter((route) => !bottomRouteNames.has(route.name));
+    const bottomRoutes = allowedRoutes.filter((route) => bottomRouteNames.has(route.name));
 
     const renderListItem = (route: Route, itemType: string, key: number) => {
         return (
             <React.Fragment key={key}>
-                <When condition={'Tenant Admin' === route.name}>
-                    <Divider sx={{ backgroundColor: Palette.primary.light, height: '0.2rem' }} />
-                </When>
                 <ListItem
                     key={key}
                     sx={{
@@ -74,7 +75,7 @@ const DrawerBox = ({ isMediumScreenOrLarger, setOpen }: DrawerBoxProps) => {
                     }}
                 >
                     <ListItemButton
-                        component={Link}
+                        LinkComponent={RouterLinkRenderer}
                         disableRipple
                         sx={{
                             '&:hover, &:active, &:focus': {
@@ -85,7 +86,7 @@ const DrawerBox = ({ isMediumScreenOrLarger, setOpen }: DrawerBoxProps) => {
                         }}
                         draggable={false}
                         data-testid={`SideNav/${route.name}-button`}
-                        to={route.path}
+                        href={route.path}
                         onClick={() => {
                             setOpen(false);
                         }}
@@ -117,9 +118,6 @@ const DrawerBox = ({ isMediumScreenOrLarger, setOpen }: DrawerBoxProps) => {
                     </ListItemButton>
                 </ListItem>
                 <Divider sx={{ backgroundColor: colors.surface.gray[30] }} />
-                <When condition={'User Admin' === route.name}>
-                    <UserGuideNav />
-                </When>
             </React.Fragment>
         );
     };
@@ -140,8 +138,19 @@ const DrawerBox = ({ isMediumScreenOrLarger, setOpen }: DrawerBoxProps) => {
             }}
         >
             <List sx={{ pt: { xs: 4, md: 0 }, pb: '0' }}>
-                {allowedRoutes.map((route, index) =>
+                {topRoutes.map((route, index) =>
                     renderListItem(route, currentBaseRoute === route.base ? 'selected' : 'other', index),
+                )}
+                <UserGuideNav />
+                <When condition={bottomRoutes.length > 0}>
+                    <Divider sx={{ backgroundColor: Palette.primary.light, height: '0.2rem' }} />
+                </When>
+                {bottomRoutes.map((route, index) =>
+                    renderListItem(
+                        route,
+                        currentBaseRoute === route.base ? 'selected' : 'other',
+                        topRoutes.length + index,
+                    ),
                 )}
             </List>
         </Box>
@@ -246,14 +255,14 @@ const SideNav = ({ open, setOpen, isMediumScreen }: SideNavProps) => {
                             <BodyText size="small" sx={{ userSelect: 'none' }}>
                                 Hello {currentUser?.first_name}
                             </BodyText>
-                            <BodyText sx={{ fontSize: '10px', lineHeight: 1 }}>
+                            <BodyText lineHeight={1} sx={{ fontSize: '10px' }}>
                                 {currentUser?.roles.includes(USER_ROLES.SUPER_ADMIN)
                                     ? 'Super Admin'
                                     : (currentUser?.main_role ?? 'User')}
                             </BodyText>
                         </Grid>
                         <Grid sx={{ marginLeft: 'auto', marginRight: '32px' }}>
-                            <Link onClick={UserService.doLogout} to={'#'}>
+                            <Link onClick={UserService.doLogout} href="#">
                                 Logout
                                 <FontAwesomeIcon style={{ marginLeft: '4px' }} icon={faArrowRight} />
                             </Link>

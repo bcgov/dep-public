@@ -302,7 +302,6 @@ export const BaseTheme = createTheme({
                 },
             ],
             defaultProps: {
-                disableUnderline: true,
                 IconComponent: CustomSelectIcon,
                 MenuProps: {
                     sx: {
@@ -583,8 +582,8 @@ export const AdminDarkTheme = createTheme({
         ...DarkTheme.palette,
     },
     components: {
-        ...DarkTheme.components,
         ...AdminTheme.components,
+        ...DarkTheme.components,
     },
 });
 

@@ -100,9 +100,6 @@ jest.mock('axios');
 
 jest.mock('@mui/material', () => ({
     ...jest.requireActual('@mui/material'),
-    Link: ({ children }: { children: ReactNode }) => {
-        return <a>{children}</a>;
-    },
     useMediaQuery: () => false,
 }));
 
@@ -230,7 +227,7 @@ describe('Engagement listing page tests', () => {
 
         await waitFor(() => {
             expect(mockFetcher.load).toHaveBeenLastCalledWith(
-                '/engagements/search?page=1&size=10&sort_key=engagement.created_date&sort_order=desc&search_text=Engagement+One',
+                '/manage/engagements/search?page=1&size=10&sort_key=engagement.created_date&sort_order=desc&search_text=Engagement+One',
             );
         });
     });
@@ -254,7 +251,7 @@ describe('Engagement listing page tests', () => {
         fireEvent.click(screen.getByTestId('search-button'));
         await waitFor(() => {
             expect(mockFetcher.load).toHaveBeenLastCalledWith(
-                '/engagements/search?page=1&size=10&sort_key=engagement.created_date&sort_order=desc&engagement_status=1',
+                '/manage/engagements/search?page=1&size=10&sort_key=engagement.created_date&sort_order=desc&engagement_status=1',
             );
         });
     });
@@ -372,7 +369,6 @@ describe('Engagement listing page tests', () => {
 
         await openActionsFor(mockEngagementTwo.id);
         fireEvent.click(await screen.findByRole('option', { name: /Delete Engagement/i }));
-
         const confirm = await screen.findByRole('button', { name: /Delete Engagement/i });
         fireEvent.click(confirm);
 

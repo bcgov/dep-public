@@ -17,6 +17,7 @@ import { openNotification } from 'services/notificationService/notificationSlice
 import { USER_ROLES } from 'services/userService/constants';
 import { openNotificationModal } from 'services/notificationModalService/notificationModalSlice';
 import { RoleAssignmentModal } from 'components/userManagement/common/RoleAssignmentModal';
+import { ROUTES, getPath } from 'routes/routes';
 
 export const UserDetail = ({ label, value }: { label: string; value: JSX.Element }) => {
     return (
@@ -65,7 +66,7 @@ const EditableField = ({ label, value, controls }: { label: string; value: React
                         <BodyText bold>{label}</BodyText>
                     </Grid>
                     <Grid size={12}>
-                        <BodyText>{value}</BodyText>
+                        <BodyText component="div">{value}</BodyText>
                     </Grid>
                 </Grid>
             </Grid>
@@ -146,7 +147,7 @@ export const UserDetails = () => {
                                     text: `${savedUser.first_name} ${savedUser.last_name} was deleted successfully.`,
                                 }),
                             );
-                            navigate('/usermanagement');
+                            navigate(getPath(ROUTES.USER_MANAGEMENT));
                         } catch {
                             dispatch(openNotification({ severity: 'error', text: 'Failed to delete user.' }));
                         } finally {

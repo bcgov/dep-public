@@ -8,6 +8,7 @@ import { openNotification } from 'services/notificationService/notificationSlice
 import { getErrorMessage } from 'utils';
 import { getEngagementIdBySlug } from 'services/engagementSlugService';
 import { DashboardType } from 'constants/dashboardType';
+import { ROUTES, getPath } from 'routes/routes';
 
 export interface DashboardContextState {
     engagement: Engagement;
@@ -71,7 +72,7 @@ export const DashboardContextProvider = ({ children }: DashboardContextProviderP
             return;
         }
         if (isNaN(Number(engagementId))) {
-            navigate('/not-found');
+            navigate(getPath(ROUTES.PUBLIC_NOT_FOUND));
             return;
         }
         try {
@@ -100,7 +101,7 @@ export const DashboardContextProvider = ({ children }: DashboardContextProviderP
             const result = await getEngagementIdBySlug(slug);
             setEngagementId(result.engagement_id);
         } catch {
-            navigate('/not-found');
+            navigate(getPath(ROUTES.PUBLIC_NOT_FOUND));
         }
     };
 

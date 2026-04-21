@@ -1,5 +1,5 @@
 import { SubmitHandler } from 'react-hook-form';
-import { EngagementUpdateData } from './AuthoringContext';
+import type { EngagementUpdateData } from './AuthoringContext';
 import { Dispatch, SetStateAction } from 'react';
 import { Language } from 'models/language';
 import { Engagement } from 'models/engagement';

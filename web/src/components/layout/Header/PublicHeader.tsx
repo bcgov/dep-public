@@ -8,6 +8,7 @@ import { elevations } from 'components/common';
 import EnvironmentBanner from './EnvironmentBanner';
 import { LanguageContext } from 'components/common/LanguageContext';
 import LanguageSelector from 'components/common/LanguageSelector';
+import { getPath, ROUTES } from 'routes/routes';
 
 const PublicHeader = () => {
     const { engagementViewMounted, availableEngagementTranslations } = useContext(LanguageContext);
@@ -62,7 +63,7 @@ const PublicHeader = () => {
                     }}
                 />
 
-                <Link to="/" underline="none">
+                <Link to={getPath(ROUTES.PUBLIC_LANDING)} underline="none">
                     {/* engageBC Branding */}
                     <BodyText thin sx={{ color: colors.surface.blue[80], userSelect: 'none' }}>
                         engage{/*no space*/}

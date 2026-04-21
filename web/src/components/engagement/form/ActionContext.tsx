@@ -13,6 +13,7 @@ import { USER_ROLES } from 'services/userService/constants';
 import { EngagementStatus } from 'constants/engagementStatus';
 import { TenantState } from 'reduxSlices/tenantSlice';
 import { EngagementLoaderPublicData } from '../public/view';
+import { ROUTES, getPath } from 'routes/routes';
 
 const CREATE = 'create';
 
@@ -72,7 +73,7 @@ export const ActionProvider = ({ children }: { children: JSX.Element }) => {
     // Load the engagement from the shared individual engagement loader and watch the engagement variable for any changes.
     useEffect(() => {
         if (!isCreate && isNaN(Number(engagementId))) {
-            navigate('/');
+            navigate(getPath(ROUTES.PUBLIC_LANDING));
         }
         if (isCreate && !engagementId) {
             return;
@@ -146,7 +147,7 @@ export const ActionProvider = ({ children }: { children: JSX.Element }) => {
         const engagementInDraft = savedEngagement.engagement_status.id === EngagementStatus.Draft;
         const isAssignedToEngagement = assignedEngagements.includes(Number(savedEngagement.id));
         if (!engagementInDraft || !isAssignedToEngagement) {
-            navigate('/unauthorized');
+            navigate(getPath(ROUTES.UNAUTHORIZED));
             return;
         }
         setLoadingAuthorization(false);
@@ -167,7 +168,7 @@ export const ActionProvider = ({ children }: { children: JSX.Element }) => {
             setEngagement(result);
             dispatch(openNotification({ severity: 'success', text: 'Engagement has been created' }));
             setSaving(false);
-            navigate(`/engagements/${result.id}/form`);
+            navigate(getPath(ROUTES.ENGAGEMENT_DETAILS_AUTHORING, { engagementId: result.id }));
             return Promise.resolve(result);
         } catch (error) {
             dispatch(

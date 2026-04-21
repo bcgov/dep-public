@@ -43,6 +43,7 @@ import { Else, If, Then } from 'react-if';
 import UnsavedWorkConfirmation from 'components/common/Navigation/UnsavedWorkConfirmation';
 import { SurveyLoaderData } from './SurveyLoader';
 import { fetchSurveyReportSettings } from 'services/surveyService/reportSettingsService';
+import { ROUTES, getPath } from 'routes/routes';
 
 interface SurveyForm {
     id: string;
@@ -180,7 +181,7 @@ export const FormBuilderPage = () => {
                 );
             }
             if (hasChanged) revalidator.revalidate();
-            navigate(`/surveys/${survey.id}/report`);
+            navigate(getPath(ROUTES.SURVEY_REPORT, { surveyId: survey.id }));
         } catch (error) {
             if (axios.isAxiosError(error)) {
                 dispatch(
@@ -393,7 +394,7 @@ export const FormBuilderPage = () => {
                     >
                         Report Settings
                     </Button>
-                    <Button href="/surveys">Cancel</Button>
+                    <Button href={getPath(ROUTES.SURVEYS)}>Cancel</Button>
                 </Stack>
             </Grid>
             <AutoSaveSnackBar

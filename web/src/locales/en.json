@@ -64,10 +64,7 @@
             "readComments": "Read Comments",
             "exportToPDF": "Export to PDF"
         },
-        "link": [
-            "<<Return to ",
-            " Engagement"
-        ],
+        "engagementLink": "Back to engagement",
         "errorBox": {
             "header": "Error",
             "body": "Click to reload"
@@ -104,10 +101,7 @@
         "block": {
             "header": "Comments",
             "buttonText": "View Report",
-            "link": [
-                "<<Return to ",
-                " Engagement"
-            ],
+            "engagementLink": "Back to engagement",
             "notification": {
                 "header": "View Report",
                 "text": "The report will only be available to view after the engagement period is over and the engagement is closed."

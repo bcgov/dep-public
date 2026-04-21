@@ -1,7 +1,7 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import dayjs, { Dayjs } from 'dayjs';
 import { FormProvider, useForm, Resolver } from 'react-hook-form';
-import { createSearchParams, useFetcher, Outlet, useMatch } from 'react-router';
+import { createSearchParams, useFetcher, useMatch } from 'react-router';
 import { convertToRaw, EditorState } from 'draft-js';
 import * as yup from 'yup';
 import { EngagementViewSections } from 'components/engagement/public/view';
@@ -11,6 +11,9 @@ import { openNotification } from 'services/notificationService/notificationSlice
 import { saveObject } from 'services/objectStorageService';
 import { FormDetailsTab } from './types';
 import { AuthoringPreviewWindowProvider } from './AuthoringPreviewWindowContext';
+import { ROUTES, getPath } from 'routes/routes';
+import AuthoringTemplate from './AuthoringTemplate';
+import { AuthoringFormContext } from './AuthoringFormContext';
 
 const tabSchema = yup.object({
     id: yup.number().required(),
@@ -274,7 +277,7 @@ export const AuthoringContext = () => {
             fetcher.data = undefined;
         }
     }, [fetcher.data]);
-    const pageName = useMatch('/engagements/:engagementId/details/authoring/:page')?.params.page;
+    const pageName = useMatch(ROUTES.AUTHORING_PAGE)?.params.page;
     /* Changes the resolver based on the page name. 
     If you require more complex validation, you can 
     define your own resolver and add a case for it here.
@@ -307,90 +310,102 @@ export const AuthoringContext = () => {
         reValidateMode: 'onChange',
         resolver: resolver,
     });
-    const onSubmit = async (data: EngagementUpdateData) => {
-        const savedImageDetails = data.image_file
-            ? await saveObject(data.image_file, { filename: data.image_file.name })
-            : undefined;
+    const onSubmit = useCallback(
+        async (data: EngagementUpdateData) => {
+            const savedImageDetails = data.image_file
+                ? await saveObject(data.image_file, { filename: data.image_file.name })
+                : undefined;
 
-        fetcher.submit(
-            createSearchParams({
-                id: 0 === data.id ? '' : data.id.toString(),
-                status_id: 0 === data.status_id ? '' : String(data.status_id),
-                taxon_id: 0 === data.taxon_id ? '' : String(data.taxon_id),
-                content_id: 0 === data.content_id ? '' : String(data.content_id),
-                name: data.name,
-                start_date:
-                    '1970-01-01' === data.start_date.format('YYYY-MM-DD') ? '' : data.start_date.format('YYYY-MM-DD'),
-                end_date:
-                    '1970-01-01' === data.start_date.format('YYYY-MM-DD') ? '' : data.end_date.format('YYYY-MM-DD'),
-                description: data.description,
-                rich_description: data.rich_description,
-                description_title: data.description_title,
-                status_block: data.status_block,
-                title: data.title,
-                icon_name: data.icon_name,
-                metadata_value: data.metadata_value,
-                send_report: (data.send_report || '').toString(),
-                slug: data.slug,
-                request_type: data.request_type,
-                text_content: data.text_content,
-                json_content: data.json_content,
-                form_source: data.form_source || '',
+            fetcher.submit(
+                createSearchParams({
+                    id: 0 === data.id ? '' : data.id.toString(),
+                    status_id: 0 === data.status_id ? '' : String(data.status_id),
+                    taxon_id: 0 === data.taxon_id ? '' : String(data.taxon_id),
+                    content_id: 0 === data.content_id ? '' : String(data.content_id),
+                    name: data.name,
+                    start_date:
+                        '1970-01-01' === data.start_date.format('YYYY-MM-DD')
+                            ? ''
+                            : data.start_date.format('YYYY-MM-DD'),
+                    end_date:
+                        '1970-01-01' === data.start_date.format('YYYY-MM-DD') ? '' : data.end_date.format('YYYY-MM-DD'),
+                    description: data.description,
+                    rich_description: data.rich_description,
+                    description_title: data.description_title,
+                    status_block: data.status_block,
+                    title: data.title,
+                    icon_name: data.icon_name,
+                    metadata_value: data.metadata_value,
+                    send_report: (data.send_report || '').toString(),
+                    slug: data.slug,
+                    request_type: data.request_type,
+                    text_content: data.text_content,
+                    json_content: data.json_content,
+                    form_source: data.form_source || '',
 
-                banner_filename: savedImageDetails?.uniquefilename || '',
+                    banner_filename: savedImageDetails?.uniquefilename || '',
 
-                eyebrow: data.eyebrow || '',
-                upcoming_message: data.upcoming_message || '',
-                _upcoming_message_plain: data._upcoming_message_plain || '',
-                open_cta: data.open_cta || '',
-                open_cta_link_type: data.open_cta_link_type || '',
-                open_section_link: data.open_section_link || '',
-                open_external_link: data.open_external_link || '',
-                closed_message: data.closed_message || '',
-                _closed_message_plain: data._closed_message_plain || '',
-                view_results_cta: data.view_results_cta || '',
-                view_results_link_type: data.view_results_link_type || '',
-                view_results_section_link: data.view_results_section_link || '',
-                view_results_external_link: data.view_results_external_link || '',
+                    eyebrow: data.eyebrow || '',
+                    upcoming_message: data.upcoming_message || '',
+                    _upcoming_message_plain: data._upcoming_message_plain || '',
+                    open_cta: data.open_cta || '',
+                    open_cta_link_type: data.open_cta_link_type || '',
+                    open_section_link: data.open_section_link || '',
+                    open_external_link: data.open_external_link || '',
+                    closed_message: data.closed_message || '',
+                    _closed_message_plain: data._closed_message_plain || '',
+                    view_results_cta: data.view_results_cta || '',
+                    view_results_link_type: data.view_results_link_type || '',
+                    view_results_section_link: data.view_results_section_link || '',
+                    view_results_external_link: data.view_results_external_link || '',
 
-                feedback_heading: data.feedback_heading || '',
-                feedback_body:
-                    data.feedback_body && JSON.stringify(convertToRaw(data.feedback_body.getCurrentContent())),
-                surveys: JSON.stringify(data.surveys),
-                selected_survey_id: data.selected_survey_id?.toString() || '',
+                    feedback_heading: data.feedback_heading || '',
+                    feedback_body:
+                        data.feedback_body && JSON.stringify(convertToRaw(data.feedback_body.getCurrentContent())),
+                    surveys: JSON.stringify(data.surveys),
+                    selected_survey_id: data.selected_survey_id?.toString() || '',
 
-                subscribe_section_heading: data.subscribe_section_heading || '',
-                subscribe_section_description:
-                    data.subscribe_section_description &&
-                    JSON.stringify(convertToRaw(data.subscribe_section_description.getCurrentContent())),
-                subscribe_consent_message:
-                    data.subscribe_consent_message &&
-                    JSON.stringify(convertToRaw(data.subscribe_consent_message.getCurrentContent())),
+                    subscribe_section_heading: data.subscribe_section_heading || '',
+                    subscribe_section_description:
+                        data.subscribe_section_description &&
+                        JSON.stringify(convertToRaw(data.subscribe_section_description.getCurrentContent())),
+                    subscribe_consent_message:
+                        data.subscribe_consent_message &&
+                        JSON.stringify(convertToRaw(data.subscribe_consent_message.getCurrentContent())),
 
-                details_tabs: JSON.stringify(
-                    data.details_tabs.map((tab) => ({
-                        ...tab,
-                        body: convertToRaw(tab.body.getCurrentContent()),
-                    })),
-                ),
-                more_engagements_heading: data.more_engagements_heading || '',
-                more_engagements_1: data.more_engagements_1?.toString() || '',
-                more_engagements_2: data.more_engagements_2?.toString() || '',
-                more_engagements_3: data.more_engagements_3?.toString() || '',
-            }),
-            {
-                method: 'post',
-                action: `/engagements/${data.id}/details/authoring/${pageName}`,
-            },
-        );
-    };
+                    details_tabs: JSON.stringify(
+                        data.details_tabs.map((tab) => ({
+                            ...tab,
+                            body: convertToRaw(tab.body.getCurrentContent()),
+                        })),
+                    ),
+                    more_engagements_heading: data.more_engagements_heading || '',
+                    more_engagements_1: data.more_engagements_1?.toString() || '',
+                    more_engagements_2: data.more_engagements_2?.toString() || '',
+                    more_engagements_3: data.more_engagements_3?.toString() || '',
+                }),
+                {
+                    method: 'post',
+                    action: getPath(ROUTES.AUTHORING_PAGE, { engagementId: data.id, page: pageName ?? 'banner' }),
+                },
+            );
+        },
+        [useFetcher, pageName],
+    );
+
+    const contextValue = useMemo(
+        () => ({ onSubmit, defaultValues, setDefaultValues, fetcher }),
+        [onSubmit, defaultValues, setDefaultValues, fetcher],
+    );
 
     return (
-        <AuthoringPreviewWindowProvider>
-            <FormProvider key={pageName || 'authoring-form'} {...engagementUpdateForm}>
-                <Outlet context={{ onSubmit, defaultValues, setDefaultValues, fetcher }} />
-            </FormProvider>
-        </AuthoringPreviewWindowProvider>
+        <AuthoringFormContext.Provider value={contextValue}>
+            <AuthoringPreviewWindowProvider>
+                <FormProvider key={pageName || 'authoring-form'} {...engagementUpdateForm}>
+                    <AuthoringTemplate />
+                </FormProvider>
+            </AuthoringPreviewWindowProvider>
+        </AuthoringFormContext.Provider>
     );
 };
 

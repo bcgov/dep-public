@@ -9,6 +9,23 @@
   - Removed subscribe widget as an option from widget selector and removed associated tables via migration
       - This completes the work for [🎟️ DEP-241](https://citz-gdx.atlassian.net/browse/DEP-241)
 
+## April 15, 2026
+
+- **Feature** Merge routers, move authenticated routes to /manage and add AdminAuthGuard [🎟️ DEP-255](https://citz-gdx.atlassian.net/browse/DEP-255)
+  - Merged the routers in App.tsx so all pages are now rendered within the same Router component, allowing for better route management and the ability view public pages as a logged in user without having to log out.
+  - Moved all authenticated routes in the application to be nested under a new `/manage` base path. This includes all admin and authoring routes.
+  - Implemented a new `AdminAuthGuard` component that wraps all routes under `/manage` to enforce authentication and authorization checks. This component will check if the user is logged in and has the appropriate permissions before allowing access to any admin routes.
+  - Updated all links and redirects to point to the new `/manage` paths for authenticated sections of the app.
+
+## April 13, 2026
+
+- **Feature** Migrate all links to use getPath() [🎟️ DEP-256](https://citz-gdx.atlassian.net/browse/DEP-256)
+  - Updated all hardcoded links in the codebase to use the new `getPath()` function from `routes/routes.ts`, which generates URLs based on a centralized ROUTES constant. This ensures that all links are consistent and automatically updated if route paths change in the future.
+  - This includes links in components, API calls, navigation, and anywhere else URLs are generated or used in the application.
+  - Also updated links to use RouterLinkRenderer where appropriate to take advantage of client-side routing and prevent full page reloads.
+  - Leveraged new routing system to remove redundant routes in public view and restructure public engagement URLs to use the slug-based format
+  - Fixed several bugs related to link construction
+
 ## April 13, 2026
 
 - **Feature** Add constant ROUTES list in routes/routes.ts [🎟️ DEP-254](https://citz-gdx.atlassian.net/browse/DEP-254)

@@ -34,6 +34,7 @@ import { RouterLinkRenderer } from 'components/common/Navigation/Link';
 import { faArrowUpRightFromSquare } from '@fortawesome/free-solid-svg-icons';
 import { EngagementViewSections } from 'components/engagement/public/view';
 import { useAuthoringPreviewWindow } from './AuthoringPreviewWindowContext';
+import { getPath, ROUTES } from 'routes/routes';
 const PREVIEW_CLOSE_GRACE_MS = 800;
 
 const AuthoringBottomNav = ({
@@ -86,7 +87,8 @@ const AuthoringBottomNav = ({
         }
     };
 
-    const getTargetPreviewBasePath = () => `${getBasePathPrefix()}/engagements/${engagementId}/preview`;
+    const getTargetPreviewBasePath = () =>
+        `${getBasePathPrefix()}${getPath(ROUTES.ADMIN_ENGAGEMENT_PREVIEW, { engagementId: engagementId ?? '' })}`;
 
     const postPreviewScrollMessage = (previewWindow: Window, section?: string) => {
         const targetHash = getPreviewSectionHash(section);
@@ -167,7 +169,7 @@ const AuthoringBottomNav = ({
             const previewWindow = getActivePreviewWindow();
             if (!previewWindow || previewWindow.closed) return;
 
-            const expectedPathPrefix = `${getBasePathPrefix()}/engagements/${engagementId}/preview`;
+            const expectedPathPrefix = `${getBasePathPrefix()}/${getPath(ROUTES.ADMIN_ENGAGEMENT_PREVIEW, { engagementId: engagementId ?? '' })}`;
             try {
                 if (!previewWindow.location.pathname.startsWith(expectedPathPrefix)) {
                     syncPreviewWindowUrl(pageName);

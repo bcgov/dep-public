@@ -1,12 +1,13 @@
 import React, { useContext } from 'react';
-import { Link as MuiLink } from '@mui/material';
+import { Link } from '@mui/material';
+import { RouterLinkRenderer } from 'components/common/Navigation/Link';
 import CustomTable from 'components/common/Table';
-import { Link } from 'react-router';
 import { HeadCell } from 'components/common/Table/types';
 import { ENGAGEMENT_MEMBERSHIP_STATUS_NAME, EngagementTeamMember } from 'models/engagementTeamMember';
 import { formatDate } from 'components/common/dateHelper';
 import { UserDetailsContext } from './UserDetailsContext';
 import { ActionsDropDown } from './ActionsDropDown';
+import { ROUTES, getPath } from 'routes/routes';
 
 export const AssignedEngagementsListing = () => {
     const { memberships, isUserLoading, isMembershipLoading } = useContext(UserDetailsContext);
@@ -19,9 +20,12 @@ export const AssignedEngagementsListing = () => {
             label: 'Engagement',
             allowSort: true,
             renderCell: (row: EngagementTeamMember) => (
-                <MuiLink component={Link} to={`/engagements/${Number(row.engagement_id)}/view`}>
+                <Link
+                    component={RouterLinkRenderer}
+                    href={getPath(ROUTES.ENGAGEMENT_DETAILS, { engagementId: Number(row.engagement_id) })}
+                >
                     {row.engagement?.name}
-                </MuiLink>
+                </Link>
             ),
         },
         {

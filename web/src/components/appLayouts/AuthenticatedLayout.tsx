@@ -22,22 +22,22 @@ export const AuthenticatedLayout = () => {
                 <InternalHeader />
                 <Notification />
                 <NotificationModal />
-                <Box
-                    component="main"
-                    sx={{ flexGrow: 1, marginTop: { xs: '3.5em', md: '6.5em' }, width: '100%', overflowX: 'auto' }}
+                <ScrollToTop />
+                <FormioListener />
+                <LocalizationProvider
+                    dateFormats={{
+                        keyboardDate: 'YYYY-MM-DD',
+                    }}
+                    dateAdapter={AdapterDayjs}
                 >
-                    <ScrollToTop />
-                    <FormioListener />
-                    <LocalizationProvider
-                        dateFormats={{
-                            keyboardDate: 'YYYY-MM-DD',
-                        }}
-                        dateAdapter={AdapterDayjs}
+                    <Box
+                        component="main"
+                        sx={{ flexGrow: 1, marginTop: { xs: '3.5em', md: '6.5em' }, width: '100%', overflowX: 'auto' }}
                     >
                         <Outlet />
-                    </LocalizationProvider>
-                    <FeedbackModal />
-                </Box>
+                        <FeedbackModal />
+                    </Box>
+                </LocalizationProvider>
             </Box>
             <Box
                 sx={{

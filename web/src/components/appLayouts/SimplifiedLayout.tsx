@@ -24,7 +24,7 @@ export const SimplifiedLayout = () => {
             <Box sx={{ display: 'flex', flexDirection: 'column' }}>
                 <Notification />
                 <NotificationModal />
-                <Box component="main" sx={{ flexGrow: 1, width: '100%', overflowX: 'auto' }}>
+                <Box sx={{ flexGrow: 1, width: '100%', overflowX: 'auto' }}>
                     <ScrollToTop />
                     <FormioListener />
                     <LocalizationProvider dateFormats={{ keyboardDate: 'YYYY-MM-DD' }} dateAdapter={AdapterDayjs}>

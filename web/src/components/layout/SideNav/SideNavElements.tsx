@@ -10,6 +10,7 @@ import {
     faHouseUser,
     faMessagePen,
 } from '@fortawesome/pro-regular-svg-icons';
+import { ROUTES, getPath } from 'routes/routes';
 export interface Route {
     name: string;
     path: string;
@@ -21,34 +22,34 @@ export interface Route {
 }
 
 export const Routes: Route[] = [
-    { name: 'Home', path: '/home', base: '/', authenticated: false, allowedRoles: [], icon: faHouse },
+    { name: 'Home', path: getPath(ROUTES.HOME), base: '/', authenticated: false, allowedRoles: [], icon: faHouse },
     {
         name: 'Engagements',
-        path: '/engagements',
-        base: '/engagements',
+        path: getPath(ROUTES.ENGAGEMENTS),
+        base: getPath(ROUTES.ENGAGEMENTS),
         authenticated: false,
         allowedRoles: [],
         icon: faPeopleArrows,
     },
     {
         name: 'Surveys',
-        path: '/surveys',
-        base: '/surveys',
+        path: getPath(ROUTES.SURVEYS),
+        base: getPath(ROUTES.SURVEYS),
         authenticated: false,
         allowedRoles: [],
         icon: faSquarePollHorizontal,
     },
     {
         name: 'Metadata',
-        path: '/metadatamanagement',
-        base: '/metadatamanagement',
+        path: getPath(ROUTES.METADATA_MANAGEMENT),
+        base: getPath(ROUTES.METADATA_MANAGEMENT),
         authenticated: true,
         allowedRoles: [USER_ROLES.MANAGE_METADATA],
         icon: faTags,
     },
     {
         name: 'Languages',
-        path: '/languages',
+        path: getPath(ROUTES.LANGUAGES),
         base: 'languages',
         authenticated: true,
         allowedRoles: [USER_ROLES.VIEW_LANGUAGES],
@@ -56,15 +57,15 @@ export const Routes: Route[] = [
     },
     {
         name: 'User Admin',
-        path: '/usermanagement',
-        base: 'usermanagement',
+        path: getPath(ROUTES.USER_MANAGEMENT),
+        base: 'users',
         authenticated: true,
         allowedRoles: [USER_ROLES.VIEW_USERS],
         icon: faUserGear,
     },
     {
         name: 'Tenant Admin',
-        path: '/tenantadmin',
+        path: getPath(ROUTES.TENANT_ADMIN),
         base: 'tenantadmin',
         authenticated: true,
         allowedRoles: [USER_ROLES.SUPER_ADMIN],
@@ -72,7 +73,7 @@ export const Routes: Route[] = [
     },
     {
         name: 'Site Feedback',
-        path: '/feedback',
+        path: getPath(ROUTES.FEEDBACK),
         base: 'feedback',
         authenticated: true,
         allowedRoles: [USER_ROLES.VIEW_FEEDBACKS],

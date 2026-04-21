@@ -1,6 +1,6 @@
 import { Grid2 as Grid } from '@mui/material';
 import React, { useEffect } from 'react';
-import { useOutletContext, useLoaderData } from 'react-router';
+import { useOutletContext, useRouteLoaderData } from 'react-router';
 import { TextField } from 'components/common/Input';
 import { AuthoringTemplateOutletContext } from './types';
 import { Heading3, ErrorMessage, BodyText } from 'components/common/Typography';
@@ -26,12 +26,14 @@ const AuthoringSummary = () => {
         formState: { errors, isDirty, isSubmitting },
     } = useFormContext<EngagementUpdateData>();
 
-    // Must be a loader assigned to this route or data won't be refreshed on page change.
-    const { engagement } = useLoaderData() as EngagementLoaderAdminData;
+    const { engagement } = useRouteLoaderData('single-engagement') as EngagementLoaderAdminData;
     const hasUnsavedWork = isDirty && !isSubmitting;
 
     // Set current values to default state after saving form
     useEffect(() => {
+        if (typeof fetcher.data !== 'string' || fetcher.data !== 'success') {
+            return;
+        }
         const newDefaults = getValues();
         setDefaultValues(newDefaults);
         reset(newDefaults);

@@ -3,7 +3,7 @@ import { BodyText, Heading2 } from 'components/common/Typography';
 import { Box, Grid2 as Grid, Modal } from '@mui/material';
 import { DatePicker, TimePicker } from '@mui/x-date-pickers';
 import { Controller, Resolver, useForm } from 'react-hook-form';
-import { Await, createSearchParams, Form, useFetcher, useLoaderData } from 'react-router';
+import { Await, createSearchParams, Form, useFetcher, useRouteLoaderData } from 'react-router';
 import dayjs, { Dayjs } from 'dayjs';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
@@ -17,6 +17,7 @@ import ConfirmModal from 'components/common/Modals/ConfirmModal';
 import { useAppDispatch } from 'hooks';
 import { openNotification } from 'services/notificationService/notificationSlice';
 import { AlertColor } from 'services/notificationService/types';
+import { ROUTES, getPath } from 'routes/routes';
 
 export interface PublishEngagementData {
     id: number;
@@ -53,7 +54,7 @@ export const PublishingTab = () => {
     const [unpublishConfirmOpen, setUnpublishConfirmOpen] = useState(false);
     const fetcher = useFetcher();
     const dispatch = useAppDispatch();
-    const { engagement } = useLoaderData() as EngagementLoaderAdminData;
+    const { engagement } = useRouteLoaderData('single-engagement') as EngagementLoaderAdminData;
     const engPubForm = useForm<PublishEngagementData>({
         defaultValues: useMemo(() => defaultValues, [defaultValues]),
         mode: 'onSubmit',
@@ -132,7 +133,7 @@ export const PublishingTab = () => {
             }),
             {
                 method: 'post',
-                action: `/engagements/${data.id}/details/publish`,
+                action: getPath(ROUTES.ENGAGEMENT_DETAILS_PUBLISH, { engagementId: data.id }),
             },
         );
     };

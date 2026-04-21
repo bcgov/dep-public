@@ -17,6 +17,7 @@ import { AppConfig } from 'config';
 import { IconButton } from 'components/common/Input';
 import { useRouteLoaderData, Await } from 'react-router';
 import { AuthenticatedRootLoaderData } from 'routes/AuthenticatedRootRouteLoader';
+import { getPath, ROUTES } from 'routes/routes';
 
 const LinkArrow = () => {
     return <span style={{ fontWeight: 'bold', marginLeft: '0.8rem' }}>&gt;</span>;
@@ -286,7 +287,15 @@ const Footer = () => {
                                 href="/"
                                 onClick={(event) => {
                                     event.preventDefault();
-                                    UserService.doLogin(baseURL);
+                                    const currentUrl = new URL(window.location.href);
+                                    const basePath = new URL(baseURL).pathname.replace(/\/$/, '');
+                                    const currentPath = currentUrl.pathname.replace(/\/$/, '');
+                                    const isOnPublicLanding = currentPath === basePath;
+                                    const redirectUri = isOnPublicLanding
+                                        ? `${baseURL}${getPath(ROUTES.HOME)}`
+                                        : currentUrl.toString();
+
+                                    UserService.doLogin(redirectUri);
                                 }}
                                 sx={linkStyles}
                             >

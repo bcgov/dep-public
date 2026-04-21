@@ -61,8 +61,9 @@ const AdminEngagementView = () => {
                                 justifyContent: 'flex-start',
                                 borderBottom: '2px solid',
                                 borderBottomColor: 'gray.60',
-                                width: 'calc(100% - 7.75rem)',
+                                width: '100%',
                                 minWidth: 'max-content',
+                                maxWidth: '700px',
                             },
                         }}
                     >

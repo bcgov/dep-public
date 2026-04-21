@@ -4,6 +4,7 @@ import { getEngagements } from 'services/engagementService';
 import { getMetadataFilters } from 'services/engagementMetadataService';
 import { PAGE_SIZE } from './constants';
 import { MetadataFilter } from 'components/metadataManagement/types';
+import { EngagementDisplayStatus } from 'constants/engagementStatus';
 
 interface SearchFilters {
     name: string;
@@ -30,6 +31,12 @@ const initialSearchFilters = {
     status: [],
     metadata: [],
 };
+
+const defaultLandingStatuses = [
+    EngagementDisplayStatus.Open,
+    EngagementDisplayStatus.Upcoming,
+    EngagementDisplayStatus.Closed,
+];
 
 export const LandingContext = createContext<LandingContextProps>({
     engagements: [],
@@ -73,7 +80,9 @@ export const LandingContextProvider = ({ children }: { children: JSX.Element | J
                 sort_key: 'engagement.created_date',
                 sort_order: 'desc',
                 include_banner_url: true,
-                engagement_status: status,
+                // Keep landing aligned with public visibility rules:
+                // show published/displayable engagements unless the user picks a specific status filter.
+                engagement_status: status.length > 0 ? status : defaultLandingStatuses,
                 search_text: name,
                 metadata: JSON.stringify(searchFilters.metadata),
             });

@@ -5,25 +5,27 @@ import { FormSubmissionData } from 'components/Form/types';
 import { useAppDispatch, useAppSelector, useAppTranslation } from 'hooks';
 import { When } from 'react-if';
 import { submitSurvey } from 'services/submissionService';
-import { useNavigate, useRouteLoaderData } from 'react-router';
+import { useNavigate } from 'react-router';
 import { Button } from 'components/common/Input/Button';
 import { openNotification } from 'services/notificationService/notificationSlice';
 import UnsavedWorkConfirmation from 'components/common/Navigation/UnsavedWorkConfirmation';
-import { SurveyLoaderData } from '../building/SurveyLoader';
+import { getPath, ROUTES } from 'routes/routes';
+import { AppConfig } from 'config';
+import { useSurveyLoaderData } from './useSurveyLoaderData';
 
 export const SurveyForm = () => {
     const { t: translate } = useAppTranslation();
     const navigate = useNavigate();
     const dispatch = useAppDispatch();
     const isLoggedIn = useAppSelector((state) => state.user.authentication.authenticated);
-    const languagePath = `/${sessionStorage.getItem('languageId')}`;
+    const language = sessionStorage.getItem('languageId') ?? AppConfig.language.defaultLanguageId;
     const [submissionData, setSubmissionData] = useState<unknown>(null);
 
     const initialSet = useRef(false); // Track if the initial state has been set
     const [isValid, setIsValid] = useState(false);
     const [isChanged, setIsChanged] = useState(false);
 
-    const { survey, verification, slug } = useRouteLoaderData('survey') as SurveyLoaderData;
+    const { survey, verification, slug } = useSurveyLoaderData();
 
     const token = verification?.verification_token;
 
@@ -39,7 +41,12 @@ export const SurveyForm = () => {
 
     const navigateToEngagement = () => {
         if (slug) {
-            navigate(`/${slug.slug}/${languagePath}`);
+            navigate(
+                getPath(ROUTES.PUBLIC_ENGAGEMENT_BY_SLUG, {
+                    slug: slug.slug,
+                    language,
+                }),
+            );
         }
     };
 
@@ -66,11 +73,13 @@ export const SurveyForm = () => {
                 }),
             );
             if (slug) {
-                navigate(`/${slug.slug}/${languagePath}`, {
-                    state: {
-                        open: true,
-                    },
-                });
+                navigate(
+                    getPath(ROUTES.PUBLIC_ENGAGEMENT_BY_SLUG, {
+                        slug: slug.slug,
+                        language,
+                    }),
+                    { state: { open: true } },
+                );
             }
         } catch {
             dispatch(
