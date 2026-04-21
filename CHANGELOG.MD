@@ -26,8 +26,6 @@
   - Leveraged new routing system to remove redundant routes in public view and restructure public engagement URLs to use the slug-based format
   - Fixed several bugs related to link construction
 
-## April 13, 2026
-
 - **Feature** Add constant ROUTES list in routes/routes.ts [🎟️ DEP-254](https://citz-gdx.atlassian.net/browse/DEP-254)
   - Created a new file `routes/routes.ts` that exports a constant `ROUTES` object containing all the route paths used in the application, organized by section (e.g. ENGAGEMENTS, SURVEYS, USERS, etc.).
   - Also created a type-safe `getRoute` function based on generatePath from react-router that takes a route key and optional parameters, and returns the corresponding route path with parameters interpolated. This centralizes route management and makes it easier to update routes in the future without having to search through the entire codebase.
