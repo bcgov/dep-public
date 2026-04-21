@@ -6,7 +6,7 @@ import * as widgetService from 'services/widgetService';
 import { WidgetType } from 'models/widget';
 import { draftEngagement, subscribeWidget } from '../factory';
 import { USER_ROLES } from 'services/userService/constants';
-import { setupWidgetTestEnvMock, setupWidgetTestEnvSpy } from './setupWidgetTestEnv';
+import { setupWidgetTestEnvMock, setupWidgetTestEnvSpy } from '../widgets/setupWidgetTestEnv';
 import { createMemoryRouter, RouterProvider } from 'react-router';
 
 jest.mock('components/map', () => () => <div></div>);

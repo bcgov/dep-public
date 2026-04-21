@@ -26,7 +26,7 @@ from api.utils.enums import ContentType
 from api.constants.event_types import EventTypes
 from api.exceptions.business_exception import BusinessException
 from api.services.widget_events_service import WidgetEventsService
-from tests.utilities.factory_scenarios import TestEventnfo, TestJwtClaims, TestWidgetInfo
+from tests.utilities.factory_scenarios import TestEventInfo, TestJwtClaims, TestWidgetInfo
 from tests.utilities.factory_utils import factory_auth_header, factory_engagement_model, factory_widget_model
 
 
@@ -38,7 +38,7 @@ def test_create_events(client, jwt, session):  # pylint:disable=unused-argument
     engagement = factory_engagement_model()
     TestWidgetInfo.widget1['engagement_id'] = engagement.id
     widget = factory_widget_model(TestWidgetInfo.widget1)
-    event_info = TestEventnfo.event_meetup
+    event_info = TestEventInfo.event_meetup
     headers = factory_auth_header(jwt=jwt, claims=TestJwtClaims.no_role)
 
     data = {
@@ -75,7 +75,7 @@ def test_widget_events_sort(client, jwt, session):  # pylint:disable=unused-argu
     event_widget_info_1 = TestWidgetInfo.widget1
     event_widget_info_1['engagement_id'] = engagement.id
     widget = factory_widget_model(TestWidgetInfo.widget1)
-    event_info = TestEventnfo.event_openhouse
+    event_info = TestEventInfo.event_openhouse
     headers = factory_auth_header(jwt=jwt, claims=TestJwtClaims.no_role)
     data = {
         **event_info,
@@ -89,7 +89,7 @@ def test_widget_events_sort(client, jwt, session):  # pylint:disable=unused-argu
     )
     assert rv.status_code == HTTPStatus.OK.value
 
-    event_info = TestEventnfo.event_virtual
+    event_info = TestEventInfo.event_virtual
     headers = factory_auth_header(jwt=jwt, claims=TestJwtClaims.no_role)
     data = {
         **event_info,
@@ -168,7 +168,7 @@ def test_delete_events(client, jwt, session):  # pylint:disable=unused-argument
     engagement = factory_engagement_model()
     TestWidgetInfo.widget1['engagement_id'] = engagement.id
     widget = factory_widget_model(TestWidgetInfo.widget1)
-    event_info = TestEventnfo.event_meetup
+    event_info = TestEventInfo.event_meetup
     headers = factory_auth_header(jwt=jwt, claims=TestJwtClaims.no_role)
 
     data = {
@@ -209,7 +209,7 @@ def test_patch_events(client, jwt, session):  # pylint:disable=unused-argument
     engagement = factory_engagement_model()
     TestWidgetInfo.widget1['engagement_id'] = engagement.id
     widget = factory_widget_model(TestWidgetInfo.widget1)
-    event_info = TestEventnfo.event_meetup
+    event_info = TestEventInfo.event_meetup
     headers = factory_auth_header(jwt=jwt, claims=TestJwtClaims.no_role)
 
     data = {

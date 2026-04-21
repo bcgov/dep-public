@@ -123,7 +123,7 @@ class EmailVerificationService:
                 subject=subject, email=email_to, html_body=body, args=args, template_id=template_id)
         except Exception as exc:  # noqa: B902
             current_app.logger.error(
-                '<Notification for registration failed', exc)
+                'Notification for registration failed', exc)
             raise BusinessException(
                 error='Error sending verification email.',
                 status_code=HTTPStatus.INTERNAL_SERVER_ERROR) from exc

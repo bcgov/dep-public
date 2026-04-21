@@ -1,3 +1,14 @@
+## April 21, 2026
+
+- **Bugfix** Move confirmation logic out of subscribe widget [🎟️ DEP-243](https://citz-gdx.atlassian.net/browse/DEP-243)
+  - Moved subscribe/unsubscribe out of widget folder and into main engagement folder
+  - Updated some sample.env API paths to align with the web app
+  - Updated notify-api sample.env with all needed values (many were previously missing)
+  - Disabled notify-api audience validation, which was previously failing on every request
+  - Updated notify-api make scripts to remove update from install commands, which was breaking functionality
+  - Removed subscribe widget as an option from widget selector and removed associated tables via migration
+      - This completes the work for [🎟️ DEP-241](https://citz-gdx.atlassian.net/browse/DEP-241)
+
 ## April 13, 2026
 
 - **Feature** Add constant ROUTES list in routes/routes.ts [🎟️ DEP-254](https://citz-gdx.atlassian.net/browse/DEP-254)

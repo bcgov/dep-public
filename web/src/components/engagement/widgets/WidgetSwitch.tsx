@@ -3,7 +3,6 @@ import { Widget, WidgetType } from 'models/widget';
 import { Switch, Case, Default } from 'react-if';
 import WhoIsListeningWidget from './WhoIsListeningWidget';
 import DocumentWidget from './DocumentWidget';
-import SubscribeWidget from './Subscribe/SubscribeWidget';
 import EventsWidget from './Events/EventsWidget';
 import MapWidget from './Map/MapWidget';
 import VideoWidgetView from './Video/VideoWidgetView';
@@ -29,9 +28,6 @@ export const WidgetSwitch = ({ widget }: WidgetSwitchProps) => {
                 </Case>
                 <Case condition={widget.widget_type_id === WidgetType.Map}>
                     <MapWidget widget={widget} />
-                </Case>
-                <Case condition={widget.widget_type_id === WidgetType.Subscribe}>
-                    <SubscribeWidget widget={widget} />
                 </Case>
                 <Case condition={widget.widget_type_id === WidgetType.Video}>
                     <VideoWidgetView widget={widget} />

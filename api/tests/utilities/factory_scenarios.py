@@ -659,7 +659,7 @@ class TestCommentInfo(dict, Enum):
     }
 
 
-class TestEventnfo(dict, Enum):
+class TestEventInfo(dict, Enum):
     """Test scenarios of event."""
 
     event_meetup = {

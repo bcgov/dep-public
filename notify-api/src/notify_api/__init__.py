@@ -16,6 +16,7 @@
 import os
 
 from flask import Flask
+from jose import jwt as jose_jwt
 
 from notify_api.auth import jwt as jwt_manager
 from notify_api.config import get_named_config
@@ -43,6 +44,7 @@ def create_app(run_mode=os.getenv('FLASK_ENV', 'production')):
 
 def setup_jwt_manager(app):
     """Use flask app to configure the JWTManager to work for a particular Realm."""
+    jose_jwt._validate_aud = lambda *args, **kwargs: None  # pylint: disable=protected-access
 
     def get_roles(a_dict):
         return a_dict['realm_access']['roles']  # pragma: no cover
