@@ -101,9 +101,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v6
-      - name: Pre-pull Keycloak image
-        run: |
-          docker pull quay.io/keycloak/keycloak:24.0.5
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v6
         with:
