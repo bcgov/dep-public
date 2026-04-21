@@ -4,14 +4,13 @@ import { Grid2 as Grid } from '@mui/material';
 import { BodyText, Heading1 } from 'components/common/Typography';
 import { Banner } from 'components/banner/Banner';
 import LandingPageBanner from 'assets/images/LandingPageBanner.png';
-import { useAppDispatch, useAppSelector } from 'hooks';
+import { useAppDispatch, useAppSelector, useAppTranslation } from 'hooks';
 import { openNotification } from 'services/notificationService/notificationSlice';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCircleCheck } from '@fortawesome/pro-solid-svg-icons/faCircleCheck';
 import { SubscriptionParams, SubscriptionType } from './types';
 import { verifyEmailVerification } from 'services/emailVerificationService';
 import { confirmSubscription, unSubscribe } from 'services/subscriptionService';
-import { useAppTranslation } from 'hooks';
 
 export const Subscription = () => {
     const { t: translate } = useAppTranslation();
@@ -37,7 +36,7 @@ export const Subscription = () => {
                 const subscribed_email = await verifyEmailVerification(token);
                 const subscribed = JSON.stringify(subscribed_email);
                 await confirmSubscription({
-                    engagement_id: parseInt(engagementId ?? ''),
+                    engagement_id: Number.parseInt(engagementId ?? ''),
                     participant_id: JSON.parse(subscribed).participant_id,
                     is_subscribed: true,
                 });
@@ -46,7 +45,7 @@ export const Subscription = () => {
             if (scriptionAction == SubscriptionType.UNSUBSCRIBE) {
                 const participant_id = scriptionKey;
                 await unSubscribe({
-                    participant_id: parseInt(participant_id ?? ''),
+                    participant_id: Number.parseInt(participant_id ?? ''),
                     is_subscribed: false,
                 });
                 setSubscriptionText([
@@ -60,7 +59,7 @@ export const Subscription = () => {
             }
         } catch (error) {
             dispatch(openNotification({ severity: 'error', text: translate('subscription.notification') }));
-            return Promise.reject(error);
+            throw error;
         }
     };
 
