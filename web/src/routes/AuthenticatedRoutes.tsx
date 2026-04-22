@@ -109,6 +109,17 @@ const AuthenticatedRoutes = resolveLazyRouteTree(
                                     engagementId: engagement.id,
                                 }),
                             })),
+                        viewSwitcher: async (data: unknown, _params: unknown, languageId: string) => {
+                            const loaderData = data as { slug: Promise<string> };
+                            const slug = await loaderData.slug;
+                            return {
+                                label: 'View Public Page',
+                                href: getPath(ROUTES.PUBLIC_ENGAGEMENT_BY_SLUG, {
+                                    slug,
+                                    language: languageId,
+                                }),
+                            };
+                        },
                     }}
                     shouldRevalidate={({ currentParams, nextParams, actionResult }) => {
                         return currentParams.engagementId !== nextParams.engagementId || actionResult === 'success';
@@ -239,8 +250,17 @@ const AuthenticatedRoutes = resolveLazyRouteTree(
                 <LazyRoute
                     path="comments/:dashboardType"
                     ComponentLazy={() => import('engagements/dashboard/comment')}
+                    handleLazy={() =>
+                        import('routes/AuthenticatedViewSwitcherHandles').then((m) => m.adminCommentsBySlugHandle)
+                    }
                 />
-                <LazyRoute path="dashboard/:dashboardType" ComponentLazy={() => import('components/publicDashboard')} />
+                <LazyRoute
+                    path="dashboard/:dashboardType"
+                    ComponentLazy={() => import('components/publicDashboard')}
+                    handleLazy={() =>
+                        import('routes/AuthenticatedViewSwitcherHandles').then((m) => m.adminDashboardBySlugHandle)
+                    }
+                />
             </LazyRoute>
             <LazyRoute
                 path="metadata"
