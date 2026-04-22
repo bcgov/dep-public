@@ -12,7 +12,7 @@ dagster-postgres==0.26.16
 SQLAlchemy-Utils==0.38.3
 SQLAlchemy==1.4.52
 packaging==25.0
-python-dotenv==0.21.0
+python-dotenv==1.2.2
 pytz==2026.1.post1
 -e git+https://github.com/bcgov/dep-public.git#egg=api&subdirectory=api
 -e git+https://github.com/bcgov/dep-public.git#egg=analytics-api&subdirectory=analytics-api
