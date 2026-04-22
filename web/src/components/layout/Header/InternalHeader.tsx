@@ -10,7 +10,6 @@ import {
     Grid2 as Grid,
     Grow,
     LinearProgress,
-    Link,
     MenuList,
     MenuItem,
     Theme,
@@ -23,9 +22,10 @@ import { ReactComponent as BCLogo } from 'assets/images/BritishColumbiaLogoDark.
 import { useAppSelector } from '../../../hooks';
 import { BodyText } from 'components/common/Typography/Body';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBars, faChevronDown, faClose, faSignOut } from '@fortawesome/pro-regular-svg-icons';
+import { faBars, faChevronDown, faClose, faSignOut, faIdCardClip } from '@fortawesome/pro-regular-svg-icons';
+import { faUserSecret } from '@fortawesome/pro-solid-svg-icons/faUserSecret';
 import UserService from 'services/userService';
-import { Await, useRouteLoaderData, useParams, useNavigation } from 'react-router';
+import { Await, useRouteLoaderData, useParams, useNavigation, useMatches, useLocation } from 'react-router';
 import { Tenant } from 'models/tenant';
 import { When, If, Else, Then } from 'react-if';
 import { Button } from 'components/common/Input/Button';
@@ -38,15 +38,27 @@ import { USER_ROLES } from 'services/userService/constants';
 import AuthoringSideNav from '../../engagement/admin/create/authoring/AuthoringSideNav';
 import { getAuthoringRoutes } from '../../engagement/admin/create/authoring/AuthoringNavElements';
 import { ROUTES, getPath } from 'routes/routes';
-import { RouterLinkRenderer } from 'components/common/Navigation/Link';
+import { RouterLinkRenderer, Link } from 'components/common/Navigation/Link';
+import { AppConfig } from 'config';
+import { ViewSwitcherHandle } from 'routes/ViewSwitcherHandle';
+import { getMyTenants } from 'services/tenantService';
 
-const InternalHeader = () => {
+let fallbackMyTenantsPromise: Promise<Tenant[]> | null = null;
+
+const getFallbackMyTenants = (): Promise<Tenant[]> => {
+    if (!fallbackMyTenantsPromise) {
+        fallbackMyTenantsPromise = getMyTenants().catch(() => [] as Tenant[]);
+    }
+    return fallbackMyTenantsPromise;
+};
+
+const InternalHeader = ({ showSideNav = true }: { showSideNav?: boolean }) => {
     const isMediumScreenOrLarger = useMediaQuery((theme: Theme) => theme.breakpoints.up('md'));
     const isMobileScreen = !useMediaQuery((theme: Theme) => theme.breakpoints.up('sm'));
     const [sideNavOpen, setSideNavOpen] = useState(false);
     const [secondaryMenuOpen, setSecondaryMenuOpen] = useState(false);
     const user = useAppSelector((state) => state.user);
-    const canNavigate = user.roles.length !== 0; // If user has no roles in this tenant, don't show the side nav
+    const canNavigate = showSideNav && user.roles.length !== 0; // If user has no roles or side nav is disabled, don't show the side nav
     const [tenantDrawerOpen, setTenantDrawerOpen] = useState(false);
 
     const handleTenantDrawerOpen = (isOpen: boolean) => {
@@ -77,7 +89,10 @@ const InternalHeader = () => {
         }
     });
 
-    const { myTenants } = useRouteLoaderData('authenticated-root') as AuthenticatedRootLoaderData;
+    const authenticatedRootLoaderData = useRouteLoaderData('authenticated-root') as
+        | AuthenticatedRootLoaderData
+        | undefined;
+    const myTenants = authenticatedRootLoaderData?.myTenants ?? getFallbackMyTenants();
 
     const sidePadding = { xs: '0 1em', md: '0 1.5em 0 2em', lg: '0 3em 0 2em' };
     const navigation = useNavigation();
@@ -475,6 +490,54 @@ const TenantButtonContent = ({
 
 const UserMenu = () => {
     const userGreeting = useRef<HTMLDivElement>(null);
+    const matches = useMatches();
+    const location = useLocation();
+    const currentLanguageId = useAppSelector((state) => state.language.id) || AppConfig.language.defaultLanguageId;
+
+    const [switchTarget, setSwitchTarget] = useState<{ label: string; href: string } | null>(null);
+
+    useEffect(() => {
+        let cancelled = false;
+        const isAdminPath = location.pathname === '/manage' || location.pathname.startsWith('/manage/');
+        const defaultTarget = isAdminPath
+            ? { label: 'View Public Page', href: getPath(ROUTES.PUBLIC_LANDING) }
+            : { label: 'View Admin Page', href: getPath(ROUTES.HOME) };
+
+        const setSwitchTargetIfChanged = (nextTarget: { label: string; href: string } | null) => {
+            setSwitchTarget((currentTarget) => {
+                if (currentTarget?.href === nextTarget?.href && currentTarget?.label === nextTarget?.label) {
+                    return currentTarget;
+                }
+                return nextTarget;
+            });
+        };
+
+        const compute = async () => {
+            // Find the deepest route match with a viewSwitcher handler
+            for (let i = matches.length - 1; i >= 0; i--) {
+                const match = matches[i];
+                const viewSwitcher = (match.handle as { viewSwitcher?: ViewSwitcherHandle })?.viewSwitcher;
+
+                if (viewSwitcher) {
+                    try {
+                        const target = await viewSwitcher(match.data, match.params, currentLanguageId);
+                        if (!cancelled) setSwitchTargetIfChanged(target ?? defaultTarget);
+                    } catch {
+                        if (!cancelled) setSwitchTargetIfChanged(defaultTarget);
+                    }
+                    return;
+                }
+            }
+
+            // No viewSwitcher handler found
+            if (!cancelled) setSwitchTargetIfChanged(defaultTarget);
+        };
+
+        compute();
+        return () => {
+            cancelled = true;
+        };
+    }, [matches, currentLanguageId, location.pathname]);
 
     return (
         <DropdownMenu
@@ -494,11 +557,28 @@ const UserMenu = () => {
                 },
             }}
         >
+            {switchTarget && (
+                <MenuItem
+                    component={RouterLinkRenderer}
+                    href={switchTarget.href}
+                    sx={{
+                        width: '100%',
+                        paddingLeft: 2,
+                        paddingRight: 2,
+                        transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                    }}
+                >
+                    <FontAwesomeIcon
+                        style={{ marginRight: '0.5rem' }}
+                        icon={location.pathname.startsWith('/manage') ? faUserSecret : faIdCardClip}
+                    />
+                    {switchTarget.label}
+                </MenuItem>
+            )}
             <MenuItem
-                component={ButtonBase}
-                onClick={() => {
-                    UserService.doLogout();
-                }}
+                component={Link}
+                role="button"
+                onClick={UserService.doLogout}
                 sx={{
                     width: '100%',
                     paddingLeft: 2,
