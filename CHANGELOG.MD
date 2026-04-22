@@ -1,5 +1,8 @@
 ## April 20, 2026
 
+- **Bugfix** Ensure Upcoming and Closed state texts appear in the hero banner (and nowhere else) [🎟️ DEP-260](https://citz-gdx.atlassian.net/browse/DEP-260)
+  - Fixed a bug where the Upcoming and Closed state texts could appear in the Provide Feedback section of the engagement details page, which was not the intended behavior. These status texts are now only displayed in the hero banner of the engagement page when the engagement is in the corresponding status.
+
 - **Bugfix** Use EngagementStatus instead of SubmissionStatus [🎟️ DEP-259](https://citz-gdx.atlassian.net/browse/DEP-259)
   - Updated the AuthoringMore component to use the correct EngagementStatus enum values when filtering suggested engagements. This fixes a bug where engagements in the Upcoming status were not being suggested as possible related engagements.
   - Added a unit test to ensure this behavior is correct and to prevent regressions in the future.
