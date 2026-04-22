@@ -8,6 +8,22 @@
   - Removed subscribe widget as an option from widget selector and removed associated tables via migration
       - This completes the work for [🎟️ DEP-241](https://citz-gdx.atlassian.net/browse/DEP-241)
 
+## April 20, 2026
+
+- **Bugfix** Ensure Upcoming and Closed state texts appear in the hero banner (and nowhere else) [🎟️ DEP-260](https://citz-gdx.atlassian.net/browse/DEP-260)
+  - Fixed a bug where the Upcoming and Closed state texts could appear in the Provide Feedback section of the engagement details page, which was not the intended behavior. These status texts are now only displayed in the hero banner of the engagement page when the engagement is in the corresponding status.
+
+- **Bugfix** Use EngagementStatus instead of SubmissionStatus [🎟️ DEP-259](https://citz-gdx.atlassian.net/browse/DEP-259)
+  - Updated the AuthoringMore component to use the correct EngagementStatus enum values when filtering suggested engagements. This fixes a bug where engagements in the Upcoming status were not being suggested as possible related engagements.
+  - Added a unit test to ensure this behavior is correct and to prevent regressions in the future.
+
+## April 16, 2026
+
+- **Feature** Always show InternalHeader when logged in, add admin/public view switcher [🎟️ DEP-257](https://citz-gdx.atlassian.net/browse/DEP-257)
+  - Updated the InternalHeader component to always be visible when a user is logged in, regardless of whether they are on a public or admin page. This allows for a consistent navigation experience and provides access to the header's features across the entire application.
+  - Added a new view switcher component to the InternalHeader that allows users to easily switch between the admin and public views of the application. This component is visible when a user is logged in and provides quick access to both views without needing to log out or manually navigate to different URLs.
+  - Routes now define their own "equivalents" on the opposite side (public vs admin) to allow the view switcher to direct users to the corresponding page in the other view. For example, if a user is on the admin engagement details page, the view switcher will take them to the public engagement details page for the same engagement, and vice versa. This is achieved using `handle` from react-router route definitions to specify the equivalent route key for the opposite view.
+
 ## April 15, 2026
 
 - **Feature** Merge routers, move authenticated routes to /manage and add AdminAuthGuard [🎟️ DEP-255](https://citz-gdx.atlassian.net/browse/DEP-255)

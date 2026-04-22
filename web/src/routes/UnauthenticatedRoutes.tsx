@@ -20,14 +20,23 @@ const UnauthenticatedRoutes = resolveLazyRouteTree(
                     import('engagements/public/view').then((module) => withLanguageParam(module.default))
                 }
                 loaderLazy={() => import('engagements/public/view/EngagementLoaderPublic')}
+                handleLazy={() =>
+                    import('routes/UnauthenticatedViewSwitcherHandles').then((m) => m.publicEngagementHandle)
+                }
             />
             <LazyRoute
                 path="dashboard/:dashboardType/:language"
                 ComponentLazy={() => import('components/publicDashboard').then((m) => withLanguageParam(m.default))}
+                handleLazy={() =>
+                    import('routes/UnauthenticatedViewSwitcherHandles').then((m) => m.publicDashboardHandle)
+                }
             />
             <LazyRoute
                 path="comments/:dashboardType/:language"
                 ComponentLazy={() => import('engagements/dashboard/comment').then((m) => withLanguageParam(m.default))}
+                handleLazy={() =>
+                    import('routes/UnauthenticatedViewSwitcherHandles').then((m) => m.publicCommentsHandle)
+                }
             />
             <LazyRoute
                 path="edit/:token/:language"
