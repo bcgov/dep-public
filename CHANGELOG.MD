@@ -1,3 +1,9 @@
+## April 20, 2026
+
+- **Bugfix** Use EngagementStatus instead of SubmissionStatus [🎟️ DEP-259](https://citz-gdx.atlassian.net/browse/DEP-259)
+  - Updated the AuthoringMore component to use the correct EngagementStatus enum values when filtering suggested engagements. This fixes a bug where engagements in the Upcoming status were not being suggested as possible related engagements.
+  - Added a unit test to ensure this behavior is correct and to prevent regressions in the future.
+
 ## April 16, 2026
 
 - **Feature** Always show InternalHeader when logged in, add admin/public view switcher [🎟️ DEP-257](https://citz-gdx.atlassian.net/browse/DEP-257)
