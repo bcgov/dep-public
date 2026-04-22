@@ -44,7 +44,6 @@ def create_app(run_mode=os.getenv('FLASK_ENV', 'production')):
 
 def setup_jwt_manager(app):
     """Use flask app to configure the JWTManager to work for a particular Realm."""
-    jose_jwt._validate_aud = lambda *args, **kwargs: None  # pylint: disable=protected-access
 
     def get_roles(a_dict):
         return a_dict['realm_access']['roles']  # pragma: no cover
