@@ -16,6 +16,12 @@ jest.mock('@reduxjs/toolkit/query/react', () => ({
 
 jest.mock('axios');
 
+jest.mock('react-router', () => ({
+    ...jest.requireActual('react-router'),
+    useMatches: jest.fn(() => []),
+    useLocation: jest.fn(() => ({ pathname: '/manage' })),
+}));
+
 jest.mock('hooks', () => ({
     useAppTranslation: () => ({
         t: (key: string) => key, // return the key itself (i.e. no translation)
@@ -35,6 +41,7 @@ jest.mock('hooks', () => ({
                     USER_ROLES.VIEW_LANGUAGES,
                 ],
             } as UserState,
+            language: { id: 'en', name: 'English' },
         }),
 }));
 
