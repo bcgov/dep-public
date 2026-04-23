@@ -7,6 +7,7 @@
   - Updated notify-api make scripts to remove update from install commands, which was breaking functionality
   - Removed subscribe widget as an option from widget selector and removed associated tables via migration
       - This completes the work for [🎟️ DEP-241](https://citz-gdx.atlassian.net/browse/DEP-241)
+  - Added Keycloak environment variable fallbacks to the API that are compatible with Vault secret injection.
 
 ## April 20, 2026
 
