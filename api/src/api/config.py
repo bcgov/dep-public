@@ -190,20 +190,20 @@ class Config:  # pylint: disable=too-few-public-methods
         'BASE_URL': os.getenv('KEYCLOAK_BASE_URL', ''),
         'REALMNAME': os.getenv('KEYCLOAK_REALMNAME', 'standard'),
         'SERVICE_ACCOUNT_ID': (
-            os.getenv('KEYCLOAK_ADMIN_CLIENT_ID')
-            or os.getenv('ENGAGEMENT_ADMIN_CLIENT_ID')
+            os.getenv('KEYCLOAK_ADMIN_CLIENT_ID') or
+            os.getenv('ENGAGEMENT_ADMIN_CLIENT_ID')
         ),
         'SERVICE_ACCOUNT_SECRET': (
-            os.getenv('KEYCLOAK_ADMIN_CLIENT_SECRET')
-            or os.getenv('ENGAGEMENT_ADMIN_CLIENT_SECRET')
+            os.getenv('KEYCLOAK_ADMIN_CLIENT_SECRET') or
+            os.getenv('ENGAGEMENT_ADMIN_CLIENT_SECRET')
         ),
         'ADMIN_USERNAME': (
-            os.getenv('KEYCLOAK_ADMIN_CLIENT_ID')
-            or os.getenv('ENGAGEMENT_ADMIN_CLIENT_ID')
+            os.getenv('KEYCLOAK_ADMIN_CLIENT_ID') or
+            os.getenv('ENGAGEMENT_ADMIN_CLIENT_ID')
         ),
         'ADMIN_SECRET': (
-            os.getenv('KEYCLOAK_ADMIN_CLIENT_SECRET')
-            or os.getenv('ENGAGEMENT_ADMIN_CLIENT_SECRET')
+            os.getenv('KEYCLOAK_ADMIN_CLIENT_SECRET') or
+            os.getenv('ENGAGEMENT_ADMIN_CLIENT_SECRET')
         ),
         'CONNECT_TIMEOUT': int(os.getenv('KEYCLOAK_CONNECT_TIMEOUT', '60')),
     }
