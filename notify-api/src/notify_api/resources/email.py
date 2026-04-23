@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Endpoints to check manage notifications."""
-from flask import jsonify, request, g
+from flask import jsonify, request
 
 from flask_restx import Namespace, Resource
 
