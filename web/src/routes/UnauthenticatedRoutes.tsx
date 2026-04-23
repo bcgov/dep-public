@@ -46,18 +46,18 @@ const UnauthenticatedRoutes = resolveLazyRouteTree(
                 loaderLazy={() => import('components/survey/building/SurveyLoader')}
             />
             <LazyRoute
-                path=":subscriptionStatus/:scriptionKey/:language"
+                path=":scriptionAction/:scriptionKey/:language"
                 ComponentLazy={() =>
-                    import('engagements/widgets/Subscribe/ManageSubscription').then((m) => withLanguageParam(m.default))
+                    import('engagements/subscribe/Subscription').then((m) => withLanguageParam(m.default))
                 }
             />
             <LazyRoute path="*" ComponentLazy={() => import('routes/NotFound')} />
         </Route>
         <Route path="/engagements/:engagementId">
             <LazyRoute
-                path=":subscriptionStatus/:scriptionKey/:language"
+                path=":scriptionAction/:scriptionKey/:language"
                 ComponentLazy={() =>
-                    import('engagements/widgets/Subscribe/ManageSubscription').then((m) => withLanguageParam(m.default))
+                    import('engagements/subscribe/Subscription').then((m) => withLanguageParam(m.default))
                 }
             />
         </Route>

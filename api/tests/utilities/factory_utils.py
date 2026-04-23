@@ -49,8 +49,6 @@ from api.models.poll_responses import PollResponse as PollResponseModel
 from api.models.report_setting import ReportSetting as ReportSettingModel
 from api.models.staff_user import StaffUser as StaffUserModel
 from api.models.submission import Submission as SubmissionModel
-from api.models.subscribe_item import SubscribeItem as SubscribeItemModel
-from api.models.subscribe_item_translation import SubscribeItemTranslation as SubscribeItemTranslationModel
 from api.models.subscription import Subscription as SubscriptionModel
 from api.models.survey import Survey as SurveyModel
 from api.models.survey_translation import SurveyTranslation as SurveyTranslationModel
@@ -67,18 +65,16 @@ from api.models.widget_poll import Poll as WidgetPollModel
 from api.models.widget_timeline import WidgetTimeline as WidgetTimelineModel
 from api.models.widget_translation import WidgetTranslation as WidgetTranslationModel
 from api.models.widget_video import WidgetVideo as WidgetVideoModel
-from api.models.widgets_subscribe import WidgetSubscribe as WidgetSubscribeModel
 from api.utils.constants import TENANT_ID_HEADER
 from api.utils.enums import CompositeRoleId, MembershipStatus
 from tests.utilities.factory_scenarios import (
     TestCommentInfo, TestEngagementDetailsTabsInfo, TestEngagementDetailsTabTranslationInfo, TestEngagementInfo,
     TestEngagementMetadataInfo, TestEngagementMetadataTaxonInfo, TestEngagementSlugInfo, TestEngagementTranslationInfo,
-    TestEventItemTranslationInfo, TestEventnfo, TestFeedbackInfo, TestJwtClaims, TestParticipantInfo,
+    TestEventInfo, TestEventItemTranslationInfo, TestFeedbackInfo, TestJwtClaims, TestParticipantInfo,
     TestPollAnswerInfo, TestPollAnswerTranslationInfo, TestPollResponseInfo, TestReportSettingInfo, TestSubmissionInfo,
-    TestSubscribeInfo, TestSubscribeItemTranslationInfo, TestSurveyInfo, TestSurveyTranslationInfo, TestTenantInfo,
-    TestTimelineEventTranslationInfo, TestTimelineInfo, TestUserInfo, TestWidgetDocumentInfo, TestWidgetInfo,
-    TestWidgetItemInfo, TestWidgetListening, TestWidgetMap, TestWidgetPollInfo, TestWidgetTranslationInfo,
-    TestWidgetVideo)
+    TestSurveyInfo, TestSurveyTranslationInfo, TestTenantInfo, TestTimelineEventTranslationInfo, TestTimelineInfo,
+    TestUserInfo, TestWidgetDocumentInfo, TestWidgetInfo, TestWidgetItemInfo, TestWidgetListening, TestWidgetMap,
+    TestWidgetPollInfo, TestWidgetTranslationInfo, TestWidgetVideo)
 
 
 fake = Faker()
@@ -669,70 +665,6 @@ def poll_answer_model_with_poll_enagement():
     return answer, poll_model
 
 
-def factory_widget_subscribe_model(widget_model=None):
-    """Produce a SubscribeItemTranslation model instance."""
-    engagement = factory_engagement_model()
-
-    TestWidgetInfo.widget1['engagement_id'] = engagement.id
-    if widget_model is None:
-        widget_model = factory_widget_model(TestWidgetInfo.widget1)
-
-    subscribe_info = {
-        **TestSubscribeInfo.subscribe_info_1.value,
-    }
-
-    widget_subcribe_model = WidgetSubscribeModel(
-        widget_id=widget_model.id,
-        type=subscribe_info.get('type'),
-        sort_index=subscribe_info.get('sort_index'),
-    )
-
-    widget_subcribe_model.save()
-    return widget_subcribe_model
-
-
-def factory_subscribe_item_model(widget_subscribe=None, subscribe_item_info: dict = None):
-    """Produce a SubscribeItem model instance."""
-    if subscribe_item_info is None:
-        subscribe_item_info = TestSubscribeInfo.subscribe_info_1.value['items'][0]
-
-    if widget_subscribe is None:
-        widget_subscribe = factory_widget_subscribe_model()
-
-    subscribe_item = SubscribeItemModel(
-        description=subscribe_item_info.get('description', ''),
-        rich_description=subscribe_item_info.get('rich_description', ''),
-        call_to_action_text=subscribe_item_info.get('call_to_action_text', ''),
-        call_to_action_type=subscribe_item_info.get('call_to_action_type', ''),
-        sort_index=subscribe_item_info.get('sort_index', 1),
-        widget_subscribe_id=widget_subscribe.id,
-    )
-    subscribe_item.save()
-    return subscribe_item
-
-
-def factory_subscribe_item_translation_model(
-    translate_info: dict = TestSubscribeItemTranslationInfo.translate_info1,
-):
-    """Produce a translation model for Subscribe items."""
-    translation = SubscribeItemTranslationModel(
-        subscribe_item_id=translate_info.get('subscribe_item_id'),
-        language_id=translate_info.get('language_id'),
-        description=translate_info.get('description'),
-    )
-    translation.save()
-    return translation
-
-
-def factory_subscribe_item_model_with_enagement():
-    """Produce a SubscribeItem model instance with engagement."""
-    engagement = factory_engagement_model()
-    widget_model = factory_widget_model({'engagement_id': engagement.id})
-    widget_subscribe = factory_widget_subscribe_model(widget_model)
-    subscribe_item_model = factory_subscribe_item_model(widget_subscribe)
-    return subscribe_item_model
-
-
 def factory_widget_event_model(widget_model=None):
     """Produce a Widget Event model instance."""
     engagement = factory_engagement_model()
@@ -742,7 +674,7 @@ def factory_widget_event_model(widget_model=None):
         widget_model = factory_widget_model(TestWidgetInfo.widget1)
 
     event_info = {
-        **TestEventnfo.event_meetup.value,
+        **TestEventInfo.event_meetup.value,
     }
 
     widget_event_model = WidgetEventsModel(
@@ -759,7 +691,7 @@ def factory_widget_event_model(widget_model=None):
 def factory_event_item_model(widget_event=None, event_item_info: dict = None):
     """Produce a EventItem model instance."""
     if event_item_info is None:
-        event_item_info = TestEventnfo.event_meetup.value['items'][0]
+        event_item_info = TestEventInfo.event_meetup.value['items'][0]
 
     if widget_event is None:
         widget_event = factory_widget_event_model()
@@ -841,15 +773,6 @@ def factory_timeline_event_translation_model(
     )
     timeline_translation.save()
     return timeline_translation
-
-
-def subscribe_item_model_with_language():
-    """Produce a subscribe item model instance with language."""
-    engagement = factory_engagement_model()
-    widget_model = factory_widget_model({'engagement_id': engagement.id})
-    widget_subscribe = factory_widget_subscribe_model(widget_model)
-    subscribe_item_model = factory_subscribe_item_model(widget_subscribe)
-    return subscribe_item_model, widget_subscribe
 
 
 def factory_engagement_translation_model(

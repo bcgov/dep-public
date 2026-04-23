@@ -4,24 +4,17 @@ import { Grid2 as Grid } from '@mui/material';
 import { BodyText, Heading1 } from 'components/common/Typography';
 import { Banner } from 'components/banner/Banner';
 import LandingPageBanner from 'assets/images/LandingPageBanner.png';
-import { useAppDispatch, useAppSelector } from 'hooks';
+import { useAppDispatch, useAppSelector, useAppTranslation } from 'hooks';
 import { openNotification } from 'services/notificationService/notificationSlice';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCircleCheck } from '@fortawesome/pro-solid-svg-icons/faCircleCheck';
-import { SubscriptionType } from './subscribe';
+import { SubscriptionParams, SubscriptionType } from './types';
 import { verifyEmailVerification } from 'services/emailVerificationService';
 import { confirmSubscription, unSubscribe } from 'services/subscriptionService';
-import { useAppTranslation } from 'hooks';
-
-export type SubscriptionParams = {
-    engagementId: string;
-    subscriptionStatus: string;
-    scriptionKey?: string;
-};
 
 export const Subscription = () => {
     const { t: translate } = useAppTranslation();
-    const { engagementId, subscriptionStatus, scriptionKey } = useParams<SubscriptionParams>();
+    const { engagementId, scriptionAction, scriptionKey } = useParams<SubscriptionParams>();
     const [subscriptionText, setSubscriptionText] = useState(['']);
 
     const dispatch = useAppDispatch();
@@ -33,25 +26,26 @@ export const Subscription = () => {
     }, [scriptionKey]);
 
     const verifySubscribeKey = async () => {
+        console.log('verifying subscribe key', scriptionKey);
         try {
             if (!scriptionKey) {
                 return;
             }
-            if (subscriptionStatus == SubscriptionType.SUBSCRIBE) {
+            if (scriptionAction == SubscriptionType.SUBSCRIBE) {
                 const token = scriptionKey;
                 const subscribed_email = await verifyEmailVerification(token);
                 const subscribed = JSON.stringify(subscribed_email);
                 await confirmSubscription({
-                    engagement_id: parseInt(engagementId ?? ''),
+                    engagement_id: Number.parseInt(engagementId ?? ''),
                     participant_id: JSON.parse(subscribed).participant_id,
                     is_subscribed: true,
                 });
                 setSubscriptionText([translate('subscription.subscribe')]);
             }
-            if (subscriptionStatus == SubscriptionType.UNSUBSCRIBE) {
+            if (scriptionAction == SubscriptionType.UNSUBSCRIBE) {
                 const participant_id = scriptionKey;
                 await unSubscribe({
-                    participant_id: parseInt(participant_id ?? ''),
+                    participant_id: Number.parseInt(participant_id ?? ''),
                     is_subscribed: false,
                 });
                 setSubscriptionText([
@@ -65,7 +59,7 @@ export const Subscription = () => {
             }
         } catch (error) {
             dispatch(openNotification({ severity: 'error', text: translate('subscription.notification') }));
-            return Promise.reject(error);
+            throw error;
         }
     };
 

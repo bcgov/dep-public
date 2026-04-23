@@ -25,7 +25,6 @@ from .engagement_status import EngagementStatus
 from .engagement_status_block import EngagementStatusBlock
 from .engagement_settings import EngagementSettingsModel
 from .event_item import EventItem
-from .subscribe_item import SubscribeItem
 from .feedback import Feedback
 from .generated_document_template import GeneratedDocumentTemplate
 from .generated_document_type import GeneratedDocumentType
@@ -42,7 +41,6 @@ from .user_status_code import UserStatus
 from .widget import Widget
 from .widget_documents import WidgetDocuments
 from .widget_events import WidgetEvents
-from .widgets_subscribe import WidgetSubscribe
 from .widget_item import WidgetItem
 from .widget_type import WidgetType
 from .email_queue import EmailQueue
@@ -64,7 +62,6 @@ from .survey_translation import SurveyTranslation
 from .event_item_translation import EventItemTranslation
 from .poll_answer_translation import PollAnswerTranslation
 from .timeline_event_translation import TimelineEventTranslation
-from .subscribe_item_translation import SubscribeItemTranslation
 from .engagement_translation import EngagementTranslation
 from .engagement_details_tab_translation import EngagementDetailsTabTranslation
 from .user_group import UserGroup

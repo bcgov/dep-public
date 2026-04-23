@@ -67,12 +67,18 @@ class _Config():  # pylint: disable=too-few-public-methods
     KEYCLOAK_BASE_URL = os.getenv('KEYCLOAK_BASE_URL', '')
     KEYCLOAK_REALMNAME = os.getenv('KEYCLOAK_REALMNAME', 'standard')
     JWT_OIDC_ISSUER = os.getenv('JWT_OIDC_ISSUER', f'{KEYCLOAK_BASE_URL}/realm/{KEYCLOAK_REALMNAME}')
-    JWT_OIDC_WELL_KNOWN_CONFIG = os.getenv(
-        'JWT_OIDC_WELL_KNOWN_CONFIG',
-        f'{JWT_OIDC_ISSUER}/.well-known/openid-configuration'
-    )
-    JWT_OIDC_ALGORITHMS = os.getenv('JWT_OIDC_ALGORITHMS', 'RS256')
+    JWT_OIDC_JWKS_URI = os.getenv('JWT_OIDC_JWKS_URI')
     JWT_OIDC_AUDIENCE = os.getenv('JWT_OIDC_AUDIENCE')
+
+    if JWT_OIDC_JWKS_URI:
+        JWT_OIDC_WELL_KNOWN_CONFIG = None
+    else:
+        JWT_OIDC_WELL_KNOWN_CONFIG = os.getenv(
+            'JWT_OIDC_WELL_KNOWN_CONFIG',
+            f'{JWT_OIDC_ISSUER}/.well-known/openid-configuration',
+        )
+
+    JWT_OIDC_ALGORITHMS = os.getenv('JWT_OIDC_ALGORITHMS', 'RS256')
     JWT_OIDC_CLIENT_SECRET = os.getenv('JWT_OIDC_CLIENT_SECRET')
     JWT_OIDC_CACHING_ENABLED = os.getenv('JWT_OIDC_CACHING_ENABLED', 'True')
     JWT_OIDC_JWKS_CACHE_TIMEOUT = int(os.getenv('JWT_OIDC_JWKS_CACHE_TIMEOUT', '300'))

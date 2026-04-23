@@ -1,3 +1,14 @@
+## April 22, 2026
+
+- **Bugfix** Move confirmation logic out of subscribe widget [🎟️ DEP-243](https://citz-gdx.atlassian.net/browse/DEP-243)
+  - Moved subscribe/unsubscribe out of widget folder and into main engagement folder
+  - Updated some sample.env API paths to align with the web app
+  - Updated notify-api sample.env with all needed values (many were previously missing)
+  - Updated notify-api make scripts to remove update from install commands, which was breaking functionality
+  - Removed subscribe widget as an option from widget selector and removed associated tables via migration
+      - This completes the work for [🎟️ DEP-241](https://citz-gdx.atlassian.net/browse/DEP-241)
+  - Added Keycloak environment variable fallbacks to the API that are compatible with Vault secret injection.
+
 ## April 20, 2026
 
 - **Bugfix** Ensure Upcoming and Closed state texts appear in the hero banner (and nowhere else) [🎟️ DEP-260](https://citz-gdx.atlassian.net/browse/DEP-260)
@@ -30,8 +41,6 @@
   - Also updated links to use RouterLinkRenderer where appropriate to take advantage of client-side routing and prevent full page reloads.
   - Leveraged new routing system to remove redundant routes in public view and restructure public engagement URLs to use the slug-based format
   - Fixed several bugs related to link construction
-
-## April 13, 2026
 
 - **Feature** Add constant ROUTES list in routes/routes.ts [🎟️ DEP-254](https://citz-gdx.atlassian.net/browse/DEP-254)
   - Created a new file `routes/routes.ts` that exports a constant `ROUTES` object containing all the route paths used in the application, organized by section (e.g. ENGAGEMENTS, SURVEYS, USERS, etc.).

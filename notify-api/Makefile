@@ -10,6 +10,8 @@ PROJECT_NAME:=notify_api
 SERVICE_NAME:=notify-api
 DOCKER_NAME:=notify-api
 
+PYTHON ?= python3.12
+
 #################################################################################
 # COMMANDS -- license                                                           #
 #################################################################################
@@ -44,7 +46,7 @@ clean-test: ## clean test files
 	rm -fr htmlcov/
 
 build-req: clean ## Upgrade requirements
-	test -f venv/bin/activate || python3.12 -m venv  $(CURRENT_ABS_DIR)/venv ;\
+	test -f venv/bin/activate || $(PYTHON) -m venv  $(CURRENT_ABS_DIR)/venv ;\
 	. venv/bin/activate ;\
 	pip install --upgrade pip ;\
 	pip install -Ur requirements/prod.txt ;\
@@ -53,14 +55,14 @@ build-req: clean ## Upgrade requirements
 	pip install -Ur requirements/repo-libraries.txt
 
 install: clean ## Install python virtual environment
-	test -f venv/bin/activate || python3 -m venv  $(CURRENT_ABS_DIR)/venv ;\
+	test -f venv/bin/activate || $(PYTHON) -m venv  $(CURRENT_ABS_DIR)/venv ;\
 	. venv/bin/activate ;\
-	pip install --upgrade pip ;\
-	pip install -Ur requirements.txt
+	pip install --upgrade pip ; \
+	pip install -r requirements.txt
 
 install-dev: ## Install local application
 	. venv/bin/activate ; \
-	pip install -Ur requirements/dev.txt; \
+	pip install -r requirements/dev.txt; \
 	pip install -e .
 
 #################################################################################

@@ -17,6 +17,15 @@ jest.mock('@mui/material', () => ({
     },
 }));
 
+jest.mock('react-router', () => {
+    const actual = jest.requireActual('react-router');
+
+    return {
+        ...actual,
+        useMatches: () => [],
+    };
+});
+
 jest.mock('axios');
 
 jest.mock('components/common', () => ({
@@ -54,27 +63,22 @@ jest.mock('components/common/Navigation/Breadcrumb', () => ({
 }));
 
 jest.mock('components/publicDashboard/KPI/SurveyEmailsSent', () => {
-    const React = require('react');
     return () => React.createElement('div', null, 'Survey Emails Sent');
 });
 
 jest.mock('components/publicDashboard/KPI/SurveysCompleted', () => {
-    const React = require('react');
     return () => React.createElement('div', null, 'Surveys Completed');
 });
 
 jest.mock('components/publicDashboard/KPI/ProjectLocation', () => {
-    const React = require('react');
     return () => React.createElement('div', null, 'Project Location');
 });
 
 jest.mock('components/publicDashboard/SubmissionTrend/SubmissionTrend', () => {
-    const React = require('react');
     return () => React.createElement('div', null, 'Submission Trend');
 });
 
 jest.mock('components/publicDashboard/SurveyBar', () => {
-    const React = require('react');
     return () => React.createElement('div', null, 'Survey Bar');
 });
 

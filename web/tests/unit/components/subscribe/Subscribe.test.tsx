@@ -6,7 +6,7 @@ import * as widgetService from 'services/widgetService';
 import { WidgetType } from 'models/widget';
 import { draftEngagement, subscribeWidget } from '../factory';
 import { USER_ROLES } from 'services/userService/constants';
-import { setupWidgetTestEnvMock, setupWidgetTestEnvSpy } from './setupWidgetTestEnv';
+import { setupWidgetTestEnvMock, setupWidgetTestEnvSpy } from '../widgets/setupWidgetTestEnv';
 import { createMemoryRouter, RouterProvider } from 'react-router';
 
 jest.mock('components/map', () => () => <div></div>);
@@ -97,6 +97,60 @@ jest.mock('react-router', () => ({
     }),
 }));
 
+async function addSubscribeWidget() {
+    await waitFor(() => expect(screen.getByText('Add Widget')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText('Add Widget')).toBeEnabled());
+    fireEvent.click(screen.getByText('Add Widget'));
+    await waitFor(() => expect(screen.getByText('Select Widget')).toBeVisible());
+    fireEvent.click(screen.getByTestId(`widget-drawer-option/${WidgetType.Subscribe}`));
+
+    await waitFor(() => {
+        expect(screen.getByText('Email List')).toBeVisible();
+        expect(screen.getByText('Form Sign-up')).toBeVisible();
+    });
+}
+
+async function inputMockSubscribeData() {
+    const callToActionText = document.querySelector('input[name="callToActionText"]') as HTMLInputElement;
+    const richTextEditorDesc = screen.getByTestId('rich-text-editor') as HTMLDivElement;
+
+    const linkRadioButton = screen.getByLabelText('Link');
+    const buttonRadioButton = screen.getByLabelText('Button');
+
+    // Simulate typing into the rich text editor
+    richTextEditorDesc.textContent = 'Your desired text';
+    fireEvent.input(richTextEditorDesc);
+    fireEvent.change(callToActionText, { target: { value: 'Click here' } });
+    fireEvent.click(linkRadioButton);
+
+    await waitFor(() => {
+        expect(richTextEditorDesc.textContent).toBe('Your desired text');
+        expect(callToActionText.value).toBe('Click here');
+        // Check if the "Link" radio button is selected
+        expect(linkRadioButton).toBeChecked();
+        // Check if the "Button" radio button is not selected
+        expect(buttonRadioButton).not.toBeChecked();
+    });
+}
+
+async function selectEmailList() {
+    const emailListButton = screen.getByRole('button', { name: 'Email List' });
+    fireEvent.click(emailListButton);
+    await waitFor(() => {
+        expect(screen.getByText('Description')).toBeVisible();
+        expect(screen.getByText('Call-to-action Type')).toBeVisible();
+    });
+}
+
+async function selectFormSignUp() {
+    const formSignUpButton = screen.getByRole('button', { name: 'Form Sign-up' });
+    fireEvent.click(formSignUpButton);
+    await waitFor(() => {
+        expect(screen.getByText('Description')).toBeVisible();
+        expect(screen.getByText('Call-to-action Type')).toBeVisible();
+    });
+}
+
 describe('Subscribe Widget tests', () => {
     const getWidgetsMock = jest.spyOn(widgetService, 'getWidgets').mockReturnValue(Promise.resolve([]));
 
@@ -115,60 +169,6 @@ describe('Subscribe Widget tests', () => {
             },
         }));
     });
-
-    async function addSubscribeWidget() {
-        await waitFor(() => expect(screen.getByText('Add Widget')).toBeInTheDocument());
-        await waitFor(() => expect(screen.getByText('Add Widget')).toBeEnabled());
-        fireEvent.click(screen.getByText('Add Widget'));
-        await waitFor(() => expect(screen.getByText('Select Widget')).toBeVisible());
-        fireEvent.click(screen.getByTestId(`widget-drawer-option/${WidgetType.Subscribe}`));
-
-        await waitFor(() => {
-            expect(screen.getByText('Email List')).toBeVisible();
-            expect(screen.getByText('Form Sign-up')).toBeVisible();
-        });
-    }
-
-    async function inputMockSubscribeData() {
-        const callToActionText = document.querySelector('input[name="callToActionText"]') as HTMLInputElement;
-        const richTextEditorDesc = screen.getByTestId('rich-text-editor') as HTMLDivElement;
-
-        const linkRadioButton = screen.getByLabelText('Link');
-        const buttonRadioButton = screen.getByLabelText('Button');
-
-        // Simulate typing into the rich text editor
-        richTextEditorDesc.textContent = 'Your desired text';
-        fireEvent.input(richTextEditorDesc);
-        fireEvent.change(callToActionText, { target: { value: 'Click here' } });
-        fireEvent.click(linkRadioButton);
-
-        await waitFor(() => {
-            expect(richTextEditorDesc.textContent).toBe('Your desired text');
-            expect(callToActionText.value).toBe('Click here');
-            // Check if the "Link" radio button is selected
-            expect(linkRadioButton).toBeChecked();
-            // Check if the "Button" radio button is not selected
-            expect(buttonRadioButton).not.toBeChecked();
-        });
-    }
-
-    async function selectEmailList() {
-        const emailListButton = screen.getByRole('button', { name: 'Email List' });
-        fireEvent.click(emailListButton);
-        await waitFor(() => {
-            expect(screen.getByText('Description')).toBeVisible();
-            expect(screen.getByText('Call-to-action Type')).toBeVisible();
-        });
-    }
-
-    async function selectFormSignUp() {
-        const formSignUpButton = screen.getByRole('button', { name: 'Form Sign-up' });
-        fireEvent.click(formSignUpButton);
-        await waitFor(() => {
-            expect(screen.getByText('Description')).toBeVisible();
-            expect(screen.getByText('Call-to-action Type')).toBeVisible();
-        });
-    }
 
     test('Subscribe widget is created when option is clicked', async () => {
         render(<RouterProvider router={router} />);
