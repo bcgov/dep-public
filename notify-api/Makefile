@@ -10,7 +10,7 @@ PROJECT_NAME:=notify_api
 SERVICE_NAME:=notify-api
 DOCKER_NAME:=notify-api
 
-PYTHON ?= python
+PYTHON ?= python3.12
 
 #################################################################################
 # COMMANDS -- license                                                           #
