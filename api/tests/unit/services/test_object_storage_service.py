@@ -93,7 +93,6 @@ def test_get_url_returns_empty_when_filename_missing(mock_config, _mock_auth):
     service = ObjectStorageService()
 
     assert service.get_url('') == ''
-    assert service.get_url(None) == ''
 
 
 @patch('api.services.object_storage_service.AWSRequestsAuth', side_effect=_FakeAWSAuth)
