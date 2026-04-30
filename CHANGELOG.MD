@@ -1,3 +1,10 @@
+## April 30, 2026
+
+- **Feature** Updated all S3 uploaded objects to dynamically generate document URLs from the bucket and object key, rather than storing the full URL in the database. [🎟️ DEP-261](https://citz-gdx.atlassian.net/browse/DEP-261)
+  - Updated the API to generate S3 object URLs on-the-fly using the bucket name and object key, rather than storing the full URL in the database. This allows for more flexibility in changing storage configurations in the future without needing to update existing database records.
+  - Updated relevant API endpoints to reflect this change, including those for retrieving engagement details, survey details, and any other endpoints that return data with S3 object references.
+  - Added basic unit tests for S3 service and URL generation test to ensure that URLs are generated correctly.
+
 ## April 22, 2026
 
 - **Bugfix** Move confirmation logic out of subscribe widget [🎟️ DEP-243](https://citz-gdx.atlassian.net/browse/DEP-243)
@@ -6,7 +13,7 @@
   - Updated notify-api sample.env with all needed values (many were previously missing)
   - Updated notify-api make scripts to remove update from install commands, which was breaking functionality
   - Removed subscribe widget as an option from widget selector and removed associated tables via migration
-      - This completes the work for [🎟️ DEP-241](https://citz-gdx.atlassian.net/browse/DEP-241)
+    - This completes the work for [🎟️ DEP-241](https://citz-gdx.atlassian.net/browse/DEP-241)
   - Added Keycloak environment variable fallbacks to the API that are compatible with Vault secret injection.
 
 ## April 20, 2026

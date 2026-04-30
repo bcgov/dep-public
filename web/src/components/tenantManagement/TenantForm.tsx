@@ -86,7 +86,7 @@ export const TenantForm = ({
         }
         try {
             const savedDocumentDetails = await saveObject(bannerImage, { filename: bannerImage.name });
-            return savedDocumentDetails?.filepath || '';
+            return savedDocumentDetails?.uniquefilename || '';
         } catch (error) {
             console.log(error);
             throw new Error('Error occurred during banner image upload');
