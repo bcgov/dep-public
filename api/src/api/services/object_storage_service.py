@@ -2,6 +2,7 @@
 import os
 import uuid
 from typing import List
+from urllib.parse import urlparse
 
 import requests
 from aws_requests_auth.aws_auth import AWSRequestsAuth
@@ -28,10 +29,28 @@ class ObjectStorageService:
 
     def get_url(self, filename: str):
         """Get the object url."""
-        if (not self.s3_auth.aws_host or not self.s3_bucket or not filename):
+        object_key = self.get_object_key(filename)
+        if (not self.s3_auth.aws_host or not self.s3_bucket or not object_key):
             return ''
 
-        return f'https://{self.s3_auth.aws_host}/{self.s3_bucket}/{filename}'
+        return f'https://{self.s3_auth.aws_host}/{self.s3_bucket}/{object_key}'
+
+    def get_object_key(self, filename: str):
+        """Extract the object key from a stored filename/path/url."""
+        if not filename:
+            return ''
+
+        parsed = urlparse(filename)
+        if parsed.scheme and parsed.netloc:
+            path = parsed.path.lstrip('/')
+            if not path:
+                return ''
+            bucket_prefix = f'{self.s3_bucket}/' if self.s3_bucket else ''
+            if bucket_prefix and path.startswith(bucket_prefix):
+                return path[len(bucket_prefix):]
+            return path
+
+        return filename.lstrip('/')
 
     def get_auth_headers(self, documents: List[Document]):
         """Get the S3 auth headers for the provided documents."""

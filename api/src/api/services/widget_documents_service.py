@@ -7,11 +7,14 @@ from anytree.search import find_by_attr
 
 from api.exceptions.business_exception import BusinessException
 from api.models.widget_documents import WidgetDocuments as WidgetDocumentsModel
+from api.services.object_storage_service import ObjectStorageService
 from api.utils.enums import WidgetDocumentType
 
 
 class WidgetDocumentService:
     """Widget Documents management service."""
+
+    _object_storage = ObjectStorageService()
 
     @staticmethod
     def get_documents_by_widget_id(widget_id):
@@ -46,12 +49,16 @@ class WidgetDocumentService:
 
     @staticmethod
     def _fetch_props(doc):
+        document_url = doc.url
+        if doc.is_uploaded:
+            document_url = WidgetDocumentService._object_storage.get_url(doc.url)
+
         props = {
             'id': doc.id,
             'type': doc.type,
             'title': doc.title,
             'sort_index': doc.sort_index,
-            'url': doc.url,
+            'url': document_url,
             'parent_document_id': doc.parent_document_id,
             'is_uploaded': doc.is_uploaded,
         }
@@ -71,11 +78,16 @@ class WidgetDocumentService:
     @staticmethod
     def _create_document_from_dict(doc_details, parent_id, widget_id):
         doc: WidgetDocumentsModel = WidgetDocumentsModel()
+        is_uploaded = doc_details.get('is_uploaded')
+        doc_url = doc_details.get('url')
+        if is_uploaded:
+            doc_url = WidgetDocumentService._object_storage.get_object_key(doc_url)
+
         doc.type = doc_details.get('type')
-        doc.is_uploaded = doc_details.get('is_uploaded')
+        doc.is_uploaded = is_uploaded
         doc.title = doc_details.get('title')
         doc.parent_document_id = parent_id
-        doc.url = doc_details.get('url')
+        doc.url = doc_url
         doc.widget_id = widget_id
         sort_index = WidgetDocumentService._find_highest_sort_index(widget_id)
         doc.sort_index = sort_index + 1

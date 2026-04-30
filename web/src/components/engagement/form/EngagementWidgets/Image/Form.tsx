@@ -73,7 +73,7 @@ const Form = () => {
         }
         try {
             const savedImage = await saveObject(previewImage, { filename: previewImage.name });
-            return savedImage?.filepath || '';
+            return savedImage?.uniquefilename || '';
         } catch (error) {
             console.error(error);
             throw new Error('Error occurred during banner image upload');

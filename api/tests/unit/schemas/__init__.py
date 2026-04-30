@@ -1,0 +1,1 @@
+"""This module contains unit tests for API schemas."""

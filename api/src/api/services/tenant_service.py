@@ -6,6 +6,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from api.models.tenant import Tenant as TenantModel
 from api.schemas.tenant import TenantSchema
 from api.services import authorization
+from api.services.object_storage_service import ObjectStorageService
 from api.utils.roles import Role
 from ..utils.cache import cache
 
@@ -14,6 +15,14 @@ NOT_FOUND_MSG = 'Tenant not found.'
 
 class TenantService:
     """Tenant management service."""
+
+    _object_storage = ObjectStorageService()
+
+    @classmethod
+    def _normalize_hero_image_url(cls, data: dict):
+        if 'hero_image_url' in data:
+            data['hero_image_url'] = cls._object_storage.get_object_key(data.get('hero_image_url'))
+        return data
 
     @classmethod
     def build_all_tenant_cache(cls):
@@ -47,7 +56,8 @@ class TenantService:
             Role.SUPER_ADMIN.value,
         )
         authorization.check_auth(one_of_roles=one_of_roles)
-        tenant = TenantModel(**data)
+        normalized_data = cls._normalize_hero_image_url(dict(data))
+        tenant = TenantModel(**normalized_data)
         try:
             tenant.save()
         except SQLAlchemyError as e:
@@ -66,7 +76,7 @@ class TenantService:
         if not tenant:
             raise ValueError(NOT_FOUND_MSG, cls, tenant_id)
         try:
-            tenant.update(data)
+            tenant.update(cls._normalize_hero_image_url(dict(data)))
         except SQLAlchemyError as e:
             current_app.logger.error('Error updating tenant {}', e)
             raise ValueError('Error updating tenant.') from e

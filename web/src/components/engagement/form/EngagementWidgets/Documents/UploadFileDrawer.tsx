@@ -111,7 +111,7 @@ const UploadFileDrawer = () => {
             await createDocument({
                 folderId: folderId || null,
                 name: name,
-                link: uploadDetails.filepath,
+                link: uploadDetails.uniquefilename,
             });
 
             await loadDocuments();
