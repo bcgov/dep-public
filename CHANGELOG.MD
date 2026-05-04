@@ -373,7 +373,7 @@
   - Implemented deployment steps with OpenShift CLI.
 - **Chore** Move Widgets out of old view folder [🎟️ DESENG-801](https://citz-gdx.atlassian.net/browse/DESENG-801)
   - Move the refreshed widget components from `components/engagement/old-view/` to `components/engagement/widgets/`, as they are being reused in the new engagement view.
-- **Chore** Updated the versions of several packages to resolve additional [Dependabot vulnerabilities](https://github.com/bcgov/met-public/security/dependabot) (internal link).
+- **Chore** Updated the versions of several packages to resolve additional [Dependabot vulnerabilities](https://github.com/bcgov/dep-public/security/dependabot) (internal link).
 
 ## August 22, 2025
 

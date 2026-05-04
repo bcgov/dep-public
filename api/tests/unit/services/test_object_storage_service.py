@@ -10,7 +10,7 @@ TEST_S3_CONFIG = {
     'HOST': 'objects.example.com',
     'REGION': 'ca-central-1',
     'SERVICE': 's3',
-    'BUCKET': 'met-public-files',
+    'BUCKET': 'dep-public-files',
 }
 
 
@@ -33,7 +33,7 @@ def test_get_url_builds_full_url_from_host_bucket_and_key(mock_config, _mock_aut
 
     result = service.get_url('folder/test-image.png')
 
-    assert result == 'https://objects.example.com/met-public-files/folder/test-image.png'
+    assert result == 'https://objects.example.com/dep-public-files/folder/test-image.png'
 
 
 @patch('api.services.object_storage_service.AWSRequestsAuth', side_effect=_FakeAWSAuth)
@@ -46,7 +46,7 @@ def test_get_url_normalizes_leading_slash_key(mock_config, _mock_auth):
 
     result = service.get_url('/folder/test-image.png')
 
-    assert result == 'https://objects.example.com/met-public-files/folder/test-image.png'
+    assert result == 'https://objects.example.com/dep-public-files/folder/test-image.png'
 
 
 @patch('api.services.object_storage_service.AWSRequestsAuth', side_effect=_FakeAWSAuth)
@@ -57,9 +57,9 @@ def test_get_url_normalizes_full_url_to_key_then_rebuilds(mock_config, _mock_aut
 
     service = ObjectStorageService()
 
-    result = service.get_url('https://objects.example.com/met-public-files/folder/test-image.png')
+    result = service.get_url('https://objects.example.com/dep-public-files/folder/test-image.png')
 
-    assert result == 'https://objects.example.com/met-public-files/folder/test-image.png'
+    assert result == 'https://objects.example.com/dep-public-files/folder/test-image.png'
 
 
 @patch('api.services.object_storage_service.AWSRequestsAuth', side_effect=_FakeAWSAuth)
@@ -125,7 +125,7 @@ def test_get_object_key_extracts_key_from_full_bucket_url(mock_config, _mock_aut
 
     service = ObjectStorageService()
 
-    result = service.get_object_key('https://objects.example.com/met-public-files/folder/test-image.png')
+    result = service.get_object_key('https://objects.example.com/dep-public-files/folder/test-image.png')
 
     assert result == 'folder/test-image.png'
 
