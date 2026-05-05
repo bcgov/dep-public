@@ -19,8 +19,11 @@ const UserStatusButton = ({ size = 'medium' }: { size?: 'small' | 'medium' | 'la
     const dispatch = useAppDispatch();
 
     const isActive = savedUser?.status_id === 1;
-
-    const disabled = savedUser?.main_role === USER_COMPOSITE_ROLE.ADMIN.label || savedUser?.id === userDetail?.user?.id;
+    const isSelf = savedUser?.id === userDetail?.user?.id;
+    const isAdminUser = [USER_COMPOSITE_ROLE.ADMIN.label, USER_COMPOSITE_ROLE.SUPER_ADMIN.label].includes(
+        savedUser?.main_role ?? '',
+    );
+    const canToggle = roles.includes(USER_ROLES.TOGGLE_USER_STATUS);
 
     useEffect(() => {
         setUserStatus(isActive);
@@ -123,7 +126,7 @@ const UserStatusButton = ({ size = 'medium' }: { size?: 'small' | 'medium' | 'la
             data-testid="user-status-toggle"
             loading={togglingUserStatus}
             onClick={() => handleToggleUserStatus(!userStatus)}
-            disabled={disabled}
+            disabled={isAdminUser || isSelf || !canToggle}
             icon={<FontAwesomeIcon icon={userStatus ? faUserXmark : faUserCheck} />}
         >
             {userStatus ? 'Deactivate User' : 'Reactivate User'}

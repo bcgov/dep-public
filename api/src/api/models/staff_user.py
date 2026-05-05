@@ -7,7 +7,7 @@ from __future__ import annotations
 from typing import Optional
 
 from flask import g
-from sqlalchemy import Column, ForeignKey, String, asc, desc, func, or_
+from sqlalchemy import Column, ForeignKey, String, asc, desc, func
 from sqlalchemy.orm import column_property
 from sqlalchemy.sql import text
 from sqlalchemy.sql.operators import ilike_op
@@ -36,7 +36,6 @@ class StaffUser(BaseModel):
     contact_number = Column(db.String(50), nullable=True)
     external_id = Column(db.String(50), nullable=False, unique=True)
     status_id = db.Column(db.Integer, ForeignKey('user_status.id'), nullable=False, default=1)
-    tenant_id = db.Column(db.Integer, db.ForeignKey('tenant.id'), nullable=True)
 
     @classmethod
     def get_all_paginated(cls, pagination_options: PaginationOptions, search_text='', include_inactive=False):
@@ -67,18 +66,12 @@ class StaffUser(BaseModel):
     @classmethod
     def _add_tenant_filter(cls, query):
         """Add tenant filtering to the query based on user group membership."""
-        has_tenant_id = hasattr(cls, TENANT_ID)
         has_g_tenant_id = hasattr(g, TENANT_ID) and g.tenant_id
-        if has_tenant_id and has_g_tenant_id:
-            return query.outerjoin(
+        if has_g_tenant_id:
+            return query.join(
                 UserGroupMembership,
                 (UserGroupMembership.staff_user_external_id == cls.external_id) &
                 (UserGroupMembership.tenant_id == g.tenant_id)
-            ).filter(
-                or_(
-                    UserGroupMembership.id != None,  # noqa: E711  # pylint: disable=C0121
-                    cls.tenant_id == g.tenant_id,   # new user, no role yet
-                )
             )
         return query
 

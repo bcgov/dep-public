@@ -197,7 +197,7 @@ def test_get_comment_filtering(client, jwt, session,
     user = factory_staff_user_model()
     factory_membership_model(
         user_id=user.id, engagement_id=eng.id, member_type=MembershipType.TEAM_MEMBER.name)
-    factory_user_group_membership_model(str(user.external_id), user.tenant_id, CompositeRoleId.TEAM_MEMBER.value)
+    factory_user_group_membership_model(str(user.external_id), group_id=CompositeRoleId.TEAM_MEMBER.value)
     claims = copy.deepcopy(TestJwtClaims.team_member_role.value)
     claims['sub'] = str(user.external_id)
     headers = factory_auth_header(jwt=jwt, claims=claims)

@@ -107,7 +107,7 @@ def test_tenant_id_in_create_engagements(client, jwt, session,
     # set user's tenant id to be same as engagement's tenant id
     staff_2 = dict(TestUserInfo.user_staff_2)
     user = factory_staff_user_model(user_info=staff_2)
-    factory_user_group_membership_model(str(user.external_id), user.tenant_id)
+    factory_user_group_membership_model(str(user.external_id), tenant_2.id)
     claims = copy.deepcopy(TestJwtClaims.staff_admin_role.value)
     claims['sub'] = str(user.external_id)
     headers = factory_auth_header(jwt=jwt, claims=claims)
@@ -145,9 +145,6 @@ def test_creating_engagments_cross_tenant(client, jwt, session, setup_admin_user
     tenant_1 = TenantModel.find_by_short_name(tenant_short_name)
     assert tenant_1 is not None
     tenant_2 = factory_tenant_model(TestTenantInfo.tenant2)
-
-    adm_user.tenant_id = tenant_1.id
-    sup_user.tenant_id = tenant_1.id
 
     engagement_info = TestEngagementInfo.engagement1
 
@@ -218,7 +215,7 @@ def test_get_engagements_reviewer(client, jwt, session, engagement_info,
     eng_id = created_eng.get('id')
     staff_2 = dict(TestUserInfo.user_staff_1)
     user = factory_staff_user_model(user_info=staff_2)
-    factory_user_group_membership_model(str(user.external_id), user.tenant_id, CompositeRoleId.REVIEWER.value)
+    factory_user_group_membership_model(str(user.external_id), group_id=CompositeRoleId.REVIEWER.value)
     claims = copy.deepcopy(TestJwtClaims.reviewer_role.value)
     claims['sub'] = str(user.external_id)
     headers = factory_auth_header(jwt=jwt, claims=claims)
@@ -462,7 +459,7 @@ def test_patch_engagement_by_member(client, jwt, session):  # pylint:disable=unu
 
     staff_1 = dict(TestUserInfo.user_staff_1)
     user = factory_staff_user_model(user_info=staff_1)
-    factory_user_group_membership_model(str(user.external_id), user.tenant_id, CompositeRoleId.TEAM_MEMBER.value)
+    factory_user_group_membership_model(str(user.external_id), group_id=CompositeRoleId.TEAM_MEMBER.value)
     claims = copy.deepcopy(TestJwtClaims.reviewer_role.value)
     claims['sub'] = str(user.external_id)
     headers = factory_auth_header(jwt=jwt, claims=claims)

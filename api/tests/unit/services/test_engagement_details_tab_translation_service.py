@@ -44,7 +44,7 @@ def test_bulk_create_engagement_details_tab_translations(session, monkeypatch):
     patch_token_info(TestJwtClaims.staff_admin_role, monkeypatch)
     set_global_tenant()
     user = factory_staff_user_model(external_id=TestJwtClaims.staff_admin_role['sub'])
-    factory_user_group_membership_model(str(user.external_id), user.tenant_id)
+    factory_user_group_membership_model(str(user.external_id))
     engagement = factory_engagement_model(
         {
             **TestEngagementInfo.engagement1.value,
@@ -74,7 +74,7 @@ def test_sync_engagement_details_tab_translation_with_authorization(session, mon
     patch_token_info(TestJwtClaims.staff_admin_role, monkeypatch)
     set_global_tenant()
     user = factory_staff_user_model(external_id=TestJwtClaims.staff_admin_role['sub'])
-    factory_user_group_membership_model(str(user.external_id), user.tenant_id)
+    factory_user_group_membership_model(str(user.external_id))
     engagement = factory_engagement_model(
         {
             **TestEngagementInfo.engagement1.value,
@@ -114,7 +114,7 @@ def test_delete_engagement_details_tab_translation_with_authorization(session, m
     patch_token_info(TestJwtClaims.staff_admin_role, monkeypatch)
     set_global_tenant()
     user = factory_staff_user_model(external_id=TestJwtClaims.staff_admin_role['sub'])
-    factory_user_group_membership_model(str(user.external_id), user.tenant_id)
+    factory_user_group_membership_model(str(user.external_id))
     engagement = factory_engagement_model(
         {
             **TestEngagementInfo.engagement1.value,

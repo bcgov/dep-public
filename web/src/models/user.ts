@@ -1,6 +1,10 @@
-export type UserCompositeRole = 'ADMIN' | 'VIEWER' | 'TEAM_MEMBER' | 'REVIEWER';
+export type UserCompositeRole = 'SUPER_ADMIN' | 'ADMIN' | 'VIEWER' | 'TEAM_MEMBER' | 'REVIEWER';
 
 export const USER_COMPOSITE_ROLE: { [x: string]: { value: UserCompositeRole; label: string } } = {
+    SUPER_ADMIN: {
+        value: 'SUPER_ADMIN',
+        label: 'Super Admin',
+    },
     ADMIN: {
         value: 'ADMIN',
         label: 'Administrator',

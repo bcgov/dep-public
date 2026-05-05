@@ -19,8 +19,6 @@ from sqlalchemy import Column
 from sqlalchemy.ext.declarative import declared_attr
 
 from .db import db
-from ..utils.token_info import TokenInfo
-
 TENANT_ID = 'tenant_id'
 
 
@@ -48,7 +46,8 @@ class BaseModel(db.Model):
 
         Used to populate the created_by and modified_by relationships on all models.
         """
-        return TokenInfo.get_id()
+        token_info = getattr(g, 'jwt_oidc_token_info', None) or {}
+        return token_info.get('sub')
 
     @classmethod
     def find_by_id(cls, identifier: int):

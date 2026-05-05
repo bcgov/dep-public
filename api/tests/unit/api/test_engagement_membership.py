@@ -24,8 +24,7 @@ def test_create_engagement_membership_team_member(client, jwt, session, setup_ad
     user, claims = setup_admin_user_and_claims
     engagement = factory_engagement_model()
     staff_user = factory_staff_user_model()
-    factory_user_group_membership_model(str(staff_user.external_id), staff_user.tenant_id,
-                                        CompositeRoleId.TEAM_MEMBER.value)
+    factory_user_group_membership_model(str(staff_user.external_id), group_id=CompositeRoleId.TEAM_MEMBER.value)
     headers = factory_auth_header(jwt=jwt, claims=claims)
 
     mock_add_user_to_role_keycloak_response = MagicMock()
@@ -61,8 +60,7 @@ def test_create_engagement_membership_reviewer(client, jwt, session, setup_admin
     user, claims = setup_admin_user_and_claims
     engagement = factory_engagement_model()
     staff_user = factory_staff_user_model()
-    factory_user_group_membership_model(str(staff_user.external_id), staff_user.tenant_id,
-                                        CompositeRoleId.REVIEWER.value)
+    factory_user_group_membership_model(str(staff_user.external_id), group_id=CompositeRoleId.REVIEWER.value)
     headers = factory_auth_header(jwt=jwt, claims=claims)
 
     mock_add_user_to_role_keycloak_response = MagicMock()
@@ -252,8 +250,7 @@ def test_get_all_engagements_by_user(client, jwt, session, setup_admin_user_and_
     user, claims = setup_admin_user_and_claims
     engagement = factory_engagement_model()
     staff_user = factory_staff_user_model()
-    factory_user_group_membership_model(str(staff_user.external_id), staff_user.tenant_id,
-                                        CompositeRoleId.TEAM_MEMBER.value)
+    factory_user_group_membership_model(str(staff_user.external_id), group_id=CompositeRoleId.TEAM_MEMBER.value)
     headers = factory_auth_header(jwt=jwt, claims=claims)
 
     mock_add_user_to_role_keycloak_response = MagicMock()

@@ -89,7 +89,10 @@ export const UserDetails = () => {
     const isInactive = savedUser?.status_id === USER_STATUS.INACTIVE.value;
     const canAssignToEngagement = !isInactive && !isSelf;
     const canReassignRole = roles.includes(USER_ROLES.UPDATE_USER_GROUP);
-    const isAdminUser = savedUser?.main_role === USER_COMPOSITE_ROLE.ADMIN.label;
+    const isAdminUser = [USER_COMPOSITE_ROLE.ADMIN.label, USER_COMPOSITE_ROLE.SUPER_ADMIN.label].includes(
+        savedUser?.main_role ?? '',
+    );
+    const toggleUserStatusRole = roles.includes(USER_ROLES.TOGGLE_USER_STATUS);
 
     const { canEditRole, canEditRoleMessage } = useMemo(() => {
         if (!savedUser) return { canEditRole: false, canEditRoleMessage: '' };
@@ -103,6 +106,14 @@ export const UserDetails = () => {
 
         return { canEditRole: true, canEditRoleMessage: '' };
     }, [savedUser, isSelf, isInactive, isAdminUser, isSuperAdmin, canReassignRole]);
+
+    const canToggleUserStatusMessage = useMemo(() => {
+        if (!savedUser) return '';
+        if (isSelf) return 'You cannot change your own status.';
+        if (isAdminUser) return 'Administrators cannot be deactivated.';
+        if (!toggleUserStatusRole) return "You do not have permission to change this user's status.";
+        return '';
+    }, [savedUser, isSelf, isAdminUser, toggleUserStatusRole]);
 
     const canDeleteUser = savedUser?.status_id === USER_STATUS.INACTIVE.value && !isSelf;
     const currentStatusLabel =
@@ -239,7 +250,7 @@ export const UserDetails = () => {
                                             describeChild
                                             placement="bottom"
                                             arrow
-                                            title={isAdminUser ? 'Administrators cannot be deactivated.' : ''}
+                                            title={canToggleUserStatusMessage}
                                         >
                                             {/* wrap the button so the tooltip applies when the button is disabled */}
                                             <div>

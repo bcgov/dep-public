@@ -4,7 +4,7 @@ from unittest.mock import MagicMock
 from api.schemas.widget_image import WidgetImageSchema
 
 
-FULL_URL = 'https://objects.example.com/met-public-files/uploads/banner.png'
+FULL_URL = 'https://objects.example.com/dep-public-files/uploads/banner.png'
 
 
 def _schema_with_mock_storage(url_return_value=FULL_URL):

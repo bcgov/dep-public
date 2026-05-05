@@ -15,6 +15,7 @@ from api.services.user_group_membership_service import UserGroupMembershipServic
 from api.utils import notification
 from api.utils.constants import CompositeRoles
 from api.utils.enums import CompositeRoleId, CompositeRoleNames, UserStatus
+from api.utils.roles import Role
 from api.utils.template import Template
 
 
@@ -48,20 +49,62 @@ class StaffUserService:
         if db_user is None:
             new_user = StaffUserModel.create_user(user)
             if len(user.get('roles', [])) == 0:
-                self._send_access_request_email(new_user)
+                self._send_access_request_email(new_user, getattr(g, 'tenant_id', None))
             return new_user
 
         return StaffUserModel.update_user(db_user.id, user)
 
+    @classmethod
+    def sync_super_admin_membership(cls, token_info: dict, token_roles, tenant_id=None):
+        """Sync SUPER_ADMIN tenant membership from keycloak roles at login/request time."""
+        if getattr(g, 'syncing_super_admin_membership', False) or getattr(db.session, '_flushing', False):
+            return
+
+        g.syncing_super_admin_membership = True
+        if not token_info:
+            g.syncing_super_admin_membership = False
+            return
+
+        try:
+            external_id = token_info.get('sub')
+            if not external_id:
+                return
+
+            has_super_admin_role = Role.SUPER_ADMIN.value in set(token_roles or [])
+
+            db_user = StaffUserModel.get_user_by_external_id(external_id, include_inactive=True)
+            if db_user is None:
+                user_data = {
+                    'external_id': external_id,
+                    'first_name': token_info.get('given_name'),
+                    'last_name': token_info.get('family_name'),
+                    'email_address': token_info.get('email'),
+                    'username': token_info.get('preferred_username'),
+                    'identity_provider': token_info.get('identity_provider', ''),
+                    'roles': set(token_roles or []),
+                }
+                required = ['external_id', 'first_name', 'last_name', 'email_address']
+                if all(user_data.get(field) for field in required):
+                    cls().create_or_update_user(user_data)
+
+            if has_super_admin_role and tenant_id:
+                UserGroupMembershipService.ensure_group_membership(external_id, tenant_id, 'SUPER_ADMIN')
+                return
+
+            if not has_super_admin_role:
+                UserGroupMembershipService.remove_group_memberships_by_group_name(external_id, 'SUPER_ADMIN')
+        finally:
+            g.syncing_super_admin_membership = False
+
     @staticmethod
-    def _send_access_request_email(user: StaffUserModel) -> None:
+    def _send_access_request_email(user: StaffUserModel, tenant_id: Optional[int] = None) -> None:
         """Send a new user email.Throws error if fails."""
         templates = current_app.config['EMAIL_TEMPLATES']
         to_email_address = templates['ACCESS_REQUEST']['DEST_EMAIL_ADDRESS']
         if to_email_address is None:
             return
         template_id = templates['ACCESS_REQUEST']['ID']
-        subject, body, args = StaffUserService._render_email_template(user)
+        subject, body, args = StaffUserService._render_email_template(user, tenant_id)
         try:
             notification.send_email(subject=subject,
                                     email=to_email_address,
@@ -75,13 +118,14 @@ class StaffUserService:
                 status_code=HTTPStatus.INTERNAL_SERVER_ERROR) from exc
 
     @staticmethod
-    def _render_email_template(user: StaffUserModel):
+    def _render_email_template(user: StaffUserModel, tenant_id: Optional[int] = None):
         template = Template.get_template('email_access_request.html')
         templates = current_app.config['EMAIL_TEMPLATES']
         paths = current_app.config['PATHS']
         subject = templates['ACCESS_REQUEST']['SUBJECT']
+        tenant_id = tenant_id if tenant_id is not None else getattr(g, 'tenant_id', None)
         grant_access_url = notification.get_tenant_site_url(
-            user.tenant_id, paths['USER_MANAGEMENT']
+            tenant_id, paths['USER_MANAGEMENT']
         ).replace('{id}', str(user.id))
         email_environment = templates['ENVIRONMENT']
         args = {
