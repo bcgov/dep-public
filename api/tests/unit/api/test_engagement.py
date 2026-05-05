@@ -139,8 +139,8 @@ def test_creating_engagments_cross_tenant(client, jwt, session, setup_admin_user
     By extension, this tests the superuser's general ability to perform actions across tenants,
     where this would be disallowed for any other user.
     """
-    adm_user, adm_claims = setup_admin_user_and_claims
-    sup_user, sup_claims = setup_super_admin_user_and_claims
+    _, adm_claims = setup_admin_user_and_claims
+    _, sup_claims = setup_super_admin_user_and_claims
     tenant_short_name = current_app.config.get('DEFAULT_TENANT_SHORT_NAME')
     tenant_1 = TenantModel.find_by_short_name(tenant_short_name)
     assert tenant_1 is not None
