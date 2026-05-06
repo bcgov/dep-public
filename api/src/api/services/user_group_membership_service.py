@@ -1,10 +1,15 @@
 """Service for user group membership management."""
 from typing import List, Tuple
 
+from sqlalchemy import func
+
 from api.models.db import db
 from api.models.user_group import UserGroup
 from api.models.user_group_membership import UserGroupMembership
 from api.models.user_role import UserRole
+
+
+ACCESS_REQUEST_GROUP_NAME = 'ACCESS_REQUEST'
 
 
 class UserGroupMembershipService:
@@ -76,6 +81,39 @@ class UserGroupMembershipService:
                 membership.is_active = True
                 db.session.commit()
             return membership
+
+        membership = UserGroupMembership(
+            staff_user_external_id=external_id,
+            group_id=group.id,
+            tenant_id=tenant_id,
+            is_active=True,
+        )
+        membership.save()
+        return membership
+
+    @staticmethod
+    def ensure_access_request_membership(external_id: str, tenant_id: int):
+        """Ensure a tenant-scoped access-request membership exists for a user.
+
+        The access-request group intentionally has no role mappings, so users
+        become visible in tenant user management without receiving permissions.
+        """
+        if not external_id or not tenant_id:
+            return None
+
+        existing_membership = UserGroupMembership.query.filter(
+            UserGroupMembership.staff_user_external_id == external_id,
+            UserGroupMembership.tenant_id == tenant_id,
+        ).first()
+        if existing_membership:
+            return existing_membership
+
+        group = UserGroup.query.filter(UserGroup.name == ACCESS_REQUEST_GROUP_NAME).first()
+        if not group:
+            next_group_id = (db.session.query(func.max(UserGroup.id)).scalar() or 0) + 1
+            group = UserGroup(name=ACCESS_REQUEST_GROUP_NAME)
+            group.id = next_group_id
+            group.save()
 
         membership = UserGroupMembership(
             staff_user_external_id=external_id,

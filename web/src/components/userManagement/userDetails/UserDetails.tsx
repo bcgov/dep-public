@@ -144,18 +144,21 @@ export const UserDetails = () => {
                     subText: [
                         { text: 'This action removes the user from the database and cannot be undone.' },
                         { text: 'Only proceed if you understand the operational and audit implications.' },
-                        { text: 'Do you want to permanently delete this user?' },
+                        { text: 'Do you want to delete this user?' },
                     ],
                     confirmButtonText: 'Delete User',
                     cancelButtonText: 'Cancel',
                     handleConfirm: async () => {
                         try {
                             setIsDeletingUser(true);
-                            await deleteUser(savedUser.id);
+                            const deleteResponse = await deleteUser(savedUser.id);
                             dispatch(
                                 openNotification({
                                     severity: 'success',
-                                    text: `${savedUser.first_name} ${savedUser.last_name} was deleted successfully.`,
+                                    text:
+                                        deleteResponse?.action === 'removed_current_tenant_membership'
+                                            ? `${savedUser.first_name} ${savedUser.last_name} was removed from the current tenant.`
+                                            : `${savedUser.first_name} ${savedUser.last_name} was deleted successfully.`,
                                 }),
                             );
                             navigate(getPath(ROUTES.USER_MANAGEMENT));

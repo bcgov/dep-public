@@ -81,6 +81,56 @@ def test_create_staff_user(client, jwt, session, side_effect, expected_status,
     assert rv.status_code == expected_status
 
 
+def test_no_role_login_creates_access_request_membership_for_new_user(client, jwt, session, notify_mock):
+    """Assert no-role login creates a tenant-scoped ACCESS_REQUEST membership for new users."""
+    set_global_tenant(tenant_id=1)
+    claims = copy.deepcopy(TestJwtClaims.staff_admin_role.value)
+    claims['sub'] = 'b2f9b95e-3e6d-4b25-9b58-611201fce100'
+    claims['email'] = 'new-requester@gov.bc.ca'
+    claims['client_roles'] = []
+
+    headers = factory_auth_header(jwt=jwt, claims=claims)
+    rv = client.put('/api/user/', headers=headers, content_type=ContentType.JSON.value)
+
+    assert rv.status_code == HTTPStatus.OK
+
+    access_request_group = UserGroup.query.filter_by(name='ACCESS_REQUEST').first()
+    assert access_request_group is not None
+
+    membership = UserGroupMembership.get_group_by_user_and_tenant_id(claims['sub'], 1)
+    assert membership is not None
+    assert membership.group_id == access_request_group.id
+
+
+def test_no_role_login_creates_access_request_membership_for_existing_user_in_new_tenant(client, jwt, session):
+    """Assert no-role login adds ACCESS_REQUEST membership when an existing user enters a new tenant."""
+    set_global_tenant(tenant_id=1)
+    existing_user = factory_staff_user_model(external_id='6fdde698-238f-4d65-8a4d-b71715ea99ab')
+    factory_user_group_membership_model(str(existing_user.external_id), tenant_id=1)
+
+    tenant_data = dict(TestTenantInfo.tenant2)
+    tenant_data['short_name'] = 'GDXT'
+    tenant_2 = factory_tenant_model(tenant_data)
+
+    claims = copy.deepcopy(TestJwtClaims.staff_admin_role.value)
+    claims['sub'] = str(existing_user.external_id)
+    claims['email'] = existing_user.email_address
+    claims['client_roles'] = []
+
+    headers = factory_auth_header(jwt=jwt, claims=claims)
+    headers[TENANT_ID_HEADER] = tenant_2.short_name
+    rv = client.put('/api/user/', headers=headers, content_type=ContentType.JSON.value)
+
+    assert rv.status_code == HTTPStatus.OK
+
+    access_request_group = UserGroup.query.filter_by(name='ACCESS_REQUEST').first()
+    assert access_request_group is not None
+
+    membership = UserGroupMembership.get_group_by_user_and_tenant_id(str(existing_user.external_id), tenant_2.id)
+    assert membership is not None
+    assert membership.group_id == access_request_group.id
+
+
 def test_super_admin_login_assigns_super_admin_group_in_tenant(client, jwt, session):
     """Assert super admin users are persisted in tenant membership on login."""
     set_global_tenant()
