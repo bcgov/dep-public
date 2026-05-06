@@ -171,7 +171,7 @@ def test_existing_user_login_to_new_tenant_without_roles_creates_access_request_
     assert membership.group_id == access_request_group.id
 
 
-def test_access_request_email_sent_to_global_and_tenant_contacts(client, jwt, session):
+def test_access_request_email_sent_to_global_and_tenant_contacts(client, jwt, session, monkeypatch):
     """Assert access request sends notification to global and tenant primary contacts."""
     tenant_data = dict(TestTenantInfo.tenant1)
     tenant_data['short_name'] = 'GDXE'
@@ -180,11 +180,17 @@ def test_access_request_email_sent_to_global_and_tenant_contacts(client, jwt, se
 
     user = factory_staff_user_model()
 
+    expected_global_contact = 'global.access@gov.bc.ca'
+    monkeypatch.setitem(
+        current_app.config['EMAIL_TEMPLATES']['ACCESS_REQUEST'],
+        'DEST_EMAIL_ADDRESS',
+        expected_global_contact,
+    )
+
     with patch.object(notification, 'send_email') as mocked_send_email:
         StaffUserService._send_access_request_email(user, tenant_id=tenant.id)
 
     sent_to = [call.kwargs.get('email') for call in mocked_send_email.call_args_list]
-    expected_global_contact = current_app.config['EMAIL_TEMPLATES']['ACCESS_REQUEST']['DEST_EMAIL_ADDRESS']
 
     assert expected_global_contact in sent_to
     assert tenant.contact_email in sent_to
