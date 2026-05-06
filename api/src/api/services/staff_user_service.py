@@ -57,12 +57,12 @@ class StaffUserService:
     @classmethod
     def sync_super_admin_membership(cls, token_info: dict, token_roles, tenant_id=None):
         """Sync SUPER_ADMIN tenant membership from keycloak roles at login/request time."""
-        if getattr(g, 'syncing_super_admin_membership', False) or getattr(db.session, '_flushing', False):
+        if getattr(g, '_syncing_super_admin_membership', False):
             return
 
-        g.syncing_super_admin_membership = True
+        g._syncing_super_admin_membership = True
         if not token_info:
-            g.syncing_super_admin_membership = False
+            g._syncing_super_admin_membership = False
             return
 
         try:
@@ -94,7 +94,7 @@ class StaffUserService:
             if not has_super_admin_role:
                 UserGroupMembershipService.remove_group_memberships_by_group_name(external_id, 'SUPER_ADMIN')
         finally:
-            g.syncing_super_admin_membership = False
+            g._syncing_super_admin_membership = False
 
     @staticmethod
     def _send_access_request_email(user: StaffUserModel, tenant_id: Optional[int] = None) -> None:
