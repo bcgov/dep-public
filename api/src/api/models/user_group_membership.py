@@ -45,9 +45,28 @@ class UserGroupMembership(BaseModel):  # pylint: disable=too-few-public-methods,
     @classmethod
     def create_user_group_membership(cls, membership_data: dict) -> UserGroupMembership:
         """Create a user group membership."""
+        external_id = membership_data.get('external_id')
+        group_id = membership_data.get('group_id')
+        tenant_id = membership_data.get('tenant_id', getattr(g, 'tenant_id', None))
+
+        if not external_id or not group_id or not tenant_id:
+            raise ValueError('external_id, group_id and tenant_id are required to create membership')
+
+        existing_membership: UserGroupMembership = UserGroupMembership.query.filter_by(
+            staff_user_external_id=external_id,
+            tenant_id=tenant_id,
+        ).first()
+
+        if existing_membership:
+            existing_membership.group_id = group_id
+            existing_membership.is_active = True
+            db.session.commit()
+            return existing_membership
+
         user = UserGroupMembership(
-            staff_user_external_id=membership_data.get('external_id'),
-            group_id=membership_data.get('group_id'),
+            staff_user_external_id=external_id,
+            group_id=group_id,
+            tenant_id=tenant_id,
             is_active=True,
         )
         user.save()

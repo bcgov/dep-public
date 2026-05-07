@@ -31,6 +31,7 @@ from api.models.user_group_membership import UserGroupMembership
 from api.models.user_role import UserRole
 from api.services.staff_user_membership_service import StaffUserMembershipService
 from api.services.staff_user_service import StaffUserService
+from api.services.user_group_membership_service import UserGroupMembershipService
 from api.utils.constants import TENANT_ID_HEADER, CompositeRoles
 from api.utils.enums import CompositeRoleNames, ContentType, UserStatus
 from tests.utilities.factory_scenarios import TestJwtClaims, TestTenantInfo, TestUserInfo
@@ -309,6 +310,32 @@ def test_add_user_to_team_member_role(client, jwt, session, setup_admin_user_and
     )
     assert rv.status_code == HTTPStatus.OK
     assert rv.json.get('main_role') == CompositeRoles.TEAM_MEMBER.value
+
+
+def test_add_user_to_admin_role_from_access_request_membership(client, jwt, session, setup_admin_user_and_claims):
+    """Assert assigning ADMIN updates existing ACCESS_REQUEST tenant membership."""
+    set_global_tenant(tenant_id=1)
+
+    user = factory_staff_user_model()
+    UserGroupMembershipService.ensure_access_request_membership(str(user.external_id), 1)
+
+    _, claims = setup_admin_user_and_claims
+    headers = factory_auth_header(jwt=jwt, claims=claims)
+
+    rv = client.post(
+        f'/api/user/{user.external_id}/roles?role={CompositeRoleNames.ADMIN.value}',
+        headers=headers,
+        content_type=ContentType.JSON.value,
+    )
+    assert rv.status_code == HTTPStatus.OK
+
+    rv = client.get(
+        f'/api/user/{user.id}?include_roles={True}',
+        headers=headers,
+        content_type=ContentType.JSON.value,
+    )
+    assert rv.status_code == HTTPStatus.OK
+    assert rv.json.get('main_role') == CompositeRoles.ADMIN.value
 
 
 def test_add_user_to_team_member_role_across_tenants(client, jwt, session):
