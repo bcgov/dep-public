@@ -18,22 +18,25 @@
         "label": "Sorry, this engagement is not available."
     },
     "footer": {
-        "body": "The B.C. Public Service acknowledges the territories of First Nations around B.C. and is grateful to carry out our work on these lands. We acknowledge the rights, interests, priorities, and concerns of all Indigenous Peoples - First Nations, Métis and Inuit - respecting and acknowledging their distinct cultures, histories, rights, laws, and governments.",
-        "connectWithUs": "CONNECT WITH US",
-        "moreInfo": "MORE INFO",
-        "home": "Home",
-        "accessibility": "Accessibility & Inclusion",
-        "aboutGov": "About gov.bc.ca",
-        "copyright": "Copyright",
-        "disclaimer": "Disclaimer",
+        "acknowledgement": "The B.C. Public Service acknowledges the territories of First Nations around B.C. and is grateful to carry out our work on these lands. We acknowledge the rights, interests, priorities, and concerns of all Indigenous Peoples - First Nations, Métis, and Inuit - respecting and acknowledging their distinct cultures, histories, rights, laws, and governments.",
+        "moreInfo": {
+            "title": "MORE INFO",
+            "home": "Home",
+            "about": "About gov.bc.ca",
+            "disclaimer": "Disclaimer",
+            "privacy": "Privacy",
+            "accessibility": "Accessibility",
+            "copyright": "Copyright",
+            "contact": "Contact us"
+        },
+        "statement": {
+            "sentence": "We can help in over 220 languages and through other accessible options.",
+            "methods": "Call, email or text us,",
+            "or": "or",
+            "centre": "find a service centre."
+        },
+        "copyrightNotice": "Government of British Columbia",
         "login": "Admin Login",
-        "privacy": "Privacy",
-        "copyrightNotice": "© 2025 Government of British Columbia",
-        "defaultLogo": "British Columbia Logo",
-        "serviceCentres": "Service Centres",
-        "contactInformation": "Contact Information",
-        "aboutEngageBC": "About engageBC",
-        "statement": "We are committed to providing accessible and inclusive digital experiences and help in 120 languages including TDD to British Columbians.",
         "appVersion": "App version",
         "apiVersion": "API version"
     },
