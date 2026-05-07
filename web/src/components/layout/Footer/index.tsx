@@ -212,7 +212,7 @@ const Footer = () => {
                             }}
                         >
                             {moreInfoLinks.map((link) => (
-                                <li style={{ marginBottom: '1rem' }}>
+                                <li key={link.href} style={{ marginBottom: '1rem' }}>
                                     <Link href={link.href} sx={linkStyles}>
                                         {link.label}
                                     </Link>
