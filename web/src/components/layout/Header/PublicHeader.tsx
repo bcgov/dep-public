@@ -40,7 +40,7 @@ const PublicHeader = () => {
                 }}
             >
                 {/* BC Government Logo */}
-                <Link underline="none" sx={{ height: '100%', mr: '2px' }} href="https://www2.gov.bc.ca/">
+                <Link underline="none" sx={{ height: '100%', mr: '2px' }} to={getPath(ROUTES.PUBLIC_LANDING)}>
                     <Box
                         component={BCLogo}
                         sx={{
@@ -49,7 +49,7 @@ const PublicHeader = () => {
                             padding: '0 0',
                             ml: '-13px',
                         }}
-                        alt="British Columbia Logo"
+                        alt="Government of British Columbia Logo"
                     />
                 </Link>
 

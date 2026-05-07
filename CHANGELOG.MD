@@ -1,3 +1,14 @@
+## May 7, 2026
+
+- **Feature** Updated/added links to BC Gov logo in header/footer. [🎟️ DEP-271](https://citz-gdx.atlassian.net/browse/DEP-271)
+- Also added links on public site for EngageBC text
+- Updated footer to match current BC Gov website
+    - Social icons removed
+    - List of links updated
+    - Styling matched
+- Added layout width to theme file
+    - Footer can be adjusted to any layout width via theme LayoutWidth
+
 ## April 30, 2026
 
 - **Feature** Updated all S3 uploaded objects to dynamically generate document URLs from the bucket and object key, rather than storing the full URL in the database. [🎟️ DEP-261](https://citz-gdx.atlassian.net/browse/DEP-261)

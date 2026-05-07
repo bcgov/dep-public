@@ -593,3 +593,8 @@ export const ZIndex = {
     sideNav: '1001',
     footer: '1000',
 };
+
+export const LayoutWidth = {
+    default: '100%',
+    footer: '100%',
+};

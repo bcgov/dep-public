@@ -204,7 +204,7 @@ const InternalHeader = ({ showSideNav = true }: { showSideNav?: boolean }) => {
                             transition: 'padding 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
                         }}
                     >
-                        <Link underline="none" href="https://gov.bc.ca" sx={{ height: '100%', mr: '2px' }}>
+                        <Link underline="none" to={getPath(ROUTES.HOME)} sx={{ height: '100%', mr: '2px' }}>
                             <Box
                                 component={BCLogo}
                                 sx={{
