@@ -111,8 +111,8 @@ class StaffUser(Resource):
         """Permanently delete an inactive user."""
         try:
             user_data = TokenInfo.get_user_data()
-            StaffUserService.delete_deactivated_user(user_id, user_data.get('external_id'))
-            return {'message': 'User deleted successfully.'}, HTTPStatus.OK
+            response = StaffUserService.delete_deactivated_user(user_id, user_data.get('external_id'))
+            return response, HTTPStatus.OK
         except BusinessException as err:
             return {'message': err.error}, err.status_code
 

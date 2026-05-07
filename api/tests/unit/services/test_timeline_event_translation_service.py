@@ -53,7 +53,7 @@ def test_create_timeline_event_translation_with_authorization(
     patch_token_info(TestJwtClaims.staff_admin_role, monkeypatch)
     set_global_tenant()
     user = factory_staff_user_model(external_id=TestJwtClaims.staff_admin_role['sub'])
-    factory_user_group_membership_model(str(user.external_id), user.tenant_id)
+    factory_user_group_membership_model(str(user.external_id))
     timeline_event, widget_timeline = timeline_event_model_with_language()
     data = {
         **TestTimelineEventTranslationInfo.timeline_event_info1.value,
@@ -79,7 +79,7 @@ def test_create_timeline_event_translation_with_authorization_with_prepopulate(
     patch_token_info(TestJwtClaims.staff_admin_role, monkeypatch)
     set_global_tenant()
     user = factory_staff_user_model(external_id=TestJwtClaims.staff_admin_role['sub'])
-    factory_user_group_membership_model(str(user.external_id), user.tenant_id)
+    factory_user_group_membership_model(str(user.external_id))
     timeline_event, widget_timeline = timeline_event_model_with_language()
     data = {
         'timeline_event_id': timeline_event.id,
@@ -103,7 +103,7 @@ def test_update_timeline_event_translation_with_authorization(
     patch_token_info(TestJwtClaims.staff_admin_role, monkeypatch)
     set_global_tenant()
     user = factory_staff_user_model(external_id=TestJwtClaims.staff_admin_role['sub'])
-    factory_user_group_membership_model(str(user.external_id), user.tenant_id)
+    factory_user_group_membership_model(str(user.external_id))
     timeline_event, widget_timeline = timeline_event_model_with_language()
     translation = factory_timeline_event_translation_model(
         {
@@ -132,7 +132,7 @@ def test_delete_timeline_event_translation_with_authorization(
     patch_token_info(TestJwtClaims.staff_admin_role, monkeypatch)
     set_global_tenant()
     user = factory_staff_user_model(external_id=TestJwtClaims.staff_admin_role['sub'])
-    factory_user_group_membership_model(str(user.external_id), user.tenant_id)
+    factory_user_group_membership_model(str(user.external_id))
     timeline_event, widget_timeline = timeline_event_model_with_language()
     translation = factory_timeline_event_translation_model(
         {

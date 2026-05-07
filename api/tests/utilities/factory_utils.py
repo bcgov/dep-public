@@ -278,7 +278,6 @@ def factory_staff_user_model(external_id=None, user_info: dict = TestUserInfo.us
         middle_name=user_info['middle_name'],
         email_address=user_info['email_address'],
         status_id=user_info['status_id'],
-        tenant_id=user_info['tenant_id'],
     )
     user.save()
     return user
@@ -292,7 +291,7 @@ def factory_user_group_membership_model(external_id=None, tenant_id=None, group_
     group_id = group_id or CompositeRoleId.ADMIN.value
     # Check if tenant_id is provided, otherwise use a default value
     if tenant_id is None:
-        tenant_id = '1'
+        tenant_id = getattr(g, 'tenant_id', None) or '1'
     membership = UserGroupMembershipModel(
         staff_user_external_id=str(external_id),
         group_id=group_id,

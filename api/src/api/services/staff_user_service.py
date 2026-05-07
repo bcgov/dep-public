@@ -9,12 +9,14 @@ from api.models.db import db
 from api.models.membership import Membership
 from api.models.pagination_options import PaginationOptions
 from api.models.staff_user import StaffUser as StaffUserModel
+from api.models.tenant import Tenant as TenantModel
 from api.models.user_group_membership import UserGroupMembership
 from api.schemas.staff_user import StaffUserSchema
 from api.services.user_group_membership_service import UserGroupMembershipService
 from api.utils import notification
 from api.utils.constants import CompositeRoles
 from api.utils.enums import CompositeRoleId, CompositeRoleNames, UserStatus
+from api.utils.roles import Role
 from api.utils.template import Template
 
 
@@ -43,31 +45,98 @@ class StaffUserService:
         self.validate_fields(user)
 
         external_id = user.get('external_id')
+        tenant_id = getattr(g, 'tenant_id', None)
+        has_no_tenant_roles = len(user.get('roles', [])) == 0
         db_user = StaffUserModel.get_user_by_external_id(external_id, include_inactive=True)
 
         if db_user is None:
             new_user = StaffUserModel.create_user(user)
-            if len(user.get('roles', [])) == 0:
-                self._send_access_request_email(new_user)
+            if has_no_tenant_roles and tenant_id:
+                UserGroupMembershipService.ensure_access_request_membership(external_id, tenant_id)
+            if has_no_tenant_roles:
+                self._send_access_request_email(new_user, getattr(g, 'tenant_id', None))
             return new_user
+
+        if has_no_tenant_roles and tenant_id:
+            UserGroupMembershipService.ensure_access_request_membership(external_id, tenant_id)
 
         return StaffUserModel.update_user(db_user.id, user)
 
+    @classmethod
+    def sync_super_admin_membership(cls, token_info: dict, token_roles, tenant_id=None):
+        """Sync SUPER_ADMIN tenant membership from keycloak roles at login/request time."""
+        if getattr(g, 'syncing_super_admin_membership', False):
+            return
+
+        g.syncing_super_admin_membership = True
+        if not token_info:
+            g.syncing_super_admin_membership = False
+            return
+
+        try:
+            external_id = token_info.get('sub')
+            if not external_id:
+                return
+
+            has_super_admin_role = Role.SUPER_ADMIN.value in set(token_roles or [])
+
+            db_user = StaffUserModel.get_user_by_external_id(external_id, include_inactive=True)
+            if db_user is None:
+                user_data = {
+                    'external_id': external_id,
+                    'first_name': token_info.get('given_name'),
+                    'last_name': token_info.get('family_name'),
+                    'email_address': token_info.get('email'),
+                    'username': token_info.get('preferred_username'),
+                    'identity_provider': token_info.get('identity_provider', ''),
+                    'roles': set(token_roles or []),
+                }
+                required = ['external_id', 'first_name', 'last_name', 'email_address']
+                if all(user_data.get(field) for field in required):
+                    cls().create_or_update_user(user_data)
+
+            if has_super_admin_role and tenant_id:
+                UserGroupMembershipService.ensure_group_membership(external_id, tenant_id, 'SUPER_ADMIN')
+                return
+
+            if not has_super_admin_role:
+                UserGroupMembershipService.remove_group_memberships_by_group_name(external_id, 'SUPER_ADMIN')
+        finally:
+            g.syncing_super_admin_membership = False
+
     @staticmethod
-    def _send_access_request_email(user: StaffUserModel) -> None:
+    def _send_access_request_email(user: StaffUserModel, tenant_id: Optional[int] = None) -> None:
         """Send a new user email.Throws error if fails."""
         templates = current_app.config['EMAIL_TEMPLATES']
-        to_email_address = templates['ACCESS_REQUEST']['DEST_EMAIL_ADDRESS']
-        if to_email_address is None:
-            return
         template_id = templates['ACCESS_REQUEST']['ID']
-        subject, body, args = StaffUserService._render_email_template(user)
+        subject, body, args = StaffUserService._render_email_template(user, tenant_id)
+
+        resolved_tenant_id = tenant_id if tenant_id is not None else getattr(g, 'tenant_id', None)
+        recipient_emails = []
+
+        global_contact_email = templates['ACCESS_REQUEST']['DEST_EMAIL_ADDRESS']
+        if global_contact_email:
+            recipient_emails.append(global_contact_email)
+
+        if resolved_tenant_id:
+            tenant = TenantModel.find_by_id(resolved_tenant_id)
+            if tenant and tenant.contact_email:
+                recipient_emails.append(tenant.contact_email)
+
+        # Preserve order and avoid duplicate sends when contacts are the same.
+        recipient_emails = list(dict.fromkeys(recipient_emails))
+        if not recipient_emails:
+            return
+
         try:
-            notification.send_email(subject=subject,
-                                    email=to_email_address,
-                                    html_body=body,
-                                    args=args,
-                                    template_id=template_id)
+            for email in recipient_emails:
+                notification.send_email(
+                    subject=subject,
+                    email=email,
+                    html_body=body,
+                    args=args,
+                    template_id=template_id,
+                )
         except Exception as exc:  # noqa: B902
             current_app.logger.error('<Notification for new user registration failed', exc)
             raise BusinessException(
@@ -75,13 +144,14 @@ class StaffUserService:
                 status_code=HTTPStatus.INTERNAL_SERVER_ERROR) from exc
 
     @staticmethod
-    def _render_email_template(user: StaffUserModel):
+    def _render_email_template(user: StaffUserModel, tenant_id: Optional[int] = None):
         template = Template.get_template('email_access_request.html')
         templates = current_app.config['EMAIL_TEMPLATES']
         paths = current_app.config['PATHS']
         subject = templates['ACCESS_REQUEST']['SUBJECT']
+        tenant_id = tenant_id if tenant_id is not None else getattr(g, 'tenant_id', None)
         grant_access_url = notification.get_tenant_site_url(
-            user.tenant_id, paths['USER_MANAGEMENT']
+            tenant_id, paths['USER_MANAGEMENT']
         ).replace('{id}', str(user.id))
         email_environment = templates['ENVIRONMENT']
         args = {
@@ -109,9 +179,11 @@ class StaffUserService:
             composite_role = UserGroupMembershipService.get_user_group_within_tenant(user.get('external_id'),
                                                                                      g.tenant_id)
             user['composite_roles'] = ''
+            user['main_role'] = ''
             if composite_role:
                 user['composite_roles'] = composite_role
-                user['main_role'] = CompositeRoles[composite_role].value
+                if composite_role in CompositeRoles.__members__:
+                    user['main_role'] = CompositeRoles[composite_role].value
 
     @classmethod
     def find_users(
@@ -177,7 +249,12 @@ class StaffUserService:
 
     @classmethod
     def delete_deactivated_user(cls, user_id, actor_external_id: Optional[str] = None):
-        """Permanently delete a user after required safeguards are satisfied."""
+        """Delete a deactivated user or only remove current tenant membership.
+
+        Behavior is tenant-aware:
+        - If the user has memberships in other tenants, only remove membership in the current tenant.
+        - If the user only belongs to the current tenant, fully delete the user.
+        """
         db_user = StaffUserModel.get_by_id(user_id, include_inactive=True)
         if db_user is None:
             raise BusinessException(error='User not found.', status_code=HTTPStatus.NOT_FOUND)
@@ -194,9 +271,48 @@ class StaffUserService:
                 status_code=HTTPStatus.CONFLICT,
             )
 
+        current_tenant_id = getattr(g, 'tenant_id', None)
+        if not current_tenant_id:
+            raise BusinessException(
+                error='Tenant context is required for this operation.',
+                status_code=HTTPStatus.BAD_REQUEST,
+            )
+
+        user_group_memberships = UserGroupMembership.query.filter(
+            UserGroupMembership.staff_user_external_id == db_user.external_id,
+        ).all()
+
+        has_current_tenant_membership = any(
+            membership.tenant_id == current_tenant_id for membership in user_group_memberships
+        )
+        if not has_current_tenant_membership:
+            raise BusinessException(
+                error='User does not have membership in the current tenant.',
+                status_code=HTTPStatus.BAD_REQUEST,
+            )
+
+        has_other_tenant_memberships = any(
+            membership.tenant_id != current_tenant_id for membership in user_group_memberships
+        )
+
+        if has_other_tenant_memberships:
+            UserGroupMembership.query.filter(
+                UserGroupMembership.staff_user_external_id == db_user.external_id,
+                UserGroupMembership.tenant_id == current_tenant_id,
+            ).delete(synchronize_session=False)
+            db.session.commit()
+            return {
+                'message': 'User removed from current tenant successfully.',
+                'action': 'removed_current_tenant_membership',
+            }
+
         Membership.query.filter(Membership.user_id == db_user.id).delete(synchronize_session=False)
         UserGroupMembership.query.filter(
             UserGroupMembership.staff_user_external_id == db_user.external_id,
         ).delete(synchronize_session=False)
         db.session.delete(db_user)
         db.session.commit()
+        return {
+            'message': 'User deleted successfully.',
+            'action': 'deleted_user',
+        }

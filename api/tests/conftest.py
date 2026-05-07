@@ -181,7 +181,7 @@ def setup_super_admin_user_and_claims(jwt):
     """Set up a user with the super-admin role."""
     staff_info = dict(TestUserInfo.user_staff_1)
     user = factory_staff_user_model(user_info=staff_info)
-    factory_user_group_membership_model(str(user.external_id), user.tenant_id)
+    factory_user_group_membership_model(str(user.external_id))
     claims = copy.deepcopy(TestJwtClaims.system_admin_role.value)
     claims['sub'] = str(user.external_id)
 
@@ -194,7 +194,7 @@ def setup_admin_user_and_claims(jwt):
     """Set up a user with the staff admin role."""
     staff_info = dict(TestUserInfo.user_staff_1)
     user = factory_staff_user_model(user_info=staff_info)
-    factory_user_group_membership_model(str(user.external_id), user.tenant_id)
+    factory_user_group_membership_model(str(user.external_id))
     claims = copy.deepcopy(TestJwtClaims.staff_admin_role.value)
     claims['sub'] = str(user.external_id)
 
@@ -207,7 +207,7 @@ def setup_reviewer_and_claims(jwt):
     """Set up a user with the reviewer role."""
     staff_info = dict(TestUserInfo.user_staff_1)
     user = factory_staff_user_model(user_info=staff_info)
-    factory_user_group_membership_model(str(user.external_id), user.tenant_id, CompositeRoleId.REVIEWER.value)
+    factory_user_group_membership_model(str(user.external_id), group_id=CompositeRoleId.REVIEWER.value)
     claims = copy.deepcopy(TestJwtClaims.reviewer_role.value)
     claims['sub'] = str(user.external_id)
 
@@ -220,7 +220,7 @@ def setup_team_member_and_claims(jwt):
     """Set up a user with the team member role."""
     staff_info = dict(TestUserInfo.user_staff_1)
     user = factory_staff_user_model(user_info=staff_info)
-    factory_user_group_membership_model(str(user.external_id), user.tenant_id, CompositeRoleId.TEAM_MEMBER.value)
+    factory_user_group_membership_model(str(user.external_id), group_id=CompositeRoleId.TEAM_MEMBER.value)
     claims = copy.deepcopy(TestJwtClaims.team_member_role.value)
     claims['sub'] = str(user.external_id)
 

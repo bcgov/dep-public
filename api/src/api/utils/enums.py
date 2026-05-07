@@ -63,6 +63,7 @@ class CompositeRoleNames(Enum):
     """Composite role names."""
 
     ADMIN = 'ADMIN'
+    SUPER_ADMIN = 'SUPER_ADMIN'
     VIEWER = 'VIEWER'
     TEAM_MEMBER = 'TEAM_MEMBER'
     REVIEWER = 'REVIEWER'
@@ -75,6 +76,7 @@ class CompositeRoleId(IntEnum):
     TEAM_MEMBER = 2
     REVIEWER = 3
     VIEWER = 4
+    SUPER_ADMIN = 5
 
 
 class MembershipType(IntEnum):

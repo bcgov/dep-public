@@ -29,7 +29,7 @@ const UserManagementListing = () => {
 
     const headCells: HeadCell<User>[] = [
         {
-            key: 'first_name',
+            key: 'last_name',
             numeric: false,
             disablePadding: true,
             label: 'User Name',

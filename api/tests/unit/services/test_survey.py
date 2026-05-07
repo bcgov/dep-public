@@ -41,7 +41,7 @@ def test_create_survey(session, monkeypatch,):  # pylint:disable=unused-argument
     patch_token_info(TestJwtClaims.staff_admin_role, monkeypatch)
     set_global_tenant()
     user = factory_staff_user_model(external_id=TestJwtClaims.staff_admin_role['sub'])
-    factory_user_group_membership_model(str(user.external_id), user.tenant_id)
+    factory_user_group_membership_model(str(user.external_id))
     saved_survey = SurveyService().create(survey_data)
     # fetch the survey with id and assert
     fetched_survey = SurveyService().get(saved_survey.id)

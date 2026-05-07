@@ -81,7 +81,13 @@ export const toggleUserStatus = async (user_id: string, active: boolean): Promis
     return responseData.data;
 };
 
-export const deleteUser = async (user_id: number): Promise<void> => {
+export interface DeleteUserResponse {
+    message: string;
+    action: 'deleted_user' | 'removed_current_tenant_membership';
+}
+
+export const deleteUser = async (user_id: number): Promise<DeleteUserResponse> => {
     const url = replaceUrl(Endpoints.User.DELETE, 'user_id', String(user_id));
-    await http.DeleteRequest<void>(url);
+    const responseData = await http.DeleteRequest<DeleteUserResponse>(url);
+    return responseData.data;
 };

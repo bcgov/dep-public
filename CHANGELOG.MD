@@ -9,6 +9,14 @@
 - Added layout width to theme file
     - Footer can be adjusted to any layout width via theme LayoutWidth
 
+## May 4, 2026
+
+- **Feature** Sync SUPER_ADMIN tenant membership and protect super admins in user management [🎟️ DEP-262](https://citz-gdx.atlassian.net/browse/DEP-262)
+  - Added a migration to create the `SUPER_ADMIN` group, the `super_admin` role, and their mapping so super admins can be represented in tenant memberships.
+  - Updated the API to add or remove `SUPER_ADMIN` group membership based on the user's Keycloak roles during login/request processing, including unit tests for assignment and removal.
+  - Updated the user management UI to recognize Super Admin as a composite role and prevent administrators and super admins from being deactivated, while showing the correct permission messaging.
+  - Removed the tenant_id column from staff_user table, as tenant membership is determined by group memberships rather than a direct column on the user model, making the column redundant.
+
 ## April 30, 2026
 
 - **Feature** Updated all S3 uploaded objects to dynamically generate document URLs from the bucket and object key, rather than storing the full URL in the database. [🎟️ DEP-261](https://citz-gdx.atlassian.net/browse/DEP-261)

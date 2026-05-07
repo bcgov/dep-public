@@ -20,6 +20,7 @@ class CompositeRoles(Enum):
     """Enumeration representing user roles."""
 
     ADMIN = 'Administrator'
+    SUPER_ADMIN = 'Super Admin'
     TEAM_MEMBER = 'Team Member'
     REVIEWER = 'Reviewer'
     VIEWER = 'Viewer'
