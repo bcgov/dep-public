@@ -41,7 +41,7 @@ def test_create_engagement(session, monkeypatch):  # pylint:disable=unused-argum
     patch_token_info(TestJwtClaims.staff_admin_role, monkeypatch)
     set_global_tenant()
     user = factory_staff_user_model(external_id=TestJwtClaims.staff_admin_role['sub'])
-    factory_user_group_membership_model(str(user.external_id), user.tenant_id)
+    factory_user_group_membership_model(str(user.external_id))
     engagement_data = TestEngagementInfo.engagement1
     saved_engagament = EngagementService().create_engagement(engagement_data)
     # fetch the engagement with id and assert
@@ -58,7 +58,7 @@ def test_create_engagement_with_survey_block(session, monkeypatch):  # pylint:di
     patch_token_info(TestJwtClaims.staff_admin_role, monkeypatch)
     set_global_tenant()
     user = factory_staff_user_model(external_id=TestJwtClaims.staff_admin_role['sub'])
-    factory_user_group_membership_model(str(user.external_id), user.tenant_id)
+    factory_user_group_membership_model(str(user.external_id))
     engagement_data = TestEngagementInfo.engagement2
     saved_engagament = EngagementService().create_engagement(engagement_data)
     # fetch the engagement with id and assert

@@ -29,7 +29,7 @@ def test_create_survey_translation(session, monkeypatch):
     patch_token_info(TestJwtClaims.staff_admin_role, monkeypatch)
     set_global_tenant()
     user = factory_staff_user_model(external_id=TestJwtClaims.staff_admin_role['sub'])
-    factory_user_group_membership_model(str(user.external_id), user.tenant_id)
+    factory_user_group_membership_model(str(user.external_id))
     survey, _ = factory_survey_and_eng_model()
 
     # Create translation with Prepoulate true
@@ -63,7 +63,7 @@ def test_update_survey_translation(session, monkeypatch):
     patch_token_info(TestJwtClaims.staff_admin_role, monkeypatch)
     set_global_tenant()
     user = factory_staff_user_model(external_id=TestJwtClaims.staff_admin_role['sub'])
-    factory_user_group_membership_model(str(user.external_id), user.tenant_id)
+    factory_user_group_membership_model(str(user.external_id))
 
     translation, _ = factory_survey_translation_and_engagement_model()
 
@@ -80,7 +80,7 @@ def test_delete_survey_translation(session, monkeypatch):
     patch_token_info(TestJwtClaims.staff_admin_role, monkeypatch)
     set_global_tenant()
     user = factory_staff_user_model(external_id=TestJwtClaims.staff_admin_role['sub'])
-    factory_user_group_membership_model(str(user.external_id), user.tenant_id)
+    factory_user_group_membership_model(str(user.external_id))
     translation, _ = factory_survey_translation_and_engagement_model()
     session.add(translation)
     session.commit()

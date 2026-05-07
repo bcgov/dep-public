@@ -205,6 +205,12 @@ def setup_jwt_manager(app_context, jwt_manager):
         # ... so any extraneous roles are discarded
         user_roles = list(set(roles_from_token).intersection(keycloak_forwarded_roles))
 
+        StaffUserService.sync_super_admin_membership(
+            token_info=token_info,
+            token_roles=roles_from_token,
+            tenant_id=getattr(g, 'tenant_id', None),
+        )
+
         # Retrieve user by external ID from token info
         user = StaffUserService.get_user_by_external_id(token_info['sub'])
 

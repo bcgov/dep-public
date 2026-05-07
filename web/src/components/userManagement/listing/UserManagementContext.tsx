@@ -81,8 +81,8 @@ export const UserManagementContextProvider = ({ children }: { children: JSX.Elem
     const [paginationOptions, setPaginationOptions] = useState<PaginationOptions<User>>({
         page: Number(pageFromURL) || 1,
         size: Number(sizeFromURL) || 10,
-        sort_key: 'first_name',
-        nested_sort_key: 'first_name',
+        sort_key: 'last_name',
+        nested_sort_key: 'last_name',
         sort_order: 'asc',
     });
 

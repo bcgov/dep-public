@@ -52,7 +52,7 @@ def test_create_event_item_translation_with_authorization(
     patch_token_info(TestJwtClaims.staff_admin_role, monkeypatch)
     set_global_tenant()
     user = factory_staff_user_model(external_id=TestJwtClaims.staff_admin_role['sub'])
-    factory_user_group_membership_model(str(user.external_id), user.tenant_id)
+    factory_user_group_membership_model(str(user.external_id))
     event_item, event = event_item_model_with_language()
     data = {
         ** TestEventItemTranslationInfo.event_item_info1.value,
@@ -78,7 +78,7 @@ def test_create_event_item_translation_with_authorization_pre_populate(
     patch_token_info(TestJwtClaims.staff_admin_role, monkeypatch)
     set_global_tenant()
     user = factory_staff_user_model(external_id=TestJwtClaims.staff_admin_role['sub'])
-    factory_user_group_membership_model(str(user.external_id), user.tenant_id)
+    factory_user_group_membership_model(str(user.external_id))
     event_item, event = event_item_model_with_language()
     data = {
         ** TestEventItemTranslationInfo.event_item_info1.value,
@@ -104,7 +104,7 @@ def test_update_event_item_translation_with_authorization(
     patch_token_info(TestJwtClaims.staff_admin_role, monkeypatch)
     set_global_tenant()
     user = factory_staff_user_model(external_id=TestJwtClaims.staff_admin_role['sub'])
-    factory_user_group_membership_model(str(user.external_id), user.tenant_id)
+    factory_user_group_membership_model(str(user.external_id))
     event_item, event = event_item_model_with_language()
     translation = factory_event_item_translation_model(
         {
@@ -133,7 +133,7 @@ def test_delete_event_item_translation_with_authorization(
     patch_token_info(TestJwtClaims.staff_admin_role, monkeypatch)
     set_global_tenant()
     user = factory_staff_user_model(external_id=TestJwtClaims.staff_admin_role['sub'])
-    factory_user_group_membership_model(str(user.external_id), user.tenant_id)
+    factory_user_group_membership_model(str(user.external_id))
     event_item, event = event_item_model_with_language()
     translation = factory_event_item_translation_model(
         {

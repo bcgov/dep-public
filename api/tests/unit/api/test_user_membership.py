@@ -41,7 +41,7 @@ def test_reassign_user_reviewer_team_member(mocker, client, jwt, session, setup_
     """Assert that returns bad request if bad request body."""
     user = factory_staff_user_model()
     eng = factory_engagement_model()
-    factory_user_group_membership_model(str(user.external_id), user.tenant_id)
+    factory_user_group_membership_model(str(user.external_id))
     current_membership = factory_membership_model(user_id=user.id, engagement_id=eng.id)  # noqa: E501
     assert current_membership.status == MembershipStatus.ACTIVE.value
 
