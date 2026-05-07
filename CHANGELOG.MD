@@ -3,11 +3,11 @@
 - **Feature** Updated/added links to BC Gov logo in header/footer. [🎟️ DEP-271](https://citz-gdx.atlassian.net/browse/DEP-271)
 - Also added links on public site for EngageBC text
 - Updated footer to match current BC Gov website
-    - Social icons removed
-    - List of links updated
-    - Styling matched
+  - Social icons removed
+  - List of links updated
+  - Styling matched
 - Added layout width to theme file
-    - Footer can be adjusted to any layout width via theme LayoutWidth
+  - Footer can be adjusted to any layout width via theme LayoutWidth
 
 ## May 4, 2026
 
