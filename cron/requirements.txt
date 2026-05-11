@@ -52,5 +52,5 @@ thrift==0.22.0
 tomli==2.4.1
 tornado==6.5.5
 typing_extensions==4.15.0
-urllib3==2.6.3
+urllib3==2.7.0
 -e git+https://github.com/bcgov/dep-public.git#egg=api&subdirectory=api
