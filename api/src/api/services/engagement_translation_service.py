@@ -20,6 +20,10 @@ from api.utils.roles import Role
 class EngagementTranslationService:
     """Engagement translation management service."""
 
+    ENGAGEMENT_NOT_FOUND = 'Engagement with id {} was not found for translation'
+    LANGUAGE_NOT_FOUND = 'Language with id {} was not found'
+    TRANSLATION_NOT_FOUND = 'Engagement translation with id {} was not found'
+
     @staticmethod
     def get_engagement_translation_by_id(engagement_translation_id):
         """Get engagement translation by id."""
@@ -44,7 +48,10 @@ class EngagementTranslationService:
         try:
             engagement = EngagementModel.find_by_id(translation_data['engagement_id'])
             if not engagement:
-                raise ValueError('Engagement to translate was not found')
+                raise KeyError(
+                    EngagementTranslationService.ENGAGEMENT_NOT_FOUND.format(translation_data['engagement_id']),
+                    HTTPStatus.NOT_FOUND,    
+                )
 
             one_of_roles = (
                 MembershipType.TEAM_MEMBER.name,
@@ -54,7 +61,10 @@ class EngagementTranslationService:
 
             language_record = LanguageModel.find_by_id(translation_data['language_id'])
             if not language_record:
-                raise ValueError('Language to translate was not found')
+                raise KeyError(
+                    EngagementTranslationService.LANGUAGE_NOT_FOUND.format(translation_data['language_id']),
+                    HTTPStatus.NOT_FOUND,
+                )
 
             if pre_populate:
                 # prepopulate translation_date dict with base language data from engagement content
@@ -79,7 +89,10 @@ class EngagementTranslationService:
         """Update engagement translation."""
         engagement = EngagementModel.find_by_id(engagement_id)
         if not engagement:
-            raise ValueError('Engagement to translate was not found')
+            raise KeyError(
+                EngagementTranslationService.ENGAGEMENT_NOT_FOUND.format(engagement_id),
+                HTTPStatus.NOT_FOUND
+            )
 
         EngagementTranslationService._verify_engagement_translation(engagement_translation_id)
 
@@ -98,7 +111,10 @@ class EngagementTranslationService:
         """Remove engagement translation."""
         engagement = EngagementModel.find_by_id(engagement_id)
         if not engagement:
-            raise ValueError('Engagement to translate was not found')
+            raise KeyError(
+                EngagementTranslationService.ENGAGEMENT_NOT_FOUND.format(engagement_id),
+                HTTPStatus.NOT_FOUND
+            )
 
         EngagementTranslationService._verify_engagement_translation(engagement_translation_id)
 
@@ -124,21 +140,44 @@ class EngagementTranslationService:
         """Verify if engagement translation exists."""
         engagement_translation = EngagementTranslationModel.find_by_id(engagement_translation_id)
         if not engagement_translation:
-            raise KeyError('Engagement translation' + engagement_translation_id + ' does not exist')
+            raise KeyError(
+                EngagementTranslationService.TRANSLATION_NOT_FOUND.format(engagement_translation_id),
+                HTTPStatus.NOT_FOUND
+            )
         return engagement_translation
 
     @staticmethod
     def _get_default_language_values(engagement, translation_data):
-        """Populate the default values."""
+        """Populate the default values from the English (default) translation row."""
         engagement_id = engagement.id
         translation_data['name'] = engagement.name
-        translation_data['description'] = engagement.description
-        translation_data['rich_description'] = engagement.rich_description
-        translation_data['description_title'] = engagement.description_title
-        translation_data['consent_message'] = engagement.consent_message
-        translation_data['sponsor_name'] = engagement.sponsor_name
-        translation_data['feedback_heading'] = engagement.feedback_heading
-        translation_data['feedback_body'] = engagement.feedback_body
+
+        # Read all translatable content from the existing English translation row.
+        english_language = LanguageModel.query.filter_by(code='en').first()
+        english_translations = (
+            EngagementTranslationModel.get_engagement_translation_by_engagement_and_language(
+                engagement_id=engagement_id,
+                language_id=english_language.id if english_language else None,
+            )
+        )
+        english_translation = english_translations[0] if english_translations else None
+
+        if english_translation:
+            translation_data['description'] = english_translation.description
+            translation_data['rich_description'] = english_translation.rich_description
+            translation_data['description_title'] = english_translation.description_title
+            translation_data['consent_message'] = english_translation.consent_message
+            translation_data['sponsor_name'] = english_translation.sponsor_name
+            translation_data['feedback_heading'] = english_translation.feedback_heading
+            translation_data['feedback_body'] = english_translation.feedback_body
+            translation_data['subscribe_section_heading'] = english_translation.subscribe_section_heading
+            translation_data['subscribe_section_description'] = english_translation.subscribe_section_description
+            translation_data['subscribe_consent_message'] = english_translation.subscribe_consent_message
+            translation_data['more_engagements_heading'] = english_translation.more_engagements_heading
+            translation_data['open_status_block_button_text'] = english_translation.open_status_block_button_text
+            translation_data['view_results_status_block_button_text'] = (
+                english_translation.view_results_status_block_button_text
+            )
 
         engagement_slug = EngagementSlugModel.find_by_engagement_id(engagement_id)
         if engagement_slug:
@@ -153,11 +192,23 @@ class EngagementTranslationService:
                                                                      SubmissionStatus.Open.name)
         if open_status_block:
             translation_data['open_status_block_text'] = open_status_block.block_text
+            translation_data['open_status_block_button_text'] = (
+                translation_data.get('open_status_block_button_text') or open_status_block.button_text
+            )
 
         closed_status_block = EngagementStatusBlockModel.get_by_status(engagement_id,
                                                                        SubmissionStatus.Closed.name)
         if closed_status_block:
             translation_data['closed_status_block_text'] = closed_status_block.block_text
+
+        view_results_status_block = EngagementStatusBlockModel.get_by_status(
+            engagement_id,
+            SubmissionStatus.ViewResults.name,
+        )
+        if view_results_status_block:
+            translation_data['view_results_status_block_button_text'] = (
+                translation_data.get('view_results_status_block_button_text') or view_results_status_block.button_text
+            )
 
         surveys = SurveyModel.find_by_id(engagement_id)
         if surveys:

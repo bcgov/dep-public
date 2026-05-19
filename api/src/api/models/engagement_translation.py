@@ -30,7 +30,15 @@ class EngagementTranslation(BaseModel):
     upcoming_status_block_text = db.Column(JSON, unique=False, nullable=True)
     open_status_block_text = db.Column(JSON, unique=False, nullable=True)
     closed_status_block_text = db.Column(JSON, unique=False, nullable=True)
+    open_status_block_button_text = db.Column(db.String(20), unique=False, nullable=True)
+    view_results_status_block_button_text = db.Column(db.String(20), unique=False, nullable=True)
     sponsor_name = db.Column(db.String(50))
+    feedback_heading = db.Column(db.String(60), unique=False, nullable=True)
+    feedback_body = db.Column(JSON, unique=False, nullable=True)
+    subscribe_section_heading = db.Column(db.String(60), unique=False, nullable=True)
+    subscribe_section_description = db.Column(JSON, unique=False, nullable=True)
+    subscribe_consent_message = db.Column(JSON, unique=False, nullable=True)
+    more_engagements_heading = db.Column(db.String(60), nullable=True)
 
     # Add a unique constraint on engagement_id and language_id
     # A engagement has only one version in a particular language
@@ -78,7 +86,15 @@ class EngagementTranslation(BaseModel):
             upcoming_status_block_text=data.get('upcoming_status_block_text', None),
             open_status_block_text=data.get('open_status_block_text', None),
             closed_status_block_text=data.get('closed_status_block_text', None),
+            open_status_block_button_text=data.get('open_status_block_button_text', None),
+            view_results_status_block_button_text=data.get('view_results_status_block_button_text', None),
             sponsor_name=data.get('sponsor_name', None),
+            feedback_heading=data.get('feedback_heading', None),
+            feedback_body=data.get('feedback_body', None),
+            subscribe_section_heading=data.get('subscribe_section_heading', None),
+            subscribe_section_description=data.get('subscribe_section_description', None),
+            subscribe_consent_message=data.get('subscribe_consent_message', None),
+            more_engagements_heading=data.get('more_engagements_heading', None),
         )
 
     @staticmethod

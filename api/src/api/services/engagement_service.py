@@ -20,6 +20,7 @@ from api.models.engagement_scope_options import EngagementScopeOptions
 from api.models.engagement_slug import EngagementSlug as EngagementSlugModel
 from api.models.engagement_status_block import EngagementStatusBlock as EngagementStatusBlockModel
 from api.models.engagement_translation import EngagementTranslation
+from api.models.language import Language as LanguageModel
 from api.models.survey import Survey as SurveyModel
 from api.models.suggested_engagement import SuggestedEngagement as SuggestedEngagementModel
 from api.models.pagination_options import PaginationOptions
@@ -43,6 +44,7 @@ class EngagementService:
     """Engagement management service."""
 
     otherdateformat = '%Y-%m-%d'
+    default_language_code = 'en'
     JSONScalar = Union[str, int, float, bool, None]
     JSONValue = Union[
         JSONScalar,
@@ -192,10 +194,19 @@ class EngagementService:
         """Create engagement."""
         # TODO add schema and remove this validation
         EngagementService.validate_fields(request_json)
+        requested_languages = request_json.get('languages')
         eng_model = EngagementService._create_engagement_model(request_json)
 
         if request_json.get('status_block'):
             EngagementService._create_eng_status_block(eng_model.id, request_json)
+
+        # Always sync languages so an English translation row is created immediately.
+        # If the caller didn't request specific languages, default to English-only.
+        EngagementService._sync_translation_languages(
+            eng_model.id,
+            requested_languages if requested_languages is not None else []
+        )
+
         eng_model.commit()
         email_util.publish_to_email_queue(
             SourceType.ENGAGEMENT.value, eng_model.id, SourceAction.CREATED.value, True
@@ -209,9 +220,6 @@ class EngagementService:
         """Save engagement."""
         new_engagement = EngagementModel(
             name=engagement_data.get('name', None),
-            description=engagement_data.get('description', None),
-            rich_description=engagement_data.get('rich_description', None),
-            description_title=engagement_data.get('description_title', None),
             start_date=engagement_data.get('start_date', None),
             end_date=engagement_data.get('end_date', None),
             status_id=Status.Draft.value,
@@ -223,18 +231,7 @@ class EngagementService:
             scheduled_date=None,
             banner_filename=engagement_data.get('banner_filename', None),
             is_internal=engagement_data.get('is_internal', False),
-            consent_message=engagement_data.get('consent_message', None),
-            subscribe_section_heading=engagement_data.get('subscribe_section_heading', None),
-            subscribe_section_description=engagement_data.get('subscribe_section_description', None),
-            subscribe_consent_message=engagement_data.get(
-                'subscribe_consent_message',
-                engagement_data.get('subscribe_consent', None)
-            ),
-            sponsor_name=engagement_data.get('sponsor_name', None),
-            feedback_heading=engagement_data.get('feedback_heading', None),
-            feedback_body=engagement_data.get('feedback_body', None),
             selected_survey_id=engagement_data.get('selected_survey_id', None),
-            more_engagements_heading=engagement_data.get('more_engagements_heading', None)
         )
         new_engagement.save()
         return new_engagement
@@ -357,6 +354,7 @@ class EngagementService:
         """Update engagement partially."""
         status_block = data.pop('status_block', None)
         surveys = data.pop('surveys', None)
+        requested_languages = data.pop('languages', None)
         suggested_engagements = data.pop('suggested_engagements', None)
         if suggested_engagements is None:
             suggested_engagements = data.pop('suggested_engagements_input', None)
@@ -398,6 +396,9 @@ class EngagementService:
 
             if suggested_engagements is not None:
                 EngagementService._sync_suggestions(engagement, suggested_engagements)
+
+            if requested_languages is not None:
+                EngagementService._sync_translation_languages(engagement_id, requested_languages)
 
             db.session.commit()
         except (BusinessException, ValueError, ValidationError, SQLAlchemyError):
@@ -453,6 +454,67 @@ class EngagementService:
                 db.session.delete(existing)
 
         engagement.suggested_engagement_links = ordered
+
+    @staticmethod
+    def _normalize_language_codes(language_codes: object) -> list[str]:
+        if not isinstance(language_codes, list):
+            raise ValueError('languages must be a list of language codes')
+
+        normalized_codes: list[str] = []
+        for code in language_codes:
+            if not isinstance(code, str):
+                raise ValueError('languages must only contain string language codes')
+
+            normalized = code.strip().lower()
+            if not normalized:
+                continue
+
+            if normalized not in normalized_codes:
+                normalized_codes.append(normalized)
+
+        # English is always implicitly available.
+        if EngagementService.default_language_code not in normalized_codes:
+            normalized_codes.append(EngagementService.default_language_code)
+
+        return normalized_codes
+
+    @staticmethod
+    def _sync_translation_languages(engagement_id: int, language_codes: object) -> None:
+        normalized_codes = EngagementService._normalize_language_codes(language_codes)
+        translation_codes = set(normalized_codes)  # Includes English — all languages get a translation row.
+
+        requested_languages = (
+            LanguageModel.query.filter(LanguageModel.code.in_(translation_codes)).all()
+            if translation_codes
+            else []
+        )
+
+        requested_codes = {language.code for language in requested_languages}
+        missing_codes = translation_codes - requested_codes
+        if missing_codes:
+            raise ValueError(f'Invalid language code(s): {", ".join(sorted(missing_codes))}')
+
+        requested_language_ids = {language.id for language in requested_languages}
+
+        existing_translations = (
+            EngagementTranslation.query.filter_by(engagement_id=engagement_id).all()
+        )
+        existing_by_language_id = {
+            translation.language_id: translation for translation in existing_translations
+        }
+
+        for language_id in requested_language_ids:
+            if language_id not in existing_by_language_id:
+                db.session.add(
+                    EngagementTranslation(
+                        engagement_id=engagement_id,
+                        language_id=language_id,
+                    )
+                )
+
+        for language_id, translation in existing_by_language_id.items():
+            if language_id not in requested_language_ids:
+                db.session.delete(translation)
 
     @staticmethod
     def validate_fields(data):

@@ -1,0 +1,73 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema",
+    "$id": "https://dep.gov.bc.ca/.well_known/schemas/contact_translation",
+    "type": "object",
+    "title": "The ContactTranslation Schema",
+    "description": "Schema for ContactTranslation POST request validation.",
+    "default": {},
+    "examples": [
+        {
+            "language_id": 2,
+            "contact_id": 1,
+            "name": "John Doe",
+            "title": "Director",
+            "email": "john.doe@example.com",
+            "phone_number": "555-1234",
+            "address": "123 Main St",
+            "bio": "Bio in Spanish"
+        }
+    ],
+    "required": ["language_id", "contact_id"],
+    "properties": {
+        "language_id": {
+            "$id": "#/properties/language_id",
+            "type": "integer",
+            "title": "The language_id schema",
+            "description": "The ID of the language for this translation.",
+            "examples": [2]
+        },
+        "contact_id": {
+            "$id": "#/properties/contact_id",
+            "type": "integer",
+            "title": "The contact_id schema",
+            "description": "The ID of the contact being translated.",
+            "examples": [1]
+        },
+        "name": {
+            "$id": "#/properties/name",
+            "type": ["string", "null"],
+            "title": "The name schema",
+            "examples": ["John Doe"]
+        },
+        "title": {
+            "$id": "#/properties/title",
+            "type": ["string", "null"],
+            "title": "The title schema",
+            "examples": ["Director"]
+        },
+        "email": {
+            "$id": "#/properties/email",
+            "type": ["string", "null"],
+            "title": "The email schema",
+            "examples": ["john.doe@example.com"]
+        },
+        "phone_number": {
+            "$id": "#/properties/phone_number",
+            "type": ["string", "null"],
+            "title": "The phone_number schema",
+            "examples": ["555-1234"]
+        },
+        "address": {
+            "$id": "#/properties/address",
+            "type": ["string", "null"],
+            "title": "The address schema",
+            "examples": ["123 Main St"]
+        },
+        "bio": {
+            "$id": "#/properties/bio",
+            "type": ["string", "null"],
+            "title": "The bio schema",
+            "examples": ["Bio in Spanish"]
+        }
+    }
+}

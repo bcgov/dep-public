@@ -25,9 +25,6 @@ class EngagementSchema(Schema):
 
     id = fields.Int(data_key='id')
     name = fields.Str(data_key='name', required=True, validate=validate.Length(min=1, error='Name cannot be blank'))
-    description = fields.Str(data_key='description')
-    rich_description = fields.Str(data_key='rich_description')
-    description_title = fields.Str(data_key='description_title')
     start_date = fields.Date(data_key='start_date', required=True)
     end_date = fields.Date(data_key='end_date', required=True)
     status_id = fields.Int(data_key='status_id')
@@ -39,8 +36,6 @@ class EngagementSchema(Schema):
     scheduled_date = fields.Str(data_key='scheduled_date')
     banner_filename = fields.Str(data_key='banner_filename')
     engagement_status = fields.Nested(EngagementStatusSchema)
-    feedback_heading = fields.Str(data_key='feedback_heading')
-    feedback_body = fields.Str(data_key='feedback_body')
     surveys = fields.Nested(EngagementSurveySchema, many=True)
     selected_survey_id = fields.Int(data_key='selected_survey_id')
     submission_status = fields.Function(lambda obj: get_submission_status(obj))
@@ -48,12 +43,7 @@ class EngagementSchema(Schema):
     status_block = fields.List(fields.Nested(EngagementStatusBlockSchema))
     tenant_id = fields.Str(data_key='tenant_id')
     is_internal = fields.Bool(data_key='is_internal')
-    consent_message = fields.Str(data_key='consent_message')
-    subscribe_section_heading = fields.Str(data_key='subscribe_section_heading')
-    subscribe_section_description = fields.Str(data_key='subscribe_section_description')
-    subscribe_consent_message = fields.Str(data_key='subscribe_consent_message')
-    sponsor_name = fields.Str(data_key='sponsor_name')
-    more_engagements_heading = fields.Str(data_key='more_engagements_heading')
+    languages = fields.List(fields.Str(), data_key='languages', load_only=True)
     suggested_engagements = fields.Nested(
         SuggestedEngagementWithAttachment,
         many=True,

@@ -40,6 +40,11 @@ class TimelineEventTranslationService:
         )
 
     @staticmethod
+    def get_by_timeline_and_language(timeline_id: int, language_id: int):
+        """Get all event translations for a timeline widget and language."""
+        return TimelineEventTranslationModel.get_by_timeline_and_language(timeline_id, language_id)
+
+    @staticmethod
     def create_timeline_event_translation(timeline_id: int, data: dict, pre_populate: bool = True):
         """Insert a new TimelineEventTranslation with authorization check."""
         try:

@@ -20,7 +20,6 @@ class WidgetType(IntEnum):
 
     WHO_IS_LISTENING = 1
     DOCUMENTS = 2
-    SUBSCRIBE = 4
     EVENTS = 5
     Map = 6
     Video = 7
