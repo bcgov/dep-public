@@ -88,7 +88,7 @@ const AuthoringTemplate = () => {
     const pageName = useMatch(ROUTES.AUTHORING_PAGE)?.params.page;
     const pageTitle = authoringRoutes.find((route) => {
         const pathArray = route.path.split('/');
-        return pathArray[pathArray.length - 1] === pageName;
+        return pathArray.at(-1) === pageName;
     })?.name;
     const {
         completionBySection,

@@ -16,9 +16,10 @@ import {
     getTimelineEventTranslationsByLanguage,
     postTimelineEventTranslation,
     patchTimelineEventTranslation,
+    TimelineEventTranslation,
 } from 'services/widgetService/TimelineService';
 import { WidgetTitle } from '../WidgetTitle';
-import { TimelineEvent } from 'models/timelineWidget';
+import { TimelineEvent, TimelineWidget } from 'models/timelineWidget';
 import { WidgetLocation } from 'models/widget';
 import { Heading3 } from 'components/common/Typography';
 import { useParams } from 'react-router';
@@ -26,6 +27,7 @@ import {
     getEngagementContentTranslationsByCode,
     getLanguageIdByCode,
     syncEngagementContentTranslationsByCode,
+    TimelineWidgetTranslation,
 } from 'services/engagementContentTranslationService';
 
 interface DetailsForm {
@@ -59,7 +61,7 @@ const Form = () => {
     };
 
     const [timelineEvents, setTimelineEvents] = React.useState<TimelineEvent[]>(
-        timelineWidget ? timelineWidget.events.sort((a, b) => a.position - b.position) : [newEvent],
+        timelineWidget ? timelineWidget.events.toSorted((a, b) => a.position - b.position) : [newEvent],
     );
     const [timelineWidgetState, setTimelineWidgetState] = React.useState<WidgetState>({
         description: timelineWidget?.description || '',
@@ -81,42 +83,59 @@ const Form = () => {
         },
     ];
 
+    const translateTimelineWidget = (
+        timelineWidget: TimelineWidget,
+        timelineTranslation?: TimelineWidgetTranslation,
+    ) => {
+        if (timelineTranslation) {
+            setTimelineWidgetState({
+                ...timelineWidget,
+                title: timelineTranslation.title ?? timelineWidget.title,
+                description: timelineTranslation.description ?? timelineWidget.description,
+            });
+        }
+    };
+
+    const translateTimelineEvents = (timelineWidget: TimelineWidget, eventTranslations: TimelineEventTranslation[]) => {
+        if (eventTranslations.length > 0) {
+            const translatedEvents = timelineWidget.events.map((event: TimelineEvent) => {
+                const eventTr = eventTranslations.find((t) => t.timeline_event_id === event.id);
+                if (!eventTr) return event;
+                return {
+                    ...event,
+                    description: eventTr.description ?? event.description,
+                };
+            });
+            setTimelineEvents(translatedEvents.toSorted((a, b) => a.position - b.position));
+        }
+    };
+
+    const initializeTranslations = async () => {
+        if (!timelineWidget) {
+            return;
+        }
+
+        const currentTimelineWidget = timelineWidget;
+
+        setTimelineEvents(currentTimelineWidget.events.toSorted((a, b) => a.position - b.position));
+        if (activeLanguageCode === 'en' || !widget) {
+            return;
+        }
+        const [contentTranslations, languageId] = await Promise.all([
+            getEngagementContentTranslationsByCode(widget.engagement_id, activeLanguageCode),
+            getLanguageIdByCode(activeLanguageCode),
+        ]);
+        const timelineTranslation = contentTranslations.timeline_widgets.find(
+            (t) => t.widget_timeline_id === currentTimelineWidget.id,
+        );
+        translateTimelineWidget(currentTimelineWidget, timelineTranslation);
+        const eventTranslations = await getTimelineEventTranslationsByLanguage(currentTimelineWidget.id, languageId);
+        translateTimelineEvents(currentTimelineWidget, eventTranslations);
+    };
+
     useEffect(() => {
         if (!timelineWidget) return;
         setTimelineWidgetState(timelineWidget);
-        const initializeTranslations = async () => {
-            setTimelineEvents(timelineWidget.events.sort((a, b) => a.position - b.position));
-            if (activeLanguageCode === 'en' || !widget) {
-                return;
-            }
-            const [contentTranslations, languageId] = await Promise.all([
-                getEngagementContentTranslationsByCode(widget.engagement_id, activeLanguageCode),
-                getLanguageIdByCode(activeLanguageCode),
-            ]);
-            const timelineTranslation = contentTranslations.timeline_widgets.find(
-                (t) => t.widget_timeline_id === timelineWidget.id,
-            );
-            if (timelineTranslation) {
-                setTimelineWidgetState({
-                    ...timelineWidget,
-                    title: timelineTranslation.title ?? timelineWidget.title,
-                    description: timelineTranslation.description ?? timelineWidget.description,
-                });
-            }
-            const eventTranslations = await getTimelineEventTranslationsByLanguage(timelineWidget.id, languageId);
-            if (eventTranslations.length > 0) {
-                const translatedEvents = timelineWidget.events.map((event) => {
-                    const eventTr = eventTranslations.find((t) => t.timeline_event_id === event.id);
-                    if (!eventTr) return event;
-                    return {
-                        ...event,
-                        description: eventTr.description ?? event.description,
-                        time: eventTr.time ?? event.time,
-                    };
-                });
-                setTimelineEvents(translatedEvents.sort((a, b) => a.position - b.position));
-            }
-        };
         initializeTranslations();
     }, [timelineWidget, activeLanguageCode, widget?.id]);
 
@@ -146,7 +165,9 @@ const Form = () => {
             return;
         }
 
-        if (activeLanguageCode !== 'en') {
+        if (activeLanguageCode == 'en') {
+            await patchTimeline(widget.id, timelineWidget.id, { ...data });
+        } else {
             const [existingTranslations, languageId] = await Promise.all([
                 getEngagementContentTranslationsByCode(widget.engagement_id, activeLanguageCode),
                 getLanguageIdByCode(activeLanguageCode),
@@ -190,8 +211,6 @@ const Form = () => {
                         });
                     }),
             );
-        } else {
-            await patchTimeline(widget.id, timelineWidget.id, { ...data });
         }
 
         dispatch(openNotification({ severity: 'success', text: 'The timeline widget was successfully updated' }));
@@ -226,12 +245,10 @@ const Form = () => {
             event.position = index;
         });
         eventsForSubmission.sort((a, b) => a.position - b.position);
-        /* eslint "no-warning-comments": [1, { "terms": ["todo", "fix me, replace any type"] }] */
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const eventTarget = event.target as any;
+        const formData = new FormData(event.currentTarget);
         const restructuredData = {
-            title: eventTarget['title']?.value,
-            description: eventTarget['description']?.value,
+            title: (formData.get('title')?.toString() ?? '').trim(),
+            description: (formData.get('description')?.toString() ?? '').trim(),
             events: eventsForSubmission,
         };
         setTimelineEvents(eventsForSubmission);
@@ -346,8 +363,8 @@ const Form = () => {
                             spacing={2}
                             mt={'3em'}
                         >
-                            {timelineEvents &&
-                                timelineEvents.map((tEvent, index) => (
+                            {timelineEvents?.map((tEvent, index) => {
+                                return (
                                     <Grid
                                         className={`event${index + 1}`}
                                         key={`event${index + 1}`}
@@ -423,7 +440,8 @@ const Form = () => {
                                             <Divider sx={{ marginTop: '1em' }} />
                                         </Grid>
                                     </Grid>
-                                ))}
+                                );
+                            })}
                             <Grid>
                                 <Button size="small" variant="primary" onClick={() => handleAddEvent()}>
                                     Add Event

@@ -262,8 +262,15 @@ const SideNav = ({ open, setOpen, isMediumScreen }: SideNavProps) => {
         );
     return (
         <SwipeableDrawer
-            PaperProps={{
-                sx: { width: '100%', height: '100%', minHeight: 'calc(100vh)', background: colors.surface.blue[90] },
+            slotProps={{
+                paper: {
+                    sx: {
+                        width: '100%',
+                        height: '100%',
+                        minHeight: 'calc(100vh)',
+                        background: colors.surface.blue[90],
+                    },
+                },
             }}
             sx={{
                 mt: '80px',

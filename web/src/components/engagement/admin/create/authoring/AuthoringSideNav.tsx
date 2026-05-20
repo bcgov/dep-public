@@ -140,7 +140,7 @@ const DrawerBox = ({ isMediumScreenOrLarger, setOpen, engagementId }: DrawerBoxP
     const authoringRoutes = getRoutes(Number(engagementId), languageCode ?? 'en');
     const matchingRoutePaths: string[] = authoringRoutes
         .map((route) => route.path)
-        .filter((route) => window.location.pathname.includes(route));
+        .filter((route) => globalThis.location.pathname.includes(route));
     const sortedMatchingRoutePaths = [...matchingRoutePaths].sort((a: string, b: string) => {
         if (a.length !== b.length) {
             return a.length - b.length;
@@ -148,8 +148,7 @@ const DrawerBox = ({ isMediumScreenOrLarger, setOpen, engagementId }: DrawerBoxP
 
         return a.localeCompare(b);
     });
-    const currentRoutePath =
-        sortedMatchingRoutePaths.length > 0 ? sortedMatchingRoutePaths[sortedMatchingRoutePaths.length - 1] : '';
+    const currentRoutePath = sortedMatchingRoutePaths.length > 0 ? sortedMatchingRoutePaths.at(-1) : '';
 
     const allowedRoutes = authoringRoutes.filter((route) => {
         return !route.authenticated || route.allowedRoles.some((role) => permissions.includes(role));

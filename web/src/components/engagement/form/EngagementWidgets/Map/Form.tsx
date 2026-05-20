@@ -15,7 +15,7 @@ import { postMap, previewShapeFile } from 'services/widgetService/MapService';
 import { WidgetDrawerContext } from '../WidgetDrawerContext';
 import ShapeFileUpload from 'components/engagement/form/EngagementWidgets/Map/ShapeFileUpload/FileUpload';
 import { geoJSONDecode } from './utils';
-import { FeatureCollection, GeoJSON, Point } from 'geojson';
+import { GeoJSON } from 'geojson';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faLinkSimple } from '@fortawesome/pro-regular-svg-icons/faLinkSimple';
 import { faCircleXmark } from '@fortawesome/pro-regular-svg-icons/faCircleXmark';
@@ -149,11 +149,11 @@ const Form = () => {
         }
         try {
             setIsCreating(true);
-            if (activeLanguageCode !== 'en') {
+            if (activeLanguageCode == 'en') {
+                await createMap(data);
+            } else {
                 const validatedData = await schema.validate(data);
                 await saveMarkerLabelTranslation(validatedData.markerLabel);
-            } else {
-                await createMap(data);
             }
             setIsCreating(false);
             reset({});
@@ -181,7 +181,7 @@ const Form = () => {
             longitude: validatedData.longitude,
             latitude: validatedData.latitude,
             markerLabel: validatedData.markerLabel,
-            geojson: previewGeoJson ? previewGeoJson : validatedData.geojson,
+            geojson: previewGeoJson ?? validatedData.geojson,
         });
         setPreviewMapOpen(true);
     };
@@ -190,12 +190,12 @@ const Form = () => {
         let previewGeoJson: turf.AllGeoJSON | GeoJSON | undefined;
         if (files.length > 0) {
             methods.setValue('shapefile', files[0]);
-            previewGeoJson = (await previewShapeFile({
+            previewGeoJson = await previewShapeFile({
                 file: files[0],
-            })) as unknown as FeatureCollection<Point>;
+            });
             setCalculatingZoom(true);
             updateZoom(previewGeoJson);
-            const centerPoint = turf.center(previewGeoJson as FeatureCollection<Point>);
+            const centerPoint = turf.center(previewGeoJson);
             methods.setValue('longitude', centerPoint.geometry.coordinates[0]);
             methods.setValue('latitude', centerPoint.geometry.coordinates[1]);
             setCalculatingZoom(false);
