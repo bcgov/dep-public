@@ -39,30 +39,36 @@ class EngagementTranslationService:
         engagement_translation_records =\
             EngagementTranslationModel.get_engagement_translation_by_engagement_and_language(engagement_id,
                                                                                              language_id)
-        engagement_translations = engagement_translation_schema.dump(engagement_translation_records)
+        engagement_translations = engagement_translation_schema.dump(
+            engagement_translation_records)
         return engagement_translations
 
     @staticmethod
     def create_engagement_translation(translation_data, pre_populate=True):
         """Create engagement translation."""
         try:
-            engagement = EngagementModel.find_by_id(translation_data['engagement_id'])
+            engagement = EngagementModel.find_by_id(
+                translation_data['engagement_id'])
             if not engagement:
                 raise KeyError(
-                    EngagementTranslationService.ENGAGEMENT_NOT_FOUND.format(translation_data['engagement_id']),
-                    HTTPStatus.NOT_FOUND,    
+                    EngagementTranslationService.ENGAGEMENT_NOT_FOUND.format(
+                        translation_data['engagement_id']),
+                    HTTPStatus.NOT_FOUND,
                 )
 
             one_of_roles = (
                 MembershipType.TEAM_MEMBER.name,
                 Role.EDIT_ENGAGEMENT.value
             )
-            authorization.check_auth(one_of_roles=one_of_roles, engagement_id=engagement.id)
+            authorization.check_auth(
+                one_of_roles=one_of_roles, engagement_id=engagement.id)
 
-            language_record = LanguageModel.find_by_id(translation_data['language_id'])
+            language_record = LanguageModel.find_by_id(
+                translation_data['language_id'])
             if not language_record:
                 raise KeyError(
-                    EngagementTranslationService.LANGUAGE_NOT_FOUND.format(translation_data['language_id']),
+                    EngagementTranslationService.LANGUAGE_NOT_FOUND.format(
+                        translation_data['language_id']),
                     HTTPStatus.NOT_FOUND,
                 )
 
@@ -90,17 +96,20 @@ class EngagementTranslationService:
         engagement = EngagementModel.find_by_id(engagement_id)
         if not engagement:
             raise KeyError(
-                EngagementTranslationService.ENGAGEMENT_NOT_FOUND.format(engagement_id),
+                EngagementTranslationService.ENGAGEMENT_NOT_FOUND.format(
+                    engagement_id),
                 HTTPStatus.NOT_FOUND
             )
 
-        EngagementTranslationService._verify_engagement_translation(engagement_translation_id)
+        EngagementTranslationService._verify_engagement_translation(
+            engagement_translation_id)
 
         one_of_roles = (
             MembershipType.TEAM_MEMBER.name,
             Role.EDIT_ENGAGEMENT.value
         )
-        authorization.check_auth(one_of_roles=one_of_roles, engagement_id=engagement.id)
+        authorization.check_auth(
+            one_of_roles=one_of_roles, engagement_id=engagement.id)
 
         updated_engagement_translation = EngagementTranslationModel.update_engagement_translation(
             engagement_translation_id, translation_data)
@@ -112,18 +121,21 @@ class EngagementTranslationService:
         engagement = EngagementModel.find_by_id(engagement_id)
         if not engagement:
             raise KeyError(
-                EngagementTranslationService.ENGAGEMENT_NOT_FOUND.format(engagement_id),
+                EngagementTranslationService.ENGAGEMENT_NOT_FOUND.format(
+                    engagement_id),
                 HTTPStatus.NOT_FOUND
             )
 
-        EngagementTranslationService._verify_engagement_translation(engagement_translation_id)
+        EngagementTranslationService._verify_engagement_translation(
+            engagement_translation_id)
 
         one_of_roles = (
             MembershipType.TEAM_MEMBER.name,
             Role.EDIT_ENGAGEMENT.value
         )
 
-        authorization.check_auth(one_of_roles=one_of_roles, engagement_id=engagement.id)
+        authorization.check_auth(
+            one_of_roles=one_of_roles, engagement_id=engagement.id)
 
         return EngagementTranslationModel.delete_engagement_translation(engagement_translation_id)
 
@@ -131,17 +143,20 @@ class EngagementTranslationService:
     def get_available_engagement_translation_languages(engagement_id):
         """Get a list of all languages for each entry in the engagement_translation table."""
         language_schema = LanguageSchema(many=True)
-        available_translations = EngagementTranslationModel.get_available_translation_languages(engagement_id)
+        available_translations = EngagementTranslationModel.get_available_translation_languages(
+            engagement_id)
 
         return language_schema.dump(available_translations)
 
     @staticmethod
     def _verify_engagement_translation(engagement_translation_id):
         """Verify if engagement translation exists."""
-        engagement_translation = EngagementTranslationModel.find_by_id(engagement_translation_id)
+        engagement_translation = EngagementTranslationModel.find_by_id(
+            engagement_translation_id)
         if not engagement_translation:
             raise KeyError(
-                EngagementTranslationService.TRANSLATION_NOT_FOUND.format(engagement_translation_id),
+                EngagementTranslationService.TRANSLATION_NOT_FOUND.format(
+                    engagement_translation_id),
                 HTTPStatus.NOT_FOUND
             )
         return engagement_translation
@@ -179,7 +194,8 @@ class EngagementTranslationService:
                 english_translation.view_results_status_block_button_text
             )
 
-        engagement_slug = EngagementSlugModel.find_by_engagement_id(engagement_id)
+        engagement_slug = EngagementSlugModel.find_by_engagement_id(
+            engagement_id)
         if engagement_slug:
             translation_data['slug'] = engagement_slug.slug
 
@@ -193,7 +209,8 @@ class EngagementTranslationService:
         if open_status_block:
             translation_data['open_status_block_text'] = open_status_block.block_text
             translation_data['open_status_block_button_text'] = (
-                translation_data.get('open_status_block_button_text') or open_status_block.button_text
+                translation_data.get(
+                    'open_status_block_button_text') or open_status_block.button_text
             )
 
         closed_status_block = EngagementStatusBlockModel.get_by_status(engagement_id,
@@ -207,7 +224,8 @@ class EngagementTranslationService:
         )
         if view_results_status_block:
             translation_data['view_results_status_block_button_text'] = (
-                translation_data.get('view_results_status_block_button_text') or view_results_status_block.button_text
+                translation_data.get(
+                    'view_results_status_block_button_text') or view_results_status_block.button_text
             )
 
         surveys = SurveyModel.find_by_id(engagement_id)
