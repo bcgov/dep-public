@@ -12,13 +12,24 @@ import { useAppDispatch } from 'hooks';
 import { EventsContext } from './EventsContext';
 import ControlledTextField from 'components/common/ControlledInputComponents/ControlledTextField';
 import { openNotification } from 'services/notificationService/notificationSlice';
-import { postEvent, patchEvent } from 'services/widgetService/EventService';
+import {
+    postEvent,
+    patchEvent,
+    getEventItemTranslation,
+    saveEventItemTranslation,
+} from 'services/widgetService/EventService';
 import { Event, EVENT_TYPE } from 'models/event';
 import { formatToUTC, formatDate } from 'components/common/dateHelper';
 import { formEventDates } from './utils';
 import dayjs from 'dayjs';
 import tz from 'dayjs/plugin/timezone';
 import { WidgetLocation } from 'models/widget';
+import { useParams } from 'react-router';
+import {
+    getEngagementContentTranslationsByCode,
+    syncEngagementContentTranslationsByCode,
+    getLanguageIdByCode,
+} from 'services/engagementContentTranslationService';
 
 dayjs.extend(tz);
 
@@ -57,6 +68,8 @@ const VirtualSessionFormDrawer = () => {
     const methods = useForm<VirtualSessionForm>({
         resolver: yupResolver(schema) as unknown as Resolver<VirtualSessionForm>,
     });
+    const { languageCode } = useParams<{ languageCode?: string }>();
+    const activeLanguageCode = (languageCode ?? 'en').toLowerCase();
 
     const pad = (num: number) => {
         let timeString = num.toString();
@@ -69,14 +82,46 @@ const VirtualSessionFormDrawer = () => {
     }, []);
 
     useEffect(() => {
-        methods.setValue('event_name', eventItemToEdit?.event_name || '');
-        methods.setValue('description', eventItemToEdit?.description || '');
-        methods.setValue('date', eventItemToEdit ? formatDate(eventItemToEdit.start_date) : '');
-        methods.setValue('session_link', eventItemToEdit?.url || '');
-        methods.setValue('session_link_text', eventItemToEdit?.url_label || 'Click here to register');
-        methods.setValue('time_from', pad(startDate.hour()) + ':' + pad(startDate.minute()) || '');
-        methods.setValue('time_to', pad(endDate.hour()) + ':' + pad(endDate.minute()) || '');
-    }, [eventToEdit]);
+        const initializeEventForm = async () => {
+            let translatedEventName = eventItemToEdit?.event_name || '';
+            let translatedDescription = eventItemToEdit?.description || '';
+            let translatedSessionLinkText = eventItemToEdit?.url_label || 'Click here to register';
+
+            if (eventToEdit && widget && activeLanguageCode !== 'en') {
+                const contentTranslations = await getEngagementContentTranslationsByCode(
+                    widget.engagement_id,
+                    activeLanguageCode,
+                );
+                const eventTranslation = contentTranslations.events_widgets.find(
+                    (translation) => translation.widget_events_id === eventToEdit.id,
+                );
+                translatedEventName = eventTranslation?.title ?? translatedEventName;
+
+                if (eventItemToEdit) {
+                    const languageId = await getLanguageIdByCode(activeLanguageCode);
+                    const itemTranslation = await getEventItemTranslation(
+                        eventToEdit.id,
+                        eventItemToEdit.id,
+                        languageId,
+                    );
+                    if (itemTranslation) {
+                        translatedDescription = itemTranslation.description ?? translatedDescription;
+                        translatedSessionLinkText = itemTranslation.url_label ?? translatedSessionLinkText;
+                    }
+                }
+            }
+
+            methods.setValue('event_name', translatedEventName);
+            methods.setValue('description', translatedDescription);
+            methods.setValue('date', eventItemToEdit ? formatDate(eventItemToEdit.start_date) : '');
+            methods.setValue('session_link', eventItemToEdit?.url || '');
+            methods.setValue('session_link_text', translatedSessionLinkText);
+            methods.setValue('time_from', pad(startDate.hour()) + ':' + pad(startDate.minute()) || '');
+            methods.setValue('time_to', pad(endDate.hour()) + ':' + pad(endDate.minute()) || '');
+        };
+
+        initializeEventForm();
+    }, [eventToEdit, activeLanguageCode, widget?.engagement_id]);
 
     const { handleSubmit, reset } = methods;
 
@@ -87,13 +132,47 @@ const VirtualSessionFormDrawer = () => {
                 validatedData;
             const { dateFrom, dateTo } = formEventDates(date, time_from, time_to);
             await patchEvent(widget.id, eventToEdit.id, eventItemToEdit.id, {
-                event_name: event_name,
-                description: description,
+                event_name: activeLanguageCode === 'en' ? event_name : eventItemToEdit.event_name,
+                description: activeLanguageCode === 'en' ? description : eventItemToEdit.description,
                 start_date: formatToUTC(dateFrom),
                 end_date: formatToUTC(dateTo),
                 url: session_link,
-                url_label: session_link_text,
+                url_label: activeLanguageCode === 'en' ? session_link_text : eventItemToEdit.url_label,
             });
+
+            if (activeLanguageCode !== 'en') {
+                const existingContentTranslations = await getEngagementContentTranslationsByCode(
+                    widget.engagement_id,
+                    activeLanguageCode,
+                );
+                const existingTranslation = existingContentTranslations.events_widgets.find(
+                    (translation) => translation.widget_events_id === eventToEdit.id,
+                );
+                const nextTranslations = existingTranslation
+                    ? existingContentTranslations.events_widgets.map((translation) =>
+                          translation.widget_events_id === eventToEdit.id
+                              ? { ...translation, title: event_name }
+                              : translation,
+                      )
+                    : [
+                          ...existingContentTranslations.events_widgets,
+                          {
+                              widget_id: widget.id,
+                              widget_events_id: eventToEdit.id,
+                              title: event_name,
+                          },
+                      ];
+
+                await syncEngagementContentTranslationsByCode(widget.engagement_id, activeLanguageCode, {
+                    events_widgets: nextTranslations,
+                });
+
+                const languageId = await getLanguageIdByCode(activeLanguageCode);
+                await saveEventItemTranslation(eventToEdit.id, eventItemToEdit.id, languageId, {
+                    description: description,
+                    url_label: session_link_text,
+                });
+            }
 
             handleEventDrawerOpen(EVENT_TYPE.VIRTUAL, false);
             dispatch(openNotification({ severity: 'success', text: 'Event was successfully updated' }));
@@ -121,6 +200,33 @@ const VirtualSessionFormDrawer = () => {
                 location: widget.location in WidgetLocation ? widget.location : null,
             });
 
+            if (activeLanguageCode !== 'en' && createdWidgetEvent?.id) {
+                const existingContentTranslations = await getEngagementContentTranslationsByCode(
+                    widget.engagement_id,
+                    activeLanguageCode,
+                );
+                const nextTranslations = [
+                    ...existingContentTranslations.events_widgets,
+                    {
+                        widget_id: widget.id,
+                        widget_events_id: createdWidgetEvent.id,
+                        title: event_name,
+                    },
+                ];
+                await syncEngagementContentTranslationsByCode(widget.engagement_id, activeLanguageCode, {
+                    events_widgets: nextTranslations,
+                });
+
+                const createdEventItemId = createdWidgetEvent.event_items?.[0]?.id;
+                if (createdEventItemId) {
+                    const languageId = await getLanguageIdByCode(activeLanguageCode);
+                    await saveEventItemTranslation(createdWidgetEvent.id, createdEventItemId, languageId, {
+                        description: description,
+                        url_label: session_link_text,
+                    });
+                }
+            }
+
             setEvents((prevWidgetEvents: Event[]) => [...prevWidgetEvents, createdWidgetEvent]);
         }
         dispatch(openNotification({ severity: 'success', text: 'A new event was successfully added' }));
@@ -140,7 +246,7 @@ const VirtualSessionFormDrawer = () => {
         try {
             setIsCreating(true);
             await saveEvent(data);
-            await loadEvents();
+            loadEvents();
             setIsCreating(false);
             reset({});
             setVirtualSessionFormTabOpen(false);

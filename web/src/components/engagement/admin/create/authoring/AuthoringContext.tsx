@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import dayjs, { Dayjs } from 'dayjs';
 import { FormProvider, useForm, Resolver } from 'react-hook-form';
-import { createSearchParams, useFetcher, useMatch } from 'react-router';
+import { createSearchParams, useFetcher, useMatch, useParams } from 'react-router';
 import { convertToRaw, EditorState } from 'draft-js';
 import * as yup from 'yup';
 import { EngagementViewSections } from 'components/engagement/public/view';
@@ -277,6 +277,8 @@ export const AuthoringContext = () => {
             fetcher.data = undefined;
         }
     }, [fetcher.data]);
+    const { languageCode } = useParams() as { languageCode: string };
+    const currentLanguageCode = languageCode || 'en';
     const pageName = useMatch(ROUTES.AUTHORING_PAGE)?.params.page;
     /* Changes the resolver based on the page name. 
     If you require more complex validation, you can 
@@ -339,6 +341,7 @@ export const AuthoringContext = () => {
                     send_report: (data.send_report || '').toString(),
                     slug: data.slug,
                     request_type: data.request_type,
+                    language_code: currentLanguageCode,
                     text_content: data.text_content,
                     json_content: data.json_content,
                     form_source: data.form_source || '',
@@ -386,11 +389,15 @@ export const AuthoringContext = () => {
                 }),
                 {
                     method: 'post',
-                    action: getPath(ROUTES.AUTHORING_PAGE, { engagementId: data.id, page: pageName ?? 'banner' }),
+                    action: getPath(ROUTES.AUTHORING_PAGE, {
+                        engagementId: data.id,
+                        languageCode: currentLanguageCode,
+                        page: pageName ?? 'banner',
+                    }),
                 },
             );
         },
-        [useFetcher, pageName],
+        [useFetcher, pageName, currentLanguageCode],
     );
 
     const contextValue = useMemo(
@@ -401,7 +408,7 @@ export const AuthoringContext = () => {
     return (
         <AuthoringFormContext.Provider value={contextValue}>
             <AuthoringPreviewWindowProvider>
-                <FormProvider key={pageName || 'authoring-form'} {...engagementUpdateForm}>
+                <FormProvider key={`${currentLanguageCode}-${pageName || 'authoring-form'}`} {...engagementUpdateForm}>
                     <AuthoringTemplate />
                 </FormProvider>
             </AuthoringPreviewWindowProvider>

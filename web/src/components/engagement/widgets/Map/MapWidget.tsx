@@ -79,6 +79,8 @@ const MapWidget = ({ widget }: MapWidgetProps) => {
         return null;
     }
 
+    const markerLabel = widget.map_marker_label ?? map.marker_label;
+
     // Define the styles
     const outerContainerStyles = {
         position: 'relative',
@@ -117,7 +119,7 @@ const MapWidget = ({ widget }: MapWidgetProps) => {
                             geojson={geoJSONDecode(map.geojson)}
                             longitude={map.longitude}
                             latitude={map.latitude}
-                            markerLabel={map.marker_label}
+                            markerLabel={markerLabel}
                             zoom={calculateZoomLevel(mapWidth, mapHeight, geoJSONDecode(map.geojson))}
                         />
                     </Box>
@@ -133,7 +135,7 @@ const MapWidget = ({ widget }: MapWidgetProps) => {
                         <span style={{ paddingLeft: '0.5rem' }}>View Expanded Map</span>
                     </Link>
                 </Grid>
-                <ExpandModal map={map} open={open} setOpen={setOpen} />
+                <ExpandModal map={map} markerLabel={markerLabel} open={open} setOpen={setOpen} />
             </When>
         </Grid>
     );

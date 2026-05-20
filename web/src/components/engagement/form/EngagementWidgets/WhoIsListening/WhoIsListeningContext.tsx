@@ -8,6 +8,12 @@ import { fetchListeningWidget } from 'services/widgetService/ListeningService';
 import { WidgetDrawerContext } from '../WidgetDrawerContext';
 import { WidgetType } from 'models/widget';
 import { ListeningWidget } from 'models/listeningWidget';
+import { useParams } from 'react-router';
+import { getContactTranslation } from 'services/contactService';
+import {
+    getEngagementContentTranslationsByCode,
+    getLanguageIdByCode,
+} from 'services/engagementContentTranslationService';
 
 export interface WhoIsListeningContextProps {
     contactToEdit: Contact | null;
@@ -59,6 +65,9 @@ export const WhoIsListeningProvider = ({ children }: { children: JSX.Element | J
     const [getContactsTrigger] = useLazyGetContactsQuery();
     const dispatch = useAppDispatch();
     const { widgets, isWidgetInScope } = useContext(WidgetDrawerContext);
+    const { languageCode } = useParams<{ languageCode?: string }>();
+    const activeLanguageCode = (languageCode ?? 'en').toLowerCase();
+    const isNonEnglish = activeLanguageCode !== 'en';
     const widget =
         widgets.find((widget) => isWidgetInScope(widget) && widget.widget_type_id === WidgetType.WhoIsListening) ||
         null;
@@ -73,7 +82,7 @@ export const WhoIsListeningProvider = ({ children }: { children: JSX.Element | J
     useEffect(() => {
         loadContacts();
         loadListeningWidget();
-    }, [savedEngagement]);
+    }, [savedEngagement, activeLanguageCode]);
 
     const loadContacts = async () => {
         try {
@@ -83,6 +92,29 @@ export const WhoIsListeningProvider = ({ children }: { children: JSX.Element | J
             }
             setLoadingContacts(true);
             const loadedContacts = await getContactsTrigger(undefined, false).unwrap();
+
+            if (isNonEnglish) {
+                const languageId = await getLanguageIdByCode(activeLanguageCode);
+                const translatedContacts = await Promise.all(
+                    loadedContacts.map(async (contact) => {
+                        const translation = await getContactTranslation(contact.id, languageId);
+                        if (!translation) return contact;
+                        return {
+                            ...contact,
+                            name: translation.name ?? contact.name,
+                            title: translation.title ?? contact.title,
+                            email: translation.email ?? contact.email,
+                            phone_number: translation.phone_number ?? contact.phone_number,
+                            address: translation.address ?? contact.address,
+                            bio: translation.bio ?? contact.bio,
+                        };
+                    }),
+                );
+                setContacts(translatedContacts);
+                setLoadingContacts(false);
+                return translatedContacts;
+            }
+
             setContacts(loadedContacts);
             setLoadingContacts(false);
             return loadedContacts;
@@ -99,6 +131,23 @@ export const WhoIsListeningProvider = ({ children }: { children: JSX.Element | J
                 return Promise.resolve(emptyListeningWidget);
             }
             const loadedListeningWidget = await fetchListeningWidget(widget.id);
+
+            if (isNonEnglish) {
+                const contentTranslations = await getEngagementContentTranslationsByCode(
+                    savedEngagement.id,
+                    activeLanguageCode,
+                );
+                const widgetTranslation = contentTranslations.widgets.find((t) => t.widget_id === widget.id);
+                if (widgetTranslation?.description != null) {
+                    const translated = {
+                        ...loadedListeningWidget,
+                        description: widgetTranslation.description,
+                    };
+                    setListeningWidget(translated);
+                    return translated;
+                }
+            }
+
             setListeningWidget(loadedListeningWidget);
             return loadedListeningWidget;
         } catch (error) {

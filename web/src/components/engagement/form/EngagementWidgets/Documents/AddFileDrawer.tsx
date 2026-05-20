@@ -17,6 +17,11 @@ import { postDocument, patchDocument, PatchDocumentRequest } from 'services/widg
 import { DOCUMENT_TYPE, DocumentItem } from 'models/document';
 import { updatedDiff } from 'deep-object-diff';
 import { WidgetLocation } from 'models/widget';
+import { useParams } from 'react-router';
+import {
+    getEngagementContentTranslationsByCode,
+    syncEngagementContentTranslationsByCode,
+} from 'services/engagementContentTranslationService';
 
 const schema = yup
     .object({
@@ -32,6 +37,8 @@ const AddFileDrawer = () => {
     const dispatch = useAppDispatch();
     const { documentToEdit, documents, loadDocuments, handleAddFileDrawerOpen, addFileDrawerOpen, widget } =
         useContext(DocumentsContext);
+    const { languageCode } = useParams<{ languageCode?: string }>();
+    const activeLanguageCode = (languageCode ?? 'en').toLowerCase();
     const [isCreatingFile, setIsCreatingDocument] = useState(false);
     const parentDocument = documents.find(
         (document: DocumentItem) => document.id === documentToEdit?.parent_document_id,
@@ -64,13 +71,41 @@ const AddFileDrawer = () => {
         }
         setIsCreatingDocument(true);
         const documentEditsToPatch = updatedDiff(documentToEdit, {
-            title: data.name,
+            title: activeLanguageCode === 'en' ? data.name : documentToEdit.title,
             parent_document_id: data.folderId === 0 ? null : data.folderId,
             url: data.link,
         }) as PatchDocumentRequest;
-        await patchDocument(widget.id, documentToEdit.id, {
-            ...documentEditsToPatch,
-        });
+        if (Object.values(documentEditsToPatch).length > 0) {
+            await patchDocument(widget.id, documentToEdit.id, {
+                ...documentEditsToPatch,
+            });
+        }
+        if (activeLanguageCode !== 'en') {
+            const existingContentTranslations = await getEngagementContentTranslationsByCode(
+                widget.engagement_id,
+                activeLanguageCode,
+            );
+            const existingTranslation = existingContentTranslations.documents_widgets.find(
+                (translation) => translation.widget_documents_id === documentToEdit.id,
+            );
+            const nextTranslations = existingTranslation
+                ? existingContentTranslations.documents_widgets.map((translation) =>
+                      translation.widget_documents_id === documentToEdit.id
+                          ? { ...translation, title: data.name }
+                          : translation,
+                  )
+                : [
+                      ...existingContentTranslations.documents_widgets,
+                      {
+                          widget_id: widget.id,
+                          widget_documents_id: documentToEdit.id,
+                          title: data.name,
+                      },
+                  ];
+            await syncEngagementContentTranslationsByCode(widget.engagement_id, activeLanguageCode, {
+                documents_widgets: nextTranslations,
+            });
+        }
         dispatch(
             openNotification({
                 severity: 'success',

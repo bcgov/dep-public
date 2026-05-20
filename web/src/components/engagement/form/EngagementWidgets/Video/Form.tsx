@@ -16,6 +16,11 @@ import { patchVideo, postVideo } from 'services/widgetService/VideoService';
 import { updatedDiff } from 'deep-object-diff';
 import { WidgetTitle } from '../WidgetTitle';
 import { WidgetLocation } from 'models/widget';
+import { useParams } from 'react-router';
+import {
+    getEngagementContentTranslationsByCode,
+    syncEngagementContentTranslationsByCode,
+} from 'services/engagementContentTranslationService';
 
 const schema = yup
     .object({
@@ -36,6 +41,8 @@ const Form = () => {
     const { widget, isLoadingVideoWidget, videoWidget } = useContext(VideoContext);
     const { setWidgetDrawerOpen } = useContext(WidgetDrawerContext);
     const [isCreating, setIsCreating] = React.useState(false);
+    const { languageCode } = useParams<{ languageCode?: string }>();
+    const activeLanguageCode = (languageCode ?? 'en').toLowerCase();
 
     const methods = useForm<DetailsForm>({
         resolver: yupResolver(schema) as unknown as Resolver<DetailsForm>,
@@ -44,11 +51,27 @@ const Form = () => {
     const { handleSubmit, reset } = methods;
 
     useEffect(() => {
-        if (videoWidget) {
+        if (!videoWidget || !widget) {
+            return;
+        }
+        const initializeForm = async () => {
             methods.setValue('description', videoWidget.description);
             methods.setValue('videoUrl', videoWidget.video_url);
-        }
-    }, [videoWidget]);
+
+            if (activeLanguageCode === 'en') {
+                return;
+            }
+
+            const contentTranslations = await getEngagementContentTranslationsByCode(
+                widget.engagement_id,
+                activeLanguageCode,
+            );
+            const widgetTranslation = contentTranslations.widgets.find((t) => t.widget_id === widget.id);
+            methods.setValue('description', widgetTranslation?.video_description ?? videoWidget.description);
+            methods.setValue('videoUrl', widgetTranslation?.video_url ?? videoWidget.video_url);
+        };
+        initializeForm();
+    }, [videoWidget, activeLanguageCode, widget?.id]);
 
     const createVideo = async (data: DetailsForm) => {
         if (!widget) {
@@ -88,9 +111,43 @@ const Form = () => {
             return;
         }
 
-        await patchVideo(widget.id, videoWidget.id, {
-            ...updatedDate,
-        });
+        if (activeLanguageCode === 'en') {
+            await patchVideo(widget.id, videoWidget.id, {
+                ...updatedDate,
+            });
+        } else {
+            const existingContentTranslations = await getEngagementContentTranslationsByCode(
+                widget.engagement_id,
+                activeLanguageCode,
+            );
+
+            const existingTranslation = existingContentTranslations.widgets.find(
+                (translation) => translation.widget_id === widget.id,
+            );
+
+            const nextTranslations = existingTranslation
+                ? existingContentTranslations.widgets.map((translation) =>
+                      translation.widget_id === widget.id
+                          ? {
+                                ...translation,
+                                video_description: validatedData.description,
+                                video_url: validatedData.videoUrl,
+                            }
+                          : translation,
+                  )
+                : [
+                      ...existingContentTranslations.widgets,
+                      {
+                          widget_id: widget.id,
+                          video_description: validatedData.description,
+                          video_url: validatedData.videoUrl,
+                      },
+                  ];
+
+            await syncEngagementContentTranslationsByCode(widget.engagement_id, activeLanguageCode, {
+                widgets: nextTranslations,
+            });
+        }
         dispatch(openNotification({ severity: 'success', text: 'The video widget was successfully updated' }));
     };
 

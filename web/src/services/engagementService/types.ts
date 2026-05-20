@@ -17,6 +17,7 @@ export interface PostEngagementRequest {
     banner_filename?: string;
     status_block?: EngagementStatusBlock[];
     is_internal?: boolean;
+    languages?: string[];
 }
 
 export interface PutEngagementRequest {
@@ -56,4 +57,5 @@ export interface PatchEngagementRequest {
     subscribe_section_description?: string;
     subscribe_consent_message?: string;
     consent_message?: string;
+    languages?: string[];
 }

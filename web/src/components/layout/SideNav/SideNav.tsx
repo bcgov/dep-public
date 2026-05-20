@@ -59,9 +59,9 @@ const DrawerBox = ({ isMediumScreenOrLarger, setOpen }: DrawerBoxProps) => {
     const permissions = useAppSelector((state) => state.user.roles);
     const bottomRouteNames = new Set(['Tenant Admin', 'Site Feedback']);
 
-    const currentBaseRoute = Routes.map((route) => route.base)
-        .filter((route) => location.pathname.includes(route))
-        .reduce((prev, curr) => (prev.length > curr.length ? prev : curr));
+    const matchingBaseRoutes = Routes.map((route) => route.base).filter((route) => location.pathname.includes(route));
+    const currentBaseRoute =
+        matchingBaseRoutes.length > 0 ? matchingBaseRoutes.sort((a, b) => a.length - b.length).at(-1) : '';
 
     const allowedRoutes = Routes.filter((route) => {
         return !route.authenticated || route.allowedRoles.some((role) => permissions.includes(role));

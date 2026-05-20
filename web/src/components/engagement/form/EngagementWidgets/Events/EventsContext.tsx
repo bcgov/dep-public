@@ -1,10 +1,15 @@
-import React, { createContext, JSX, useContext, useEffect, useState } from 'react';
+import React, { createContext, JSX, useContext, useEffect, useMemo, useState } from 'react';
 import { useAppDispatch } from 'hooks';
 import { WidgetDrawerContext } from '../WidgetDrawerContext';
 import { Widget, WidgetType } from 'models/widget';
-import { getEvents, sortWidgetEvents } from 'services/widgetService/EventService';
+import { getEvents, sortWidgetEvents, getEventItemTranslation } from 'services/widgetService/EventService';
 import { EVENT_TYPE, Event, EventTypeLabel } from 'models/event';
 import { openNotification } from 'services/notificationService/notificationSlice';
+import { useParams } from 'react-router';
+import {
+    getEngagementContentTranslationsByCode,
+    getLanguageIdByCode,
+} from 'services/engagementContentTranslationService';
 
 export interface EventsContextProps {
     inPersonFormTabOpen: boolean;
@@ -56,6 +61,8 @@ export const EventsContext = createContext<EventsContextProps>({
 
 export const EventsProvider = ({ children }: { children: JSX.Element | JSX.Element[] }) => {
     const dispatch = useAppDispatch();
+    const { languageCode } = useParams<{ languageCode?: string }>();
+    const activeLanguageCode = (languageCode ?? 'en').toLowerCase();
     const { widgets, isWidgetInScope } = useContext(WidgetDrawerContext);
     const widget =
         widgets.find((widget) => isWidgetInScope(widget) && widget.widget_type_id === WidgetType.Events) || null;
@@ -72,7 +79,61 @@ export const EventsProvider = ({ children }: { children: JSX.Element | JSX.Eleme
         try {
             setIsLoadingEvents(true);
             const loadedEvents = await getEvents(widget.id);
-            setEvents(loadedEvents);
+            if (activeLanguageCode === 'en') {
+                setEvents(loadedEvents);
+            } else {
+                const [contentTranslations, languageId] = await Promise.all([
+                    getEngagementContentTranslationsByCode(widget.engagement_id, activeLanguageCode),
+                    getLanguageIdByCode(activeLanguageCode),
+                ]);
+                const eventTranslationsById = new Map(
+                    contentTranslations.events_widgets.map((translation) => [
+                        translation.widget_events_id,
+                        translation,
+                    ]),
+                );
+
+                const itemTranslationResults = await Promise.all(
+                    loadedEvents.map(async (eventRecord) => {
+                        const item = eventRecord.event_items?.[0];
+                        if (!item) return { eventId: eventRecord.id, translation: null };
+                        const translation = await getEventItemTranslation(eventRecord.id, item.id, languageId);
+                        return { eventId: eventRecord.id, translation };
+                    }),
+                );
+                const itemTranslationsById = new Map(
+                    itemTranslationResults.map(({ eventId, translation }) => [eventId, translation]),
+                );
+
+                setEvents(
+                    loadedEvents.map((eventRecord) => {
+                        const translatedEvent = eventTranslationsById.get(eventRecord.id);
+                        if (!translatedEvent) {
+                            return eventRecord;
+                        }
+
+                        const eventItems = eventRecord.event_items?.map((item, index) => {
+                            if (index !== 0) {
+                                return item;
+                            }
+                            const itemTranslation = itemTranslationsById.get(eventRecord.id);
+                            return {
+                                ...item,
+                                event_name: translatedEvent?.title ?? item.event_name,
+                                description: itemTranslation?.description ?? item.description,
+                                location_name: itemTranslation?.location_name ?? item.location_name,
+                                location_address: itemTranslation?.location_address ?? item.location_address,
+                                url_label: itemTranslation?.url_label ?? item.url_label,
+                            };
+                        });
+
+                        return {
+                            ...eventRecord,
+                            event_items: eventItems,
+                        };
+                    }),
+                );
+            }
             setIsLoadingEvents(false);
         } catch {
             dispatch(
@@ -98,7 +159,7 @@ export const EventsProvider = ({ children }: { children: JSX.Element | JSX.Eleme
 
     useEffect(() => {
         loadEvents();
-    }, [widget]);
+    }, [widget, activeLanguageCode]);
 
     const updateWidgetEventsSorting = async (resortedWidgetEvents: Event[]) => {
         if (!widget) {
@@ -111,25 +172,38 @@ export const EventsProvider = ({ children }: { children: JSX.Element | JSX.Eleme
         }
     };
 
-    return (
-        <EventsContext.Provider
-            value={{
-                virtualSessionFormTabOpen,
-                setVirtualSessionFormTabOpen,
-                inPersonFormTabOpen,
-                setInPersonFormTabOpen,
-                eventToEdit,
-                handleChangeEventToEdit,
-                handleEventDrawerOpen,
-                widget,
-                loadEvents,
-                isLoadingEvents,
-                setEvents,
-                events,
-                updateWidgetEventsSorting,
-            }}
-        >
-            {children}
-        </EventsContext.Provider>
+    const contextValue = useMemo(
+        () => ({
+            virtualSessionFormTabOpen,
+            setVirtualSessionFormTabOpen,
+            inPersonFormTabOpen,
+            setInPersonFormTabOpen,
+            eventToEdit,
+            handleChangeEventToEdit,
+            handleEventDrawerOpen,
+            widget,
+            loadEvents,
+            isLoadingEvents,
+            setEvents,
+            events,
+            updateWidgetEventsSorting,
+        }),
+        [
+            virtualSessionFormTabOpen,
+            setVirtualSessionFormTabOpen,
+            inPersonFormTabOpen,
+            setInPersonFormTabOpen,
+            eventToEdit,
+            handleChangeEventToEdit,
+            handleEventDrawerOpen,
+            widget,
+            loadEvents,
+            isLoadingEvents,
+            setEvents,
+            events,
+            updateWidgetEventsSorting,
+        ],
     );
+
+    return <EventsContext.Provider value={contextValue}>{children}</EventsContext.Provider>;
 };

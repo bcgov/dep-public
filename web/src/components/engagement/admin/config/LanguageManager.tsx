@@ -10,7 +10,6 @@ import { colors } from 'styles/Theme';
 import { useFormContext } from 'react-hook-form';
 import { Language } from 'models/language';
 import MultiSelect from './MultiSelect';
-import { SystemMessage } from 'components/common/Layout/SystemMessage';
 import { LanguageLoaderData } from './LanguageLoader';
 import { Awaited } from 'utils';
 import { ROUTES, getPath } from 'routes/routes';
@@ -38,6 +37,12 @@ export const LanguageManager = () => {
         return false;
     };
     const isSingleLanguage = determineSingleLanguage(selectedLanguages);
+    let languageTypeValue = '';
+    if (isSingleLanguage === true) {
+        languageTypeValue = 'single';
+    } else if (isSingleLanguage === false) {
+        languageTypeValue = 'multi';
+    }
 
     useEffect(() => {
         fetcher.load(`${getPath(ROUTES.LANGUAGES)}/`);
@@ -62,15 +67,12 @@ export const LanguageManager = () => {
                 }}
                 aria-label="Select Engagement's Language Type"
                 name="languageType"
-                value={isSingleLanguage && (isSingleLanguage ? 'single' : 'multi')}
+                value={languageTypeValue}
             >
                 <FormControlLabel value={'single'} control={<Radio />} label="English Only" />
                 <FormControlLabel value={'multi'} control={<Radio />} label="Multi-language" />
             </RadioGroup>
             <When condition={isSingleLanguage === false}>
-                <SystemMessage status="warning">
-                    Under construction - this setting currently has no effect
-                </SystemMessage>
                 <MultiSelect<Language>
                     containerProps={{ sx: { mt: 2 } }}
                     onChange={(_, language, reason) => {

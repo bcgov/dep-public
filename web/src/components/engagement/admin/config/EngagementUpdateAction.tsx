@@ -13,8 +13,28 @@ import {
 import { store } from 'store';
 import { ROUTES, getPath } from 'routes/routes';
 
+const getUpdateFailureMessage = (error: unknown): string => {
+    if (!axios.isAxiosError<ApiErrorBody>(error)) {
+        return 'Failed to update engagement';
+    }
+
+    if (typeof error.response?.data === 'string') {
+        return error.response.data;
+    }
+
+    return error.response?.data?.message ?? 'Failed to update engagement';
+};
+
+const getLanguageCodes = (formData: FormData): string[] => {
+    const values = formData.getAll('languages').map(String);
+    return values
+        .flatMap((value) => value.split(','))
+        .map((value) => value.trim())
+        .filter(Boolean);
+};
+
 export const engagementUpdateAction: ActionFunction = async ({ request, params }) => {
-    const formData = (await request.formData()) as FormData;
+    const formData = await request.formData();
     const engagementId = Number(params.engagementId);
     try {
         await patchEngagement({
@@ -23,13 +43,10 @@ export const engagementUpdateAction: ActionFunction = async ({ request, params }
             start_date: formData.get('start_date') as string,
             end_date: formData.get('end_date') as string,
             is_internal: formData.get('is_internal') === 'true',
+            languages: getLanguageCodes(formData),
         });
     } catch (e) {
-        const message = axios.isAxiosError<ApiErrorBody>(e)
-            ? typeof e.response?.data === 'string'
-                ? e.response.data
-                : (e.response?.data?.message ?? 'Failed to update engagement')
-            : 'Failed to update engagement';
+        const message = getUpdateFailureMessage(e);
         console.error('Error updating engagement:', e);
         store.dispatch(openNotification({ severity: 'error', text: message }));
         return { status: 'failure' };

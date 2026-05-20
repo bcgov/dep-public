@@ -77,11 +77,19 @@ export const AutoBreadcrumbs: React.FC<{ smallScreenOnly?: boolean }> = ({ small
     const matches = (useMatches() as UIMatchWithCrumb[]).filter((match) => match.handle?.crumb);
     const matchKey = matches.map((m) => m.pathname).join('-');
     const crumbs = useMemo(() => {
-        return matches.map((match) => {
-            const data = match.loaderData;
-            const handle = match.handle;
-            return handle?.crumb?.(data) ?? Promise.resolve({ name: '', link: '' });
-        });
+        return matches
+            .filter((match) => Boolean(match.handle?.crumb))
+            .map((match) => {
+                const crumb = match.handle?.crumb;
+                if (!crumb) {
+                    return null;
+                }
+
+                // Always pass an object to prevent route crumb handlers that destructure
+                // their first argument from throwing when loader data is undefined.
+                return crumb(match.loaderData ?? {});
+            })
+            .filter(Boolean);
     }, [matchKey]); // Recompute only when matches change
 
     return (
@@ -92,7 +100,7 @@ export const AutoBreadcrumbs: React.FC<{ smallScreenOnly?: boolean }> = ({ small
             {crumbs.map((unresolvedCrumb, index) => (
                 <Suspense key={`breadcrumb-${matches[index].pathname}`}>
                     <Await resolve={unresolvedCrumb}>
-                        {(resolvedCrumb: BreadcrumbProps) => {
+                        {(resolvedCrumb: BreadcrumbProps | null) => {
                             const name = resolvedCrumb?.name;
                             const link =
                                 index < matches.length - 1

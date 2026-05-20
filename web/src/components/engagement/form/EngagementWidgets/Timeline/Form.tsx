@@ -10,11 +10,23 @@ import { useAppDispatch } from 'hooks';
 import { openNotification } from 'services/notificationService/notificationSlice';
 import { WidgetDrawerContext } from '../WidgetDrawerContext';
 import { TimelineContext } from './TimelineContext';
-import { patchTimeline, postTimeline } from 'services/widgetService/TimelineService';
+import {
+    patchTimeline,
+    postTimeline,
+    getTimelineEventTranslationsByLanguage,
+    postTimelineEventTranslation,
+    patchTimelineEventTranslation,
+} from 'services/widgetService/TimelineService';
 import { WidgetTitle } from '../WidgetTitle';
 import { TimelineEvent } from 'models/timelineWidget';
 import { WidgetLocation } from 'models/widget';
 import { Heading3 } from 'components/common/Typography';
+import { useParams } from 'react-router';
+import {
+    getEngagementContentTranslationsByCode,
+    getLanguageIdByCode,
+    syncEngagementContentTranslationsByCode,
+} from 'services/engagementContentTranslationService';
 
 interface DetailsForm {
     title: string;
@@ -32,6 +44,8 @@ const Form = () => {
     const { widget, isLoadingTimelineWidget, timelineWidget } = useContext(TimelineContext);
     const { setWidgetDrawerOpen } = useContext(WidgetDrawerContext);
     const [isCreating, setIsCreating] = React.useState(false);
+    const { languageCode } = useParams<{ languageCode?: string }>();
+    const activeLanguageCode = (languageCode ?? 'en').toLowerCase();
 
     const newEvent: TimelineEvent = {
         id: 0,
@@ -68,11 +82,43 @@ const Form = () => {
     ];
 
     useEffect(() => {
-        if (timelineWidget) {
+        if (!timelineWidget) return;
+        setTimelineWidgetState(timelineWidget);
+        const initializeTranslations = async () => {
             setTimelineEvents(timelineWidget.events.sort((a, b) => a.position - b.position));
-            setTimelineWidgetState(timelineWidget);
-        }
-    }, [timelineWidget]);
+            if (activeLanguageCode === 'en' || !widget) {
+                return;
+            }
+            const [contentTranslations, languageId] = await Promise.all([
+                getEngagementContentTranslationsByCode(widget.engagement_id, activeLanguageCode),
+                getLanguageIdByCode(activeLanguageCode),
+            ]);
+            const timelineTranslation = contentTranslations.timeline_widgets.find(
+                (t) => t.widget_timeline_id === timelineWidget.id,
+            );
+            if (timelineTranslation) {
+                setTimelineWidgetState({
+                    ...timelineWidget,
+                    title: timelineTranslation.title ?? timelineWidget.title,
+                    description: timelineTranslation.description ?? timelineWidget.description,
+                });
+            }
+            const eventTranslations = await getTimelineEventTranslationsByLanguage(timelineWidget.id, languageId);
+            if (eventTranslations.length > 0) {
+                const translatedEvents = timelineWidget.events.map((event) => {
+                    const eventTr = eventTranslations.find((t) => t.timeline_event_id === event.id);
+                    if (!eventTr) return event;
+                    return {
+                        ...event,
+                        description: eventTr.description ?? event.description,
+                        time: eventTr.time ?? event.time,
+                    };
+                });
+                setTimelineEvents(translatedEvents.sort((a, b) => a.position - b.position));
+            }
+        };
+        initializeTranslations();
+    }, [timelineWidget, activeLanguageCode, widget?.id]);
 
     const createTimeline = async (data: DetailsForm) => {
         if (!widget) {
@@ -100,7 +146,54 @@ const Form = () => {
             return;
         }
 
-        await patchTimeline(widget.id, timelineWidget.id, { ...data });
+        if (activeLanguageCode !== 'en') {
+            const [existingTranslations, languageId] = await Promise.all([
+                getEngagementContentTranslationsByCode(widget.engagement_id, activeLanguageCode),
+                getLanguageIdByCode(activeLanguageCode),
+            ]);
+            const existingTimelineTranslations = existingTranslations.timeline_widgets;
+            const existingRecord = existingTimelineTranslations.find((t) => t.widget_timeline_id === timelineWidget.id);
+            const updatedRecord = existingRecord
+                ? { ...existingRecord, title: data.title, description: data.description }
+                : {
+                      widget_id: widget.id,
+                      widget_timeline_id: timelineWidget.id,
+                      title: data.title,
+                      description: data.description,
+                  };
+            const otherTranslations = existingTimelineTranslations.filter(
+                (t) => t.widget_timeline_id !== timelineWidget.id,
+            );
+            const existingEventTranslations = await getTimelineEventTranslationsByLanguage(
+                timelineWidget.id,
+                languageId,
+            );
+            await syncEngagementContentTranslationsByCode(widget.engagement_id, activeLanguageCode, {
+                timeline_widgets: [...otherTranslations, updatedRecord],
+            });
+            await Promise.all(
+                data.events
+                    .filter((event) => event.id > 0)
+                    .map((event) => {
+                        const existing = existingEventTranslations.find((t) => t.timeline_event_id === event.id);
+                        if (existing) {
+                            return patchTimelineEventTranslation(timelineWidget.id, existing.id, {
+                                description: event.description ?? '',
+                                time: event.time ?? '',
+                            });
+                        }
+                        return postTimelineEventTranslation(timelineWidget.id, {
+                            timeline_event_id: event.id,
+                            language_id: languageId,
+                            description: event.description ?? '',
+                            time: event.time ?? '',
+                        });
+                    }),
+            );
+        } else {
+            await patchTimeline(widget.id, timelineWidget.id, { ...data });
+        }
+
         dispatch(openNotification({ severity: 'success', text: 'The timeline widget was successfully updated' }));
     };
 

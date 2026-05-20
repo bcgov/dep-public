@@ -8,6 +8,7 @@ import Endpoints from 'apiManager/endpoints';
 import { replaceUrl } from 'helper';
 import { Page } from 'services/type';
 import axios from 'axios';
+import { getLanguages } from 'services/languageService';
 
 export const fetchAll = async (dispatch: Dispatch<AnyAction>): Promise<Engagement[]> => {
     const responseData = await http.GetRequest<Engagement[]>(Endpoints.Engagement.GET_LIST);
@@ -74,6 +75,94 @@ export const getAvailableTranslationLanguages = async (engagementId: number): Pr
         return response.data;
     }
     throw new Error('Failed to fetch engagement translation languages.');
+};
+
+export interface EngagementTranslation {
+    id: number;
+    engagement_id: number;
+    language_id: number;
+    name?: string;
+    description?: string;
+    rich_description?: string;
+    description_title?: string;
+    sponsor_name?: string;
+    upcoming_status_block_text?: string;
+    open_status_block_text?: string;
+    closed_status_block_text?: string;
+    open_status_block_button_text?: string;
+    view_results_status_block_button_text?: string;
+    feedback_heading?: string;
+    feedback_body?: string;
+    consent_message?: string;
+    subscribe_section_heading?: string;
+    subscribe_section_description?: string;
+    subscribe_consent_message?: string;
+    more_engagements_heading?: string;
+}
+
+export const getEngagementTranslationByLanguage = async (
+    engagementId: number,
+    languageId: number,
+): Promise<EngagementTranslation[]> => {
+    const url = replaceUrl(
+        replaceUrl(Endpoints.EngagementTranslations.GET_BY_LANGUAGE, 'engagement_id', String(engagementId)),
+        'language_id',
+        String(languageId),
+    );
+    const response = await http.GetRequest<EngagementTranslation[]>(url);
+    return response.data ?? [];
+};
+
+export const createEngagementTranslation = async (
+    engagementId: number,
+    languageId: number,
+): Promise<EngagementTranslation> => {
+    const url = replaceUrl(Endpoints.EngagementTranslations.CREATE, 'engagement_id', String(engagementId));
+    const response = await http.PostRequest<EngagementTranslation>(url, {
+        language_id: languageId,
+        pre_populate: true,
+    });
+
+    if (response.data) {
+        return response.data;
+    }
+
+    throw new Error('Failed to create engagement translation');
+};
+
+export const patchEngagementTranslation = async (
+    engagementId: number,
+    engagementTranslationId: number,
+    data: Partial<EngagementTranslation>,
+): Promise<EngagementTranslation> => {
+    const url = replaceUrl(
+        replaceUrl(Endpoints.EngagementTranslations.PATCH, 'engagement_id', String(engagementId)),
+        'engagement_translation_id',
+        String(engagementTranslationId),
+    );
+    const response = await http.PatchRequest<EngagementTranslation>(url, data);
+    if (response.data) {
+        return response.data;
+    }
+    throw new Error('Failed to update engagement translation');
+};
+
+export const getEngagementTranslationByCode = async (
+    engagementId: number,
+    languageCode: string,
+): Promise<EngagementTranslation | null> => {
+    if (!languageCode) {
+        return null;
+    }
+
+    const languages = await getLanguages();
+    const language = languages.find((lng) => lng.code === languageCode);
+    if (!language) {
+        throw new Error(`Invalid language code ${languageCode}`);
+    }
+
+    const translations = await getEngagementTranslationByLanguage(engagementId, language.id);
+    return translations[0] ?? null;
 };
 
 export const postEngagement = async (data: PostEngagementRequest): Promise<Engagement> => {

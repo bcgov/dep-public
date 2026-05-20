@@ -1,55 +1,60 @@
 import { AuthoringValue } from './types';
+import { getPath, ROUTES } from 'routes/routes';
 
-export const getDefaultAuthoringTabValues = (type: string): AuthoringValue[] => {
+export const getDefaultAuthoringTabValues = (
+    type: string,
+    engagementId: number | string,
+    languageCode: string = 'en',
+): AuthoringValue[] => {
     if ('sections' === type) {
         // Return the default "section" items
         return [
             {
                 id: 1,
                 title: 'Hero Banner',
-                link: `banner`,
+                link: getPath(ROUTES.AUTHORING_BANNER, { engagementId, languageCode }),
                 required: true,
                 completed: false,
             },
             {
                 id: 2,
                 title: 'Summary',
-                link: `summary`,
+                link: getPath(ROUTES.AUTHORING_SUMMARY, { engagementId, languageCode }),
                 required: true,
                 completed: false,
             },
             {
                 id: 3,
                 title: 'Details',
-                link: `details`,
+                link: getPath(ROUTES.AUTHORING_DETAILS, { engagementId, languageCode }),
                 required: true,
                 completed: false,
             },
             {
                 id: 4,
                 title: 'Provide Feedback',
-                link: `feedback`,
+                link: getPath(ROUTES.AUTHORING_FEEDBACK, { engagementId, languageCode }),
                 required: true,
                 completed: false,
             },
             {
                 id: 5,
                 title: 'View Results',
-                link: `results`,
+                link: getPath(ROUTES.AUTHORING_RESULTS, { engagementId, languageCode }),
                 required: false,
                 completed: false,
             },
             {
                 id: 6,
                 title: 'Subscribe',
-                link: `subscribe`,
+                link: getPath(ROUTES.AUTHORING_SUBSCRIBE, { engagementId, languageCode }),
                 required: false,
                 completed: false,
             },
             {
                 id: 7,
                 title: 'More Engagements',
-                link: `more`,
+                link: getPath(ROUTES.AUTHORING_MORE, { engagementId, languageCode }),
                 required: false,
                 completed: false,
             },

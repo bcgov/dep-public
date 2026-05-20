@@ -19,6 +19,11 @@ import { updatedDiff } from 'deep-object-diff';
 import { openNotification } from 'services/notificationService/notificationSlice';
 import { Draggable, DraggableProvided } from '@hello-pangea/dnd';
 import { DroppableBox } from 'components/common/Dragdrop';
+import { useParams } from 'react-router';
+import {
+    getEngagementContentTranslationsByCode,
+    syncEngagementContentTranslationsByCode,
+} from 'services/engagementContentTranslationService';
 
 const DocumentFolder = ({
     documentItem,
@@ -35,6 +40,8 @@ const DocumentFolder = ({
     );
     const [edit, setEdit] = useState<boolean>(false);
     const [document, setDocument] = useState<DocumentItem | undefined>(documentItem);
+    const { languageCode } = useParams<{ languageCode?: string }>();
+    const activeLanguageCode = (languageCode ?? 'en').toLowerCase();
 
     useEffect(() => {
         const updatedDocument = documents.find((document: DocumentItem) => document.id === documentItem.id);
@@ -48,12 +55,42 @@ const DocumentFolder = ({
         }
         const documentUpdatesToPatch = updatedDiff(documentItem, {
             ...document,
+            title: activeLanguageCode === 'en' ? document.title : documentItem.title,
         }) as PatchDocumentRequest;
 
         if (Object.values(documentUpdatesToPatch).length > 0)
             await patchDocument(documentWidget.id, document.id, {
                 ...documentUpdatesToPatch,
             });
+
+        if (activeLanguageCode !== 'en') {
+            const existingContentTranslations = await getEngagementContentTranslationsByCode(
+                documentWidget.engagement_id,
+                activeLanguageCode,
+            );
+            const existingTranslation = existingContentTranslations.documents_widgets.find(
+                (translation) => translation.widget_documents_id === document.id,
+            );
+            const nextTranslations = existingTranslation
+                ? existingContentTranslations.documents_widgets.map((translation) =>
+                      translation.widget_documents_id === document.id
+                          ? { ...translation, title: document.title }
+                          : translation,
+                  )
+                : [
+                      ...existingContentTranslations.documents_widgets,
+                      {
+                          widget_id: documentWidget.id,
+                          widget_documents_id: document.id,
+                          title: document.title,
+                      },
+                  ];
+
+            await syncEngagementContentTranslationsByCode(documentWidget.engagement_id, activeLanguageCode, {
+                documents_widgets: nextTranslations,
+            });
+        }
+
         await loadDocuments();
         dispatch(openNotification({ severity: 'success', text: 'Document was successfully updated' }));
     };

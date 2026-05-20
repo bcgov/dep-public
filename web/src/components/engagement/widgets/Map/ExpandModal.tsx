@@ -10,9 +10,10 @@ interface ExpandModalProps {
     open: boolean;
     setOpen: (open: boolean) => void;
     map: WidgetMap | null;
+    markerLabel?: string;
 }
 
-export const ExpandModal = ({ open, setOpen, map }: ExpandModalProps) => {
+export const ExpandModal = ({ open, setOpen, map, markerLabel }: ExpandModalProps) => {
     const mapContainerRef = useRef<HTMLDivElement | null>(null);
     const [mapWidth, setMapWidth] = useState(250);
     const [mapHeight, setMapHeight] = useState(250);
@@ -69,7 +70,7 @@ export const ExpandModal = ({ open, setOpen, map }: ExpandModalProps) => {
                                 geojson={geoJSONDecode(map.geojson)}
                                 longitude={map.longitude}
                                 latitude={map.latitude}
-                                markerLabel={map.marker_label}
+                                markerLabel={markerLabel ?? map.marker_label}
                                 zoom={calculateZoomLevel(mapWidth, mapHeight, geoJSONDecode(map.geojson))}
                             />
                         </Box>

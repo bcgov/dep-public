@@ -26,39 +26,27 @@ interface PatchPollRequest {
 }
 
 export const postPoll = async (widget_id: number, data: PostPollRequest): Promise<PollWidget> => {
-    try {
-        const url = replaceUrl(Endpoints.PollWidgets.CREATE, 'widget_id', String(widget_id));
-        const response = await http.PostRequest<PollWidget>(url, data);
-        return response.data || Promise.reject('Failed to create Poll widget');
-    } catch (err) {
-        return Promise.reject(err);
-    }
+    const url = replaceUrl(Endpoints.PollWidgets.CREATE, 'widget_id', String(widget_id));
+    const response = await http.PostRequest<PollWidget>(url, data);
+    return response.data || Promise.reject(new Error('Failed to create Poll widget'));
 };
 
 export const patchPoll = async (widget_id: number, poll_id: number, data: PatchPollRequest): Promise<PollWidget> => {
-    try {
-        const url = replaceAllInURL({
-            URL: Endpoints.PollWidgets.UPDATE,
-            params: {
-                widget_id: String(widget_id),
-                poll_id: String(poll_id),
-            },
-        });
-        const response = await http.PatchRequest<PollWidget>(url, data);
-        return response.data || Promise.reject('Failed to update Poll widget');
-    } catch (err) {
-        return Promise.reject(err);
-    }
+    const url = replaceAllInURL({
+        URL: Endpoints.PollWidgets.UPDATE,
+        params: {
+            widget_id: String(widget_id),
+            poll_id: String(poll_id),
+        },
+    });
+    const response = await http.PatchRequest<PollWidget>(url, data);
+    return response.data || Promise.reject(new Error('Failed to update Poll widget'));
 };
 
 export const fetchPollWidgets = async (widget_id: number): Promise<PollWidget[]> => {
-    try {
-        const url = replaceUrl(Endpoints.PollWidgets.GET, 'widget_id', String(widget_id));
-        const responseData = await http.GetRequest<PollWidget[]>(url);
-        return responseData.data ?? [];
-    } catch (err) {
-        return Promise.reject(err);
-    }
+    const url = replaceUrl(Endpoints.PollWidgets.GET, 'widget_id', String(widget_id));
+    const responseData = await http.GetRequest<PollWidget[]>(url);
+    return responseData.data ?? [];
 };
 
 export const postPollResponse = async (
@@ -70,7 +58,7 @@ export const postPollResponse = async (
         let url = replaceUrl(Endpoints.PollWidgets.RECORD_RESPONSE, 'widget_id', String(widget_id));
         url = replaceUrl(url, 'poll_id', String(poll_id));
         const response = await http.PostRequest<PollResponse>(url, data);
-        return response.data ?? Promise.reject('Failed to create Poll Response');
+        return response.data ?? Promise.reject(new Error('Failed to create Poll Response'));
     } catch (err: unknown) {
         // Handle plaintext errors
         const errorData = (err as { response?: { data?: string | { message?: string } } })?.response?.data;
@@ -78,17 +66,13 @@ export const postPollResponse = async (
             typeof errorData === 'string'
                 ? errorData
                 : (errorData?.message ?? (err as Error).message ?? 'Failed to create Poll Response');
-        return Promise.reject(new Error(errorMessage));
+        throw new Error(errorMessage);
     }
 };
 
 export const fetchPollResults = async (widget_id: number, poll_id: number): Promise<PollResultResponse> => {
-    try {
-        let url = replaceUrl(Endpoints.PollWidgets.RECORD_RESPONSE, 'widget_id', String(widget_id));
-        url = replaceUrl(url, 'poll_id', String(poll_id));
-        const response = await http.GetRequest<PollResultResponse>(url);
-        return response.data || Promise.reject('Failed to fetch Poll Results');
-    } catch (err) {
-        return Promise.reject(err);
-    }
+    let url = replaceUrl(Endpoints.PollWidgets.RECORD_RESPONSE, 'widget_id', String(widget_id));
+    url = replaceUrl(url, 'poll_id', String(poll_id));
+    const response = await http.GetRequest<PollResultResponse>(url);
+    return response.data || Promise.reject(new Error('Failed to fetch Poll Results'));
 };
