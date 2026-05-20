@@ -66,37 +66,39 @@ const DrawerBox = ({ isMediumScreenOrLarger, setOpen, engagementId }: DrawerBoxP
     const location = useLocation();
     const { engagement, languages } = useRouteLoaderData('single-engagement') as EngagementLoaderAdminData;
     const fetchers = useFetchers();
-    const lastAuthoringSaveSignatureRef = useRef<string>('');
+    const inFlightFetcherKeysRef = useRef<Set<string>>(new Set());
     const [saveRefreshNonce, setSaveRefreshNonce] = useState(0);
     const [selectedLanguageCodes, setSelectedLanguageCodes] = useState<string[]>(['en']);
 
-    const authoringSaveSuccessSignature = useMemo(() => {
-        return fetchers
-            .filter((fetcher) => {
-                return (
-                    fetcher.state === 'idle' &&
-                    fetcher.data === 'success' &&
-                    typeof fetcher.formAction === 'string' &&
-                    fetcher.formAction.includes('/authoring/')
-                );
-            })
-            .map((fetcher) => `${fetcher.key}:${fetcher.formAction}`)
-            .sort()
-            .join('|');
+    const fetchersByKey = useMemo(() => {
+        return fetchers.map((fetcher) => ({
+            key: fetcher.key,
+            state: fetcher.state,
+            data: fetcher.data,
+        }));
     }, [fetchers]);
 
     useEffect(() => {
-        if (!authoringSaveSuccessSignature) {
-            return;
+        const currentInFlightKeys = new Set<string>();
+        let shouldRefreshAfterSave = false;
+
+        for (const fetcher of fetchersByKey) {
+            if (fetcher.state !== 'idle') {
+                currentInFlightKeys.add(fetcher.key);
+                continue;
+            }
+
+            if (fetcher.data === 'success' && inFlightFetcherKeysRef.current.has(fetcher.key)) {
+                shouldRefreshAfterSave = true;
+            }
         }
 
-        if (lastAuthoringSaveSignatureRef.current === authoringSaveSuccessSignature) {
-            return;
-        }
+        inFlightFetcherKeysRef.current = currentInFlightKeys;
 
-        lastAuthoringSaveSignatureRef.current = authoringSaveSuccessSignature;
-        setSaveRefreshNonce((value) => value + 1);
-    }, [authoringSaveSuccessSignature]);
+        if (shouldRefreshAfterSave) {
+            setSaveRefreshNonce((value) => value + 1);
+        }
+    }, [fetchersByKey]);
 
     useLayoutEffect(() => {
         let isMounted = true;
@@ -139,7 +141,13 @@ const DrawerBox = ({ isMediumScreenOrLarger, setOpen, engagementId }: DrawerBoxP
     const matchingRoutePaths: string[] = authoringRoutes
         .map((route) => route.path)
         .filter((route) => window.location.pathname.includes(route));
-    const sortedMatchingRoutePaths = [...matchingRoutePaths].sort((a: string, b: string) => a.length - b.length);
+    const sortedMatchingRoutePaths = [...matchingRoutePaths].sort((a: string, b: string) => {
+        if (a.length !== b.length) {
+            return a.length - b.length;
+        }
+
+        return a.localeCompare(b);
+    });
     const currentRoutePath =
         sortedMatchingRoutePaths.length > 0 ? sortedMatchingRoutePaths[sortedMatchingRoutePaths.length - 1] : '';
 
