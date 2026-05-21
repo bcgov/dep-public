@@ -247,8 +247,8 @@ const Form = () => {
         eventsForSubmission.sort((a, b) => a.position - b.position);
         const formData = new FormData(event.currentTarget);
         const restructuredData = {
-            title: (formData.get('title')?.toString() ?? '').trim(),
-            description: (formData.get('description')?.toString() ?? '').trim(),
+            title: ((formData.get('title') as string) ?? '').trim(),
+            description: ((formData.get('description') as string) ?? '').trim(),
             events: eventsForSubmission,
         };
         setTimelineEvents(eventsForSubmission);

@@ -141,11 +141,11 @@ const Form = () => {
             await syncEngagementContentTranslationsByCode(widget.engagement_id, activeLanguageCode, {
                 widgets: nextTranslations,
             });
-        } else if (!isEngagementPublished) {
-            await patchPoll(widget.id, pollWidget.id, { ...data });
-        } else {
+        } else if (isEngagementPublished) {
             // if already published then only update status (language-neutral)
             await patchPoll(widget.id, pollWidget.id, { status: data.status });
+        } else {
+            await patchPoll(widget.id, pollWidget.id, { ...data });
         }
 
         dispatch(openNotification({ severity: 'success', text: 'The Poll widget was successfully updated' }));
