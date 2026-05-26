@@ -1,7 +1,7 @@
 import { colors } from 'components/common';
 import { FormField, Select, TextField } from 'components/common/Input';
 import React, { useEffect, useState } from 'react';
-import { useLoaderData, useOutletContext } from 'react-router';
+import { useLoaderData, useOutletContext, useParams } from 'react-router';
 import { Controller, useFormContext } from 'react-hook-form';
 import { defaultValuesObject, EngagementUpdateData } from './AuthoringContext';
 import { AuthoringTemplateOutletContext } from './types';
@@ -19,9 +19,10 @@ const AuthoringMore = () => {
     const [engagementSelectOptions, setEngagementSelectOptions] = useState<EngagementOption[]>([
         { label: 'None', value: -1 },
     ]);
-    const { setDefaultValues, fetcher, pageName, engagement: eng }: AuthoringTemplateOutletContext = useOutletContext(); // Access the form functions and values from the authoring template.
-    const tenantId = eng.tenant_id;
-    const engagementId = eng.id;
+    const { setDefaultValues, fetcher, pageName }: AuthoringTemplateOutletContext = useOutletContext(); // Access the form functions and values from the authoring template.
+    const { engagementId: engId, tenantId: tenId } = useParams();
+    const engagementId = Number(engId);
+    const tenantId = Number(tenId);
     const {
         setValue,
         getValues,
@@ -71,12 +72,13 @@ const AuthoringMore = () => {
     const updateEngagementListValues = (list: Page<Engagement>) => {
         if (list.items && Array.isArray(list.items) && list.items.length > 0) {
             const filteredOptions: EngagementOption[] = [];
+            const validStatuses = [EngagementStatus.Published, EngagementStatus.Closed, EngagementStatus.Scheduled];
             list.items.forEach((eng) => {
                 if (
                     eng.tenant_id === tenantId && // Must be engagements from same tenant
                     eng.id !== engagementId && // Can't suggest the current engagement
-                    // Only suggest open or closed engagements, not drafts or unpublished
-                    (eng.status_id === EngagementStatus.Published || eng.status_id === EngagementStatus.Closed)
+                    // Only suggest open, upcoming, or closed engagements, not draft, scheduled, or unpublished
+                    validStatuses.includes(eng.status_id)
                 ) {
                     filteredOptions.push({
                         label: eng?.name || '',

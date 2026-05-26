@@ -4,7 +4,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
 import { AuthoringFormContainer, AuthoringFormSection } from './AuthoringFormLayout';
 import { Heading3 } from 'components/common/Typography/Headings';
-import { useLoaderData, useOutletContext } from 'react-router';
+import { useLoaderData, useOutletContext, useParams } from 'react-router';
 import { Controller, useFormContext } from 'react-hook-form';
 import { TextField } from 'components/common/Input/TextInput';
 import { colors } from 'styles/Theme';
@@ -22,7 +22,7 @@ import { getEditorStateFromRaw } from 'components/common/RichTextEditor/utils';
 import UnsavedWorkConfirmation from 'components/common/Navigation/UnsavedWorkConfirmation';
 
 const AuthoringDetails = () => {
-    const { setDefaultValues, engagement, fetcher, pageName }: AuthoringTemplateOutletContext = useOutletContext();
+    const { setDefaultValues, fetcher, pageName }: AuthoringTemplateOutletContext = useOutletContext();
     const {
         setValue,
         getValues,
@@ -41,7 +41,8 @@ const AuthoringDetails = () => {
     const hasUnsavedWork = isDirty && !isSubmitting;
     const selectedTabRef = useRef<HTMLButtonElement | null>(null);
     const tabErrorsRef = useRef<HTMLDivElement>(null);
-    const engagementId = engagement.id;
+    const { engagementId: engId } = useParams();
+    const engagementId = Number(engId);
     const authoringDetailsTabs = watch('details_tabs');
     const defaultDetailsTabValues = {
         id: -1,

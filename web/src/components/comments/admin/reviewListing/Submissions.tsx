@@ -4,7 +4,7 @@ import Grid from '@mui/material/Grid2';
 import { useLocation } from 'react-router';
 import { ResponsiveContainer } from 'components/common/Layout';
 import { HeadCell, PaginationOptions } from 'components/common/Table/types';
-import { formatDate } from 'components/common/dateHelper';
+import { formatToPacific } from 'components/common/dateHelper';
 import { Collapse, Link } from '@mui/material';
 import TextField from '@mui/material/TextField';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -82,7 +82,7 @@ const Submissions = () => {
             disablePadding: false,
             label: 'Comment Date',
             allowSort: true,
-            renderCell: (row) => formatDate(row.created_date || ''),
+            renderCell: (row) => formatToPacific(row.created_date || '', 'YYYY-MM-DD'),
         },
         {
             key: 'reviewed_by',
@@ -98,7 +98,7 @@ const Submissions = () => {
             disablePadding: false,
             label: 'Date Reviewed',
             allowSort: true,
-            renderCell: (row) => formatDate(row.review_date || ''),
+            renderCell: (row) => formatToPacific(row.review_date || '', 'YYYY-MM-DD'),
         },
         {
             key: 'comment_status_id',

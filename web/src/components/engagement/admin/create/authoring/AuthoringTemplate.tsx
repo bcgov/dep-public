@@ -1,19 +1,15 @@
-import React, { Suspense } from 'react';
-import { Form, useParams, Await, Outlet, useMatch, useRouteLoaderData } from 'react-router';
+import React from 'react';
+import { Form, useParams, Outlet, useMatch, useRouteLoaderData } from 'react-router';
 import AuthoringBottomNav from './AuthoringBottomNav';
 import type { EngagementUpdateData } from './AuthoringContext';
 import { useFormContext } from 'react-hook-form';
-import { AutoBreadcrumbs } from 'components/common/Navigation/Breadcrumb';
-import { ResponsiveContainer } from 'components/common/Layout';
 import { Heading1, Heading2 } from 'components/common/Typography';
 import { useAppDispatch, useAppSelector } from 'hooks';
 import { Language } from 'models/language';
 import { getAuthoringRoutes } from './AuthoringNavElements';
-import { Engagement } from 'models/engagement';
 import { EngagementLoaderAdminData } from 'components/engagement/admin/EngagementLoaderAdmin';
 import { saveLanguage } from 'reduxSlices/languageSlice';
 import Grid from '@mui/material/Grid2';
-import { StatusLabel } from './StatusLabel';
 import AuthoringMorePreform from './AuthoringMorePreform';
 import { ROUTES } from 'routes/routes';
 import { useAuthoringFormContext } from './AuthoringFormContext';
@@ -43,20 +39,11 @@ const AuthoringTemplate = () => {
     })?.name;
 
     const { handleSubmit } = useFormContext<EngagementUpdateData>();
-    const outletKey = pageName || 'authoring';
+
+    const outletKey = React.useMemo(() => pageName || 'authoring', [pageName]);
 
     return (
-        <ResponsiveContainer>
-            <AutoBreadcrumbs />
-            <Grid mt="2rem" size={12}>
-                <Suspense>
-                    <Await resolve={engagement}>
-                        {(engagement: Engagement) => <StatusLabel status={engagement.status_id} />}
-                    </Await>
-                </Suspense>
-                {/* todo: For the section status label when it's ready */}
-                {/* <StatusLabel text={'Insert Section Status Text Here'} completed={'Insert Completed Boolean Here'} /> */}
-            </Grid>
+        <>
             <Grid size={12}>
                 <Heading1 style={{ marginTop: '0.5rem', paddingBottom: '1rem' }}>{pageTitle}</Heading1>
             </Grid>
@@ -74,22 +61,17 @@ const AuthoringTemplate = () => {
 
             <Grid size={12}>
                 <Form onSubmit={handleSubmit(onSubmit)} id="authoring-form">
-                    <Suspense>
-                        <Await resolve={engagement}>
-                            {(engagement: Engagement) => (
-                                <Outlet
-                                    key={outletKey}
-                                    context={{
-                                        setDefaultValues,
-                                        engagement,
-                                        defaultValues,
-                                        fetcher,
-                                        pageName,
-                                    }}
-                                />
-                            )}
-                        </Await>
-                    </Suspense>
+                    <Outlet
+                        key={outletKey}
+                        context={{
+                            setDefaultValues,
+                            engagementId: engagementId, // Instant
+                            engagement: engagement, // Async
+                            defaultValues,
+                            fetcher,
+                            pageName,
+                        }}
+                    />
                     <AuthoringBottomNav
                         currentLanguage={currentLanguage}
                         setCurrentLanguage={setCurrentLanguage}
@@ -99,7 +81,7 @@ const AuthoringTemplate = () => {
                     />
                 </Form>
             </Grid>
-        </ResponsiveContainer>
+        </>
     );
 };
 

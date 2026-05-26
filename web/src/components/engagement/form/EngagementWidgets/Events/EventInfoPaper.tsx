@@ -6,7 +6,7 @@ import { faCircleXmark } from '@fortawesome/pro-regular-svg-icons/faCircleXmark'
 import { faPen } from '@fortawesome/pro-regular-svg-icons/faPen';
 import { When } from 'react-if';
 import { Event } from 'models/event';
-import { formatDate } from 'components/common/dateHelper';
+import { formatToPacific } from 'components/common/dateHelper';
 import { EventsContext } from './EventsContext';
 import { BodyText } from 'components/common/Typography/Body';
 
@@ -81,7 +81,7 @@ const EventInfoPaper = ({ event, removeEvent, ...rest }: EventInfoPaperProps) =>
                     </Grid>
                     <Grid size={9}>
                         <BodyText overflow="hidden" textOverflow={'ellipsis'} whiteSpace="nowrap">
-                            {formatDate(eventItem.start_date, 'MMMM DD, YYYY')}
+                            {formatToPacific(eventItem.start_date, 'MMMM DD, YYYY')}
                         </BodyText>
                     </Grid>
 
@@ -90,7 +90,7 @@ const EventInfoPaper = ({ event, removeEvent, ...rest }: EventInfoPaperProps) =>
                     </Grid>
                     <Grid size={9}>
                         <BodyText overflow="hidden" textOverflow={'ellipsis'} whiteSpace="nowrap">
-                            {`${formatDate(eventItem.start_date, 'h:mm a')} to ${formatDate(
+                            {`${formatToPacific(eventItem.start_date, 'h:mm a')} to ${formatToPacific(
                                 eventItem.end_date,
                                 'h:mm a',
                             )} PT`}

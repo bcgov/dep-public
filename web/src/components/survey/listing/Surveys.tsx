@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router';
 import { ResponsiveContainer } from 'components/common/Layout';
 import { Survey } from 'models/survey';
 import { HeadCell, PaginationOptions } from 'components/common/Table/types';
-import { formatDate } from 'components/common/dateHelper';
+import { formatToPacific } from 'components/common/dateHelper';
 import { Collapse, Link, Theme, Tooltip, useMediaQuery } from '@mui/material';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faMagnifyingGlass } from '@fortawesome/pro-regular-svg-icons/faMagnifyingGlass';
@@ -101,7 +101,7 @@ const Surveys = () => {
             disablePadding: false,
             label: 'Date Created',
             allowSort: true,
-            renderCell: (row: Survey) => formatDate(row.created_date),
+            renderCell: (row: Survey) => formatToPacific(row.created_date, 'YYYY-MM-DD'),
         },
         {
             key: 'engagement',
@@ -110,7 +110,7 @@ const Surveys = () => {
             disablePadding: false,
             label: 'Date Published',
             allowSort: true,
-            renderCell: (row: Survey) => formatDate(row.engagement?.published_date ?? ''),
+            renderCell: (row: Survey) => formatToPacific(row.engagement?.published_date ?? '', 'YYYY-MM-DD'),
         },
         {
             key: 'engagement',

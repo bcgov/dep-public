@@ -1,4 +1,4 @@
-import React, { Suspense, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import React, { useDeferredValue, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import {
     AppBar,
@@ -11,7 +11,6 @@ import {
     SelectChangeEvent,
     Modal,
     Tooltip,
-    CircularProgress,
 } from '@mui/material';
 import { colors, AdminDarkTheme, AdminTheme, ZIndex } from 'styles/Theme';
 import { When, Unless } from 'react-if';
@@ -27,7 +26,7 @@ import { getLanguageValue } from './AuthoringTemplate';
 import { useFormContext } from 'react-hook-form';
 import { EngagementUpdateData } from './AuthoringContext';
 import { ResponsiveContainer } from 'components/common/Layout';
-import { Await, useParams } from 'react-router';
+import { useParams } from 'react-router';
 import ConfirmModal from 'components/common/Modals/ConfirmModal';
 import { Language } from 'models/language';
 import { RouterLinkRenderer } from 'components/common/Navigation/Link';
@@ -60,6 +59,8 @@ const AuthoringBottomNav = ({
         schedulePreviewClose,
         closePreviewWindow,
     } = useAuthoringPreviewWindow();
+
+    const deferredLanguages = useDeferredValue(languages);
 
     const getBasePathPrefix = () => {
         const basename = sessionStorage.getItem('basename');
@@ -318,7 +319,7 @@ const AuthoringBottomNav = ({
                                 <LanguageSelector
                                     currentLanguage={currentLanguage}
                                     setCurrentLanguage={setCurrentLanguage}
-                                    languages={languages}
+                                    languages={deferredLanguages}
                                     isDirty={isDirty}
                                     isSubmitting={isSubmitting}
                                 />
@@ -420,7 +421,7 @@ const LanguageSelector = ({
         languages.then((lngs) => {
             setLanguageList(lngs);
         });
-    }, []);
+    }, [languages]);
 
     const handleSelectChange = (event: SelectChangeEvent<string>) => {
         if (!isSubmitting) {
@@ -460,74 +461,59 @@ const LanguageSelector = ({
                     cancelButtonText={'Cancel & Go Back'}
                 />
             </Modal>
-            <Suspense
-                fallback={
-                    <Select
-                        disabled
-                        renderValue={() => <CircularProgress sx={{ position: 'relative', top: '3px' }} size={20} />}
-                        value="loading"
-                        sx={{ height: '2.5rem', borderRadius: '8px', minWidth: '130px', textAlign: 'center' }}
-                    />
-                }
+            <Select
+                value={currentLanguage.id}
+                onChange={handleSelectChange}
+                variant="standard"
+                slotProps={{
+                    input: {
+                        sx: {
+                            height: '100%',
+                            lineHeight: '32px',
+                            paddingLeft: { xs: '0.5rem !important', sm: '0.875rem !important' },
+                            paddingRight: { xs: '2rem !important', sm: '3rem !important' },
+                        },
+                    },
+                }}
+                sx={{
+                    color: 'text.primary',
+                    fontSize: '0.875rem',
+                    cursor: 'pointer',
+                    height: '100%',
+                    '& svg': {
+                        right: '0.5rem',
+                    },
+                }}
+                renderValue={() => {
+                    const completed = false; // todo: Replace with real "completed" boolean value once it is available.
+                    return (
+                        <span>
+                            <When condition={completed}>
+                                <FontAwesomeIcon style={{ marginRight: '0.3rem' }} icon={faCheck} />
+                            </When>
+                            {currentLanguage.name}
+                            <Unless condition={completed}>
+                                <StatusCircle required={true} />
+                            </Unless>
+                        </span>
+                    );
+                }}
             >
-                <Await resolve={languages}>
-                    {(languages) => (
-                        <Select
-                            value={currentLanguage.id}
-                            onChange={handleSelectChange}
-                            variant="standard"
-                            slotProps={{
-                                input: {
-                                    sx: {
-                                        height: '100%',
-                                        lineHeight: '32px',
-                                        paddingLeft: { xs: '0.5rem !important', sm: '0.875rem !important' },
-                                        paddingRight: { xs: '2rem !important', sm: '3rem !important' },
-                                    },
-                                },
-                            }}
-                            sx={{
-                                color: 'text.primary',
-                                fontSize: '0.875rem',
-                                cursor: 'pointer',
-                                height: '100%',
-                                '& svg': {
-                                    right: '0.5rem',
-                                },
-                            }}
-                            renderValue={() => {
-                                const completed = false; // todo: Replace with real "completed" boolean value once it is available.
-                                return (
-                                    <span>
-                                        <When condition={completed}>
-                                            <FontAwesomeIcon style={{ marginRight: '0.3rem' }} icon={faCheck} />
-                                        </When>
-                                        {currentLanguage.name}
-                                        <Unless condition={completed}>
-                                            <StatusCircle required={true} />
-                                        </Unless>
-                                    </span>
-                                );
-                            }}
-                        >
-                            {languages.map((language) => {
-                                const completed = false; // todo: Replace with the real "completed" boolean values once they are available.
-                                return (
-                                    <MenuItem value={language.code} key={language.code}>
-                                        <When condition={completed}>
-                                            <FontAwesomeIcon style={{ marginRight: '0.3rem' }} icon={faCheck} />
-                                        </When>
-                                        {language.name}
-                                        <Unless condition={completed}>
-                                            <StatusCircle required={true} />
-                                        </Unless>
-                                    </MenuItem>
-                                );
-                            })}
-                        </Select>
-                    )}
-                </Await>
-            </Suspense>
+                {languageList.map((language) => {
+                    const completed = false; // todo: Replace with the real "completed" boolean values once they are available.
+                    return (
+                        <MenuItem value={language.code} key={language.code}>
+                            <When condition={completed}>
+                                <FontAwesomeIcon style={{ marginRight: '0.3rem' }} icon={faCheck} />
+                            </When>
+                            {language.name}
+                            <Unless condition={completed}>
+                                <StatusCircle required={true} />
+                            </Unless>
+                        </MenuItem>
+                    );
+                })}
+            </Select>
         </>
     );
 };

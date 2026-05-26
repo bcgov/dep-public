@@ -5,7 +5,7 @@ import { RichTextArea } from 'components/common/Input/RichTextArea';
 import React, { Suspense, useEffect, useState } from 'react';
 import WidgetPicker from '../widgets';
 import { WidgetLocation } from 'models/widget';
-import { Await, useLoaderData, useOutletContext } from 'react-router';
+import { Await, useLoaderData, useOutletContext, useParams } from 'react-router';
 import { Controller, useFormContext } from 'react-hook-form';
 import { defaultValuesObject, EngagementUpdateData } from './AuthoringContext';
 import { AuthoringTemplateOutletContext } from './types';
@@ -24,10 +24,10 @@ const AuthoringFeedback = () => {
     const [surveySelectOptions, setSurveySelectOptions] = useState<SelectOption[]>([{ label: 'None', value: -1 }]);
     const [surveyChangeModalOpen, setSurveyChangeModalOpen] = useState(false);
     const [surveyChangeValue, setSurveyChangeValue] = useState<SelectOption | null>(null);
-    const { setDefaultValues, fetcher, pageName, engagement: eng }: AuthoringTemplateOutletContext = useOutletContext(); // Access the form functions and values from the authoring template.
-    const tenantId = eng.tenant_id;
-    const engagementId = eng.id;
-    let statusId = eng.status_id;
+    const { setDefaultValues, fetcher, pageName }: AuthoringTemplateOutletContext = useOutletContext(); // Access the form functions and values from the authoring template.
+    const { tenantId: tenId, engagmentId: engId } = useParams();
+    const tenantId = Number(tenId);
+    const engagementId = Number(engId);
     const {
         setValue,
         getValues,
@@ -39,6 +39,7 @@ const AuthoringFeedback = () => {
     // Must be a loader assigned to this route or data won't be refreshed on page change.
     const { engagement, surveys } = useLoaderData() as AuthoringLoaderData; // Get fresh data to avoid DB sync issues
     const hasUnsavedWork = isDirty && !isSubmitting;
+    let statusId = 2;
 
     // Set current values to default state after saving form
     useEffect(() => {
@@ -77,7 +78,7 @@ const AuthoringFeedback = () => {
     };
 
     const handleEngagementData = (eng: Engagement) => {
-        statusId = eng.status_id || statusId;
+        statusId = eng.status_id;
         reset(defaultValuesObject);
         setValue('form_source', pageName);
         setValue('id', Number(eng.id));

@@ -18,6 +18,7 @@ import { useAppDispatch } from 'hooks';
 import { openNotification } from 'services/notificationService/notificationSlice';
 import { AlertColor } from 'services/notificationService/types';
 import { ROUTES, getPath } from 'routes/routes';
+import { convertToPacific, formatToUTC } from 'components/common/dateHelper';
 
 export interface PublishEngagementData {
     id: number;
@@ -80,10 +81,13 @@ export const PublishingTab = () => {
 
     useEffect(() => {
         engagement.then((eng) => {
+            const pacificDate = eng.scheduled_date
+                ? convertToPacific(eng.scheduled_date)
+                : dayjs(new Date()).add(5, 'minute'); // 5 minutes from now
             engPubForm.setValue('id', eng.id);
-            engPubForm.setValue('form_date', dayjs(eng.scheduled_date || dayjs(new Date())));
-            engPubForm.setValue('form_time', dayjs(eng.scheduled_date || dayjs(new Date())));
-            engPubForm.setValue('scheduled_date', eng.scheduled_date || '');
+            engPubForm.setValue('form_date', pacificDate);
+            engPubForm.setValue('form_time', pacificDate);
+            engPubForm.setValue('scheduled_date', eng.scheduled_date);
             engPubForm.setValue('status_id', eng.status_id || EngagementStatus.Draft);
             engPubForm.reset(engPubForm.getValues());
         });
@@ -93,12 +97,11 @@ export const PublishingTab = () => {
         const formDate = engPubForm.getValues('form_date');
         const formTime = engPubForm.getValues('form_time');
         if (dayjs.isDayjs(formDate) && dayjs.isDayjs(formTime)) {
-            const newDateString = `${formDate.format('YYYY-MM-DD')} ${formTime.format('hh:mm a')}`;
-            const newDate = dayjs(newDateString);
+            const combined = formDate.hour(formTime.hour()).minute(formTime.minute()).second(0).millisecond(0);
             const now = dayjs(new Date());
-            if (newDate?.isValid() && newDate.isAfter(now)) {
+            if (combined?.isValid() && combined.isAfter(now)) {
                 engPubForm.setValue('status_id', EngagementStatus.Scheduled);
-                engPubForm.setValue('scheduled_date', newDateString);
+                engPubForm.setValue('scheduled_date', formatToUTC(combined, 'YYYY-MM-DD HH:mm:ss'));
                 submitForm(engPubForm.getValues());
             } else {
                 notify('error', 'The date and time must be after the present.');
@@ -179,11 +182,17 @@ export const PublishingTab = () => {
                 borderColor: colors.surface.gray[80],
             },
         },
+        '& .MuiPickersInputBase-root': {
+            borderRadius: '8px',
+        },
     };
 
     const timePickerStyles = {
         width: '100%',
         '& fieldset': { borderColor: colors.surface.gray[80] },
+        '& .MuiPickersInputBase-root': {
+            borderRadius: '8px',
+        },
     };
 
     const publishButtonContainerStyles = {
@@ -192,7 +201,7 @@ export const PublishingTab = () => {
     };
 
     const buttonStyles = {
-        minHeight: { xs: '100px', md: '50px' },
+        minHeight: { xs: '100px', md: '50px' }, // To accomodate scheduled date/time text on mobile
     };
 
     return (
@@ -248,7 +257,7 @@ export const PublishingTab = () => {
                                         <BodyText size="small">The engagement has already been published.</BodyText>
                                     </Then>
                                     <Else>
-                                        <BodyText size="small">
+                                        <BodyText size="small" style={{ marginBottom: '0.5rem' }}>
                                             The Engagement page will be visible on the date selected below, but the
                                             public won't be able to provide feedback until the public comment period
                                             opens.

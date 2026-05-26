@@ -9,7 +9,7 @@ import Stack from '@mui/material/Stack';
 import { openNotification } from 'services/notificationService/notificationSlice';
 import CustomTable from 'components/common/Table';
 import { getFeedbacksPage } from 'services/feedbackService';
-import { formatDate } from 'components/common/dateHelper';
+import { formatToPacific } from 'components/common/dateHelper';
 import { customRatings } from 'components/feedback/FeedbackModal/constants';
 import { useLocation } from 'react-router';
 import { updateURLWithPagination } from 'components/common/Table/utils';
@@ -92,7 +92,7 @@ const FeedbackListing = () => {
             disablePadding: false,
             label: 'Date Published',
             allowSort: true,
-            renderCell: (row: Feedback) => formatDate(row.created_date),
+            renderCell: (row: Feedback) => formatToPacific(row.created_date, 'YYYY-MM-DD'),
         },
         {
             key: 'source',

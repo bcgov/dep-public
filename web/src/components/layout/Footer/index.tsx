@@ -91,8 +91,6 @@ const Footer = () => {
     const loaderData = useRouteLoaderData('authenticated-root') as AuthenticatedRootLoaderData | undefined;
     const isEngagementPage = document.querySelector('#hero') && document.querySelector('#description');
     const [isVersionExpanded, setIsVersionExpanded] = useState(false);
-    const basename = sessionStorage.getItem('basename');
-    console.log(basename);
 
     const linkStyles = {
         fontSize: '14px',

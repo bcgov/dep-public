@@ -1,5 +1,5 @@
-import React, { Suspense } from 'react';
-import { useRouteLoaderData, Await, useMatches, UIMatch, Outlet } from 'react-router';
+import React, { Suspense, useEffect, useState } from 'react';
+import { useRouteLoaderData, Await, useMatches, UIMatch, Outlet, useRevalidator } from 'react-router';
 import { Engagement } from 'models/engagement';
 import { Grid2 as Grid, Skeleton, Tab } from '@mui/material';
 import { ResponsiveContainer } from 'components/common/Layout';
@@ -12,6 +12,7 @@ import { AutoBreadcrumbs } from 'components/common/Navigation/Breadcrumb';
 
 const AdminEngagementView = () => {
     const { engagement } = useRouteLoaderData('single-engagement') as EngagementLoaderAdminData;
+    const [engagementData, setEngagementData] = useState<Engagement | null>(null);
 
     const EngagementViewTabs = {
         config: 'Configuration',
@@ -21,16 +22,26 @@ const AdminEngagementView = () => {
         publish: 'Publishing',
     };
 
+    const revalidator = useRevalidator();
     const matches = useMatches() as UIMatch[];
     const currentTab = matches[matches.length - 1].pathname.split('/').pop() ?? '';
+
+    useEffect(() => {
+        if (revalidator.state === 'idle') {
+            Promise.resolve(engagement).then(setEngagementData);
+        }
+    }, [revalidator.state, engagement]);
 
     return (
         <ResponsiveContainer>
             <AutoBreadcrumbs />
             <Grid size={12} mt={4}>
                 <Suspense fallback={<StatusLabel completed={false} text="Loading..." />}>
-                    <Await resolve={engagement}>
-                        {(engagement: Engagement) => <StatusLabel status={Number(engagement?.status_id)} />}
+                    <Await key={revalidator.state} resolve={engagement}>
+                        {(engagement: Engagement) => {
+                            setEngagementData(engagement);
+                            return <StatusLabel status={Number(engagement?.status_id)} />;
+                        }}
                     </Await>
                 </Suspense>
             </Grid>
@@ -45,7 +56,7 @@ const AdminEngagementView = () => {
                     }
                 >
                     <Heading1 mt={1} mb={3}>
-                        <Await resolve={engagement}>{(engagement: Engagement) => engagement?.name}</Await>
+                        {engagementData?.name}
                     </Heading1>
                 </Suspense>
             </Grid>

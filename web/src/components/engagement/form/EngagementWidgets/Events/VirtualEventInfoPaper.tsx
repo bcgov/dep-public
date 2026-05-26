@@ -5,7 +5,7 @@ import { faGripDotsVertical } from '@fortawesome/pro-solid-svg-icons/faGripDotsV
 import { faCircleXmark } from '@fortawesome/pro-regular-svg-icons/faCircleXmark';
 import { faPen } from '@fortawesome/pro-regular-svg-icons/faPen';
 import { When } from 'react-if';
-import { formatDate } from 'components/common/dateHelper';
+import { formatToPacific } from 'components/common/dateHelper';
 import { EventInfoPaperProps } from './EventInfoPaper';
 import { EventsContext } from './EventsContext';
 import { BodyText } from 'components/common/Typography/Body';
@@ -56,7 +56,7 @@ const VirtualEventInfoPaper = ({ event, removeEvent, ...rest }: EventInfoPaperPr
                     </Grid>
                     <Grid size={9}>
                         <BodyText overflow="hidden" textOverflow={'ellipsis'} whiteSpace="nowrap">
-                            {formatDate(eventItem.start_date, 'MMMM DD, YYYY')}
+                            {formatToPacific(eventItem.start_date, 'MMMM DD, YYYY')}
                         </BodyText>
                     </Grid>
 
@@ -65,7 +65,7 @@ const VirtualEventInfoPaper = ({ event, removeEvent, ...rest }: EventInfoPaperPr
                     </Grid>
                     <Grid size={9}>
                         <BodyText overflow="hidden" textOverflow={'ellipsis'} whiteSpace="nowrap">
-                            {`${formatDate(eventItem.start_date, 'h:mm a')} to ${formatDate(
+                            {`${formatToPacific(eventItem.start_date, 'h:mm a')} to ${formatToPacific(
                                 eventItem.end_date,
                                 'h:mm a',
                             )} PT`}

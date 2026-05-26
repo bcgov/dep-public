@@ -11,7 +11,7 @@ import { ResponsiveContainer } from 'components/common/Layout';
 import { Link } from '@mui/material';
 import { RouterLinkRenderer } from 'components/common/Navigation/Link';
 import CustomTable from 'components/common/Table';
-import { formatDate } from 'components/common/dateHelper';
+import { formatToPacific } from 'components/common/dateHelper';
 import { UserManagementContext } from './UserManagementContext';
 import { ActionsDropDown } from './ActionsDropDown';
 import { AutoBreadcrumbs } from 'components/common/Navigation/Breadcrumb';
@@ -56,7 +56,7 @@ const UserManagementListing = () => {
             disablePadding: true,
             label: 'Date Added',
             allowSort: true,
-            renderCell: (row: User) => formatDate(row.created_date),
+            renderCell: (row: User) => formatToPacific(row.created_date, 'YYYY-MM-DD'),
         },
         {
             key: 'status_id',

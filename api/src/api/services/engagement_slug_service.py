@@ -107,8 +107,9 @@ class EngagementSlugService:
         if not engagement_id:
             raise KeyError('engagement_id is required')
         engagement = EngagementModel.find_by_id(engagement_id)
+        valid_statuses = [Status.Draft.value, Status.Scheduled.value]
         if not engagement:
             raise ValueError(f'No engagement found for {engagement_id}')
-        if engagement.status_id != Status.Draft:
-            raise ValueError(f'Engagement {engagement_id} is not in draft status')
+        if engagement.status_id not in valid_statuses:
+            raise ValueError(f'Engagement {engagement_id} has already been published, cannot update slug')
         return engagement

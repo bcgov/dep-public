@@ -313,7 +313,8 @@ class EngagementService:
     @staticmethod
     def _validate_engagement_edit_data(engagement: EngagementModel, data: dict):
         draft_status_restricted_changes = (EngagementModel.is_internal.key,)
-        engagement_has_been_opened = engagement.status_id != Status.Draft.value
+        valid_statuses = [Status.Draft.value, Status.Scheduled.value]
+        engagement_has_been_opened = engagement.status_id not in valid_statuses
         if engagement_has_been_opened and any(
             field in data for field in draft_status_restricted_changes
         ):
