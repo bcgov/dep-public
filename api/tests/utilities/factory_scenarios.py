@@ -181,13 +181,16 @@ class TestTenantInfo(dict, Enum):
     }
 
 
-class TestEngagementInfo(dict, Enum):
+class TestEngagementInfo:
     """Test scenarios of engagement."""
+
+    start_date = (datetime.today() - timedelta(days=1)).strftime(DATE_FORMAT)
+    end_date = (datetime.today() + timedelta(days=1)).strftime(DATE_FORMAT)
 
     engagement1 = {
         'name': fake.name(),
-        'start_date': (datetime.today() - timedelta(days=1)).strftime(DATE_FORMAT),
-        'end_date': (datetime.today() + timedelta(days=1)).strftime(DATE_FORMAT),
+        'start_date': start_date,
+        'end_date': end_date,
         'banner_url': '',
         'created_by': '123',
         'updated_by': '123',
@@ -207,8 +210,8 @@ class TestEngagementInfo(dict, Enum):
 
     engagement_draft = {
         'name': fake.name(),
-        'start_date': (datetime.today() - timedelta(days=1)).strftime(DATE_FORMAT),
-        'end_date': (datetime.today() + timedelta(days=1)).strftime(DATE_FORMAT),
+        'start_date': start_date,
+        'end_date': end_date,
         'banner_url': '',
         'created_by': '123',
         'updated_by': '123',
@@ -227,8 +230,8 @@ class TestEngagementInfo(dict, Enum):
 
     engagement2 = {
         'name': fake.name(),
-        'start_date': (datetime.today() - timedelta(days=1)).strftime(DATE_FORMAT),
-        'end_date': (datetime.today() + timedelta(days=1)).strftime(DATE_FORMAT),
+        'start_date': start_date,
+        'end_date': end_date,
         'banner_url': '',
         'created_by': '123',
         'updated_by': '123',
@@ -259,8 +262,8 @@ class TestEngagementInfo(dict, Enum):
 
     engagement3 = {
         'name': fake.name(),
-        'start_date': (datetime.today() - timedelta(days=1)).strftime(DATE_FORMAT),
-        'end_date': (datetime.today() + timedelta(days=1)).strftime(DATE_FORMAT),
+        'start_date': start_date,
+        'end_date': end_date,
         'banner_url': '',
         'tenant_id': 1,
         'created_by': '123',

@@ -15,7 +15,7 @@ def test_get_translations_by_details_tab_and_language(session):
     """Translations for engagement details tab can be fetched by engagement and language."""
     engagement = factory_engagement_model(
         {
-            **TestEngagementInfo.engagement1.value,
+            **TestEngagementInfo.engagement1,
         }
     )
     engagement_details_tab = factory_engagement_details_tab_model(
@@ -47,7 +47,7 @@ def test_create_engagement_details_tab_translation(session):
     """Assert that an engagement details tab translation can be created."""
     engagement = factory_engagement_model(
         {
-            **TestEngagementInfo.engagement1.value,
+            **TestEngagementInfo.engagement1,
         }
     )
     engagement_details_tab = factory_engagement_details_tab_model(
@@ -76,7 +76,7 @@ def test_create_engagement_details_tab_translation(session):
 def test_update_engagement_details_tab_translation(session):
     """Assert that an engagement details tab translation can be updated."""
     engagement = factory_engagement_model({
-        **TestEngagementInfo.engagement1.value,
+        **TestEngagementInfo.engagement1,
     })
     engagement_details_tab = factory_engagement_details_tab_model({
         **TestEngagementDetailsTabsInfo.details_tab1.value,
@@ -106,7 +106,7 @@ def test_update_engagement_details_tab_translation(session):
 def test_delete_engagement_details_tab_translation(session):
     """Assert that an engagement details tab translation can be deleted."""
     engagement = factory_engagement_model({
-        **TestEngagementInfo.engagement1.value,
+        **TestEngagementInfo.engagement1,
     })
     engagement_details_tab = factory_engagement_details_tab_model({
         **TestEngagementDetailsTabsInfo.details_tab1.value,

@@ -12,7 +12,7 @@ def test_get_translations_by_engagement_and_language(session):
     """Assert that engagement details tab translation can be fetched by its ID."""
     engagement = factory_engagement_model(
         {
-            **TestEngagementInfo.engagement1.value,
+            **TestEngagementInfo.engagement1,
             'id': 1,
         }
     )
@@ -47,7 +47,7 @@ def test_bulk_create_engagement_details_tab_translations(session, monkeypatch):
     factory_user_group_membership_model(str(user.external_id))
     engagement = factory_engagement_model(
         {
-            **TestEngagementInfo.engagement1.value,
+            **TestEngagementInfo.engagement1,
             'id': 1,
         }
     )
@@ -77,7 +77,7 @@ def test_sync_engagement_details_tab_translation_with_authorization(session, mon
     factory_user_group_membership_model(str(user.external_id))
     engagement = factory_engagement_model(
         {
-            **TestEngagementInfo.engagement1.value,
+            **TestEngagementInfo.engagement1,
         }
     )
     engagement_details_tab = factory_engagement_details_tab_model(
@@ -117,7 +117,7 @@ def test_delete_engagement_details_tab_translation_with_authorization(session, m
     factory_user_group_membership_model(str(user.external_id))
     engagement = factory_engagement_model(
         {
-            **TestEngagementInfo.engagement1.value,
+            **TestEngagementInfo.engagement1,
         }
     )
     engagement_details_tab = factory_engagement_details_tab_model(
