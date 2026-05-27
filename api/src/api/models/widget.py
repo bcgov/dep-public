@@ -3,14 +3,13 @@
 Manages the widget
 """
 from __future__ import annotations
-from datetime import datetime
 from typing import Optional
 
 from sqlalchemy.sql.schema import ForeignKey
 
+from api.utils.datetime import utc_now
 
 from .widget_item import WidgetItem
-
 from .base_model import BaseModel
 from .db import db
 
@@ -67,8 +66,8 @@ class Widget(BaseModel):  # pylint: disable=too-few-public-methods
         return Widget(
             widget_type_id=widget.get('widget_type_id', None),
             engagement_id=widget.get('engagement_id', None),
-            created_date=datetime.utcnow(),
-            updated_date=datetime.utcnow(),
+            created_date=utc_now(),
+            updated_date=utc_now(),
             created_by=widget.get('created_by', None),
             updated_by=widget.get('updated_by', None),
             title=widget.get('title', None),
@@ -104,7 +103,7 @@ class Widget(BaseModel):  # pylint: disable=too-few-public-methods
         widget: Widget = query.first()
         if not widget:
             return None
-        widget_data['updated_date'] = datetime.utcnow()
+        widget_data['updated_date'] = utc_now()
         query.update(widget_data)
         db.session.commit()
         return widget

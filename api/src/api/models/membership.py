@@ -3,14 +3,13 @@
 Manages the membership between a user and engagement/survey
 """
 from __future__ import annotations
-
-from datetime import datetime
 from typing import List
 
 from sqlalchemy import ForeignKey, and_, or_
 
 from api.constants.membership_type import MembershipType
 from api.utils.enums import MembershipStatus
+from api.utils.datetime import utc_now
 
 from .base_model import BaseModel
 from .db import db
@@ -158,7 +157,7 @@ class Membership(BaseModel):
                 user_id=user_id,
                 status=MembershipStatus.REVOKED.value,
                 type=current_membership.type,
-                revoked_date=datetime.utcnow(),
+                revoked_date=utc_now(),
                 is_latest=True,
                 version=current_membership.version + 1
             )
@@ -196,7 +195,7 @@ class Membership(BaseModel):
                 user_id=user_id,
                 status=MembershipStatus.INACTIVE.value,
                 type=current_membership.type,
-                revoked_date=datetime.utcnow(),
+                revoked_date=utc_now(),
                 is_latest=True,
                 version=current_membership.version + 1
             )

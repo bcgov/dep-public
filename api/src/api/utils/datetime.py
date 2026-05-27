@@ -12,38 +12,43 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Datetime object helper."""
-from datetime import datetime
+from datetime import UTC, datetime
 
-import pytz
 from flask import current_app
+from pytz import timezone
+from pytz import UTC as PYTZ_UTC
+
+
+def utc_now():
+    """Get the UTC datetime without timezone info (naive)."""
+    return datetime.now(UTC).replace(tzinfo=None)
 
 
 def local_datetime():
     """Get the local (Pacific Timezone) datetime."""
-    utcmoment = datetime.utcnow().replace(tzinfo=pytz.utc)
-    now = utcmoment.astimezone(pytz.timezone('US/Pacific'))
+    utcmoment = datetime.now(UTC)
+    now = utcmoment.astimezone(timezone('US/Pacific'))
     return now
 
 
 def utc_datetime():
     """Get the UTC datetime."""
-    utcmoment = datetime.utcnow().replace(tzinfo=pytz.utc)
-    now = utcmoment.astimezone(pytz.timezone('UTC'))
-    return now
+    # Already UTC-aware — no need to convert
+    return datetime.now(UTC)
 
 
 def convert_and_format_to_utc_str(date_val: datetime, dt_format='%Y-%m-%d %H:%M:%S', timezone_override=None):
     """Convert a datetime object to UTC and format it as a string."""
     tz_name = timezone_override or current_app.config['LEGISLATIVE_TIMEZONE']
-    tz_local = pytz.timezone(tz_name)
+    tz_local = timezone(tz_name)
 
-    # Assume the input datetime is in the local time zone
-    date_val = tz_local.localize(date_val)
+    # Handle both naive + aware safely
+    if date_val.tzinfo is None:
+        date_val = tz_local.localize(date_val)
+    else:
+        date_val = date_val.astimezone(tz_local)
 
     # Convert to UTC
-    date_val_utc = date_val.astimezone(pytz.UTC)
+    date_val_utc = date_val.astimezone(PYTZ_UTC)
 
-    # Format as a string
-    utc_datetime_str = date_val_utc.strftime(dt_format)
-
-    return utc_datetime_str
+    return date_val_utc.strftime(dt_format)

@@ -94,6 +94,24 @@ export const AutoBreadcrumbs: React.FC<{ smallScreenOnly?: boolean }> = ({ small
     useEffect(() => {
         let cancelled = false;
 
+        const getNewCrumbs = (
+            resolvedCrumb: BreadcrumbProps,
+            previousCrumbs: Record<string, BreadcrumbProps>,
+            pathname: string,
+        ) => {
+            const previousCrumb = previousCrumbs[pathname];
+
+            // Avoid unnecessary re-renders if the crumb did not actually change.
+            if (previousCrumb?.name === resolvedCrumb?.name && previousCrumb?.link === resolvedCrumb?.link) {
+                return previousCrumbs;
+            }
+
+            return {
+                ...previousCrumbs,
+                [pathname]: resolvedCrumb,
+            };
+        };
+
         crumbs.forEach((unresolvedCrumb, index) => {
             const pathname = matches[index]?.pathname;
 
@@ -102,23 +120,7 @@ export const AutoBreadcrumbs: React.FC<{ smallScreenOnly?: boolean }> = ({ small
             Promise.resolve(unresolvedCrumb)
                 .then((resolvedCrumb) => {
                     if (cancelled) return;
-
-                    setResolvedCrumbs((previousCrumbs) => {
-                        const previousCrumb = previousCrumbs[pathname];
-
-                        // Avoid unnecessary re-renders if the crumb did not actually change.
-                        if (
-                            previousCrumb?.name === resolvedCrumb?.name &&
-                            previousCrumb?.link === resolvedCrumb?.link
-                        ) {
-                            return previousCrumbs;
-                        }
-
-                        return {
-                            ...previousCrumbs,
-                            [pathname]: resolvedCrumb,
-                        };
-                    });
+                    setResolvedCrumbs((previousCrumbs) => getNewCrumbs(resolvedCrumb, previousCrumbs, pathname));
                 })
                 .catch(() => {});
         });

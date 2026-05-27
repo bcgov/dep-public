@@ -18,6 +18,7 @@ from api.models.engagement_status import EngagementStatus
 from api.models.pagination_options import PaginationOptions
 from api.models.survey_search_options import SurveySearchOptions
 from api.schemas.survey import SurveySchema
+from api.utils.datetime import utc_now
 
 from .base_model import BaseModel
 from .db import db
@@ -154,7 +155,7 @@ class Survey(BaseModel):  # pylint: disable=too-few-public-methods
         new_survey = Survey(
             name=survey.get('name', None),
             form_json=survey.get('form_json', None),
-            created_date=datetime.utcnow(),
+            created_date=utc_now(),
             updated_date=None,
             created_by=survey.get('created_by', None),
             updated_by=survey.get('updated_by', None),
@@ -176,7 +177,7 @@ class Survey(BaseModel):  # pylint: disable=too-few-public-methods
             return None
         update_fields = {
             'form_json': survey.get('form_json', record.form_json),
-            'updated_date': datetime.utcnow(),
+            'updated_date': utc_now(),
             'updated_by': survey.get('updated_by', record.updated_by),
             'name': survey.get('name', record.name),
             'is_hidden': survey.get('is_hidden', record.is_hidden),

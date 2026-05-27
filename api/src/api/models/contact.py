@@ -3,9 +3,9 @@
 Manages the contact
 """
 from __future__ import annotations
-
-from datetime import datetime
 from typing import Optional
+
+from api.utils.datetime import utc_now
 
 from .base_model import BaseModel
 from .db import db
@@ -43,8 +43,8 @@ class Contact(BaseModel):  # pylint: disable=too-few-public-methods
             phone_number=contact.get('phone_number', None),
             address=contact.get('address', None),
             bio=contact.get('bio', None),
-            created_date=datetime.utcnow(),
-            updated_date=datetime.utcnow(),
+            created_date=utc_now(),
+            updated_date=utc_now(),
             created_by=contact.get('created_by', None),
             updated_by=contact.get('updated_by', None),
             avatar_filename=contact.get('avatar_filename', None),
@@ -61,7 +61,7 @@ class Contact(BaseModel):  # pylint: disable=too-few-public-methods
         contact: Contact = query.first()
         if not contact:
             return None
-        contact_data['updated_date'] = datetime.utcnow()
+        contact_data['updated_date'] = utc_now()
         query.update(contact_data)
         db.session.commit()
         return contact

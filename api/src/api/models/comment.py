@@ -3,7 +3,6 @@
 Manages the comment
 """
 from __future__ import annotations
-from datetime import datetime
 from operator import or_
 
 from sqlalchemy import and_, asc, desc
@@ -12,6 +11,7 @@ from sqlalchemy.sql.expression import true
 from sqlalchemy.sql.schema import ForeignKey
 from sqlalchemy.ext.hybrid import hybrid_property
 
+from api.utils.datetime import utc_now
 from api.constants.comment_status import Status as CommentStatus
 from api.constants.engagement_status import Status as EngagementStatus
 from api.models.pagination_options import PaginationOptions
@@ -163,8 +163,8 @@ class Comment(BaseModel):
         """Create new comment entity."""
         return Comment(
             text=comment.get('text', None),
-            submission_date=datetime.utcnow(),
-            created_date=datetime.utcnow(),
+            submission_date=utc_now(),
+            created_date=utc_now(),
             created_by=comment.get('participant_id', None),
             survey_id=comment.get('survey_id', None),
             participant_id=comment.get('participant_id', None),
@@ -211,7 +211,7 @@ class Comment(BaseModel):
         update_fields = {
             'text': comment.get('text', None),
             'updated_by': comment.get('participant_id', None),
-            'updated_date': datetime.utcnow(),
+            'updated_date': utc_now(),
         }
 
         query.update(update_fields)

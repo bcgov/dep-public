@@ -9,8 +9,9 @@ from alembic import op
 import sqlalchemy as sa
 from sqlalchemy.sql import table, column
 from sqlalchemy import String, Integer, DateTime, Boolean, Text
-from datetime import datetime
 from flask import current_app
+
+from api.utils.datetime import utc_now
 
 # revision identifiers, used by Alembic.
 revision = '37176ea4708d'
@@ -49,7 +50,7 @@ def upgrade():
             'description': current_app.config.get(
                 'DEFAULT_TENANT_DESCRIPTION'
             ),
-            'created_date': datetime.utcnow(),
+            'created_date': utc_now(),
         }
     ]
 
@@ -74,15 +75,15 @@ def upgrade():
             'id': 1,
             'status_name': 'ACTIVE',
             'description': 'Active User',
-            'created_date': datetime.utcnow(),
-            'updated_date': datetime.utcnow(),
+            'created_date': utc_now(),
+            'updated_date': utc_now(),
         },
         {
             'id': 2,
             'status_name': 'INACTIVE',
             'description': 'Inactive User',
-            'created_date': datetime.utcnow(),
-            'updated_date': datetime.utcnow(),
+            'created_date': utc_now(),
+            'updated_date': utc_now(),
         },
     ]
 
@@ -117,8 +118,8 @@ def upgrade():
         'status_id': 1,
         'contact_number': '1',
         'tenant_id': tenant_id,
-        'created_date': datetime.utcnow(),
-        'updated_date': datetime.utcnow(),
+        'created_date': utc_now(),
+        'updated_date': utc_now(),
     }
 
     # Perform insert with sample data
@@ -191,8 +192,8 @@ def upgrade():
     ]
 
     for widget in widget_data:
-        widget['created_date'] = datetime.utcnow()
-        widget['updated_date'] = datetime.utcnow()
+        widget['created_date'] = utc_now()
+        widget['updated_date'] = utc_now()
 
     # Perform bulk insert in a single operation
     op.bulk_insert(widget_type_table, widget_data)
@@ -296,8 +297,8 @@ def upgrade():
     ]
     
     for taxa in taxa_data:
-        taxa['created_date'] = datetime.utcnow()
-        taxa['updated_date'] = datetime.utcnow()
+        taxa['created_date'] = utc_now()
+        taxa['updated_date'] = utc_now()
 
     # Perform bulk insert
     op.bulk_insert(engagement_metadata_taxa_table, taxa_data)
@@ -320,22 +321,22 @@ def upgrade():
             'id': 1,
             'name': 'comment_sheet',
             'description': 'Comments export for staff',
-            'created_date': datetime.utcnow(),
-            'updated_date': datetime.utcnow(),
+            'created_date': utc_now(),
+            'updated_date': utc_now(),
         },
         {
             'id': 2,
             'name': 'cac_form_sheet',
             'description': 'cac form submission export for staff',
-            'created_date': datetime.utcnow(),
-            'updated_date': datetime.utcnow(),
+            'created_date': utc_now(),
+            'updated_date': utc_now(),
         },
         {
             'id': 3,
             'name': 'proponent_comments_sheet',
             'description': 'Comments export for proponent',
-            'created_date': datetime.utcnow(),
-            'updated_date': datetime.utcnow(),
+            'created_date': utc_now(),
+            'updated_date': utc_now(),
         },
     ]
 
@@ -362,24 +363,24 @@ def upgrade():
             'type_id': 1,
             'hash_code': None,
             'extension': 'xlsx',
-            'created_date': datetime.utcnow(),
-            'updated_date': datetime.utcnow(),
+            'created_date': utc_now(),
+            'updated_date': utc_now(),
         },
         {
             'id': 2,
             'type_id': 2,
             'hash_code': None,
             'extension': 'xlsx',
-            'created_date': datetime.utcnow(),
-            'updated_date': datetime.utcnow(),
+            'created_date': utc_now(),
+            'updated_date': utc_now(),
         },
         {
             'id': 3,
             'type_id': 3,
             'hash_code': None,
             'extension': 'xlsx',
-            'created_date': datetime.utcnow(),
-            'updated_date': datetime.utcnow(),
+            'created_date': utc_now(),
+            'updated_date': utc_now(),
         },
     ]
 
@@ -404,36 +405,36 @@ def upgrade():
             'id': 1,
             'status_name': 'Draft',
             'description': 'Not ready to the public',
-            'created_date': datetime.utcnow(),
-            'updated_date': datetime.utcnow(),
+            'created_date': utc_now(),
+            'updated_date': utc_now(),
         },
         {
             'id': 2,
             'status_name': 'Published',
             'description': 'Visible to the public',
-            'created_date': datetime.utcnow(),
-            'updated_date': datetime.utcnow(),
+            'created_date': utc_now(),
+            'updated_date': utc_now(),
         },
         {
             'id': 3,
             'status_name': 'Closed',
             'description': 'The engagement period is over',
-            'created_date': datetime.utcnow(),
-            'updated_date': datetime.utcnow(),
+            'created_date': utc_now(),
+            'updated_date': utc_now(),
         },
         {
             'id': 4,
             'status_name': 'Scheduled',
             'description': 'Scheduled to be published',
-            'created_date': datetime.utcnow(),
-            'updated_date': datetime.utcnow(),
+            'created_date': utc_now(),
+            'updated_date': utc_now(),
         },
         {
             'id': 5,
             'status_name': 'Unpublished',
             'description': 'Unpublished and hidden',
-            'created_date': datetime.utcnow(),
-            'updated_date': datetime.utcnow(),
+            'created_date': utc_now(),
+            'updated_date': utc_now(),
         },
     ]
 
@@ -458,29 +459,29 @@ def upgrade():
             'id': 1,
             'status_name': 'Pending',
             'description': 'Comment is pending review',
-            'created_date': datetime.utcnow(),
-            'updated_date': datetime.utcnow(),
+            'created_date': utc_now(),
+            'updated_date': utc_now(),
         },
         {
             'id': 2,
             'status_name': 'Approved',
             'description': 'Comment is accepted for public view',
-            'created_date': datetime.utcnow(),
-            'updated_date': datetime.utcnow(),
+            'created_date': utc_now(),
+            'updated_date': utc_now(),
         },
         {
             'id': 3,
             'status_name': 'Rejected',
             'description': 'Comment is rejected and not shown',
-            'created_date': datetime.utcnow(),
-            'updated_date': datetime.utcnow(),
+            'created_date': utc_now(),
+            'updated_date': utc_now(),
         },
         {
             'id': 4,
             'status_name': 'Needs further review',
             'description': 'Comment needs further review',
-            'created_date': datetime.utcnow(),
-            'updated_date': datetime.utcnow(),
+            'created_date': utc_now(),
+            'updated_date': utc_now(),
         },
     ]
 
@@ -505,22 +506,22 @@ def upgrade():
             'id': 1,
             'status_name': 'ACTIVE',
             'description': 'Active Membership',
-            'created_date': datetime.utcnow(),
-            'updated_date': datetime.utcnow(),
+            'created_date': utc_now(),
+            'updated_date': utc_now(),
         },
         {
             'id': 2,
             'status_name': 'INACTIVE',
             'description': 'Inactive Membership',
-            'created_date': datetime.utcnow(),
-            'updated_date': datetime.utcnow(),
+            'created_date': utc_now(),
+            'updated_date': utc_now(),
         },
         {
             'id': 3,
             'status_name': 'REVOKED',
             'description': 'Revoked Membership',
-            'created_date': datetime.utcnow(),
-            'updated_date': datetime.utcnow(),
+            'created_date': utc_now(),
+            'updated_date': utc_now(),
         },
     ]
 

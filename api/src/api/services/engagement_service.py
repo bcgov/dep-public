@@ -37,6 +37,7 @@ from api.utils.enums import SourceAction, SourceType
 from api.utils.roles import Role
 from api.utils.template import Template
 from api.utils.token_info import TokenInfo
+from api.utils.datetime import utc_now
 
 
 class EngagementService:
@@ -216,7 +217,7 @@ class EngagementService:
             end_date=engagement_data.get('end_date', None),
             status_id=Status.Draft.value,
             created_by=engagement_data.get('created_by', None),
-            created_date=datetime.utcnow(),
+            created_date=utc_now(),
             updated_by=engagement_data.get('updated_by', None),
             updated_date=None,
             published_date=None,
