@@ -184,13 +184,16 @@ class TestTenantInfo(dict, Enum):
 class TestEngagementInfo:
     """Test scenarios of engagement."""
 
-    start_date = (datetime.today() - timedelta(days=1)).strftime(DATE_FORMAT)
-    end_date = (datetime.today() + timedelta(days=1)).strftime(DATE_FORMAT)
+    @staticmethod
+    def _get_offset_date(days, direction):
+        if direction == 'future':
+            return (datetime.today() + timedelta(days=days)).strftime(DATE_FORMAT)
+        return (datetime.today() - timedelta(days=days)).strftime(DATE_FORMAT)
 
     engagement1 = {
         'name': fake.name(),
-        'start_date': start_date,
-        'end_date': end_date,
+        'start_date': _get_offset_date(1, 'past'),
+        'end_date': _get_offset_date(1, 'future'),
         'banner_url': '',
         'created_by': '123',
         'updated_by': '123',
@@ -210,8 +213,8 @@ class TestEngagementInfo:
 
     engagement_draft = {
         'name': fake.name(),
-        'start_date': start_date,
-        'end_date': end_date,
+        'start_date': _get_offset_date(1, 'past'),
+        'end_date': _get_offset_date(1, 'future'),
         'banner_url': '',
         'created_by': '123',
         'updated_by': '123',
@@ -230,8 +233,8 @@ class TestEngagementInfo:
 
     engagement2 = {
         'name': fake.name(),
-        'start_date': start_date,
-        'end_date': end_date,
+        'start_date': _get_offset_date(1, 'past'),
+        'end_date': _get_offset_date(1, 'future'),
         'banner_url': '',
         'created_by': '123',
         'updated_by': '123',
@@ -262,8 +265,8 @@ class TestEngagementInfo:
 
     engagement3 = {
         'name': fake.name(),
-        'start_date': start_date,
-        'end_date': end_date,
+        'start_date': _get_offset_date(1, 'past'),
+        'end_date': _get_offset_date(1, 'future'),
         'banner_url': '',
         'tenant_id': 1,
         'created_by': '123',
