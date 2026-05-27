@@ -94,7 +94,7 @@ export const AutoBreadcrumbs: React.FC<{ smallScreenOnly?: boolean }> = ({ small
     useEffect(() => {
         let cancelled = false;
 
-        const getNewCrumbs = (
+        const setNewCrumbs = (
             resolvedCrumb: BreadcrumbProps,
             previousCrumbs: Record<string, BreadcrumbProps>,
             pathname: string,
@@ -112,17 +112,13 @@ export const AutoBreadcrumbs: React.FC<{ smallScreenOnly?: boolean }> = ({ small
             };
         };
 
-        crumbs.forEach((unresolvedCrumb, index) => {
+        crumbs.forEach(async (unresolvedCrumb, index) => {
             const pathname = matches[index]?.pathname;
-
             if (!pathname) return;
 
-            Promise.resolve(unresolvedCrumb)
-                .then((resolvedCrumb) => {
-                    if (cancelled) return;
-                    setResolvedCrumbs((previousCrumbs) => getNewCrumbs(resolvedCrumb, previousCrumbs, pathname));
-                })
-                .catch(() => {});
+            const resolvedCrumb = await unresolvedCrumb;
+            if (cancelled) return;
+            setResolvedCrumbs((previousCrumbs) => setNewCrumbs(resolvedCrumb, previousCrumbs, pathname));
         });
 
         return () => {

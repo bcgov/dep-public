@@ -34,6 +34,7 @@ from api.utils.enums import LoginSource, UserStatus
 fake = Faker()
 
 CONFIG = get_named_config('testing')
+DATE_FORMAT = '%Y/%m/%d, %H:%M:%S'
 
 
 class TestUserInfo(dict, Enum):
@@ -185,8 +186,8 @@ class TestEngagementInfo(dict, Enum):
 
     engagement1 = {
         'name': fake.name(),
-        'start_date': (datetime.today() - timedelta(days=1)).strftime('%Y/%m/%d, %H:%M:%S'),
-        'end_date': (datetime.today() + timedelta(days=1)).strftime('%Y/%m/%d, %H:%M:%S'),
+        'start_date': (datetime.today() - timedelta(days=1)).strftime(DATE_FORMAT),
+        'end_date': (datetime.today() + timedelta(days=1)).strftime(DATE_FORMAT),
         'banner_url': '',
         'created_by': '123',
         'updated_by': '123',
@@ -206,8 +207,8 @@ class TestEngagementInfo(dict, Enum):
 
     engagement_draft = {
         'name': fake.name(),
-        'start_date': (datetime.today() - timedelta(days=1)).strftime('%Y/%m/%d, %H:%M:%S'),
-        'end_date': (datetime.today() + timedelta(days=1)).strftime('%Y/%m/%d, %H:%M:%S'),
+        'start_date': (datetime.today() - timedelta(days=1)).strftime(DATE_FORMAT),
+        'end_date': (datetime.today() + timedelta(days=1)).strftime(DATE_FORMAT),
         'banner_url': '',
         'created_by': '123',
         'updated_by': '123',
@@ -226,8 +227,8 @@ class TestEngagementInfo(dict, Enum):
 
     engagement2 = {
         'name': fake.name(),
-        'start_date': (datetime.today() - timedelta(days=1)).strftime('%Y/%m/%d, %H:%M:%S'),
-        'end_date': (datetime.today() + timedelta(days=1)).strftime('%Y/%m/%d, %H:%M:%S'),
+        'start_date': (datetime.today() - timedelta(days=1)).strftime(DATE_FORMAT),
+        'end_date': (datetime.today() + timedelta(days=1)).strftime(DATE_FORMAT),
         'banner_url': '',
         'created_by': '123',
         'updated_by': '123',
@@ -258,8 +259,8 @@ class TestEngagementInfo(dict, Enum):
 
     engagement3 = {
         'name': fake.name(),
-        'start_date': (datetime.today() - timedelta(days=1)).strftime('%Y/%m/%d, %H:%M:%S'),
-        'end_date': (datetime.today() + timedelta(days=1)).strftime('%Y/%m/%d, %H:%M:%S'),
+        'start_date': (datetime.today() - timedelta(days=1)).strftime(DATE_FORMAT),
+        'end_date': (datetime.today() + timedelta(days=1)).strftime(DATE_FORMAT),
         'banner_url': '',
         'tenant_id': 1,
         'created_by': '123',

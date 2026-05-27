@@ -421,7 +421,7 @@ const LanguageSelector = ({
 
     useEffect(() => {
         languages.then((lngs) => {
-            if (!lngs.find((l) => l.code === 'en')) {
+            if (!lngs.some((l) => l.code === 'en')) {
                 lngs.unshift({ id: 42, code: 'en', name: 'English', right_to_left: false });
             }
             setLanguageList(lngs);
