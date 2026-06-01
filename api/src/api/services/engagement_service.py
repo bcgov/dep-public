@@ -504,10 +504,9 @@ class EngagementService:
     @staticmethod
     def _get_default_language_code() -> str:
         default_language = (
-            (current_app.config.get('DEFAULT_LANGUAGE')
-             if has_app_context() else None)
-            or os.getenv('DEFAULT_LANGUAGE')
-            or 'en'
+            (current_app.config.get('DEFAULT_LANGUAGE') if has_app_context() else None) or
+            os.getenv('DEFAULT_LANGUAGE') or
+            'en'
         )
         return default_language.strip().lower()
 

@@ -17,8 +17,10 @@ class EngagementTranslation(BaseModel):
 
     __tablename__ = 'engagement_translation'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    engagement_id = db.Column(db.Integer, db.ForeignKey('engagement.id', ondelete='CASCADE'), nullable=False)
-    language_id = db.Column(db.Integer, db.ForeignKey('language.id', ondelete='CASCADE'), nullable=False)
+    engagement_id = db.Column(db.Integer, db.ForeignKey(
+        'engagement.id', ondelete='CASCADE'), nullable=False)
+    language_id = db.Column(db.Integer, db.ForeignKey(
+        'language.id', ondelete='CASCADE'), nullable=False)
     name = db.Column(db.String(50))
     description = db.Column(db.Text())
     rich_description = db.Column(JSON, unique=False, nullable=True)
@@ -30,13 +32,17 @@ class EngagementTranslation(BaseModel):
     upcoming_status_block_text = db.Column(JSON, unique=False, nullable=True)
     open_status_block_text = db.Column(JSON, unique=False, nullable=True)
     closed_status_block_text = db.Column(JSON, unique=False, nullable=True)
-    open_status_block_button_text = db.Column(db.String(20), unique=False, nullable=True)
-    view_results_status_block_button_text = db.Column(db.String(20), unique=False, nullable=True)
+    open_status_block_button_text = db.Column(
+        db.String(20), unique=False, nullable=True)
+    view_results_status_block_button_text = db.Column(
+        db.String(20), unique=False, nullable=True)
     sponsor_name = db.Column(db.String(50))
     feedback_heading = db.Column(db.String(60), unique=False, nullable=True)
     feedback_body = db.Column(JSON, unique=False, nullable=True)
-    subscribe_section_heading = db.Column(db.String(60), unique=False, nullable=True)
-    subscribe_section_description = db.Column(JSON, unique=False, nullable=True)
+    subscribe_section_heading = db.Column(
+        db.String(60), unique=False, nullable=True)
+    subscribe_section_description = db.Column(
+        JSON, unique=False, nullable=True)
     subscribe_consent_message = db.Column(JSON, unique=False, nullable=True)
     more_engagements_heading = db.Column(db.String(60), nullable=True)
 
@@ -65,7 +71,8 @@ class EngagementTranslation(BaseModel):
     @classmethod
     def create_engagement_translation(cls, data):
         """Create a new engagement translation."""
-        engagement_translation = cls.__create_new_engagement_translation_entity(data)
+        engagement_translation = cls.__create_new_engagement_translation_entity(
+            data)
         db.session.add(engagement_translation)
         db.session.commit()
         return engagement_translation
@@ -83,24 +90,33 @@ class EngagementTranslation(BaseModel):
             rich_content=data.get('rich_content', None),
             consent_message=data.get('consent_message', None),
             slug=data.get('slug', None),
-            upcoming_status_block_text=data.get('upcoming_status_block_text', None),
+            upcoming_status_block_text=data.get(
+                'upcoming_status_block_text', None),
             open_status_block_text=data.get('open_status_block_text', None),
-            closed_status_block_text=data.get('closed_status_block_text', None),
-            open_status_block_button_text=data.get('open_status_block_button_text', None),
-            view_results_status_block_button_text=data.get('view_results_status_block_button_text', None),
+            closed_status_block_text=data.get(
+                'closed_status_block_text', None),
+            open_status_block_button_text=data.get(
+                'open_status_block_button_text', None),
+            view_results_status_block_button_text=data.get(
+                'view_results_status_block_button_text', None),
             sponsor_name=data.get('sponsor_name', None),
             feedback_heading=data.get('feedback_heading', None),
             feedback_body=data.get('feedback_body', None),
-            subscribe_section_heading=data.get('subscribe_section_heading', None),
-            subscribe_section_description=data.get('subscribe_section_description', None),
-            subscribe_consent_message=data.get('subscribe_consent_message', None),
-            more_engagements_heading=data.get('more_engagements_heading', None),
+            subscribe_section_heading=data.get(
+                'subscribe_section_heading', None),
+            subscribe_section_description=data.get(
+                'subscribe_section_description', None),
+            subscribe_consent_message=data.get(
+                'subscribe_consent_message', None),
+            more_engagements_heading=data.get(
+                'more_engagements_heading', None),
         )
 
     @staticmethod
     def update_engagement_translation(engagement_translation_id, data: dict) -> Optional[EngagementTranslation]:
         """Update an existing engagement translation."""
-        query = EngagementTranslation.query.filter_by(id=engagement_translation_id)
+        query = EngagementTranslation.query.filter_by(
+            id=engagement_translation_id)
         engagement_translation: EngagementTranslation = query.first()
         if not engagement_translation:
             return None
@@ -111,7 +127,8 @@ class EngagementTranslation(BaseModel):
     @staticmethod
     def delete_engagement_translation(engagement_translation_id):
         """Delete a engagement translation."""
-        engagement_translation = EngagementTranslation.query.get(engagement_translation_id)
+        engagement_translation = EngagementTranslation.query.get(
+            engagement_translation_id)
         if engagement_translation:
             db.session.delete(engagement_translation)
             db.session.commit()
@@ -119,7 +136,7 @@ class EngagementTranslation(BaseModel):
         return False
 
     @staticmethod
-    def get_available_translation_languages(engagement_id):
+    def get_available_translations(engagement_id):
         """Get the list of translations for this engagement, then tally the languages that are used."""
         available_translations_query = db.session.query(EngagementTranslation.language_id)\
             .filter_by(engagement_id=engagement_id)
