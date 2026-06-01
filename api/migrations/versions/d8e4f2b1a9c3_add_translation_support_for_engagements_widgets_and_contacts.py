@@ -47,12 +47,18 @@ def upgrade():
 
     # 1a. Add the new translatable columns to engagement_translation.
     with op.batch_alter_table('engagement_translation', schema=None) as batch_op:
-        batch_op.add_column(sa.Column('feedback_heading', sa.String(length=60), nullable=True))
-        batch_op.add_column(sa.Column('feedback_body', sa.JSON(), nullable=True))
-        batch_op.add_column(sa.Column('subscribe_section_heading', sa.String(length=60), nullable=True))
-        batch_op.add_column(sa.Column('subscribe_section_description', sa.JSON(), nullable=True))
-        batch_op.add_column(sa.Column('subscribe_consent_message', sa.JSON(), nullable=True))
-        batch_op.add_column(sa.Column('more_engagements_heading', sa.String(length=60), nullable=True))
+        batch_op.add_column(sa.Column('feedback_heading',
+                            sa.String(length=60), nullable=True))
+        batch_op.add_column(
+            sa.Column('feedback_body', sa.JSON(), nullable=True))
+        batch_op.add_column(
+            sa.Column('subscribe_section_heading', sa.String(length=60), nullable=True))
+        batch_op.add_column(
+            sa.Column('subscribe_section_description', sa.JSON(), nullable=True))
+        batch_op.add_column(
+            sa.Column('subscribe_consent_message', sa.JSON(), nullable=True))
+        batch_op.add_column(
+            sa.Column('more_engagements_heading', sa.String(length=60), nullable=True))
 
     # 1b. Upsert English translation rows for every existing engagement,
     #     copying all translatable fields from the engagement table.
@@ -123,8 +129,10 @@ def upgrade():
 
     # 1d. Add translatable CTA button text fields to engagement_translation.
     with op.batch_alter_table('engagement_translation') as batch_op:
-        batch_op.add_column(sa.Column('open_status_block_button_text', sa.String(length=20), nullable=True))
-        batch_op.add_column(sa.Column('view_results_status_block_button_text', sa.String(length=20), nullable=True))
+        batch_op.add_column(sa.Column(
+            'open_status_block_button_text', sa.String(length=20), nullable=True))
+        batch_op.add_column(sa.Column(
+            'view_results_status_block_button_text', sa.String(length=20), nullable=True))
 
     # 1e. Backfill English CTA button text from existing status blocks.
     op.execute(
@@ -156,7 +164,8 @@ def upgrade():
     # ==================================================================
 
     # 2a. Add sub-item FK columns and a general description column.
-    op.add_column('widget_translation', sa.Column('description', sa.Text(), nullable=True))
+    op.add_column('widget_translation', sa.Column(
+        'description', sa.Text(), nullable=True))
     op.add_column(
         'widget_translation',
         sa.Column(
@@ -177,14 +186,16 @@ def upgrade():
     )
 
     # 2b. Replace the simple unique constraint with three partial indexes.
-    op.drop_constraint('unique_widget_language', 'widget_translation', type_='unique')
+    op.drop_constraint('unique_widget_language',
+                       'widget_translation', type_='unique')
 
     op.create_index(
         'uix_widget_translation_widget_language',
         'widget_translation',
         ['widget_id', 'language_id'],
         unique=True,
-        postgresql_where=sa.text('widget_events_id IS NULL AND widget_documents_id IS NULL'),
+        postgresql_where=sa.text(
+            'widget_events_id IS NULL AND widget_documents_id IS NULL'),
     )
     op.create_index(
         'uix_widget_translation_events_language',
@@ -280,7 +291,8 @@ def upgrade():
         sa.Column('description', sa.Text(), nullable=True),
         sa.Column('created_by', sa.String(50), nullable=True),
         sa.Column('updated_by', sa.String(50), nullable=True),
-        sa.UniqueConstraint('widget_image_id', 'language_id', name='unique_widget_image_language'),
+        sa.UniqueConstraint('widget_image_id', 'language_id',
+                            name='unique_widget_image_language'),
     )
 
     # Seed widget_image_translation from existing widget_image data.
@@ -314,13 +326,12 @@ def upgrade():
                   sa.ForeignKey('language.id', ondelete='CASCADE'), nullable=False),
         sa.Column('name', sa.String(50), nullable=True),
         sa.Column('title', sa.String(50), nullable=True),
-        sa.Column('email', sa.String(50), nullable=True),
-        sa.Column('phone_number', sa.String(50), nullable=True),
         sa.Column('address', sa.String(150), nullable=True),
         sa.Column('bio', sa.String(500), nullable=True),
         sa.Column('created_by', sa.String(50), nullable=True),
         sa.Column('updated_by', sa.String(50), nullable=True),
-        sa.UniqueConstraint('contact_id', 'language_id', name='unique_contact_language'),
+        sa.UniqueConstraint('contact_id', 'language_id',
+                            name='unique_contact_language'),
     )
 
 
@@ -346,7 +357,8 @@ def downgrade():
     ))
 
     # Restore listening_description column and copy data back for WhoIsListening.
-    op.add_column('widget_translation', sa.Column('listening_description', sa.Text(), nullable=True))
+    op.add_column('widget_translation', sa.Column(
+        'listening_description', sa.Text(), nullable=True))
     bind.execute(sa.text("""
         UPDATE widget_translation
         SET    listening_description = description
@@ -360,15 +372,19 @@ def downgrade():
           )
     """))
 
-    op.drop_index('uix_widget_translation_widget_language', table_name='widget_translation')
-    op.drop_index('uix_widget_translation_events_language', table_name='widget_translation')
-    op.drop_index('uix_widget_translation_documents_language', table_name='widget_translation')
+    op.drop_index('uix_widget_translation_widget_language',
+                  table_name='widget_translation')
+    op.drop_index('uix_widget_translation_events_language',
+                  table_name='widget_translation')
+    op.drop_index('uix_widget_translation_documents_language',
+                  table_name='widget_translation')
 
     op.drop_column('widget_translation', 'widget_documents_id')
     op.drop_column('widget_translation', 'widget_events_id')
     op.drop_column('widget_translation', 'description')
 
-    op.create_unique_constraint('unique_widget_language', 'widget_translation', ['widget_id', 'language_id'])
+    op.create_unique_constraint('unique_widget_language', 'widget_translation', [
+                                'widget_id', 'language_id'])
 
     # ==================================================================
     # PART 1 — engagement_translation (reverse)
@@ -382,16 +398,25 @@ def downgrade():
     # Re-add translatable columns to engagement (all nullable).
     with op.batch_alter_table('engagement') as batch_op:
         batch_op.add_column(sa.Column('description', sa.Text(), nullable=True))
-        batch_op.add_column(sa.Column('rich_description', JSON(), nullable=True))
-        batch_op.add_column(sa.Column('description_title', sa.String(length=255), nullable=True))
-        batch_op.add_column(sa.Column('feedback_heading', sa.String(length=60), nullable=True))
+        batch_op.add_column(
+            sa.Column('rich_description', JSON(), nullable=True))
+        batch_op.add_column(sa.Column('description_title',
+                            sa.String(length=255), nullable=True))
+        batch_op.add_column(sa.Column('feedback_heading',
+                            sa.String(length=60), nullable=True))
         batch_op.add_column(sa.Column('feedback_body', JSON(), nullable=True))
-        batch_op.add_column(sa.Column('consent_message', JSON(), nullable=True))
-        batch_op.add_column(sa.Column('subscribe_section_heading', sa.String(length=60), nullable=True))
-        batch_op.add_column(sa.Column('subscribe_section_description', JSON(), nullable=True))
-        batch_op.add_column(sa.Column('subscribe_consent_message', JSON(), nullable=True))
-        batch_op.add_column(sa.Column('sponsor_name', sa.String(length=50), nullable=True))
-        batch_op.add_column(sa.Column('more_engagements_heading', sa.String(length=60), nullable=True))
+        batch_op.add_column(
+            sa.Column('consent_message', JSON(), nullable=True))
+        batch_op.add_column(
+            sa.Column('subscribe_section_heading', sa.String(length=60), nullable=True))
+        batch_op.add_column(
+            sa.Column('subscribe_section_description', JSON(), nullable=True))
+        batch_op.add_column(
+            sa.Column('subscribe_consent_message', JSON(), nullable=True))
+        batch_op.add_column(
+            sa.Column('sponsor_name', sa.String(length=50), nullable=True))
+        batch_op.add_column(
+            sa.Column('more_engagements_heading', sa.String(length=60), nullable=True))
 
     # Copy data back from the English translation rows.
     op.execute(

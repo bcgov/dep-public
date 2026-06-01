@@ -46,7 +46,7 @@ class ContactTranslationService:
                 )
 
             for key, value in data.items():
-                if key != 'id':
+                if key != 'id' and hasattr(contact_translation, key):
                     setattr(contact_translation, key, value)
             contact_translation.save()
             return contact_translation

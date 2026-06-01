@@ -11,8 +11,6 @@
             "contact_id": 1,
             "name": "John Doe",
             "title": "Director",
-            "email": "john.doe@example.com",
-            "phone_number": "555-1234",
             "address": "123 Main St",
             "bio": "Bio in Spanish"
         }
@@ -44,18 +42,6 @@
             "type": ["string", "null"],
             "title": "The title schema",
             "examples": ["Director"]
-        },
-        "email": {
-            "$id": "#/properties/email",
-            "type": ["string", "null"],
-            "title": "The email schema",
-            "examples": ["john.doe@example.com"]
-        },
-        "phone_number": {
-            "$id": "#/properties/phone_number",
-            "type": ["string", "null"],
-            "title": "The phone_number schema",
-            "examples": ["555-1234"]
         },
         "address": {
             "$id": "#/properties/address",

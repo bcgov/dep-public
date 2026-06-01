@@ -27,8 +27,6 @@ class ContactTranslation(BaseModel):
     )
     name = db.Column(db.String(50), nullable=True)
     title = db.Column(db.String(50), nullable=True)
-    email = db.Column(db.String(50), nullable=True)
-    phone_number = db.Column(db.String(50), nullable=True)
     address = db.Column(db.String(150), nullable=True)
     bio = db.Column(db.String(500), nullable=True)
 
@@ -59,8 +57,6 @@ class ContactTranslation(BaseModel):
             language_id=data['language_id'],
             name=data.get('name'),
             title=data.get('title'),
-            email=data.get('email'),
-            phone_number=data.get('phone_number'),
             address=data.get('address'),
             bio=data.get('bio'),
         )
@@ -73,7 +69,7 @@ class ContactTranslation(BaseModel):
         translation = cls.find_by_id(translation_id)
         if translation:
             for key, value in data.items():
-                if key != 'id':
+                if key != 'id' and hasattr(translation, key):
                     setattr(translation, key, value)
             translation.save()
         return translation

@@ -20,7 +20,5 @@ class ContactTranslationSchema(SQLAlchemyAutoSchema):
     contact_id = fields.Int(required=True)
     name = fields.Str(allow_none=True)
     title = fields.Str(allow_none=True)
-    email = fields.Str(allow_none=True)
-    phone_number = fields.Str(allow_none=True)
     address = fields.Str(allow_none=True)
     bio = fields.Str(allow_none=True)
