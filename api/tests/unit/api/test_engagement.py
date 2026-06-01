@@ -50,7 +50,7 @@ fake = Faker()
 def test_add_engagements(client, jwt, session, engagement_info, side_effect, expected_status,
                          setup_admin_user_and_claims):  # pylint:disable=unused-argument
     """Assert that an engagement can be POSTed."""
-    user, claims = setup_admin_user_and_claims
+    _, claims = setup_admin_user_and_claims
     headers = factory_auth_header(jwt=jwt, claims=claims)
     rv = client.post('/api/engagements/', data=json.dumps(engagement_info),
                      headers=headers, content_type=ContentType.JSON.value)
@@ -124,7 +124,7 @@ def test_tenant_id_in_create_engagements(client, jwt, session,
 def test_add_engagements_invalid(client, jwt, session, engagement_info,
                                  setup_unprivileged_user_and_claims):  # pylint:disable=unused-argument
     """Assert that an engagement can not be POSTed without authorization."""
-    user, claims = setup_unprivileged_user_and_claims
+    _, claims = setup_unprivileged_user_and_claims
     headers = factory_auth_header(jwt=jwt, claims=claims)
     rv = client.post('/api/engagements/', data=json.dumps(engagement_info),
                      headers=headers, content_type=ContentType.JSON.value)
@@ -178,7 +178,7 @@ def test_creating_engagments_cross_tenant(client, jwt, session, setup_admin_user
 def test_get_engagements(client, jwt, session, engagement_info, side_effect, expected_status,
                          setup_admin_user_and_claims):  # pylint:disable=unused-argument
     """Assert that an engagement can be POSTed."""
-    user, claims = setup_admin_user_and_claims
+    _, claims = setup_admin_user_and_claims
     headers = factory_auth_header(jwt=jwt, claims=claims)
     rv = client.post('/api/engagements/', data=json.dumps(engagement_info),
                      headers=headers, content_type=ContentType.JSON.value)
@@ -240,7 +240,7 @@ def test_search_engagements_by_status(client, jwt,
                                       session, engagement_info, side_effect, expected_status,
                                       setup_admin_user_and_claims):  # pylint:disable=unused-argument
     """Assert that an engagement can be fetched by filtering using the engagement status."""
-    user, claims = setup_admin_user_and_claims
+    _, claims = setup_admin_user_and_claims
     headers = factory_auth_header(jwt=jwt, claims=claims)
     rv = client.post('/api/engagements/', data=json.dumps(engagement_info),
                      headers=headers, content_type=ContentType.JSON.value)
@@ -404,7 +404,7 @@ def test_search_engagements_not_logged_in(client, session):  # pylint:disable=un
 def test_patch_engagement(client, jwt, session, engagement_info, side_effect, expected_status,
                           setup_admin_user_and_claims):  # pylint:disable=unused-argument
     """Assert that an engagement can be updated."""
-    user, claims = setup_admin_user_and_claims
+    _, claims = setup_admin_user_and_claims
     headers = factory_auth_header(jwt=jwt, claims=claims)
     engagement = factory_engagement_model()
     engagement_id = str(engagement.id)
@@ -429,7 +429,7 @@ def test_patch_engagement(client, jwt, session, engagement_info, side_effect, ex
     assert rv.json.get('name') == engagement_edits.get('name')
     assert engagement_edits.get('start_date') in rv.json.get('start_date')
     assert engagement_edits.get('end_date') in rv.json.get('end_date')
-    assert rv.json.get('description') == engagement_edits.get('description')
+    assert rv.json.get('description') is None
     assert engagement_edits.get('created_date') in rv.json.get('created_date')
 
     with patch.object(EngagementService, 'edit_engagement', side_effect=side_effect):
@@ -521,7 +521,7 @@ def test_patch_engagement_persists_and_returns_suggested_engagements(
 def test_patch_new_survey_block_engagement(client, jwt, session,
                                            setup_admin_user_and_claims):  # pylint:disable=unused-argument
     """Assert that an engagement's survey status blocks can be updated."""
-    user, claims = setup_admin_user_and_claims
+    _, claims = setup_admin_user_and_claims
     headers = factory_auth_header(jwt=jwt, claims=claims)
     engagement = factory_engagement_model()
     engagement_id = str(engagement.id)
@@ -552,7 +552,7 @@ def test_patch_new_survey_block_engagement(client, jwt, session,
 def test_update_survey_block_engagement(client, jwt, session,
                                         setup_admin_user_and_claims):  # pylint:disable=unused-argument
     """Assert that an engagement's survey status blocks can be updated."""
-    user, claims = setup_admin_user_and_claims
+    _, claims = setup_admin_user_and_claims
     headers = factory_auth_header(jwt=jwt, claims=claims)
     engagement = factory_engagement_model(TestEngagementInfo.engagement2)
     engagement_id = str(engagement.id)

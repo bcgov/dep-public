@@ -21,7 +21,6 @@ All services have 2 defaults sets of endpoints:
 That are used to expose operational health information about the service, and meta information.
 """
 
-from re import A
 from flask import Blueprint
 
 from .apihelper import Api
@@ -58,11 +57,14 @@ from .widget_listening import API as WIDGET_LISTENING_API
 from .language import API as LANGUAGE_API
 from .widget_translation import API as WIDGET_TRANSLATION_API
 from .survey_translation import API as SURVEY_TRANSLATION_API
+from .widget_image_translation import api as widget_image_translation_api
 from .poll_answer_translation import API as POLL_ANSWER_TRANSLATION_API
+from .contact_translation import API as CONTACT_TRANSLATION_API
 from .event_item_translation import API as EVENT_ITEM_TRANSLATION_API
 from .timeline_event_translation import API as TIMELINE_EVENT_TRANSLATION_API
 from .engagement_translation import API as ENGAGEMENT_TRANSLATION_API
 from .engagement_details_tab_translation import API as ENGAGEMENT_DETAILS_TAB_TRANSLATION_API
+from .engagement_content_translation import API as ENGAGEMENT_CONTENT_TRANSLATION_API
 from .version import API as VERSION_API
 
 __all__ = ('API_BLUEPRINT',)
@@ -73,8 +75,6 @@ API_BLUEPRINT = Blueprint('API', __name__, url_prefix=URL_PREFIX)
 API = Api(
     API_BLUEPRINT, title='DEP API', version='1.0', description='The Core API for the Digital Engagement Platform'
 )
-
-# HANDLER = ExceptionHandler(API)
 
 API.add_namespace(OIDC_CONFIG_API, path='/oidc_config')
 API.add_namespace(ENGAGEMENT_API)
@@ -109,8 +109,11 @@ API.add_namespace(WIDGET_IMAGE_API, path='/widgets/<int:widget_id>/images')
 API.add_namespace(LANGUAGE_API, path='/languages')
 API.add_namespace(SURVEY_TRANSLATION_API, path='/surveys/<int:survey_id>/translations')
 API.add_namespace(POLL_ANSWER_TRANSLATION_API, path='/polls/<int:poll_id>/translations')
+API.add_namespace(CONTACT_TRANSLATION_API, path='/contact_translations')
 API.add_namespace(EVENT_ITEM_TRANSLATION_API, path='/events/<int:event_id>/translations')
 API.add_namespace(TIMELINE_EVENT_TRANSLATION_API, path='/timelines/<int:timeline_id>/translations')
 API.add_namespace(ENGAGEMENT_TRANSLATION_API, path='/engagement/<int:engagement_id>/translations')
 API.add_namespace(ENGAGEMENT_DETAILS_TAB_TRANSLATION_API, path='/engagement/<int:engagement_id>/details/translations')
+API.add_namespace(ENGAGEMENT_CONTENT_TRANSLATION_API, path='/engagement/<int:engagement_id>/content/translations')
 API.add_namespace(VERSION_API, path='/version')
+API.add_namespace(widget_image_translation_api, path='/widget-image-translation')

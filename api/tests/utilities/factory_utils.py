@@ -164,22 +164,23 @@ def factory_email_verification(survey_id, type=None, submission_id=None):
 def factory_engagement_model(eng_info: dict = TestEngagementInfo.engagement1, name=None, status=None):
     """Produce an engagement model."""
     """Produce an engagement model."""
+    valid_columns = {column.name for column in EngagementModel.__table__.columns}
+    engagement_data = {
+        'name': name if name else fake.name(),
+        'created_by': eng_info.get('created_by'),
+        'updated_by': eng_info.get('updated_by'),
+        'status_id': status if status is not None else eng_info.get('status'),
+        'start_date': eng_info.get('start_date'),
+        'end_date': eng_info.get('end_date'),
+        'is_internal': eng_info.get('is_internal'),
+    }
+    # Keep test factory resilient when model columns evolve.
     engagement = EngagementModel(
-        name=name if name else fake.name(),
-        description=eng_info.get('description'),
-        rich_description=eng_info.get('rich_description'),
-        description_title=eng_info.get('description_title'),
-        created_by=eng_info.get('created_by'),
-        updated_by=eng_info.get('updated_by'),
-        status_id=status if status else eng_info.get('status'),
-        start_date=eng_info.get('start_date'),
-        end_date=eng_info.get('end_date'),
-        is_internal=eng_info.get('is_internal'),
-        feedback_heading=eng_info.get('feedback_heading'),
-        feedback_body=eng_info.get('feedback_body'),
+        **{key: value for key, value in engagement_data.items() if key in valid_columns}
     )
     if tenant_id := eng_info.get('tenant_id'):
-        engagement.tenant_id = tenant_id
+        if 'tenant_id' in valid_columns:
+            engagement.tenant_id = tenant_id
     engagement.save()
     return engagement
 
@@ -358,7 +359,7 @@ def factory_auth_header(jwt, claims, tenant_id=None):
 def factory_widget_model(widget_info: dict = TestWidgetInfo.widget1):
     """Produce a widget model."""
     widget = WidgetModal(
-        widget_type_id=WidgetType.WHO_IS_LISTENING.value,
+        widget_type_id=widget_info.get('widget_type_id', WidgetType.WHO_IS_LISTENING.value),
         engagement_id=widget_info.get('engagement_id'),
         created_by=widget_info.get('created_by'),
         updated_by=widget_info.get('updated_by'),

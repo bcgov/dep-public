@@ -24,6 +24,8 @@ from faker import Faker
 
 from api.models import db
 from api.models.engagement import Engagement
+from api.models.engagement_translation import EngagementTranslation
+from api.models.language import Language
 from api.utils.roles import Role
 from api.services import authorization
 from api.services.engagement_service import EngagementService
@@ -48,7 +50,7 @@ def test_create_engagement(session, monkeypatch):  # pylint:disable=unused-argum
     fetched_engagement = EngagementService().get_engagement(saved_engagament.id)
     assert fetched_engagement.get('id') == saved_engagament.id
     assert fetched_engagement.get('name') == engagement_data.get('name')
-    assert fetched_engagement.get('description') == engagement_data.get('description')
+    assert fetched_engagement.get('description') is None
     assert fetched_engagement.get('start_date')  # TODO address date format and assert
     assert fetched_engagement.get('end_date')
 
@@ -65,9 +67,28 @@ def test_create_engagement_with_survey_block(session, monkeypatch):  # pylint:di
     fetched_engagement = EngagementService().get_engagement(saved_engagament.id)
     assert fetched_engagement.get('id') == saved_engagament.id
     assert fetched_engagement.get('name') == engagement_data.get('name')
-    assert fetched_engagement.get('description') == engagement_data.get('description')
+    assert fetched_engagement.get('description') is None
     assert fetched_engagement.get('start_date')  # TODO address date format and assert
     assert fetched_engagement.get('end_date')
+
+
+def test_create_engagement_syncs_translation_languages(session, monkeypatch):  # pylint:disable=unused-argument
+    """Assert selected languages create matching engagement translations."""
+    patch_token_info(TestJwtClaims.staff_admin_role, monkeypatch)
+    set_global_tenant()
+    user = factory_staff_user_model(external_id=TestJwtClaims.staff_admin_role['sub'])
+    factory_user_group_membership_model(str(user.external_id))
+
+    engagement_data = dict(TestEngagementInfo.engagement1)
+    engagement_data['languages'] = ['en', 'fr']
+
+    created_engagement = EngagementService().create_engagement(engagement_data)
+    english = Language.query.filter_by(code='en').one()
+    french = Language.query.filter_by(code='fr').one()
+    translations = EngagementTranslation.query.filter_by(engagement_id=created_engagement.id).all()
+
+    assert len(translations) == 2
+    assert {translation.language_id for translation in translations} == {english.id, french.id}
 
 
 def test_patch_engagement(session, monkeypatch):  # pylint:disable=unused-argument
@@ -79,7 +100,6 @@ def test_patch_engagement(session, monkeypatch):  # pylint:disable=unused-argume
             'name': saved_engagament_record.name,
             'start_date': saved_engagament_record.start_date,
             'end_date': saved_engagament_record.end_date,
-            'description': saved_engagament_record.description,
             'created_date': saved_engagament_record.created_date,
             'status_id': saved_engagament_record.status_id,
         }
@@ -100,8 +120,31 @@ def test_patch_engagement(session, monkeypatch):  # pylint:disable=unused-argume
         assert updated_engagement_record.name == engagement_edits.get('name')
         assert updated_engagement_record.start_date.strftime(date_format) == engagement_edits.get('start_date')
         assert updated_engagement_record.end_date.strftime(date_format) == engagement_edits.get('end_date')
-        assert updated_engagement_record.description == engagement_edits.get('description')
         assert updated_engagement_record.created_date.strftime(date_format) == engagement_edits.get('created_date')
+
+
+def test_patch_engagement_syncs_translation_languages(session, monkeypatch):  # pylint:disable=unused-argument
+    """Assert editing engagement languages adds and removes translation rows."""
+    with patch.object(authorization, 'check_auth', return_value=True):
+        engagement = factory_engagement_model()
+        french = Language.query.filter_by(code='fr').one()
+        spanish = Language.query.filter_by(code='es').one()
+
+        db.session.add(EngagementTranslation(engagement_id=engagement.id, language_id=french.id))
+        db.session.add(EngagementTranslation(engagement_id=engagement.id, language_id=spanish.id))
+        db.session.commit()
+
+        EngagementService().edit_engagement(
+            {
+                'id': engagement.id,
+                'languages': ['en', 'fr'],
+            }
+        )
+
+        translations = EngagementTranslation.query.filter_by(engagement_id=engagement.id).all()
+        english = Language.query.filter_by(code='en').one()
+        assert len(translations) == 2
+        assert {translation.language_id for translation in translations} == {english.id, french.id}
 
 
 def test_delete_success(session, mocker, monkeypatch):

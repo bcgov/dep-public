@@ -18,5 +18,5 @@ class EngagementDetailsTabSchema(Schema):
     label = fields.Str(data_key='label')
     slug = fields.Str(data_key='slug')
     heading = fields.Str(data_key='heading')
-    body = fields.Dict(data_key='body')
+    body = fields.Raw(data_key='body')  # May be a dict or a JSON string; Raw passes it through as-is
     sort_index = fields.Int(data_key='sort_index')

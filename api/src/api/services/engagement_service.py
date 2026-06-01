@@ -20,6 +20,7 @@ from api.models.engagement_scope_options import EngagementScopeOptions
 from api.models.engagement_slug import EngagementSlug as EngagementSlugModel
 from api.models.engagement_status_block import EngagementStatusBlock as EngagementStatusBlockModel
 from api.models.engagement_translation import EngagementTranslation
+from api.models.language import Language as LanguageModel
 from api.models.survey import Survey as SurveyModel
 from api.models.suggested_engagement import SuggestedEngagement as SuggestedEngagementModel
 from api.models.pagination_options import PaginationOptions
@@ -144,7 +145,9 @@ class EngagementService:
             # If user has VIEW_ENGAGEMENT role, e.g. TEAM MEMBER, return scope options to include assigned
             # engagements and public engagements
             return EngagementScopeOptions(
-                engagement_status_ids=[Status.Published.value, Status.Closed.value],
+                engagement_status_ids=[
+                    Status.Published.value, Status.Closed.value
+                ],
                 include_assigned=True,
             )
         if Role.VIEW_ASSIGNED_ENGAGEMENTS.value in user_roles:
@@ -173,7 +176,9 @@ class EngagementService:
         engagements = EngagementModel.publish_scheduled_engagements_due()
 
         if not engagements:
-            current_app.logger.info('There are no engagements scheduled for publication')
+            current_app.logger.info(
+                'There are no engagements scheduled for publication'
+            )
             return None
 
         current_app.logger.info('Engagements published: %s', engagements)
@@ -184,7 +189,9 @@ class EngagementService:
                 SourceAction.PUBLISHED.value,
                 True,
             )
-            current_app.logger.info('Engagement published added to email queue: %s', engagement.id)
+            current_app.logger.info(
+                'Engagement published added to email queue: %s', engagement.id
+            )
         return engagements
 
     @staticmethod
@@ -192,10 +199,21 @@ class EngagementService:
         """Create engagement."""
         # TODO add schema and remove this validation
         EngagementService.validate_fields(request_json)
+        requested_languages = request_json.get('languages')
         eng_model = EngagementService._create_engagement_model(request_json)
 
         if request_json.get('status_block'):
-            EngagementService._create_eng_status_block(eng_model.id, request_json)
+            EngagementService._create_eng_status_block(
+                eng_model.id, request_json
+            )
+
+        # Always sync languages so an English translation row is created immediately.
+        # If the caller didn't request specific languages, default to English-only.
+        EngagementService._sync_translation_languages(
+            eng_model.id,
+            requested_languages if requested_languages is not None else []
+        )
+
         eng_model.commit()
         email_util.publish_to_email_queue(
             SourceType.ENGAGEMENT.value, eng_model.id, SourceAction.CREATED.value, True
@@ -209,9 +227,6 @@ class EngagementService:
         """Save engagement."""
         new_engagement = EngagementModel(
             name=engagement_data.get('name', None),
-            description=engagement_data.get('description', None),
-            rich_description=engagement_data.get('rich_description', None),
-            description_title=engagement_data.get('description_title', None),
             start_date=engagement_data.get('start_date', None),
             end_date=engagement_data.get('end_date', None),
             status_id=Status.Draft.value,
@@ -223,18 +238,7 @@ class EngagementService:
             scheduled_date=None,
             banner_filename=engagement_data.get('banner_filename', None),
             is_internal=engagement_data.get('is_internal', False),
-            consent_message=engagement_data.get('consent_message', None),
-            subscribe_section_heading=engagement_data.get('subscribe_section_heading', None),
-            subscribe_section_description=engagement_data.get('subscribe_section_description', None),
-            subscribe_consent_message=engagement_data.get(
-                'subscribe_consent_message',
-                engagement_data.get('subscribe_consent', None)
-            ),
-            sponsor_name=engagement_data.get('sponsor_name', None),
-            feedback_heading=engagement_data.get('feedback_heading', None),
-            feedback_body=engagement_data.get('feedback_body', None),
             selected_survey_id=engagement_data.get('selected_survey_id', None),
-            more_engagements_heading=engagement_data.get('more_engagements_heading', None)
         )
         new_engagement.save()
         return new_engagement
@@ -260,7 +264,9 @@ class EngagementService:
             survey_status = survey_block.get('survey_status')
             survey_block_text = survey_block.get('block_text')
             status_block: EngagementStatusBlockModel = (
-                EngagementStatusBlockModel.get_by_status(engagement_id, survey_status)
+                EngagementStatusBlockModel.get_by_status(
+                    engagement_id, survey_status
+                )
             )
             # If the status block exists, update it. Otherwise, create a new one.
             if status_block:
@@ -304,7 +310,9 @@ class EngagementService:
                         engagement_id=engagement_id,
                         is_hidden=survey.get('is_hidden', False),
                         is_template=survey.get('is_template', False),
-                        generate_dashboard=survey.get('generate_dashboard', True),
+                        generate_dashboard=survey.get(
+                            'generate_dashboard', True
+                        ),
                     )
                 )
 
@@ -331,7 +339,9 @@ class EngagementService:
                 raise ValueError('selected survey does not exist')
 
             if survey.engagement_id != engagement_id:
-                raise ValueError('selected survey does not belong to this engagement')
+                raise ValueError(
+                    'selected survey does not belong to this engagement'
+                )
 
         return survey_id
 
@@ -357,16 +367,19 @@ class EngagementService:
         """Update engagement partially."""
         status_block = data.pop('status_block', None)
         surveys = data.pop('surveys', None)
+        requested_languages = data.pop('languages', None)
         suggested_engagements = data.pop('suggested_engagements', None)
         if suggested_engagements is None:
-            suggested_engagements = data.pop('suggested_engagements_input', None)
+            suggested_engagements = data.pop(
+                'suggested_engagements_input', None)
         # Defensive: relationship keys are not valid for SQL UPDATE mappings.
         data.pop('suggested_engagement_links', None)
         epic_fields = 'end_date' in data or 'start_date' in data
         selected_survey_id = data.get('selected_survey_id', None)
         engagement_id = data.get('id', None)
         authorization.check_auth(
-            one_of_roles=(MembershipType.TEAM_MEMBER.name, Role.EDIT_ENGAGEMENT.value),
+            one_of_roles=(MembershipType.TEAM_MEMBER.name,
+                          Role.EDIT_ENGAGEMENT.value),
             engagement_id=engagement_id,
         )
 
@@ -381,9 +394,11 @@ class EngagementService:
             if data:
                 if selected_survey_id:
                     data['selected_survey_id'] = \
-                        EngagementService._validate_and_assign_survey(selected_survey_id, engagement_id)
+                        EngagementService._validate_and_assign_survey(
+                            selected_survey_id, engagement_id)
 
-                updated_engagement = EngagementModel.edit_engagement(data, commit=False)
+                updated_engagement = EngagementModel.edit_engagement(
+                    data, commit=False)
 
                 if not updated_engagement:
                     raise ValueError(engagement)
@@ -397,7 +412,12 @@ class EngagementService:
                 )
 
             if suggested_engagements is not None:
-                EngagementService._sync_suggestions(engagement, suggested_engagements)
+                EngagementService._sync_suggestions(
+                    engagement, suggested_engagements)
+
+            if requested_languages is not None:
+                EngagementService._sync_translation_languages(
+                    engagement_id, requested_languages)
 
             db.session.commit()
         except (BusinessException, ValueError, ValidationError, SQLAlchemyError):
@@ -423,7 +443,8 @@ class EngagementService:
             if r.suggested_engagement_id is not None
         }
 
-        normalized = SuggestedEngagementSyncItemSchema(many=True).load(suggestions_data)
+        normalized = SuggestedEngagementSyncItemSchema(
+            many=True).load(suggestions_data)
         now = datetime.now(timezone.utc)
         ordered: list[SuggestedEngagementModel] = []
 
@@ -455,9 +476,89 @@ class EngagementService:
         engagement.suggested_engagement_links = ordered
 
     @staticmethod
+    def _normalize_language_codes(language_codes: object) -> list[str]:
+        if not isinstance(language_codes, list):
+            raise ValueError('languages must be a list of language codes')
+
+        default_language_code = EngagementService._get_default_language_code()
+
+        normalized_codes: list[str] = []
+        for code in language_codes:
+            if not isinstance(code, str):
+                raise ValueError(
+                    'languages must only contain string language codes')
+
+            normalized = code.strip().lower()
+            if not normalized:
+                continue
+
+            if normalized not in normalized_codes:
+                normalized_codes.append(normalized)
+
+        # The default language is always implicitly available.
+        if default_language_code not in normalized_codes:
+            normalized_codes.append(default_language_code)
+
+        return normalized_codes
+
+    @staticmethod
+    def _get_default_language_code() -> str:
+        default_language = (
+            (current_app.config.get('DEFAULT_LANGUAGE') if has_app_context() else None) or
+            os.getenv('DEFAULT_LANGUAGE') or
+            'en'
+        )
+        return default_language.strip().lower()
+
+    @staticmethod
+    def _sync_translation_languages(engagement_id: int, language_codes: object) -> None:
+        normalized_codes = EngagementService._normalize_language_codes(
+            language_codes)
+        # Includes English — all languages get a translation row.
+        translation_codes = set(normalized_codes)
+
+        requested_languages = (
+            LanguageModel.query.filter(
+                LanguageModel.code.in_(translation_codes)).all()
+            if translation_codes
+            else []
+        )
+
+        requested_codes = {language.code for language in requested_languages}
+        missing_codes = translation_codes - requested_codes
+        if missing_codes:
+            raise ValueError(
+                f'Invalid language code(s): {", ".join(sorted(missing_codes))}')
+
+        requested_language_ids = {
+            language.id for language in requested_languages}
+
+        existing_translations = (
+            EngagementTranslation.query.filter_by(
+                engagement_id=engagement_id).all()
+        )
+        existing_by_language_id = {
+            translation.language_id: translation for translation in existing_translations
+        }
+
+        for language_id in requested_language_ids:
+            if language_id not in existing_by_language_id:
+                db.session.add(
+                    EngagementTranslation(
+                        engagement_id=engagement_id,
+                        language_id=language_id,
+                    )
+                )
+
+        for language_id, translation in existing_by_language_id.items():
+            if language_id not in requested_language_ids:
+                db.session.delete(translation)
+
+    @staticmethod
     def validate_fields(data):
         """Validate all fields."""
-        empty_fields = [not data[field] for field in ['name', 'start_date', 'end_date']]
+        empty_fields = [not data[field]
+                        for field in ['name', 'start_date', 'end_date']]
 
         if data['start_date'] > data['end_date']:
             raise ValueError('Start date cannot be after End date')
@@ -503,7 +604,8 @@ class EngagementService:
     @staticmethod
     def _render_email_template(engagement: EngagementModel, lang_code):
         template = Template.get_template('email_engagement_closeout.html')
-        dashboard_path = EngagementService._get_dashboard_path(engagement, lang_code)
+        dashboard_path = EngagementService._get_dashboard_path(
+            engagement, lang_code)
         engagement_url = notification.get_tenant_site_url(
             engagement.tenant_id, dashboard_path
         )
@@ -534,7 +636,8 @@ class EngagementService:
 
     @staticmethod
     def _get_dashboard_path(engagement: EngagementModel, lang_code):
-        engagement_slug = EngagementSlugModel.find_by_engagement_id(engagement.id)
+        engagement_slug = EngagementSlugModel.find_by_engagement_id(
+            engagement.id)
         paths = current_app.config['PATH_CONFIG']
         if engagement_slug:
             return paths['ENGAGEMENT']['DASHBOARD_SLUG'].format(
@@ -547,7 +650,8 @@ class EngagementService:
     @classmethod
     def delete(cls, engagement_id: int):
         """Delete an existing engagement and its translations."""
-        one_of_roles = (Role.SUPER_ADMIN.value, Role.UNPUBLISH_ENGAGEMENT.value)
+        one_of_roles = (Role.SUPER_ADMIN.value,
+                        Role.UNPUBLISH_ENGAGEMENT.value)
         authorization.check_auth(one_of_roles=one_of_roles)
 
         current_env = (
@@ -558,7 +662,8 @@ class EngagementService:
         ).strip().lower()
 
         if current_env in ('prod', 'production'):
-            abort(HTTPStatus.FORBIDDEN, 'Cannot delete an engagement in production environment')
+            abort(HTTPStatus.FORBIDDEN,
+                  'Cannot delete an engagement in production environment')
 
         engagement = EngagementModel.find_by_id(engagement_id)
         if not engagement:
@@ -567,11 +672,13 @@ class EngagementService:
             raise ValueError('Cannot delete an engagement that is published')
 
         try:
-            for translation in (EngagementTranslation.get_available_translation_languages(engagement.id) or []):
-                EngagementTranslation.delete_engagement_translation(translation.id)
+            for translation in (EngagementTranslation.get_available_translations(engagement.id) or []):
+                EngagementTranslation.delete_engagement_translation(
+                    translation.id)
             deleted = EngagementModel.delete_engagement(engagement_id)
         except ValueError as exc:
             raise ValueError(str(exc)) from exc
         except SQLAlchemyError as e:
-            raise RuntimeError('Database error while deleting engagement', e) from e
+            raise RuntimeError(
+                'Database error while deleting engagement', e) from e
         return {'id': deleted.id if hasattr(deleted, 'id') else engagement_id}

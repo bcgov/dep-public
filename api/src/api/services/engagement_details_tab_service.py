@@ -1,4 +1,5 @@
 """Service for engagement details tabs management."""
+import json
 from datetime import datetime, timezone
 from http import HTTPStatus
 
@@ -21,12 +22,24 @@ class EngagementDetailsTabService:
         return tabs_schema.dump(tab_records)
 
     @staticmethod
+    def _coerce_body(tab_data: dict) -> dict:
+        """Parse body from JSON string to dict if needed, for DB JSON column compatibility."""
+        body = tab_data.get('body')
+        if isinstance(body, str):
+            try:
+                tab_data['body'] = json.loads(body)
+            except (ValueError, TypeError):
+                tab_data['body'] = {}
+        return tab_data
+
+    @staticmethod
     def create_tabs(engagement_id: int, tabs_data: list) -> list[dict]:
         """Create one or more engagement details tabs and return the persisted records."""
         EngagementDetailsTabService._authorize(engagement_id)
         inserts = []
         for tab_data in tabs_data:
             EngagementDetailsTabService._validate_tab_data(tab_data)
+            EngagementDetailsTabService._coerce_body(tab_data)
             tab_data['engagement_id'] = engagement_id
             inserts.append(tab_data)
         EngagementDetailsTabModel.bulk_insert_details_tabs(inserts)
@@ -47,11 +60,13 @@ class EngagementDetailsTabService:
         for u in updates:
             u['updated_by'] = user_id
             u['updated_date'] = datetime.now(timezone.utc)
+            EngagementDetailsTabService._coerce_body(u)
 
         inserts = [t for t in tabs_data if not t.get('id') or t.get('id') == -1]
         for i in inserts:
             i.pop('id', None)
             i['engagement_id'] = engagement_id
+            EngagementDetailsTabService._coerce_body(i)
 
         to_delete = existing_ids - incoming_ids
 
