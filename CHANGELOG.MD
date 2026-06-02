@@ -1,3 +1,24 @@
+## May 25, 2026
+
+- **Feature** Added start/end time to engagement period in engagement configuration. [🎟️ DEP-272](https://citz-gdx.atlassian.net/browse/DEP-272)
+  - Added time input components to existing date picker component
+  - Added accurate times to form state where start/end dates are not modifiable
+  - Updated single engagement config view component to show correct date/time
+    - Modified revalidation perameters to show up to date information directly after updating engagement
+  - Made sure dates are stored in UTC but displayed in local pacific time
+  - Modified API logic for Engagement.submissionStatus so that it sets to open/closed at expected times
+- Aligned all dates that were previously being stored as pacific to UTC
+- Updated common time conversion functions for readability
+- Made some small visual updates
+  - Updated some CSS for our "under construction" component
+  - Updated auto breadcrumbs component for increased visual stability (less flickering)
+  - Updated authoring section for greater visual stability (less flickering)
+  - Moved header items (badge and breadcrumbs) out of AuthoringTemplate component, which is forced to re-render because it's keyed
+  - Utilized useDeferredValue in bottom nav component for language list
+  - Removed several async/await components that were causing flickering
+- Utilized useParams instead of waiting on engagement values in some cases
+- Allowed modifying of engagement config while it's scheduled but not published
+
 ## May 19, 2026
 
 - **Feature** Multi-language authoring support [🎟️ DEP-234](https://citz-gdx.atlassian.net/browse/DEP-234)

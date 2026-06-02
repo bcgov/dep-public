@@ -3,10 +3,10 @@
 Manages the widget_item
 """
 from __future__ import annotations
-from datetime import datetime
 
 from sqlalchemy.sql.schema import ForeignKey
 
+from api.utils.datetime import utc_now
 
 from .base_model import BaseModel
 from .db import db
@@ -68,8 +68,8 @@ class WidgetItem(BaseModel):  # pylint: disable=too-few-public-methods
         return WidgetItem(
             widget_id=widget_item.get('widget_id', None),
             widget_data_id=widget_item.get('widget_data_id', None),
-            created_date=datetime.utcnow(),
-            updated_date=datetime.utcnow(),
+            created_date=utc_now(),
+            updated_date=utc_now(),
             created_by=widget_item.get('created_by', None),
             updated_by=widget_item.get('updated_by', None),
         )

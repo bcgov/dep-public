@@ -25,8 +25,11 @@ class EngagementSchema(Schema):
 
     id = fields.Int(data_key='id')
     name = fields.Str(data_key='name', required=True, validate=validate.Length(min=1, error='Name cannot be blank'))
-    start_date = fields.Date(data_key='start_date', required=True)
-    end_date = fields.Date(data_key='end_date', required=True)
+    description = fields.Str(data_key='description')
+    rich_description = fields.Str(data_key='rich_description')
+    description_title = fields.Str(data_key='description_title')
+    start_date = fields.Str(data_key='start_date', required=True)
+    end_date = fields.Str(data_key='end_date', required=True)
     status_id = fields.Int(data_key='status_id')
     created_by = fields.Str(data_key='created_by')
     created_date = fields.Str(data_key='created_date')

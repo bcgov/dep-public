@@ -9,7 +9,8 @@ import logging
 from datetime import datetime
 from typing import List, Optional
 
-from sqlalchemy import and_, asc, desc, or_
+from sqlalchemy import and_, asc, desc, or_, select
+from sqlalchemy.dialects.postgresql import JSON
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.orderinglist import ordering_list
 from sqlalchemy.sql import text
@@ -22,7 +23,7 @@ from api.models.membership import Membership as MembershipModel
 from api.models.pagination_options import PaginationOptions
 from api.models.staff_user import StaffUser
 from api.schemas.engagement import EngagementSchema
-from api.utils.datetime import local_datetime
+from api.utils.datetime import local_datetime, utc_now
 from api.utils.enums import MembershipStatus
 from api.utils.filter_types import filter_map
 
@@ -174,7 +175,7 @@ class Engagement(BaseModel):
                 'published_date', record.published_date),
             'scheduled_date': engagement.get(
                 'scheduled_date', record.scheduled_date),
-            'updated_date': datetime.utcnow(),
+            'updated_date': utc_now(),
             'updated_by': engagement.get('updated_by', None),
             'banner_filename': engagement.get('banner_filename', None),
             'is_internal': engagement.get('is_internal', record.is_internal),
@@ -192,7 +193,7 @@ class Engagement(BaseModel):
         engagement: Engagement = query.first()
         if not engagement:
             return None
-        engagement_data['updated_date'] = datetime.utcnow()
+        engagement_data['updated_date'] = utc_now()
         # Ensure no relationship fields are included in the update payload, only real columns
         updatable_columns = {column.name for column in Engagement.__table__.columns}
         updatable_columns.discard('id')  # ID can never be updated
@@ -217,7 +218,7 @@ class Engagement(BaseModel):
         date_due = datetime(now.year, now.month, now.day)
         update_fields = {
             'status_id': Status.Closed.value,
-            'updated_date': datetime.utcnow(),
+            'updated_date': utc_now(),
             'updated_by': SYSTEM_USER
         }
         # Close published engagements where end date is prior than today
@@ -234,12 +235,12 @@ class Engagement(BaseModel):
     @classmethod
     def publish_scheduled_engagements_due(cls) -> List[Engagement]:
         """Update scheduled engagements to published."""
-        datetime_due = datetime.utcnow()
+        datetime_due = utc_now()
         logging.getLogger(__name__).debug('Publish due date (UTC): %s', datetime_due)
         update_fields = {
             'status_id': Status.Published.value,
-            'published_date': datetime.utcnow(),
-            'updated_date': datetime.utcnow(),
+            'published_date': utc_now(),
+            'updated_date': utc_now(),
             'updated_by': SYSTEM_USER
         }
         # Publish scheduled engagements where scheduled datetime is prior than now
@@ -340,22 +341,29 @@ class Engagement(BaseModel):
         for criterion in search_options['metadata']:
             taxon_id = criterion.get('taxon_id')
             values = criterion.get('values')
+
             # pick the type of filtering to apply
             filter_type = filter_map.get(criterion.get('filter_type'))
-            if any([taxon_id is None, values is None, filter_type is None]):
-                continue  # skip criterion if any of the required fields are missing
 
+            if any([taxon_id is None, values is None, filter_type is None]):
+                continue  # skip invalid criteria
+
+            # Base query (single column)
             taxon_query = query.session.query(
                 EngagementMetadataModel.engagement_id
             ).filter(
-                # Filter the metadata entries to only include those that match the current taxon
                 EngagementMetadataModel.taxon_id == taxon_id
             )
-            # Use the filter function to create a subquery that filters the engagements
-            filter_subquery = filter_type(taxon_query, values)
-            # Filter the main query to include only engagements found in the subquery
-            query = query.filter(Engagement.id.in_(filter_subquery))
 
+            filter_result = filter_type(taxon_query, values)
+
+            if hasattr(filter_result, 'subquery'):
+                selectable = filter_result.subquery()
+            else:
+                selectable = filter_result
+
+            filter_subquery = select(selectable.c.engagement_id).distinct()
+            query = query.filter(Engagement.id.in_(filter_subquery))
         return query
 
     @staticmethod

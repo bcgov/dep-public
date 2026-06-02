@@ -1,5 +1,5 @@
 import React, { ReactNode } from 'react';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import AuthoringMore from '../../../../src/components/engagement/admin/create/authoring/AuthoringMore';
 import { EngagementStatus, SubmissionStatus } from '../../../../src/constants/engagementStatus';
@@ -9,6 +9,8 @@ import { Page } from '../../../../src/services/type';
 
 const mockUseLoaderData = jest.fn();
 const mockUseOutletContext = jest.fn();
+const mockUseParams = jest.fn();
+
 const mockSetValue = jest.fn();
 const mockGetValues = jest.fn(() => ({}));
 const mockReset = jest.fn();
@@ -20,6 +22,7 @@ jest.mock('react-router', () => ({
     ...jest.requireActual('react-router'),
     useLoaderData: () => mockUseLoaderData(),
     useOutletContext: () => mockUseOutletContext(),
+    useParams: () => mockUseParams(),
 }));
 
 jest.mock('services/engagementService', () => ({
@@ -160,11 +163,23 @@ describe('AuthoringMore', () => {
                     submission_status: SubmissionStatus.Unpublished,
                     tenant_id: 7,
                 }),
+                buildEngagement({
+                    id: 99,
+                    name: 'Other Tenant Engagement',
+                    status_id: EngagementStatus.Published,
+                    submission_status: SubmissionStatus.Open,
+                    tenant_id: 999,
+                }),
             ],
-            total: 7,
+            total: 8,
         };
 
         const suggestions: SuggestedEngagement[] = [];
+
+        mockUseParams.mockReturnValue({
+            tenantId: '7',
+            engagementId: '42',
+        });
 
         mockUseOutletContext.mockReturnValue({
             setDefaultValues: mockSetDefaultValues,
@@ -180,20 +195,23 @@ describe('AuthoringMore', () => {
         });
     });
 
-    test('shows upcoming, open, and closed engagements while excluding draft, scheduled, and unpublished', async () => {
+    test('populates the more engagements selects with valid engagements only', async () => {
         render(<AuthoringMore />);
 
+        const firstSelect = screen.getByTestId('more_engagements_1');
+
         await waitFor(() => {
-            expect(screen.getAllByText('Upcoming Engagement').length).toBeGreaterThan(0);
+            expect(within(firstSelect).getByRole('option', { name: 'Upcoming Engagement' })).toBeInTheDocument();
         });
 
-        expect(screen.getAllByText('Upcoming Engagement').length).toBeGreaterThan(0);
-        expect(screen.getAllByText('Open Engagement').length).toBeGreaterThan(0);
-        expect(screen.getAllByText('Closed Engagement').length).toBeGreaterThan(0);
+        expect(within(firstSelect).getByRole('option', { name: 'Open Engagement' })).toBeInTheDocument();
+        expect(within(firstSelect).getByRole('option', { name: 'Closed Engagement' })).toBeInTheDocument();
 
-        expect(screen.queryAllByText('Draft Engagement')).toHaveLength(0);
-        expect(screen.queryAllByText('Scheduled Engagement')).toHaveLength(0);
-        expect(screen.queryAllByText('Unpublished Engagement')).toHaveLength(0);
-        expect(screen.queryAllByText('Current Engagement')).toHaveLength(0);
+        expect(within(firstSelect).getByRole('option', { name: 'Scheduled Engagement' })).toBeInTheDocument();
+
+        expect(within(firstSelect).queryByRole('option', { name: 'Draft Engagement' })).not.toBeInTheDocument();
+        expect(within(firstSelect).queryByRole('option', { name: 'Unpublished Engagement' })).not.toBeInTheDocument();
+        expect(within(firstSelect).queryByRole('option', { name: 'Current Engagement' })).not.toBeInTheDocument();
+        expect(within(firstSelect).queryByRole('option', { name: 'Other Tenant Engagement' })).not.toBeInTheDocument();
     });
 });

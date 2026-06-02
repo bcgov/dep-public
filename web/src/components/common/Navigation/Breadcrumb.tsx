@@ -1,8 +1,8 @@
 import { Breadcrumbs } from '@mui/material';
-import React, { Suspense, useMemo } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { BodyText } from '../Typography';
 import { Link } from '.';
-import { Await, UIMatch, useMatches } from 'react-router';
+import { UIMatch, useMatches } from 'react-router';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faHome } from '@fortawesome/pro-regular-svg-icons';
 
@@ -75,62 +75,88 @@ interface UIMatchWithCrumb extends UIMatch<unknown, UIRouteHandle> {}
  */
 export const AutoBreadcrumbs: React.FC<{ smallScreenOnly?: boolean }> = ({ smallScreenOnly }) => {
     const matches = (useMatches() as UIMatchWithCrumb[]).filter((match) => match.handle?.crumb);
-    const matchKey = matches.map((m) => m.pathname).join('-');
-    const crumbs = useMemo(() => {
-        return matches
-            .filter((match) => Boolean(match.handle?.crumb))
-            .map((match) => {
-                const crumb = match.handle?.crumb;
-                if (!crumb) {
-                    return null;
-                }
+    const matchKey = matches.map((m) => m.pathname).join('|');
+    const [resolvedCrumbs, setResolvedCrumbs] = React.useState<Record<string, BreadcrumbProps>>({});
 
-                // Always pass an object to prevent route crumb handlers that destructure
-                // their first argument from throwing when loader data is undefined.
-                return crumb(match.loaderData ?? {});
-            })
-            .filter(Boolean);
+    const crumbs = useMemo(() => {
+        return matches.map((match) => {
+            const data = match.loaderData;
+            const handle = match.handle;
+
+            try {
+                return handle?.crumb?.(data) ?? { name: '', link: '' };
+            } catch {
+                return { name: '', link: '' };
+            }
+        });
     }, [matchKey]); // Recompute only when matches change
+
+    useEffect(() => {
+        let cancelled = false;
+
+        const setNewCrumbs = (
+            resolvedCrumb: BreadcrumbProps,
+            previousCrumbs: Record<string, BreadcrumbProps>,
+            pathname: string,
+        ) => {
+            const previousCrumb = previousCrumbs[pathname];
+
+            // Avoid unnecessary re-renders if the crumb did not actually change.
+            if (previousCrumb?.name === resolvedCrumb?.name && previousCrumb?.link === resolvedCrumb?.link) {
+                return previousCrumbs;
+            }
+
+            return {
+                ...previousCrumbs,
+                [pathname]: resolvedCrumb,
+            };
+        };
+
+        crumbs.forEach(async (unresolvedCrumb, index) => {
+            const pathname = matches[index]?.pathname;
+            if (!pathname) return;
+
+            const resolvedCrumb = await unresolvedCrumb;
+            if (cancelled) return;
+            setResolvedCrumbs((previousCrumbs) => setNewCrumbs(resolvedCrumb, previousCrumbs, pathname));
+        });
+
+        return () => {
+            cancelled = true;
+        };
+    }, [crumbs, matches]);
 
     return (
         <Breadcrumbs
             aria-label="breadcrumbs"
-            sx={{ display: smallScreenOnly ? { xs: 'block', md: 'none' } : undefined, fontSize: '14px' }}
+            sx={{
+                display: smallScreenOnly ? { xs: 'block', md: 'none' } : undefined,
+                fontSize: '14px',
+            }}
         >
-            {crumbs.map((unresolvedCrumb, index) => (
-                <Suspense key={`breadcrumb-${matches[index].pathname}`}>
-                    <Await resolve={unresolvedCrumb}>
-                        {(resolvedCrumb: BreadcrumbProps | null) => {
-                            const name = resolvedCrumb?.name;
-                            const link =
-                                index < matches.length - 1
-                                    ? (resolvedCrumb?.link ?? matches[index].pathname)
-                                    : undefined;
-                            return link ? (
-                                <Link
-                                    size="small"
-                                    key={matches[index].pathname + name}
-                                    to={link}
-                                    sx={{ lineHeight: '24px' }}
-                                >
-                                    {index === 0 && <FontAwesomeIcon icon={faHome} style={{ marginRight: '4px' }} />}
-                                    {name}
-                                </Link>
-                            ) : (
-                                <BodyText
-                                    size="small"
-                                    bold={index == matches.length - 1}
-                                    key={matches[index].pathname + name}
-                                    sx={{ lineHeight: '24px' }}
-                                >
-                                    {index === 0 && <FontAwesomeIcon icon={faHome} style={{ marginRight: '4px' }} />}
-                                    {name}
-                                </BodyText>
-                            );
-                        }}
-                    </Await>
-                </Suspense>
-            ))}
+            {matches.map((match, index) => {
+                const resolvedCrumb = resolvedCrumbs[match.pathname];
+                if (!resolvedCrumb) return null;
+                const name = resolvedCrumb?.name;
+                const link = index < matches.length - 1 ? (resolvedCrumb?.link ?? match.pathname) : undefined;
+
+                return link ? (
+                    <Link size="small" key={match.pathname + name} to={link} sx={{ lineHeight: '24px' }}>
+                        {index === 0 && <FontAwesomeIcon icon={faHome} style={{ marginRight: '4px' }} />}
+                        {name}
+                    </Link>
+                ) : (
+                    <BodyText
+                        size="small"
+                        bold={index === matches.length - 1}
+                        key={match.pathname + name}
+                        sx={{ lineHeight: '24px' }}
+                    >
+                        {index === 0 && <FontAwesomeIcon icon={faHome} style={{ marginRight: '4px' }} />}
+                        {name}
+                    </BodyText>
+                );
+            })}
         </Breadcrumbs>
     );
 };

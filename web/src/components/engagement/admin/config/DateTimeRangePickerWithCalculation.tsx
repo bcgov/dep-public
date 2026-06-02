@@ -1,8 +1,8 @@
 import React, { useEffect } from 'react';
 import { Button } from 'components/common/Input/Button';
-import { PickerDayOwnerState, StaticDatePicker } from '@mui/x-date-pickers';
+import { PickerDayOwnerState, StaticDatePicker, TimePicker } from '@mui/x-date-pickers';
 import { Controller, useFormContext } from 'react-hook-form';
-import { Grid2 as Grid } from '@mui/material';
+import { Grid2 as Grid, Stack } from '@mui/material';
 import { BodyText } from 'components/common/Typography/Body';
 import dayjs, { Dayjs } from 'dayjs';
 import { When } from 'react-if';
@@ -14,12 +14,12 @@ import { EngagementStatusChip } from 'components/common/Indicators';
 import { SubmissionStatus } from 'constants/engagementStatus';
 import { OutlineBox } from 'components/common/Layout';
 
-export const DateRangePickerWithCalculation = () => {
+export const DateTimeRangePickerWithCalculation = () => {
     const engagementForm = useFormContext();
     const { control, reset, watch, setValue, getValues, trigger } = engagementForm;
     const [numberOfDays, setNumberOfDays] = React.useState(0);
     const [disableDatesBefore, setDisableDatesBefore] = React.useState<Dayjs | undefined>(dayjs());
-    const [startDate, endDate] = watch(['start_date', 'end_date']);
+    const [startDate, startTime, endDate, endTime] = watch(['start_date', 'start_time', 'end_date', 'end_time']);
 
     const isPickingDate = !watch('_dateConfirmed');
 
@@ -116,11 +116,58 @@ export const DateRangePickerWithCalculation = () => {
         return standardStyle;
     };
 
+    const calendarStyles = {
+        border: 'none',
+        borderRadius: '8px',
+        width: '100%',
+        minWidth: '150px',
+        maxWidth: '400px',
+        margin: '0 auto 0 0',
+        '& .MuiPickersCalendarHeader-root': {
+            mt: 0,
+            p: 0,
+        },
+        '& .MuiDateCalendar-root': {
+            height: '100%',
+            maxHeight: { xs: '450px', lg: '400px' },
+            minHeight: { xs: '450px', lg: '400px' },
+            width: '100%',
+            overflow: 'visible',
+        },
+        '& .MuiPickersSlideTransition-root.MuiDayCalendar-slideTransition': {
+            overflow: 'visible',
+            height: '100%',
+            maxHeight: { xs: '360px', lg: '310px' },
+            minHeight: { xs: '360px', lg: '310px' },
+        },
+        '& .MuiTypography-root.MuiTypography-caption.MuiDayCalendar-weekDayLabel': {
+            flex: '1',
+        },
+        '& .MuiButtonBase-root.MuiPickersDay-root': {
+            flex: '1',
+            aspectRatio: '1 / 1',
+            height: 'auto',
+        },
+    };
+
+    const timePickerStyles = {
+        borderRadius: '8px',
+        boxShadow: '0 0 0 1px #7A7876 inset',
+        border: 'none',
+        width: '100%',
+        maxWidth: '400px',
+        '& .MuiPickersInputBase-root': {
+            borderRadius: '8px',
+        },
+    };
+
+    const stackStyles = { gap: '1rem', flexBasis: { xs: '100%', lg: '50%' } };
+
     return (
         <Grid container mt={2} direction="column" spacing={2} sx={{ mt: 0 }}>
             <When condition={isPickingDate}>
-                <Grid container direction="row">
-                    <Grid>
+                <Grid container direction="row" sx={{ gap: '2rem', flexWrap: { xs: 'wrap', lg: 'nowrap' } }}>
+                    <Stack sx={stackStyles}>
                         <BodyText bold>Start Date</BodyText>
                         <Controller
                             name="start_date"
@@ -129,10 +176,10 @@ export const DateRangePickerWithCalculation = () => {
                             render={({ field }) => (
                                 <StaticDatePicker
                                     {...field}
+                                    sx={calendarStyles}
                                     slotProps={{
                                         day: (ownerState) => {
                                             return {
-                                                ...ownerState,
                                                 sx: getDayStyle(ownerState),
                                             };
                                         },
@@ -142,11 +189,33 @@ export const DateRangePickerWithCalculation = () => {
                                     displayStaticWrapperAs="desktop"
                                     slots={{ actionBar: () => null }}
                                     fixedWeekNumber={6}
+                                    aria-label="Pick an engagement start date"
                                 />
                             )}
                         />
-                    </Grid>
-                    <Grid>
+
+                        <BodyText bold>Start Time (Pacific Timezone)</BodyText>
+                        <Controller
+                            control={control}
+                            name="start_time"
+                            rules={{ required: 'Start time is required' }}
+                            render={({ field }) => (
+                                <TimePicker
+                                    {...field}
+                                    disablePast
+                                    format="h:mm a"
+                                    slotProps={{
+                                        textField: {
+                                            error: false,
+                                        },
+                                    }}
+                                    sx={timePickerStyles}
+                                    aria-label="Pick an engagement start time"
+                                />
+                            )}
+                        />
+                    </Stack>
+                    <Stack sx={stackStyles}>
                         <BodyText bold>End Date</BodyText>
                         <Controller
                             name="end_date"
@@ -160,7 +229,6 @@ export const DateRangePickerWithCalculation = () => {
                                     slotProps={{
                                         day: (ownerState) => {
                                             return {
-                                                ...ownerState,
                                                 sx: getDayStyle(ownerState),
                                             };
                                         },
@@ -172,10 +240,32 @@ export const DateRangePickerWithCalculation = () => {
                                     minDate={disableDatesBefore}
                                     slots={{ actionBar: () => null }}
                                     fixedWeekNumber={6}
+                                    sx={calendarStyles}
+                                    aria-label="Pick an engagement end date"
                                 />
                             )}
                         />
-                    </Grid>
+                        <BodyText bold>End Time (Pacific Timezone)</BodyText>
+                        <Controller
+                            control={control}
+                            name="end_time"
+                            rules={{ required: 'End time is required' }}
+                            render={({ field }) => (
+                                <TimePicker
+                                    {...field}
+                                    disablePast
+                                    format="h:mm a"
+                                    slotProps={{
+                                        textField: {
+                                            error: false,
+                                        },
+                                    }}
+                                    sx={timePickerStyles}
+                                    aria-label="Pick an engagement end time"
+                                />
+                            )}
+                        />
+                    </Stack>
                 </Grid>
                 <Grid container direction="row" alignItems="center" spacing={2}>
                     <Grid>
@@ -217,12 +307,12 @@ export const DateRangePickerWithCalculation = () => {
                                     </Grid>
                                     <Grid>
                                         <BodyText bold display="inline">
-                                            {dayjs(startDate).format('MMM D, YYYY')}{' '}
+                                            {startDate.format('MMM D, YYYY')}{' '}
                                         </BodyText>
                                     </Grid>
                                     <Grid>
                                         <BodyText thin display="inline">
-                                            (12:01 AM)
+                                            {`(${dayjs(startTime, 'HH:mm:ss').format('h:mm a')})`}
                                         </BodyText>
                                     </Grid>
                                 </Grid>
@@ -232,12 +322,12 @@ export const DateRangePickerWithCalculation = () => {
                                     </Grid>
                                     <Grid>
                                         <BodyText bold display="inline">
-                                            {dayjs(endDate).format('MMM D, YYYY')}{' '}
+                                            {endDate.format('MMM D, YYYY')}{' '}
                                         </BodyText>
                                     </Grid>
                                     <Grid>
                                         <BodyText thin display="inline">
-                                            (11:59 PM)
+                                            {`(${dayjs(endTime, 'HH:mm:ss').format('h:mm a')})`}
                                         </BodyText>
                                     </Grid>
                                 </Grid>
@@ -256,7 +346,7 @@ export const DateRangePickerWithCalculation = () => {
                 )}
                 <Grid sx={{ '&.MuiGrid-root': { paddingTop: 0 } }}>
                     <Button onClick={() => setIsPickingDate(true)} icon={<FontAwesomeIcon icon={faCalendar} />}>
-                        {numberOfDays ? 'Change Dates' : 'Select Dates'}
+                        {`${numberOfDays ? 'Change' : 'Select'} Time Range`}
                     </Button>
                 </Grid>
             </When>

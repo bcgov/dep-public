@@ -8,10 +8,10 @@ import { EngagementLoaderAdminData } from 'engagements/admin/EngagementLoaderAdm
 import { Engagement } from 'models/engagement';
 import { ENGAGEMENT_MEMBERSHIP_STATUS, EngagementTeamMember } from 'models/engagementTeamMember';
 import { Heading1, Heading2 } from 'components/common/Typography';
-import dayjs from 'dayjs';
 import { Language } from 'models/language';
 import { Grid2 as Grid, Skeleton } from '@mui/material';
 import { ROUTES, getPath } from 'routes/routes';
+import { formatToUTC, convertToPacific } from 'components/common/dateHelper';
 
 const EngagementConfigurationWizard = () => {
     const loaderData = useRouteLoaderData('single-engagement') as EngagementLoaderAdminData;
@@ -56,13 +56,16 @@ const ConfigForm = ({
     languages: Language[];
 }) => {
     const fetcher = useFetcher();
-
+    const start = convertToPacific(engagement.start_date);
+    const end = convertToPacific(engagement.end_date);
     const engagementConfigForm = useForm<EngagementConfigurationData>({
         defaultValues: {
             name: engagement.name,
             feedback_methods: [],
-            start_date: dayjs(engagement.start_date),
-            end_date: dayjs(engagement.end_date),
+            start_date: start,
+            start_time: start,
+            end_date: end,
+            end_time: end,
             _dateConfirmed: true,
             languages,
             is_internal: engagement.is_internal,
@@ -75,12 +78,15 @@ const ConfigForm = ({
     });
 
     const onSubmit = async (data: EngagementConfigurationData) => {
+        // Concat date and time as a string
+        const startDate = `${data.start_date.format('YYYY-MM-DD')} ${data.start_time.format('HH:mm')}:00`; // Don't save seconds
+        const endDate = `${data.end_date.format('YYYY-MM-DD')} ${data.end_time.format('HH:mm')}:00`; // Don't save seconds
         await fetcher.submit(
             createSearchParams({
                 name: data.name,
                 feedback_methods: data.feedback_methods,
-                start_date: data.start_date.format('YYYY-MM-DD'),
-                end_date: data.end_date.format('YYYY-MM-DD'),
+                start_date: formatToUTC(startDate, 'YYYY-MM-DD HH:mm:ss'),
+                end_date: formatToUTC(endDate, 'YYYY-MM-DD HH:mm:ss'),
                 languages: data.languages.map((l) => l.code),
                 is_internal: data.is_internal ? 'true' : 'false',
                 slug: data.slug,

@@ -72,7 +72,6 @@ export interface AuthoringTemplateOutletContext {
     setDefaultValues: Dispatch<SetStateAction<EngagementUpdateData>>;
     fetcher: FetcherWithComponents<object>;
     pageName: string;
-    tenantId: number;
 }
 
 export type FormDetailsTab = Omit<EngagementDetailsTab, 'body'> & {

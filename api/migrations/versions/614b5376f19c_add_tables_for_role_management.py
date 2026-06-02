@@ -11,6 +11,8 @@ from sqlalchemy.sql import table, column
 from sqlalchemy import String, Integer, DateTime
 from datetime import datetime
 
+from api.utils.datetime import utc_now
+
 
 # revision identifiers, used by Alembic.
 revision = '614b5376f19c'
@@ -86,8 +88,8 @@ def upgrade():
         {'id': 4, 'name': 'VIEWER'},
     ]
     for group in group_data:
-        group['created_date'] = datetime.utcnow()
-        group['updated_date'] = datetime.utcnow()
+        group['created_date'] = utc_now()
+        group['updated_date'] = utc_now()
     # Perform bulk insert in a single operation
     op.bulk_insert(group_table, group_data)
 
@@ -291,8 +293,8 @@ def upgrade():
         },	
     ]
     for role in role_data:
-        role['created_date'] = datetime.utcnow()
-        role['updated_date'] = datetime.utcnow()
+        role['created_date'] = utc_now()
+        role['updated_date'] = utc_now()
     # Perform bulk insert in a single operation
     op.bulk_insert(role_table, role_data)
 
@@ -370,8 +372,8 @@ def upgrade():
         {'id': 59, 'role_id': 37, 'group_id': 4},
     ]
     for group_role_mapping in group_role_mapping_data:
-        group_role_mapping['created_date'] = datetime.utcnow()
-        group_role_mapping['updated_date'] = datetime.utcnow()
+        group_role_mapping['created_date'] = utc_now()
+        group_role_mapping['updated_date'] = utc_now()
     # Perform bulk insert in a single operation
     op.bulk_insert(group_role_mapping_table, group_role_mapping_data)
 

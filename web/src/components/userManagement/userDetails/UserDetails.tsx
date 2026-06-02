@@ -3,7 +3,7 @@ import { Chip, Grid2 as Grid, Link, Paper, Tooltip } from '@mui/material';
 import { useNavigate } from 'react-router';
 import { useAppDispatch, useAppSelector } from 'hooks';
 import { UserDetailsContext } from './UserDetailsContext';
-import { formatDate } from 'components/common/dateHelper';
+import { formatToPacific } from 'components/common/dateHelper';
 import AssignedEngagementsListing from './AssignedEngagementsListing';
 import UserStatusButton from './UserStatusButton';
 import { USER_COMPOSITE_ROLE, USER_STATUS } from 'models/user';
@@ -196,7 +196,7 @@ export const UserDetails = () => {
                         />
                         <ReadOnlyField
                             label="Date Added"
-                            value={savedUser ? formatDate(savedUser?.created_date) : ''}
+                            value={savedUser ? formatToPacific(savedUser?.created_date) : ''}
                         />
                     </Grid>
                 </Grid>

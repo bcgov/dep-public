@@ -4,7 +4,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
 import { AuthoringFormContainer, AuthoringFormSection } from './AuthoringFormLayout';
 import { Heading3 } from 'components/common/Typography/Headings';
-import { useLoaderData, useOutletContext } from 'react-router';
+import { useLoaderData, useOutletContext, useParams } from 'react-router';
 import { Controller, useFormContext } from 'react-hook-form';
 import { TextField } from 'components/common/Input/TextInput';
 import { colors } from 'styles/Theme';
@@ -21,7 +21,7 @@ import { defaultValuesObject, EngagementUpdateData } from './AuthoringContext';
 import { getEditorStateFromRaw } from 'components/common/RichTextEditor/utils';
 
 const AuthoringDetails = () => {
-    const { setDefaultValues, engagement, fetcher, pageName }: AuthoringTemplateOutletContext = useOutletContext();
+    const { setDefaultValues, fetcher, pageName }: AuthoringTemplateOutletContext = useOutletContext();
     const {
         setValue,
         getValues,
@@ -31,7 +31,8 @@ const AuthoringDetails = () => {
         formState: { errors },
     } = useFormContext<EngagementUpdateData>();
     const { detailsTabs } = useLoaderData() as AuthoringLoaderData; // Get fresh data to avoid DB sync issues
-    const engagementId = engagement.id;
+    const { engagementId: engId } = useParams();
+    const engagementId = Number(engId);
     const detailsUiStateKey = useMemo(() => `authoring-details-ui-${engagementId}`, [engagementId]);
     const existingTabs = getValues('details_tabs') ?? [];
     const persistedUiState = useMemo(() => {

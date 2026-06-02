@@ -4,7 +4,6 @@ Manages the Submission
 """
 from __future__ import annotations
 
-from datetime import datetime
 from typing import List
 
 from sqlalchemy import ForeignKey
@@ -15,6 +14,7 @@ from api.constants.user import SYSTEM_REVIEWER
 from api.models.participant import Participant
 from api.models.survey import Survey
 from api.schemas.submission import SubmissionSchema
+from api.utils.datetime import utc_now
 
 from .base_model import BaseModel
 from .db import db
@@ -62,14 +62,14 @@ class Submission(BaseModel):  # pylint: disable=too-few-public-methods
         else:
             const_comment_status = Status.Approved.value
             const_reviewed_by = SYSTEM_REVIEWER
-            const_review_date = datetime.utcnow()
+            const_review_date = utc_now()
 
         new_submission = Submission(
             submission_json=submission.get('submission_json', None),
             engagement_id=submission.get('engagement_id', None),
             survey_id=submission.get('survey_id', None),
             participant_id=submission.get('participant_id', None),
-            created_date=datetime.utcnow(),
+            created_date=utc_now(),
             updated_date=None,
             created_by=submission.get('created_by', None),
             updated_by=submission.get('updated_by', None),
@@ -102,7 +102,7 @@ class Submission(BaseModel):  # pylint: disable=too-few-public-methods
         """Update submission."""
         update_fields = {
             'submission_json': submission.get('submission_json', None),
-            'updated_date': datetime.utcnow(),
+            'updated_date': utc_now(),
             'updated_by': submission.get('updated_by', None),
         }
         submission_id = submission.get('id', None)
@@ -140,9 +140,9 @@ class Submission(BaseModel):  # pylint: disable=too-few-public-methods
             'rejected_reason_other': rejected_reason_other,
             'notify_email': notify_email,
             'reviewed_by': comment.get('reviewed_by'),
-            'review_date': datetime.utcnow(),
+            'review_date': utc_now(),
             'updated_by': comment.get('participant_id'),
-            'updated_date': datetime.utcnow(),
+            'updated_date': utc_now(),
         }
 
         query.update(update_fields)

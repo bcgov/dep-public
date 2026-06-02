@@ -16,7 +16,7 @@ def test_get_engagement_details_tab_translation_by_language(client, jwt, session
     headers = factory_auth_header(jwt=jwt, claims={})
     engagement = factory_engagement_model(
         {
-            **TestEngagementInfo.engagement1.value,
+            **TestEngagementInfo.engagement1,
         }
     )
     engagement_details_tab = factory_engagement_details_tab_model(
@@ -51,7 +51,7 @@ def test_create_engagement_details_tab_translation(client, jwt, session, setup_a
     headers = factory_auth_header(jwt=jwt, claims=claims)
     engagement = factory_engagement_model(
         {
-            **TestEngagementInfo.engagement1.value,
+            **TestEngagementInfo.engagement1,
         }
     )
     engagement_details_tab = factory_engagement_details_tab_model(
@@ -106,7 +106,7 @@ def test_update_engagement_details_tab_translation(client, jwt, session, setup_a
     headers = factory_auth_header(jwt=jwt, claims=claims)
     engagement = factory_engagement_model(
         {
-            **TestEngagementInfo.engagement1.value,
+            **TestEngagementInfo.engagement1,
         }
     )
     engagement_details_tab = factory_engagement_details_tab_model(
@@ -152,7 +152,7 @@ def test_delete_engagement_details_tab_translation(client, jwt, session, setup_a
     headers = factory_auth_header(jwt=jwt, claims=claims)
     engagement = factory_engagement_model(
         {
-            **TestEngagementInfo.engagement1.value,
+            **TestEngagementInfo.engagement1,
         }
     )
     engagement_details_tab = factory_engagement_details_tab_model(

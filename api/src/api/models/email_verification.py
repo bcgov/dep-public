@@ -3,9 +3,9 @@
 Manages the Email verification
 """
 from __future__ import annotations
-from datetime import datetime
 from sqlalchemy import ForeignKey
 
+from api.utils.datetime import utc_now
 from api.constants.email_verification import EmailVerificationType
 from api.schemas.email_verification import EmailVerificationSchema
 
@@ -45,7 +45,7 @@ class EmailVerification(BaseModel):  # pylint: disable=too-few-public-methods
             type=email_verification.get('type'),
             survey_id=email_verification.get('survey_id', None),
             submission_id=email_verification.get('submission_id', None),
-            created_date=datetime.utcnow(),
+            created_date=utc_now(),
             created_by=email_verification.get('created_by', None),
         )
         db.session.add(new_email_verification)
@@ -60,7 +60,7 @@ class EmailVerification(BaseModel):  # pylint: disable=too-few-public-methods
         """Update an email verification."""
         update_fields = {
             'is_active': email_verification.get('is_active', None),
-            'updated_date': datetime.utcnow(),
+            'updated_date': utc_now(),
             'updated_by': email_verification.get('updated_by', None),
         }
         email_verification_id = email_verification.get('id', None)

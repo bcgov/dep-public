@@ -1,5 +1,4 @@
 """Service for membership."""
-from datetime import datetime
 from http import HTTPStatus
 from flask import g
 
@@ -16,6 +15,7 @@ from api.utils.constants import CompositeRoles
 from api.utils.enums import CompositeRoleId, MembershipStatus
 from api.utils.roles import Role
 from api.utils.token_info import TokenInfo
+from api.utils.datetime import utc_now
 
 
 class MembershipService:
@@ -207,7 +207,7 @@ class MembershipService:
         new_membership_details = {
             'status': MembershipStatus.REVOKED.value,
             'type': membership.type,
-            'revoked_date': datetime.utcnow(),
+            'revoked_date': utc_now(),
         }
         new_membership = MembershipModel.create_new_version(
             membership.engagement_id,

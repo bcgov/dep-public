@@ -21,11 +21,9 @@ const AuthoringMore = () => {
     const [engagementSelectOptions, setEngagementSelectOptions] = useState<EngagementOption[]>([
         { label: 'None', value: -1 },
     ]);
-    const { setDefaultValues, fetcher, pageName, engagement: eng }: AuthoringTemplateOutletContext = useOutletContext(); // Access the form functions and values from the authoring template.
+    const { setDefaultValues, fetcher, pageName }: AuthoringTemplateOutletContext = useOutletContext(); // Access the form functions and values from the authoring template.
     const { languageCode } = useParams();
     const activeLanguageCode = (languageCode ?? AppConfig.language.defaultLanguageId).toLowerCase();
-    const tenantId = eng.tenant_id;
-    const engagementId = eng.id;
     const {
         getValues,
         reset,
@@ -45,12 +43,12 @@ const AuthoringMore = () => {
         ]);
         const translation = await getEngagementTranslationByCode(Number(loadedEngagement.id), activeLanguageCode);
 
-        updateEngagementListValues(engagementPage);
+        updateEngagementListValues(engagementPage, loadedEngagement.tenant_id, Number(loadedEngagement.id));
 
         return {
             ...defaultValuesObject,
             form_source: pageName,
-            id: engagementId,
+            id: Number(loadedEngagement.id),
             more_engagements_heading:
                 translation?.more_engagements_heading ??
                 loadedEngagement.more_engagements_heading ??
@@ -59,10 +57,10 @@ const AuthoringMore = () => {
             more_engagements_2: loadedSuggestions.find((s) => s.sort_index === 2)?.suggested_engagement_id || -1,
             more_engagements_3: loadedSuggestions.find((s) => s.sort_index === 3)?.suggested_engagement_id || -1,
         };
-    }, [activeLanguageCode, engagement, engagementId, engagementList, pageName, suggestions]);
+    }, [activeLanguageCode, engagement, engagementList, pageName, suggestions]);
 
     const { isHydrating } = useAuthoringPageHydration<EngagementUpdateData>({
-        deps: [engagement, engagementList, suggestions, activeLanguageCode, pageName, engagementId],
+        deps: [engagement, engagementList, suggestions, activeLanguageCode, pageName],
         fetcherData: fetcher.data,
         getValues,
         loadValues: loadMoreValues,
@@ -70,7 +68,7 @@ const AuthoringMore = () => {
         setDefaultValues,
     });
 
-    const updateEngagementListValues = (list: Page<Engagement>) => {
+    const updateEngagementListValues = (list: Page<Engagement>, tenantId: number, engagementId: number) => {
         if (list.items && Array.isArray(list.items) && list.items.length > 0) {
             const filteredOptions: EngagementOption[] = [];
             list.items.forEach((eng) => {

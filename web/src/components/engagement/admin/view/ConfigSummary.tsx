@@ -19,15 +19,14 @@ import { getPath, ROUTES } from 'routes/routes';
 import { LanguageState } from 'reduxSlices/languageSlice';
 import { useAppSelector } from 'hooks';
 import { RouterLinkRenderer } from 'components/common/Navigation/Link';
-import { Language } from 'models/language';
+import { Engagement } from 'models/engagement';
+import { convertToPacific } from 'components/common/dateHelper';
 
 export const ConfigSummary = () => {
     const siteUrl = getBaseUrl();
     const engagementId = useParams().engagementId;
     const language: LanguageState = useAppSelector((state) => state.language);
-    const { engagement, teamMembers, slug, languages } = useRouteLoaderData(
-        'single-engagement',
-    ) as EngagementLoaderAdminData;
+    const { engagement, teamMembers, slug } = useRouteLoaderData('single-engagement') as EngagementLoaderAdminData;
     const [tooltipOpen, setTooltipOpen] = React.useState(false);
 
     useEffect(() => {
@@ -40,6 +39,14 @@ export const ConfigSummary = () => {
             };
         }
     }, [tooltipOpen]);
+
+    const getEngagementDate = (engagement: Engagement, event: 'start' | 'end') => {
+        const day = convertToPacific(engagement[`${event}_date`]);
+        return {
+            date: day,
+            valid: day.isValid(),
+        };
+    };
 
     return (
         <Grid container direction="column" spacing={1}>
@@ -155,24 +162,32 @@ export const ConfigSummary = () => {
                                         />
                                     </Grid>
                                     <Grid>
-                                        <BodyText bold sx={{ display: 'inline' }}>
-                                            <Suspense
-                                                fallback={
-                                                    <Skeleton
-                                                        variant="text"
-                                                        sx={{ display: 'inline-block', marginBottom: '-0.5rem' }}
-                                                        width={100}
-                                                    />
-                                                }
-                                            >
-                                                <Await resolve={engagement}>
-                                                    {(engagement) =>
-                                                        dayjs(engagement.start_date).format('MMMM D, YYYY')
-                                                    }
-                                                </Await>
-                                            </Suspense>
-                                        </BodyText>{' '}
-                                        <BodyText sx={{ display: { xs: 'block', sm: 'inline' } }}>(12:01 am)</BodyText>
+                                        <Suspense
+                                            fallback={
+                                                <Skeleton
+                                                    variant="text"
+                                                    sx={{ display: 'inline-block', marginBottom: '-0.5rem' }}
+                                                    width={100}
+                                                />
+                                            }
+                                        >
+                                            <Await resolve={engagement}>
+                                                {(engagement) => {
+                                                    const { date, valid } = getEngagementDate(engagement, 'start');
+                                                    return (
+                                                        <>
+                                                            <BodyText bold sx={{ display: 'inline' }}>
+                                                                {valid && date.format('MMMM D, YYYY')}
+                                                            </BodyText>
+                                                            <span> </span>
+                                                            <BodyText sx={{ display: 'inline' }}>
+                                                                {valid && date.format('(h:mm a)')}
+                                                            </BodyText>
+                                                        </>
+                                                    );
+                                                }}
+                                            </Await>
+                                        </Suspense>
                                     </Grid>
                                 </Grid>
                                 <Grid container spacing={1}>
@@ -183,22 +198,32 @@ export const ConfigSummary = () => {
                                         />
                                     </Grid>
                                     <Grid>
-                                        <BodyText bold sx={{ display: 'inline' }}>
-                                            <Suspense
-                                                fallback={
-                                                    <Skeleton
-                                                        variant="text"
-                                                        sx={{ display: 'inline-block', marginBottom: '-0.5rem' }}
-                                                        width={100}
-                                                    />
-                                                }
-                                            >
-                                                <Await resolve={engagement}>
-                                                    {(engagement) => dayjs(engagement.end_date).format('MMMM D, YYYY')}
-                                                </Await>
-                                            </Suspense>
-                                        </BodyText>{' '}
-                                        <BodyText sx={{ display: { xs: 'block', sm: 'inline' } }}>(11:59 pm)</BodyText>
+                                        <Suspense
+                                            fallback={
+                                                <Skeleton
+                                                    variant="text"
+                                                    sx={{ display: 'inline-block', marginBottom: '-0.5rem' }}
+                                                    width={100}
+                                                />
+                                            }
+                                        >
+                                            <Await resolve={engagement}>
+                                                {(engagement) => {
+                                                    const { date, valid } = getEngagementDate(engagement, 'end');
+                                                    return (
+                                                        <>
+                                                            <BodyText bold sx={{ display: 'inline' }}>
+                                                                {valid && date.format('MMMM D, YYYY')}
+                                                            </BodyText>
+                                                            <span> </span>
+                                                            <BodyText sx={{ display: 'inline' }}>
+                                                                {valid && date.format('(h:mm a)')}
+                                                            </BodyText>
+                                                        </>
+                                                    );
+                                                }}
+                                            </Await>
+                                        </Suspense>
                                     </Grid>
                                 </Grid>
                             </Grid>
@@ -241,35 +266,12 @@ export const ConfigSummary = () => {
                         <Grid container direction="column" spacing={1}>
                             <Grid>
                                 <BodyText bold color="primary.main">
-                                    <Suspense fallback={'Language(s) Included'}>
-                                        <Await resolve={languages}>
-                                            {(resolvedLanguages: Language[]) =>
-                                                `Language(s) Included (${resolvedLanguages.length})`
-                                            }
-                                        </Await>
-                                    </Suspense>
+                                    Language(s) Included (1)
                                 </BodyText>
                             </Grid>
-                            <Suspense
-                                fallback={
-                                    <Grid>
-                                        <BodyText bold>English (Default)</BodyText>
-                                    </Grid>
-                                }
-                            >
-                                <Await resolve={languages}>
-                                    {(resolvedLanguages: Language[]) =>
-                                        resolvedLanguages.map((language) => (
-                                            <Grid key={language.code}>
-                                                <BodyText bold>
-                                                    {language.name}
-                                                    {language.code === 'en' && ' (Default)'}
-                                                </BodyText>
-                                            </Grid>
-                                        ))
-                                    }
-                                </Await>
-                            </Suspense>
+                            <Grid>
+                                <BodyText bold>English (Default)</BodyText>
+                            </Grid>
                         </Grid>
                     </OutlineBox>
                 </Grid>

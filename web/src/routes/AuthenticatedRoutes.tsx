@@ -122,8 +122,20 @@ const AuthenticatedRoutes = resolveLazyRouteTree(
                             };
                         },
                     }}
-                    shouldRevalidate={({ currentParams, nextParams, actionResult }) => {
-                        return currentParams.engagementId !== nextParams.engagementId || actionResult === 'success';
+                    shouldRevalidate={({
+                        currentUrl,
+                        nextUrl,
+                        currentParams,
+                        nextParams,
+                        formMethod,
+                        actionResult,
+                    }) => {
+                        return (
+                            currentUrl.pathname !== nextUrl.pathname || // Engagement must rv on route change
+                            currentParams.engagementId !== nextParams.engagementId ||
+                            formMethod !== undefined ||
+                            actionResult === 'success'
+                        );
                     }}
                 >
                     <LazyRoute index element={<Navigate to="authoring" />} />
@@ -136,10 +148,7 @@ const AuthenticatedRoutes = resolveLazyRouteTree(
                         />
                         <LazyRoute index element={<Navigate to="config" />} />
                         {/* Wraps the tabs with the engagement title and TabContext */}
-                        <LazyRoute
-                            ComponentLazy={() => import('engagements/admin/view')}
-                            shouldRevalidate={() => false}
-                        >
+                        <LazyRoute ComponentLazy={() => import('engagements/admin/view')}>
                             <LazyRoute
                                 path="config"
                                 ComponentLazy={() => import('engagements/admin/view/ConfigSummary')}

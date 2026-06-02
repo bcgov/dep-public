@@ -12,10 +12,9 @@ import { getPath, ROUTES } from './routes';
 const UnderConstruction = React.memo(({ errorMessage = 'This page is under construction' }: IProps) => {
     const matches = useMatches();
     const isChildRoute = matches.length > 2;
-    const alignment = isChildRoute ? 'center' : 'flex-start';
     return (
         <Box component={isChildRoute ? 'div' : ResponsiveContainer}>
-            <Grid container justifyContent={alignment}>
+            <Grid container justifyContent={'flex-start'}>
                 <Grid size={12} hidden={isChildRoute} mb={4}>
                     <BreadcrumbTrail
                         crumbs={[
@@ -29,15 +28,15 @@ const UnderConstruction = React.memo(({ errorMessage = 'This page is under const
                         ]}
                     />
                 </Grid>
-                <Grid size={12} justifyContent={alignment} alignItems={alignment} container>
+                <Grid size={12} justifyContent={'flex-start'} alignItems={'flex-start'} container>
                     <Heading2 decorated width="max-content">
                         {errorMessage}
                     </Heading2>
                 </Grid>
-                <Grid size="auto" m={4}>
+                <Grid container sx={{ width: '100%', maxWidth: '700px', mt: '7rem' }} alignItems="center">
                     <FontAwesomeIcon
                         icon={faScrewdriverWrench}
-                        style={{ padding: '20px', height: '5em', width: '5em' }}
+                        style={{ height: '7em', width: '7em', margin: '0 auto' }}
                     />
                 </Grid>
             </Grid>

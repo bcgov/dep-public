@@ -35,7 +35,8 @@ const AuthoringSubscribe = () => {
     const loadSubscribeValues = useCallback(async () => {
         const translation = await getEngagementTranslationByCode(Number(eng.id), activeLanguageCode);
         const subscribeHeading = translation?.subscribe_section_heading ?? eng.subscribe_section_heading;
-        const subscribeDescription = translation?.subscribe_section_description ?? eng.subscribe_section_description;
+        const subscribeDescription =
+            translation?.subscribe_section_description ?? eng.subscribe_section_description;
         const subscribeConsent =
             translation?.subscribe_consent_message ??
             translation?.consent_message ??

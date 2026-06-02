@@ -16,7 +16,7 @@ import { CommentStatus } from 'constants/commentStatus';
 import { If, Then, Else, When } from 'react-if';
 import { getSubmissionPage } from 'services/submissionService';
 import { SurveySubmission } from 'models/surveySubmission';
-import { formatDate, formatToUTC } from 'components/common/dateHelper';
+import { formatToPacific, formatToUTC } from 'components/common/dateHelper';
 import { USER_ROLES } from 'services/userService/constants';
 import { USER_COMPOSITE_ROLE } from 'models/user';
 import { updateURLWithPagination } from 'components/common/Table/utils';
@@ -300,7 +300,7 @@ const CommentTextListing = () => {
                                 >
                                     <b>Comment Date: </b>
                                 </BodyText>
-                                <BodyText>{formatDate(row.created_date)}</BodyText>
+                                <BodyText>{formatToPacific(row.created_date, 'YYYY-MM-DD')}</BodyText>
                             </Stack>
                         </Grid>
                         <When condition={row.comment_status_id !== CommentStatus.Pending}>

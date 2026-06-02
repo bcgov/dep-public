@@ -7,7 +7,7 @@ import { Dayjs } from 'dayjs';
 import { Controller, useFormContext } from 'react-hook-form';
 import EngagementVisibilityControl from '../EngagementVisibilityControl';
 import { FeedbackMethodSelector } from '../FeedbackMethodSelector';
-import { DateRangePickerWithCalculation } from '../DateRangePickerWithCalculation';
+import { DateTimeRangePickerWithCalculation } from '../DateTimeRangePickerWithCalculation';
 import { LanguageManager } from '../LanguageManager';
 import { UserManager } from '../UserManager';
 import { User } from 'models/user';
@@ -24,9 +24,11 @@ export interface EngagementConfigurationData {
     name: string;
     // 2. Feedback methods
     feedback_methods: string[];
-    // 3. Dates
+    // 3. Dates and times
     start_date: Dayjs;
+    start_time: Dayjs;
     end_date: Dayjs;
+    end_time: Dayjs;
     _dateConfirmed: boolean;
     // 4. Languages
     languages: Language[];
@@ -109,13 +111,24 @@ const EngagementForm = ({
                 </FormStep>
                 <FormStep
                     step={3}
-                    completed={Boolean(watch('start_date')) && Boolean(watch('end_date')) && watch('_dateConfirmed')}
-                    completing={Boolean(touchedFields.start_date) && Boolean(touchedFields.end_date)}
+                    completed={
+                        Boolean(watch('start_date')) &&
+                        Boolean(watch('start_time')) &&
+                        Boolean(watch('end_date')) &&
+                        Boolean(watch('end_time')) &&
+                        watch('_dateConfirmed')
+                    }
+                    completing={
+                        Boolean(touchedFields.start_date) &&
+                        Boolean(touchedFields.end_date) &&
+                        Boolean(touchedFields.start_time) &&
+                        Boolean(touchedFields.end_time)
+                    }
                     question="When will your engagement be open for receiving feedback?"
-                    details="Please select the dates your engagement will be open and closed for receiving feedback. (These dates are not related to when your engagement will be published.)"
+                    details="Select the date and time for the beginning and end of your engagement feedback period. These dates are not related to when your engagement will be published."
                     isGroup
                 >
-                    <DateRangePickerWithCalculation />
+                    <DateTimeRangePickerWithCalculation />
                 </FormStep>
                 <FormStep
                     step={4}

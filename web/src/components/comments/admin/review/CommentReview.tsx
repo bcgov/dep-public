@@ -23,7 +23,7 @@ import { BodyText, Heading3, Heading4 } from 'components/common/Typography';
 import { Button } from 'components/common/Input/Button';
 import { CommentStatus } from 'constants/commentStatus';
 import { StaffNoteType } from 'constants/staffNoteType';
-import { formatDate } from 'components/common/dateHelper';
+import { formatToPacific } from 'components/common/dateHelper';
 import { CommentReviewSkeleton } from './CommentReviewSkeleton';
 import { createDefaultSubmission, SurveySubmission } from 'models/surveySubmission';
 import { createDefaultReviewNote, createDefaultInternalNote, StaffNote } from 'models/staffNote';
@@ -243,7 +243,7 @@ const CommentReview = () => {
                             <BodyText bold>Comment Date:</BodyText>
                         </Grid>
                         <Grid>
-                            <BodyText sx={{ pl: 2 }}>{formatDate(created_date)}</BodyText>
+                            <BodyText sx={{ pl: 2 }}>{formatToPacific(created_date, 'YYYY-MM-DD')}</BodyText>
                         </Grid>
                     </Grid>
 
@@ -261,7 +261,7 @@ const CommentReview = () => {
                             <BodyText bold>Date Reviewed:</BodyText>
                         </Grid>
                         <Grid>
-                            <BodyText sx={{ pl: 2 }}>{formatDate(review_date)}</BodyText>
+                            <BodyText sx={{ pl: 2 }}>{formatToPacific(review_date, 'YYYY-MM-DD')}</BodyText>
                         </Grid>
                     </Grid>
                 </Grid>
