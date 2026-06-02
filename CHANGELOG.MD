@@ -14,7 +14,7 @@
   - Updated auto breadcrumbs component for increased visual stability (less flickering)
   - Updated authoring section for greater visual stability (less flickering)
   - Moved header items (badge and breadcrumbs) out of AuthoringTemplate component, which is forced to re-render because it's keyed
-  - Utilized useDefferedValue in bottom nav component for language list
+  - Utilized useDeferredValue in bottom nav component for language list
   - Removed several async/await components that were causing flickering
 - Utilized useParams instead of waiting on engagement values in some cases
 - Allowed modifying of engagement config while it's scheduled but not published

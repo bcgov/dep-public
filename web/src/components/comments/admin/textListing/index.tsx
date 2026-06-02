@@ -300,7 +300,7 @@ const CommentTextListing = () => {
                                 >
                                     <b>Comment Date: </b>
                                 </BodyText>
-                                <BodyText>{formatToPacific(row.created_date)}</BodyText>
+                                <BodyText>{formatToPacific(row.created_date, 'YYYY-MM-DD')}</BodyText>
                             </Stack>
                         </Grid>
                         <When condition={row.comment_status_id !== CommentStatus.Pending}>

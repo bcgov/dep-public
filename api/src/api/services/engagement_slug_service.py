@@ -111,5 +111,5 @@ class EngagementSlugService:
         if not engagement:
             raise ValueError(f'No engagement found for {engagement_id}')
         if engagement.status_id not in valid_statuses:
-            raise ValueError(f'Engagement {engagement_id} has already been published, cannot update slug')
+            raise ValueError(f'Engagement {engagement_id} has already been published; cannot update slug.')
         return engagement

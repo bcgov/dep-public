@@ -346,7 +346,7 @@ export const DateTimeRangePickerWithCalculation = () => {
                 )}
                 <Grid sx={{ '&.MuiGrid-root': { paddingTop: 0 } }}>
                     <Button onClick={() => setIsPickingDate(true)} icon={<FontAwesomeIcon icon={faCalendar} />}>
-                        {`${numberOfDays ? 'Change' : 'Select'} Dates and Times`}
+                        {`${numberOfDays ? 'Change' : 'Select'} Time Range`}
                     </Button>
                 </Grid>
             </When>

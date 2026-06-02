@@ -243,7 +243,7 @@ const CommentReview = () => {
                             <BodyText bold>Comment Date:</BodyText>
                         </Grid>
                         <Grid>
-                            <BodyText sx={{ pl: 2 }}>{formatToPacific(created_date)}</BodyText>
+                            <BodyText sx={{ pl: 2 }}>{formatToPacific(created_date, 'YYYY-MM-DD')}</BodyText>
                         </Grid>
                     </Grid>
 
@@ -261,7 +261,7 @@ const CommentReview = () => {
                             <BodyText bold>Date Reviewed:</BodyText>
                         </Grid>
                         <Grid>
-                            <BodyText sx={{ pl: 2 }}>{formatToPacific(review_date)}</BodyText>
+                            <BodyText sx={{ pl: 2 }}>{formatToPacific(review_date, 'YYYY-MM-DD')}</BodyText>
                         </Grid>
                     </Grid>
                 </Grid>
