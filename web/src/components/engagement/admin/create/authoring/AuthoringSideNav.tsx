@@ -1,4 +1,4 @@
-import React, { useLayoutEffect, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import {
     Link,
     ListItemButton,
@@ -27,6 +27,12 @@ import { faArrowRight } from '@fortawesome/free-solid-svg-icons';
 import { faArrowLeftLong } from '@fortawesome/pro-light-svg-icons';
 import { faCheck } from '@fortawesome/pro-regular-svg-icons';
 import { StatusCircle } from '../../view/AuthoringTab';
+import { useFetchers, useLocation, useParams, useRouteLoaderData } from 'react-router';
+import {
+    AuthoringSectionName,
+    useAuthoringSectionCompletion,
+} from 'components/engagement/admin/create/authoring/useAuthoringSectionCompletion';
+import { EngagementLoaderAdminData } from 'components/engagement/admin/EngagementLoaderAdmin';
 
 export const routeItemStyle = {
     padding: 0,
@@ -40,19 +46,134 @@ export const routeItemStyle = {
     borderRadius: '8px',
 };
 
+const areLanguageCodesEqual = (left: string[], right: string[]) => {
+    if (left.length !== right.length) {
+        return false;
+    }
+
+    for (let index = 0; index < left.length; index++) {
+        if (left[index] !== right[index]) {
+            return false;
+        }
+    }
+
+    return true;
+};
+
 const DrawerBox = ({ isMediumScreenOrLarger, setOpen, engagementId }: DrawerBoxProps) => {
     const permissions = useAppSelector((state) => state.user.roles);
+    const { languageCode } = useParams() as { languageCode?: string };
+    const location = useLocation();
+    const { engagement, languages } = useRouteLoaderData('single-engagement') as EngagementLoaderAdminData;
+    const fetchers = useFetchers();
+    const inFlightFetcherKeysRef = useRef<Set<string>>(new Set());
+    const [saveRefreshNonce, setSaveRefreshNonce] = useState(0);
+    const [selectedLanguageCodes, setSelectedLanguageCodes] = useState<string[]>(['en']);
 
-    const currentRoutePath = getRoutes(Number(engagementId))
+    const fetchersByKey = useMemo(() => {
+        return fetchers.map((fetcher) => ({
+            key: fetcher.key,
+            state: fetcher.state,
+            data: fetcher.data,
+        }));
+    }, [fetchers]);
+
+    useEffect(() => {
+        const currentInFlightKeys = new Set<string>();
+        let shouldRefreshAfterSave = false;
+
+        for (const fetcher of fetchersByKey) {
+            if (fetcher.state !== 'idle') {
+                currentInFlightKeys.add(fetcher.key);
+                continue;
+            }
+
+            if (fetcher.data === 'success' && inFlightFetcherKeysRef.current.has(fetcher.key)) {
+                shouldRefreshAfterSave = true;
+            }
+        }
+
+        inFlightFetcherKeysRef.current = currentInFlightKeys;
+
+        if (shouldRefreshAfterSave) {
+            setSaveRefreshNonce((value) => value + 1);
+        }
+    }, [fetchersByKey]);
+
+    useLayoutEffect(() => {
+        let isMounted = true;
+
+        void languages.then((resolvedLanguages) => {
+            if (!isMounted) {
+                return;
+            }
+
+            const nextCodes: string[] = [];
+            if (resolvedLanguages.length > 0) {
+                for (const language of resolvedLanguages) {
+                    nextCodes.push(language.code);
+                }
+            } else {
+                nextCodes.push('en');
+            }
+
+            if (areLanguageCodesEqual(selectedLanguageCodes, nextCodes)) {
+                return;
+            }
+
+            setSelectedLanguageCodes(nextCodes);
+        });
+
+        return () => {
+            isMounted = false;
+        };
+    }, [languages, selectedLanguageCodes]);
+
+    const { completionBySection } = useAuthoringSectionCompletion({
+        engagementId: Number(engagementId),
+        languageCode: languageCode ?? 'en',
+        selectedLanguageCodes,
+        engagementPromise: engagement,
+        refreshToken: `${location.pathname}|${saveRefreshNonce}`,
+    });
+
+    const authoringRoutes = getRoutes(Number(engagementId), languageCode ?? 'en');
+    const matchingRoutePaths: string[] = authoringRoutes
         .map((route) => route.path)
-        .filter((route) => window.location.pathname.includes(route))
-        .reduce((prev, curr) => (prev.length > curr.length ? prev : curr));
+        .filter((route) => globalThis.location.pathname.includes(route));
+    const sortedMatchingRoutePaths = [...matchingRoutePaths].sort((a: string, b: string) => {
+        if (a.length !== b.length) {
+            return a.length - b.length;
+        }
 
-    const allowedRoutes = getRoutes(Number(engagementId)).filter((route) => {
+        return a.localeCompare(b);
+    });
+    const currentRoutePath = sortedMatchingRoutePaths.length > 0 ? sortedMatchingRoutePaths.at(-1) : '';
+
+    const allowedRoutes = authoringRoutes.filter((route) => {
         return !route.authenticated || route.allowedRoles.some((role) => permissions.includes(role));
     });
 
     const renderListItem = (route: Route, isSelected: boolean) => {
+        const isCompleted = completionBySection[route.name as AuthoringSectionName] ?? false;
+        const shouldShowStatusCircle = isCompleted === false;
+        let completionCheckIcon: React.ReactNode = null;
+        if (isCompleted) {
+            completionCheckIcon = (
+                <FontAwesomeIcon
+                    icon={faCheck}
+                    style={{
+                        color: 'inherit',
+                        fontWeight: 'bold',
+                    }}
+                />
+            );
+        }
+        let completionIndicator: React.ReactNode = null;
+        if (shouldShowStatusCircle) {
+            completionIndicator = <StatusCircle required={Boolean(route.required)} />;
+        }
+
         return (
             <React.Fragment key={route.name}>
                 <When condition={'Hero Banner' === route.name || 'View Results' === route.name}>
@@ -92,18 +213,12 @@ const DrawerBox = ({ isMediumScreenOrLarger, setOpen, engagementId }: DrawerBoxP
                                     paddingRight: '0.6rem',
                                 }}
                             >
-                                <FontAwesomeIcon
-                                    icon={faCheck}
-                                    style={{
-                                        color: 'inherit',
-                                        fontWeight: 'bold',
-                                    }}
-                                />
+                                {completionCheckIcon}
                             </span>
 
                             {route.name}
                         </BodyText>
-                        <StatusCircle required={route.required || false} />
+                        {completionIndicator}
                         <When condition={currentRoutePath === route.path}>
                             <span
                                 style={{
@@ -143,7 +258,7 @@ const DrawerBox = ({ isMediumScreenOrLarger, setOpen, engagementId }: DrawerBoxP
                 {/* Engagement Home link */}
                 <Link
                     component={RouterLinkRenderer}
-                    href={getRoutes(Number(engagementId))[0].path}
+                    href={authoringRoutes[0].path}
                     sx={{
                         height: '3rem',
                         color: 'text.primary',
@@ -156,7 +271,7 @@ const DrawerBox = ({ isMediumScreenOrLarger, setOpen, engagementId }: DrawerBoxP
                         style={{ fontSize: '1.3rem', fontWeight: 'normal', paddingRight: '0.5rem' }}
                         icon={faArrowLeftLong}
                     />
-                    <span style={{ fontWeight: 'bold' }}>{getRoutes(Number(engagementId))[0].name}</span>
+                    <span style={{ fontWeight: 'bold' }}>{authoringRoutes[0].name}</span>
                 </Link>
                 {/* All other menu items */}
                 {allowedRoutes.map(

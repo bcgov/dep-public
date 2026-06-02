@@ -14,10 +14,11 @@ import { Grid2 as Grid, Skeleton } from '@mui/material';
 import { ROUTES, getPath } from 'routes/routes';
 
 const EngagementConfigurationWizard = () => {
-    const { engagement, teamMembers, slug } = useRouteLoaderData('single-engagement') as EngagementLoaderAdminData;
-    const eng = React.use(engagement);
-    const tm = React.use(teamMembers);
-    const sl = React.use(slug);
+    const loaderData = useRouteLoaderData('single-engagement') as EngagementLoaderAdminData;
+    const engagement = React.use(loaderData.engagement);
+    const teamMembers = React.use(loaderData.teamMembers);
+    const slug = React.use(loaderData.slug);
+    const languages = React.use(loaderData.languages);
     return (
         <ResponsiveContainer>
             <AutoBreadcrumbs />
@@ -36,7 +37,7 @@ const EngagementConfigurationWizard = () => {
             </Grid>
             <Grid size={12} mt={4}>
                 <Suspense fallback={<Heading2 decorated>Edit Configuration</Heading2>}>
-                    <ConfigForm engagement={eng} teamMembers={tm} slug={sl} />
+                    <ConfigForm engagement={engagement} teamMembers={teamMembers} slug={slug} languages={languages} />
                 </Suspense>
             </Grid>
         </ResponsiveContainer>
@@ -47,10 +48,12 @@ const ConfigForm = ({
     engagement,
     teamMembers,
     slug,
+    languages,
 }: {
     engagement: Engagement;
     teamMembers: EngagementTeamMember[];
     slug: string;
+    languages: Language[];
 }) => {
     const fetcher = useFetcher();
 
@@ -61,7 +64,7 @@ const ConfigForm = ({
             start_date: dayjs(engagement.start_date),
             end_date: dayjs(engagement.end_date),
             _dateConfirmed: true,
-            languages: [{ code: 'en', name: 'English' }] as Language[],
+            languages,
             is_internal: engagement.is_internal,
             _visibilityConfirmed: true,
             slug: slug,

@@ -31,10 +31,10 @@ export interface AuthoringContextType {
 
 export interface LanguageSelectorProps {
     currentLanguage: LanguageState;
-    setCurrentLanguage: (code: string, name: string) => void;
     languages: Promise<Language[]>;
     isDirty: boolean;
     isSubmitting: boolean;
+    setUnsavedWorkPromptSuppressed: Dispatch<SetStateAction<boolean>>;
 }
 
 export interface AuthoringMorePreformProps {
@@ -43,22 +43,25 @@ export interface AuthoringMorePreformProps {
 
 export interface AuthoringBottomNavProps {
     currentLanguage: LanguageState;
-    setCurrentLanguage: (code: string, name: string) => void;
     languages: Promise<Language[]>;
     pageTitle: string;
     pageName: string;
+    onSaveSection: () => void;
+    setUnsavedWorkPromptSuppressed: Dispatch<SetStateAction<boolean>>;
 }
 
 export interface LabelProps {
-    text: string;
+    text?: string;
     completed?: boolean;
     status?: never;
+    isLoading?: boolean;
 }
 
 export interface LabelWithStatusProps {
     text?: string;
     completed?: never;
     status: EngagementStatus;
+    isLoading?: boolean;
 }
 
 export type StatusLabelProps = LabelProps | LabelWithStatusProps;

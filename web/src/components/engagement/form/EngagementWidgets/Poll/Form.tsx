@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useContext, useEffect } from 'react';
 import Divider from '@mui/material/Divider';
 import { Grid2 as Grid, MenuItem, TextField, Select, SelectChangeEvent } from '@mui/material';
 import { MidScreenLoader } from 'components/common';
@@ -19,6 +19,11 @@ import Alert from '@mui/material/Alert';
 import usePollWidgetState from './PollWidget.hook';
 import PollAnswerForm from './PollAnswerForm';
 import { WidgetLocation } from 'models/widget';
+import { useParams } from 'react-router';
+import {
+    getEngagementContentTranslationsByCode,
+    syncEngagementContentTranslationsByCode,
+} from 'services/engagementContentTranslationService';
 
 interface DetailsForm {
     title: string;
@@ -50,6 +55,27 @@ const Form = () => {
     const { savedEngagement } = useContext(ActionContext);
     const { pollAnswers, setPollAnswers, pollWidgetState, setPollWidgetState, isEngagementPublished } =
         usePollWidgetState(pollWidget, savedEngagement, widget);
+    const { languageCode } = useParams<{ languageCode?: string }>();
+    const activeLanguageCode = (languageCode ?? 'en').toLowerCase();
+
+    useEffect(() => {
+        if (!pollWidget || !widget || activeLanguageCode === 'en') return;
+        const loadTranslations = async () => {
+            const contentTranslations = await getEngagementContentTranslationsByCode(
+                widget.engagement_id,
+                activeLanguageCode,
+            );
+            const widgetTranslation = contentTranslations.widgets.find((t) => t.widget_id === widget.id);
+            if (widgetTranslation) {
+                setPollWidgetState((prev) => ({
+                    ...prev,
+                    title: widgetTranslation.poll_title ?? prev.title,
+                    description: widgetTranslation.poll_description ?? prev.description,
+                }));
+            }
+        };
+        loadTranslations();
+    }, [pollWidget?.id, activeLanguageCode, widget?.id]);
 
     const handleOnSubmit = (event: React.SyntheticEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -96,11 +122,30 @@ const Form = () => {
             return;
         }
 
-        if (!isEngagementPublished) {
-            await patchPoll(widget.id, pollWidget.id, { ...data });
-        } else {
-            // if already published then only update status
+        if (activeLanguageCode !== 'en' && !isEngagementPublished) {
+            const existingTranslations = await getEngagementContentTranslationsByCode(
+                widget.engagement_id,
+                activeLanguageCode,
+            );
+            const existingTranslation = existingTranslations.widgets.find((t) => t.widget_id === widget.id);
+            const nextTranslations = existingTranslation
+                ? existingTranslations.widgets.map((t) =>
+                      t.widget_id === widget.id
+                          ? { ...t, poll_title: data.title, poll_description: data.description }
+                          : t,
+                  )
+                : [
+                      ...existingTranslations.widgets,
+                      { widget_id: widget.id, poll_title: data.title, poll_description: data.description },
+                  ];
+            await syncEngagementContentTranslationsByCode(widget.engagement_id, activeLanguageCode, {
+                widgets: nextTranslations,
+            });
+        } else if (isEngagementPublished) {
+            // if already published then only update status (language-neutral)
             await patchPoll(widget.id, pollWidget.id, { status: data.status });
+        } else {
+            await patchPoll(widget.id, pollWidget.id, { ...data });
         }
 
         dispatch(openNotification({ severity: 'success', text: 'The Poll widget was successfully updated' }));

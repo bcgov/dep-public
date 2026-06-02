@@ -4,8 +4,10 @@ import { BodyText } from 'components/common/Typography/Body';
 
 export const AuthoringFormContainer = ({
     children,
+    isHydrating = false,
+    sx,
     ...formContainerProps
-}: { children: React.ReactNode } & GridProps) => {
+}: { children: React.ReactNode; isHydrating?: boolean } & GridProps) => {
     return (
         <Grid
             className="dep-layout-authoring-form-container"
@@ -15,6 +17,14 @@ export const AuthoringFormContainer = ({
             columnGap="0.5rem"
             rowGap="1.5rem"
             maxWidth="700px"
+            sx={[
+                {
+                    transition: 'opacity 0.15s',
+                    opacity: isHydrating ? 0.5 : 1,
+                    pointerEvents: isHydrating ? 'none' : undefined,
+                },
+                ...(Array.isArray(sx) ? sx : [sx]),
+            ]}
             {...formContainerProps}
         >
             {children}

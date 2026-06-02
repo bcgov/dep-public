@@ -19,12 +19,15 @@ import { getPath, ROUTES } from 'routes/routes';
 import { LanguageState } from 'reduxSlices/languageSlice';
 import { useAppSelector } from 'hooks';
 import { RouterLinkRenderer } from 'components/common/Navigation/Link';
+import { Language } from 'models/language';
 
 export const ConfigSummary = () => {
     const siteUrl = getBaseUrl();
     const engagementId = useParams().engagementId;
     const language: LanguageState = useAppSelector((state) => state.language);
-    const { engagement, teamMembers, slug } = useRouteLoaderData('single-engagement') as EngagementLoaderAdminData;
+    const { engagement, teamMembers, slug, languages } = useRouteLoaderData(
+        'single-engagement',
+    ) as EngagementLoaderAdminData;
     const [tooltipOpen, setTooltipOpen] = React.useState(false);
 
     useEffect(() => {
@@ -238,12 +241,35 @@ export const ConfigSummary = () => {
                         <Grid container direction="column" spacing={1}>
                             <Grid>
                                 <BodyText bold color="primary.main">
-                                    Language(s) Included (1)
+                                    <Suspense fallback={'Language(s) Included'}>
+                                        <Await resolve={languages}>
+                                            {(resolvedLanguages: Language[]) =>
+                                                `Language(s) Included (${resolvedLanguages.length})`
+                                            }
+                                        </Await>
+                                    </Suspense>
                                 </BodyText>
                             </Grid>
-                            <Grid>
-                                <BodyText bold>English (Default)</BodyText>
-                            </Grid>
+                            <Suspense
+                                fallback={
+                                    <Grid>
+                                        <BodyText bold>English (Default)</BodyText>
+                                    </Grid>
+                                }
+                            >
+                                <Await resolve={languages}>
+                                    {(resolvedLanguages: Language[]) =>
+                                        resolvedLanguages.map((language) => (
+                                            <Grid key={language.code}>
+                                                <BodyText bold>
+                                                    {language.name}
+                                                    {language.code === 'en' && ' (Default)'}
+                                                </BodyText>
+                                            </Grid>
+                                        ))
+                                    }
+                                </Await>
+                            </Suspense>
                         </Grid>
                     </OutlineBox>
                 </Grid>

@@ -40,8 +40,10 @@ const UserGuideNav = () => {
         [getPath(ROUTES.ENGAGEMENT_CREATE_WIZARD)]: `${HELP_URL}/posts/create-engagement/`,
         [getPath(ROUTES.ENGAGEMENT_DETAILS_AUTHORING, { engagementId: SAMPLE_IDS.engagementId })]:
             `${HELP_URL}/posts/engagement-details/`,
-        [getPath(ROUTES.ADMIN_ENGAGEMENT_PREVIEW, { engagementId: SAMPLE_IDS.engagementId })]:
-            `${HELP_URL}/posts/preview-engagement/`,
+        [getPath(ROUTES.ADMIN_ENGAGEMENT_PREVIEW, {
+            engagementId: SAMPLE_IDS.engagementId,
+            languageCode: SAMPLE_IDS.languageId,
+        })]: `${HELP_URL}/posts/preview-engagement/`,
         [getPath(ROUTES.ENGAGEMENT_DETAILS_ACTIVITY, { engagementId: SAMPLE_IDS.engagementId })]:
             `${HELP_URL}/posts/preview-engagement/`,
         [getPath(ROUTES.PUBLIC_DASHBOARD_BY_SLUG, {

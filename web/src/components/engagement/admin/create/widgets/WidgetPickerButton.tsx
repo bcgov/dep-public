@@ -1,4 +1,4 @@
-import React, { useContext, useEffect } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { WidgetDrawerContext } from 'components/engagement/form/EngagementWidgets/WidgetDrawerContext';
 import { Grid2 as Grid, Skeleton } from '@mui/material';
 import { If, Else, Then } from 'react-if';
@@ -7,6 +7,8 @@ import { colors } from 'styles/Theme';
 import { WidgetCardSwitch } from 'components/engagement/form/EngagementWidgets/WidgetCardSwitch';
 import { openNotificationModal } from 'services/notificationModalService/notificationModalSlice';
 import { WidgetLocation } from 'models/widget';
+import { useParams } from 'react-router';
+import { getEngagementContentTranslationsByCode } from 'services/engagementContentTranslationService';
 
 /**
  * A button component that allows users to pick and manage widgets for a specific location in an engagement.
@@ -30,6 +32,9 @@ export const WidgetPickerButton = ({
     const { widgets, deleteWidget, setWidgetDrawerOpen, isWidgetsLoading, setWidgetLocation, setWidgetDetailsTabId } =
         useContext(WidgetDrawerContext);
     const dispatch = useAppDispatch();
+    const { languageCode } = useParams<{ languageCode?: string }>();
+    const activeLanguageCode = (languageCode ?? 'en').toLowerCase();
+    const [translatedTitles, setTranslatedTitles] = useState<Map<number, string>>(new Map());
     const validDetailsTabId = detailsTabId && detailsTabId > 0 ? detailsTabId : undefined;
     const locationWidgets = widgets.filter(
         (w) =>
@@ -37,6 +42,25 @@ export const WidgetPickerButton = ({
             (location !== WidgetLocation.Details ||
                 (w.engagement_details_tab_id ?? null) === (validDetailsTabId ?? null)),
     );
+
+    useEffect(() => {
+        if (activeLanguageCode === 'en' || locationWidgets.length === 0) {
+            setTranslatedTitles(new Map());
+            return;
+        }
+        const engagementId = locationWidgets[0].engagement_id;
+        getEngagementContentTranslationsByCode(engagementId, activeLanguageCode)
+            .then((translations) => {
+                const titleMap = new Map<number, string>();
+                translations.widgets.forEach((t) => {
+                    if (t.title) titleMap.set(t.widget_id, t.title);
+                });
+                setTranslatedTitles(titleMap);
+            })
+            .catch(() => {
+                /* silently fall back to base title */
+            });
+    }, [activeLanguageCode, locationWidgets.map((w) => w.id).join(',')]);
 
     useEffect(() => {
         setWidgetLocation(location);
@@ -82,7 +106,10 @@ export const WidgetPickerButton = ({
                             <WidgetCardSwitch
                                 singleSelection={true}
                                 key={locationWidgets[0].id}
-                                widget={locationWidgets[0]}
+                                widget={{
+                                    ...locationWidgets[0],
+                                    title: translatedTitles.get(locationWidgets[0].id) ?? locationWidgets[0].title,
+                                }}
                                 removeWidget={removeWidget}
                             />
                         ) : (

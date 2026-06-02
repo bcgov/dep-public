@@ -16,19 +16,21 @@ export const addOrRemoveLanguage = async (
     newTenantLanguages: Language[],
     selectedLanguages: Language[],
 ): Promise<string | void> => {
-    if (tenantId) {
-        if (newTenantLanguages.length > selectedLanguages.length) {
-            const addedLanguage = newTenantLanguages.filter((language) => !selectedLanguages.includes(language))[0];
-            const savedTenantLanguage = await postTenantLanguage(tenantId, addedLanguage.id);
-            if (savedTenantLanguage) {
-                return 'Added language to tenant.';
-            }
-        } else if (newTenantLanguages.length < selectedLanguages.length) {
-            const removedLanguage = selectedLanguages.filter((language) => !newTenantLanguages.includes(language))[0];
-            const response = await deleteTenantLanguage(tenantId, removedLanguage.id);
-            if (response.status === 'success') {
-                return 'Deleted language from tenant.';
-            }
+    if (!tenantId || newTenantLanguages.length === selectedLanguages.length) return;
+
+    if (newTenantLanguages.length > selectedLanguages.length) {
+        const addedLanguage = newTenantLanguages.find((language) => !selectedLanguages.includes(language));
+        if (!addedLanguage) throw new Error('No language to add');
+        const savedTenantLanguage = await postTenantLanguage(tenantId, addedLanguage.id);
+        if (savedTenantLanguage) {
+            return 'Added language to tenant.';
+        }
+    } else if (newTenantLanguages.length < selectedLanguages.length) {
+        const removedLanguage = selectedLanguages.find((language) => !newTenantLanguages.includes(language));
+        if (!removedLanguage) throw new Error('No language to remove');
+        const response = await deleteTenantLanguage(tenantId, removedLanguage.id);
+        if (response.status === 'success') {
+            return 'Deleted language from tenant.';
         }
     }
 };
@@ -63,7 +65,7 @@ const LanguageAdminPanel = () => {
                 dispatch(
                     openNotification({
                         severity: 'success',
-                        text: message ? message : '',
+                        text: message ?? 'Successfully updated languages.',
                     }),
                 );
             })

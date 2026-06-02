@@ -55,6 +55,10 @@ const EngagementForm = ({
     } = engagementForm;
 
     const [nameHasBeenEdited, setNameHasBeenEdited] = useState(false);
+    const selectedLanguages = watch('languages') || [];
+    const hasEnglish = selectedLanguages.some((language) => language.code === 'en');
+    const hasAdditionalLanguage = selectedLanguages.some((language) => language.code !== 'en');
+    const isEnglishOnly = hasEnglish && selectedLanguages.length === 1;
 
     const parentPageLink = engagement
         ? getPath(ROUTES.ENGAGEMENT_DETAILS_CONFIG, { engagementId: engagement.id })
@@ -115,7 +119,7 @@ const EngagementForm = ({
                 </FormStep>
                 <FormStep
                     step={4}
-                    completed={watch('languages').some((l) => l.code)}
+                    completed={isEnglishOnly || hasAdditionalLanguage}
                     question="Will your engagement be offered in multiple languages?"
                     details="All engagements must be offered in English, but you may also add content in additional languages. If you select multi-language, you must include French."
                     isGroup
@@ -136,7 +140,7 @@ const EngagementForm = ({
                 </FormStep>
                 <FormStep
                     step={6}
-                    completed={watch('users').some((u) => u)}
+                    completed={watch('users').some(Boolean)}
                     question="Who would you like to add to this engagement?"
                     details="In addition to yourself, please add the team members that you would like to have access to this engagement. You can only add individuals that have already signed into DEP."
                     isGroup

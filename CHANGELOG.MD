@@ -1,3 +1,13 @@
+## May 19, 2026
+
+- **Feature** Multi-language authoring support [🎟️ DEP-234](https://citz-gdx.atlassian.net/browse/DEP-234)
+  - Authoring now supports engagement-level multilingual content across sections with translation-aware loading and save paths.
+  - In multilingual engagements, the language selector reflects all languages configured during setup and supports switching between authoring languages while preserving page context.
+  - Improved language switching UX in authoring to reduce remount/layout shift: state hydration now avoids clearing forms before translated content arrives, preserves details-tab selection, and keeps scroll position during language changes.
+  - Added/expanded translation infrastructure for engagement and widget content (including timeline, image, contact, and related widget translation resources), plus supporting migrations and tests.
+  - Publishing behavior aligns with requirements: English required sections can be completed/published independently; incomplete non-English content does not block publishing, and incomplete languages are not exposed on the public view.
+  - English-only engagements now keep language controls effectively non-interactive/disabled in authoring contexts where no alternate language is configured.
+
 ## May 7, 2026
 
 - **Feature** Updated/added links to BC Gov logo in header/footer. [🎟️ DEP-271](https://citz-gdx.atlassian.net/browse/DEP-271)

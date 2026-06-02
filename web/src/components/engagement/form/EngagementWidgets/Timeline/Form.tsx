@@ -10,11 +10,25 @@ import { useAppDispatch } from 'hooks';
 import { openNotification } from 'services/notificationService/notificationSlice';
 import { WidgetDrawerContext } from '../WidgetDrawerContext';
 import { TimelineContext } from './TimelineContext';
-import { patchTimeline, postTimeline } from 'services/widgetService/TimelineService';
+import {
+    patchTimeline,
+    postTimeline,
+    getTimelineEventTranslationsByLanguage,
+    postTimelineEventTranslation,
+    patchTimelineEventTranslation,
+    TimelineEventTranslation,
+} from 'services/widgetService/TimelineService';
 import { WidgetTitle } from '../WidgetTitle';
-import { TimelineEvent } from 'models/timelineWidget';
+import { TimelineEvent, TimelineWidget } from 'models/timelineWidget';
 import { WidgetLocation } from 'models/widget';
 import { Heading3 } from 'components/common/Typography';
+import { useParams } from 'react-router';
+import {
+    getEngagementContentTranslationsByCode,
+    getLanguageIdByCode,
+    syncEngagementContentTranslationsByCode,
+    TimelineWidgetTranslation,
+} from 'services/engagementContentTranslationService';
 
 interface DetailsForm {
     title: string;
@@ -32,6 +46,8 @@ const Form = () => {
     const { widget, isLoadingTimelineWidget, timelineWidget } = useContext(TimelineContext);
     const { setWidgetDrawerOpen } = useContext(WidgetDrawerContext);
     const [isCreating, setIsCreating] = React.useState(false);
+    const { languageCode } = useParams<{ languageCode?: string }>();
+    const activeLanguageCode = (languageCode ?? 'en').toLowerCase();
 
     const newEvent: TimelineEvent = {
         id: 0,
@@ -45,7 +61,7 @@ const Form = () => {
     };
 
     const [timelineEvents, setTimelineEvents] = React.useState<TimelineEvent[]>(
-        timelineWidget ? timelineWidget.events.sort((a, b) => a.position - b.position) : [newEvent],
+        timelineWidget ? timelineWidget.events.toSorted((a, b) => a.position - b.position) : [newEvent],
     );
     const [timelineWidgetState, setTimelineWidgetState] = React.useState<WidgetState>({
         description: timelineWidget?.description || '',
@@ -67,12 +83,61 @@ const Form = () => {
         },
     ];
 
-    useEffect(() => {
-        if (timelineWidget) {
-            setTimelineEvents(timelineWidget.events.sort((a, b) => a.position - b.position));
-            setTimelineWidgetState(timelineWidget);
+    const translateTimelineWidget = (
+        timelineWidget: TimelineWidget,
+        timelineTranslation?: TimelineWidgetTranslation,
+    ) => {
+        if (timelineTranslation) {
+            setTimelineWidgetState({
+                ...timelineWidget,
+                title: timelineTranslation.title ?? timelineWidget.title,
+                description: timelineTranslation.description ?? timelineWidget.description,
+            });
         }
-    }, [timelineWidget]);
+    };
+
+    const translateTimelineEvents = (timelineWidget: TimelineWidget, eventTranslations: TimelineEventTranslation[]) => {
+        if (eventTranslations.length > 0) {
+            const translatedEvents = timelineWidget.events.map((event: TimelineEvent) => {
+                const eventTr = eventTranslations.find((t) => t.timeline_event_id === event.id);
+                if (!eventTr) return event;
+                return {
+                    ...event,
+                    description: eventTr.description ?? event.description,
+                };
+            });
+            setTimelineEvents(translatedEvents.toSorted((a, b) => a.position - b.position));
+        }
+    };
+
+    const initializeTranslations = async () => {
+        if (!timelineWidget) {
+            return;
+        }
+
+        const currentTimelineWidget = timelineWidget;
+
+        setTimelineEvents(currentTimelineWidget.events.toSorted((a, b) => a.position - b.position));
+        if (activeLanguageCode === 'en' || !widget) {
+            return;
+        }
+        const [contentTranslations, languageId] = await Promise.all([
+            getEngagementContentTranslationsByCode(widget.engagement_id, activeLanguageCode),
+            getLanguageIdByCode(activeLanguageCode),
+        ]);
+        const timelineTranslation = contentTranslations.timeline_widgets.find(
+            (t) => t.widget_timeline_id === currentTimelineWidget.id,
+        );
+        translateTimelineWidget(currentTimelineWidget, timelineTranslation);
+        const eventTranslations = await getTimelineEventTranslationsByLanguage(currentTimelineWidget.id, languageId);
+        translateTimelineEvents(currentTimelineWidget, eventTranslations);
+    };
+
+    useEffect(() => {
+        if (!timelineWidget) return;
+        setTimelineWidgetState(timelineWidget);
+        initializeTranslations();
+    }, [timelineWidget, activeLanguageCode, widget?.id]);
 
     const createTimeline = async (data: DetailsForm) => {
         if (!widget) {
@@ -100,7 +165,54 @@ const Form = () => {
             return;
         }
 
-        await patchTimeline(widget.id, timelineWidget.id, { ...data });
+        if (activeLanguageCode == 'en') {
+            await patchTimeline(widget.id, timelineWidget.id, { ...data });
+        } else {
+            const [existingTranslations, languageId] = await Promise.all([
+                getEngagementContentTranslationsByCode(widget.engagement_id, activeLanguageCode),
+                getLanguageIdByCode(activeLanguageCode),
+            ]);
+            const existingTimelineTranslations = existingTranslations.timeline_widgets;
+            const existingRecord = existingTimelineTranslations.find((t) => t.widget_timeline_id === timelineWidget.id);
+            const updatedRecord = existingRecord
+                ? { ...existingRecord, title: data.title, description: data.description }
+                : {
+                      widget_id: widget.id,
+                      widget_timeline_id: timelineWidget.id,
+                      title: data.title,
+                      description: data.description,
+                  };
+            const otherTranslations = existingTimelineTranslations.filter(
+                (t) => t.widget_timeline_id !== timelineWidget.id,
+            );
+            const existingEventTranslations = await getTimelineEventTranslationsByLanguage(
+                timelineWidget.id,
+                languageId,
+            );
+            await syncEngagementContentTranslationsByCode(widget.engagement_id, activeLanguageCode, {
+                timeline_widgets: [...otherTranslations, updatedRecord],
+            });
+            await Promise.all(
+                data.events
+                    .filter((event) => event.id > 0)
+                    .map((event) => {
+                        const existing = existingEventTranslations.find((t) => t.timeline_event_id === event.id);
+                        if (existing) {
+                            return patchTimelineEventTranslation(timelineWidget.id, existing.id, {
+                                description: event.description ?? '',
+                                time: event.time ?? '',
+                            });
+                        }
+                        return postTimelineEventTranslation(timelineWidget.id, {
+                            timeline_event_id: event.id,
+                            language_id: languageId,
+                            description: event.description ?? '',
+                            time: event.time ?? '',
+                        });
+                    }),
+            );
+        }
+
         dispatch(openNotification({ severity: 'success', text: 'The timeline widget was successfully updated' }));
     };
 
@@ -133,12 +245,10 @@ const Form = () => {
             event.position = index;
         });
         eventsForSubmission.sort((a, b) => a.position - b.position);
-        /* eslint "no-warning-comments": [1, { "terms": ["todo", "fix me, replace any type"] }] */
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const eventTarget = event.target as any;
+        const formData = new FormData(event.currentTarget);
         const restructuredData = {
-            title: eventTarget['title']?.value,
-            description: eventTarget['description']?.value,
+            title: ((formData.get('title') as string) ?? '').trim(),
+            description: ((formData.get('description') as string) ?? '').trim(),
             events: eventsForSubmission,
         };
         setTimelineEvents(eventsForSubmission);
@@ -253,8 +363,8 @@ const Form = () => {
                             spacing={2}
                             mt={'3em'}
                         >
-                            {timelineEvents &&
-                                timelineEvents.map((tEvent, index) => (
+                            {timelineEvents?.map((tEvent, index) => {
+                                return (
                                     <Grid
                                         className={`event${index + 1}`}
                                         key={`event${index + 1}`}
@@ -330,7 +440,8 @@ const Form = () => {
                                             <Divider sx={{ marginTop: '1em' }} />
                                         </Grid>
                                     </Grid>
-                                ))}
+                                );
+                            })}
                             <Grid>
                                 <Button size="small" variant="primary" onClick={() => handleAddEvent()}>
                                     Add Event

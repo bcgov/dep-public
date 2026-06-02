@@ -1,5 +1,5 @@
 import { Params } from 'react-router';
-import { getEngagement } from 'services/engagementService';
+import { getAvailableTranslationLanguages, getEngagement } from 'services/engagementService';
 import { getEngagementIdBySlug, getSlugByEngagementId } from 'services/engagementSlugService';
 import { getWidgets } from 'services/widgetService';
 import { getEngagementMetadata, getMetadataTaxa } from 'services/engagementMetadataService';
@@ -9,7 +9,6 @@ import { getTeamMembers } from 'services/membershipService';
 import { EngagementTeamMember } from 'models/engagementTeamMember';
 import { EngagementDetailsTab } from 'models/engagementDetailsTab';
 import { getDetailsTabs } from 'services/engagementDetailsTabService';
-import { getTenantLanguages } from 'services/languageService';
 import { Language } from 'models/language';
 
 export type EngagementLoaderAdminData = {
@@ -26,17 +25,30 @@ export type EngagementLoaderAdminData = {
 export const engagementLoaderAdmin = async ({ params }: { params: Params<string> }) => {
     const { slug: slugParam, engagementId } = params;
 
-    const tenantId =
-        typeof window !== 'undefined' && typeof window.sessionStorage !== 'undefined'
-            ? window.sessionStorage.getItem('tenantId')
-            : null;
-    const languages = tenantId ? getTenantLanguages(tenantId) : Promise.resolve([]);
     const slug = slugParam
         ? Promise.resolve(slugParam)
         : getSlugByEngagementId(Number(engagementId)).then((response) => response.slug);
     const engagement = slugParam
         ? getEngagementIdBySlug(slugParam).then((response) => getEngagement(response.engagement_id))
         : getEngagement(Number(engagementId));
+    const languages = engagement.then((response) =>
+        getAvailableTranslationLanguages(response.id).then((availableLanguages) => {
+            const hasEnglish = availableLanguages.some((language) => language.code === 'en');
+            if (hasEnglish) {
+                return availableLanguages;
+            }
+
+            return [
+                {
+                    id: 0,
+                    code: 'en',
+                    name: 'English',
+                    right_to_left: false,
+                },
+                ...availableLanguages,
+            ];
+        }),
+    );
     const widgets = engagement.then((response) => getWidgets(Number(response.id)));
     const details = engagement.then((response) => getDetailsTabs(response.id));
     const engagementMetadata = engagement.then((response) => getEngagementMetadata(Number(response.id)));

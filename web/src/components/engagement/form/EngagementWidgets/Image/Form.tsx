@@ -13,12 +13,16 @@ import { updatedDiff } from 'deep-object-diff';
 import { WidgetTitle } from '../WidgetTitle';
 import { Widget, WidgetLocation } from 'models/widget';
 import ImageUpload from 'components/imageUpload';
-import { useAsyncValue } from 'react-router';
+import { useAsyncValue, useParams } from 'react-router';
 import { ImageWidget } from 'models/imageWidget';
 import { Button, TextField } from 'components/common/Input';
 import { saveObject } from 'services/objectStorageService';
 import { SystemMessage } from 'components/common/Layout/SystemMessage';
 import { When } from 'react-if';
+import {
+    getEngagementContentTranslationsByCode,
+    syncEngagementContentTranslationsByCode,
+} from 'services/engagementContentTranslationService';
 
 const Form = () => {
     const schema = yup
@@ -35,6 +39,8 @@ const Form = () => {
     const [previewImage, setPreviewImage] = React.useState<File | null>(null);
     const { setWidgetDrawerOpen } = useContext(WidgetDrawerContext);
     const [isCreating, setIsCreating] = React.useState(false);
+    const { languageCode } = useParams<{ languageCode?: string }>();
+    const activeLanguageCode = (languageCode ?? 'en').toLowerCase();
 
     const imageForm = useForm<ImageWidgetForm>({
         resolver: yupResolver(schema) as unknown as Resolver<ImageWidgetForm>,
@@ -49,12 +55,33 @@ const Form = () => {
     } = imageForm;
 
     useEffect(() => {
-        if (imageWidget) {
-            setValue('description', imageWidget.description || '');
+        const initializeImageTranslations = async () => {
+            if (!imageWidget) {
+                return;
+            }
+
+            if (activeLanguageCode === 'en') {
+                setValue('description', imageWidget.description || '');
+                setValue('image_url', imageWidget.image_url);
+                setValue('alt_text', imageWidget.alt_text || '');
+                return;
+            }
+
+            const contentTranslations = await getEngagementContentTranslationsByCode(
+                widget.engagement_id,
+                activeLanguageCode,
+            );
+            const imageTranslation = contentTranslations.image_widgets.find(
+                (translation) => translation.widget_image_id === imageWidget.id,
+            );
+
+            setValue('description', imageTranslation?.description ?? imageWidget.description ?? '');
             setValue('image_url', imageWidget.image_url);
-            setValue('alt_text', imageWidget.alt_text || '');
-        }
-    }, [imageWidget]);
+            setValue('alt_text', imageTranslation?.alt_text ?? imageWidget.alt_text ?? '');
+        };
+
+        initializeImageTranslations();
+    }, [imageWidget, activeLanguageCode, widget.engagement_id]);
 
     const handleAddImageFile = (files: File[]) => {
         if (files.length > 0) {
@@ -83,7 +110,7 @@ const Form = () => {
     const createImage = async (data: ImageWidgetForm) => {
         const validatedData = await schema.validate(data);
         const { alt_text, image_url, description } = validatedData;
-        await postImage(widget.id, {
+        const createdImage = await postImage(widget.id, {
             widget_id: widget.id,
             engagement_id: widget.engagement_id,
             image_url: image_url,
@@ -91,6 +118,26 @@ const Form = () => {
             description: description,
             location: widget.location in WidgetLocation ? widget.location : null,
         });
+
+        if (activeLanguageCode !== 'en' && createdImage?.id) {
+            const existingContentTranslations = await getEngagementContentTranslationsByCode(
+                widget.engagement_id,
+                activeLanguageCode,
+            );
+            const nextTranslations = [
+                ...existingContentTranslations.image_widgets,
+                {
+                    widget_id: widget.id,
+                    widget_image_id: createdImage.id,
+                    alt_text,
+                    description,
+                },
+            ];
+            await syncEngagementContentTranslationsByCode(widget.engagement_id, activeLanguageCode, {
+                image_widgets: nextTranslations,
+            });
+        }
+
         dispatch(openNotification({ severity: 'success', text: 'A new image was successfully added' }));
     };
 
@@ -111,9 +158,58 @@ const Form = () => {
         if (Object.keys(updatedData).length === 0) {
             return;
         }
-        await patchImage(imageWidget.widget_id, imageWidget.id, {
-            ...updatedData,
-        });
+        if (activeLanguageCode === 'en') {
+            await patchImage(imageWidget.widget_id, imageWidget.id, {
+                ...updatedData,
+            });
+        } else {
+            const structuralUpdates = updatedDiff(
+                {
+                    image_url: imageWidget.image_url,
+                },
+                {
+                    image_url: validatedData.image_url,
+                },
+            );
+
+            if (Object.keys(structuralUpdates).length > 0) {
+                await patchImage(imageWidget.widget_id, imageWidget.id, {
+                    ...structuralUpdates,
+                });
+            }
+
+            const existingContentTranslations = await getEngagementContentTranslationsByCode(
+                widget.engagement_id,
+                activeLanguageCode,
+            );
+            const existingTranslation = existingContentTranslations.image_widgets.find(
+                (translation) => translation.widget_image_id === imageWidget.id,
+            );
+
+            const nextTranslations = existingTranslation
+                ? existingContentTranslations.image_widgets.map((translation) =>
+                      translation.widget_image_id === imageWidget.id
+                          ? {
+                                ...translation,
+                                alt_text: validatedData.alt_text,
+                                description: validatedData.description,
+                            }
+                          : translation,
+                  )
+                : [
+                      ...existingContentTranslations.image_widgets,
+                      {
+                          widget_id: widget.id,
+                          widget_image_id: imageWidget.id,
+                          alt_text: validatedData.alt_text,
+                          description: validatedData.description,
+                      },
+                  ];
+
+            await syncEngagementContentTranslationsByCode(widget.engagement_id, activeLanguageCode, {
+                image_widgets: nextTranslations,
+            });
+        }
         dispatch(openNotification({ severity: 'success', text: 'The image widget was successfully updated' }));
     };
 
@@ -127,13 +223,15 @@ const Form = () => {
         return updateImage(data);
     };
 
-    const uploadImageAndSubmit: React.FormEventHandler<HTMLFormElement> = async (event) => {
+    const uploadImageAndSubmit: React.FormEventHandler<HTMLFormElement> = (event) => {
         event.preventDefault();
-        if (previewImage) {
-            const image_url = await handleUploadImageFile();
-            setValue('image_url', image_url);
-        }
-        await handleSubmit(onSubmit)();
+        void (async () => {
+            if (previewImage) {
+                const image_url = await handleUploadImageFile();
+                setValue('image_url', image_url);
+            }
+            await handleSubmit(onSubmit)();
+        })();
     };
 
     const onSubmit: SubmitHandler<ImageWidgetForm> = async (data: ImageWidgetForm) => {

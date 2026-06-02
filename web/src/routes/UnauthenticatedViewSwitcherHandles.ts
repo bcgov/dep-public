@@ -2,12 +2,12 @@ import { EngagementLoaderPublicData } from 'components/engagement/public/view/En
 import { getPath, ROUTES } from './routes';
 import { ViewSwitcherHandle } from './ViewSwitcherHandle';
 
-const publicEngagementViewSwitcher: ViewSwitcherHandle = async (data) => {
+const publicEngagementViewSwitcher: ViewSwitcherHandle = async (data, _params, currentLanguageId) => {
     const loaderData = data as EngagementLoaderPublicData;
     const engagement = await loaderData.engagement;
     return {
         label: 'Edit Engagement',
-        href: getPath(ROUTES.ENGAGEMENT_DETAILS_AUTHORING, { engagementId: engagement.id }),
+        href: getPath(ROUTES.AUTHORING_DETAILS, { engagementId: engagement.id, languageCode: currentLanguageId }),
     };
 };
 

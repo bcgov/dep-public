@@ -21,13 +21,12 @@ import { Button } from 'components/common/Input/Button';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCheck } from '@fortawesome/pro-regular-svg-icons';
 import { StatusCircle } from '../../view/AuthoringTab';
-import pagePreview from 'assets/images/pagePreview.svg';
+import { ReactComponent as PagePreviewIcon } from 'assets/images/pagePreview.svg';
 import { AuthoringBottomNavProps, LanguageSelectorProps } from './types';
-import { getLanguageValue } from './AuthoringTemplate';
 import { useFormContext } from 'react-hook-form';
 import { EngagementUpdateData } from './AuthoringContext';
 import { ResponsiveContainer } from 'components/common/Layout';
-import { Await, useParams } from 'react-router';
+import { Await, useMatch, useNavigate, useParams } from 'react-router';
 import ConfirmModal from 'components/common/Modals/ConfirmModal';
 import { Language } from 'models/language';
 import { RouterLinkRenderer } from 'components/common/Navigation/Link';
@@ -35,20 +34,25 @@ import { faArrowUpRightFromSquare } from '@fortawesome/free-solid-svg-icons';
 import { EngagementViewSections } from 'components/engagement/public/view';
 import { useAuthoringPreviewWindow } from './AuthoringPreviewWindowContext';
 import { getPath, ROUTES } from 'routes/routes';
+import { useAppDispatch } from 'hooks';
+import { openNotification } from 'services/notificationService/notificationSlice';
+import { createEngagementTranslation, getEngagementTranslationByLanguage } from 'services/engagementService';
+import axios from 'axios';
 const PREVIEW_CLOSE_GRACE_MS = 800;
 
 const AuthoringBottomNav = ({
     currentLanguage,
-    setCurrentLanguage,
     languages,
     pageTitle,
     pageName,
-}: AuthoringBottomNavProps) => {
+    onSaveSection,
+    setUnsavedWorkPromptSuppressed,
+}: Omit<AuthoringBottomNavProps, 'setCurrentLanguage'>) => {
     const {
         setValue,
         formState: { isDirty, isSubmitting },
     } = useFormContext<EngagementUpdateData>();
-    const { engagementId } = useParams();
+    const { engagementId, languageCode } = useParams();
     const isMediumScreenOrLarger = useMediaQuery((theme: Theme) => theme.breakpoints.up('md'));
     const [portalEl, setPortalEl] = useState<HTMLElement | null>(null);
     const [atFooter, setAtFooter] = useState(false);
@@ -88,7 +92,10 @@ const AuthoringBottomNav = ({
     };
 
     const getTargetPreviewBasePath = () =>
-        `${getBasePathPrefix()}${getPath(ROUTES.ADMIN_ENGAGEMENT_PREVIEW, { engagementId: engagementId ?? '' })}`;
+        `${getBasePathPrefix()}${getPath(ROUTES.ADMIN_ENGAGEMENT_PREVIEW, {
+            engagementId: engagementId ?? '',
+            languageCode: languageCode ?? 'en',
+        })}`;
 
     const postPreviewScrollMessage = (previewWindow: Window, section?: string) => {
         const targetHash = getPreviewSectionHash(section);
@@ -169,7 +176,10 @@ const AuthoringBottomNav = ({
             const previewWindow = getActivePreviewWindow();
             if (!previewWindow || previewWindow.closed) return;
 
-            const expectedPathPrefix = `${getBasePathPrefix()}/${getPath(ROUTES.ADMIN_ENGAGEMENT_PREVIEW, { engagementId: engagementId ?? '' })}`;
+            const expectedPathPrefix = `${getBasePathPrefix()}/${getPath(ROUTES.ADMIN_ENGAGEMENT_PREVIEW, {
+                engagementId: engagementId ?? '',
+                languageCode: languageCode ?? 'en',
+            })}`;
             try {
                 if (!previewWindow.location.pathname.startsWith(expectedPathPrefix)) {
                     syncPreviewWindowUrl(pageName);
@@ -182,7 +192,7 @@ const AuthoringBottomNav = ({
         return () => {
             globalThis.clearInterval(interval);
         };
-    }, [engagementId, pageName]);
+    }, [engagementId, languageCode, pageName]);
 
     useLayoutEffect(() => {
         const footer = document.querySelector('footer');
@@ -231,6 +241,11 @@ const AuthoringBottomNav = ({
     }, [portalEl]);
 
     if (!portalEl) return null;
+
+    const handleSaveSection = () => {
+        setValue('request_type', 'update');
+        onSaveSection();
+    };
 
     const fixedPosition = {
         position: 'fixed' as const,
@@ -317,17 +332,16 @@ const AuthoringBottomNav = ({
                             <ThemeProvider theme={AdminTheme}>
                                 <LanguageSelector
                                     currentLanguage={currentLanguage}
-                                    setCurrentLanguage={setCurrentLanguage}
                                     languages={languages}
                                     isDirty={isDirty}
                                     isSubmitting={isSubmitting}
+                                    setUnsavedWorkPromptSuppressed={setUnsavedWorkPromptSuppressed}
                                 />
                             </ThemeProvider>
                             <Button
                                 disabled={!isDirty || isSubmitting}
-                                type="submit"
-                                form="authoring-form"
-                                onClick={() => setValue('request_type', 'update')}
+                                type="button"
+                                onClick={handleSaveSection}
                                 variant="primary"
                                 size="small"
                                 sx={{
@@ -352,7 +366,7 @@ const AuthoringBottomNav = ({
                                     size="small"
                                     type="button"
                                     href={`${getTargetPreviewBasePath()}${getPreviewSectionHash(pageName)}`}
-                                    icon={<img src={pagePreview} alt="" aria-hidden="true" />}
+                                    icon={<PagePreviewIcon aria-hidden="true" />}
                                     onClick={(e) => {
                                         e.preventDefault();
                                         // If the preview window is still open, resfresh the data and bring it to the foreground
@@ -407,35 +421,126 @@ const AuthoringBottomNav = ({
 
 const LanguageSelector = ({
     currentLanguage,
-    setCurrentLanguage,
     languages,
     isDirty,
     isSubmitting,
-}: LanguageSelectorProps) => {
+    setUnsavedWorkPromptSuppressed,
+}: Omit<LanguageSelectorProps, 'setCurrentLanguage'>) => {
+    const { engagementId, languageCode: urlLanguageCode } = useParams();
+    const navigate = useNavigate();
+    const pageName = useMatch(ROUTES.AUTHORING_PAGE)?.params.page;
+    const dispatch = useAppDispatch();
     const [languageModalOpen, setLanguageModalOpen] = useState(false);
     const [newLanguage, setNewLanguage] = useState('');
     const [languageList, setLanguageList] = useState<Language[]>([]);
+    const [languagesLoaded, setLanguagesLoaded] = useState(false);
+    const [isSwitchingLanguage, setIsSwitchingLanguage] = useState(false);
+
+    const isEnglishOnly = languagesLoaded && languageList.length <= 1;
 
     useEffect(() => {
         languages.then((lngs) => {
             setLanguageList(lngs);
+            setLanguagesLoaded(true);
         });
-    }, []);
+    }, [languages]);
+
+    useEffect(() => {
+        if (!languagesLoaded) {
+            return;
+        }
+        if (isEnglishOnly && currentLanguage.id !== 'en') {
+            navigate(
+                getPath(ROUTES.AUTHORING_PAGE, {
+                    engagementId: engagementId ?? '',
+                    languageCode: 'en',
+                    page: pageName ?? 'banner',
+                }),
+                {
+                    state: {
+                        preserveScroll: true,
+                        authoringScrollY: globalThis.scrollY,
+                    },
+                },
+            );
+        }
+    }, [languagesLoaded, isEnglishOnly, currentLanguage.id, navigate, engagementId, pageName]);
+
+    const ensureTranslationResources = async (languageCode: string): Promise<boolean> => {
+        if (languageCode === 'en') {
+            return true;
+        }
+
+        const id = Number(engagementId);
+        if (!id || Number.isNaN(id)) {
+            dispatch(openNotification({ severity: 'error', text: 'Unable to switch language for this engagement.' }));
+            return false;
+        }
+
+        const selectedLanguage = languageList.find((language) => language.code === languageCode);
+        if (!selectedLanguage?.id) {
+            dispatch(openNotification({ severity: 'error', text: 'Selected language is not available.' }));
+            return false;
+        }
+
+        try {
+            const existingTranslations = await getEngagementTranslationByLanguage(id, selectedLanguage.id);
+            if (existingTranslations.length === 0) {
+                await createEngagementTranslation(id, selectedLanguage.id);
+            }
+            return true;
+        } catch (error) {
+            if (axios.isAxiosError(error) && error.response?.status === 409) {
+                return true;
+            }
+            dispatch(openNotification({ severity: 'error', text: 'Unable to load translation resources.' }));
+            return false;
+        }
+    };
+
+    const switchLanguage = async (languageCode: string) => {
+        setIsSwitchingLanguage(true);
+        const ready = await ensureTranslationResources(languageCode);
+        if (ready) {
+            navigate(
+                getPath(ROUTES.AUTHORING_PAGE, {
+                    engagementId: engagementId ?? '',
+                    languageCode,
+                    page: pageName ?? 'banner',
+                }),
+                {
+                    state: {
+                        preserveScroll: true,
+                        authoringScrollY: globalThis.scrollY,
+                    },
+                },
+            );
+            return true;
+        }
+        setUnsavedWorkPromptSuppressed(false);
+        setIsSwitchingLanguage(false);
+        return false;
+    };
 
     const handleSelectChange = (event: SelectChangeEvent<string>) => {
-        if (!isSubmitting) {
+        if (!isSubmitting && !isSwitchingLanguage && !isEnglishOnly) {
             const newLang = event.target.value;
             setNewLanguage(newLang);
             if (isDirty) {
+                setUnsavedWorkPromptSuppressed(true);
                 setLanguageModalOpen(true);
             } else {
-                setCurrentLanguage(newLang, getLanguageValue(newLang, languageList));
+                void switchLanguage(newLang);
             }
         }
     };
 
-    const languageModalConfirm = () => {
-        setCurrentLanguage(newLanguage, getLanguageValue(newLanguage, languageList));
+    const languageModalConfirm = async () => {
+        setUnsavedWorkPromptSuppressed(true);
+        const changed = await switchLanguage(newLanguage);
+        if (!changed) {
+            setUnsavedWorkPromptSuppressed(false);
+        }
         setLanguageModalOpen(false);
     };
 
@@ -455,7 +560,10 @@ const LanguageSelector = ({
                         },
                     ]}
                     handleConfirm={languageModalConfirm}
-                    handleClose={() => setLanguageModalOpen(false)}
+                    handleClose={() => {
+                        setUnsavedWorkPromptSuppressed(false);
+                        setLanguageModalOpen(false);
+                    }}
                     confirmButtonText={'Change Language'}
                     cancelButtonText={'Cancel & Go Back'}
                 />
@@ -473,9 +581,11 @@ const LanguageSelector = ({
                 <Await resolve={languages}>
                     {(languages) => (
                         <Select
-                            value={currentLanguage.id}
+                            disabled={isEnglishOnly || isSwitchingLanguage || isSubmitting}
+                            value={urlLanguageCode ?? currentLanguage.id}
                             onChange={handleSelectChange}
                             variant="standard"
+                            disableUnderline
                             slotProps={{
                                 input: {
                                     sx: {
@@ -487,16 +597,20 @@ const LanguageSelector = ({
                                 },
                             }}
                             sx={{
+                                opacity: isEnglishOnly ? 0.45 : 1,
                                 color: 'text.primary',
                                 fontSize: '0.875rem',
                                 cursor: 'pointer',
                                 height: '100%',
+                                '&.Mui-disabled': {
+                                    pointerEvents: 'none',
+                                },
                                 '& svg': {
                                     right: '0.5rem',
                                 },
                             }}
                             renderValue={() => {
-                                const completed = false; // todo: Replace with real "completed" boolean value once it is available.
+                                const completed = false;
                                 return (
                                     <span>
                                         <When condition={completed}>
@@ -511,7 +625,7 @@ const LanguageSelector = ({
                             }}
                         >
                             {languages.map((language) => {
-                                const completed = false; // todo: Replace with the real "completed" boolean values once they are available.
+                                const completed = false;
                                 return (
                                     <MenuItem value={language.code} key={language.code}>
                                         <When condition={completed}>

@@ -2,8 +2,6 @@ import React, { useEffect } from 'react';
 import { EditorState, convertToRaw } from 'draft-js';
 import { RichTextArea } from '../Input/RichTextArea';
 import { FormControl, Paper } from '@mui/material';
-import 'react-draft-wysiwyg/dist/react-draft-wysiwyg.css';
-import './RichEditorStyles.css';
 import { getEditorStateFromHtml, getEditorStateFromRaw } from './utils';
 import { ErrorMessage } from '../Typography';
 

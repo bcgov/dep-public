@@ -13,6 +13,12 @@ export interface Widget {
     items: WidgetItem[];
     title: string;
     location: WidgetLocation;
+    // Translation-overridable fields returned from content translation endpoint
+    video_url?: string;
+    video_description?: string;
+    map_marker_label?: string;
+    poll_title?: string;
+    poll_description?: string;
 }
 
 export enum WidgetType {

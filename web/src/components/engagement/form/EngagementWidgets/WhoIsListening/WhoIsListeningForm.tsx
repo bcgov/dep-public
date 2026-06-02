@@ -12,6 +12,11 @@ import { WhoIsListeningContext } from './WhoIsListeningContext';
 import { useCreateWidgetItemsMutation } from 'apiManager/apiSlices/widgets';
 import { WidgetTitle } from '../WidgetTitle';
 import { patchListeningWidget, postListeningWidget } from 'services/widgetService/ListeningService';
+import { useParams } from 'react-router';
+import {
+    getEngagementContentTranslationsByCode,
+    syncEngagementContentTranslationsByCode,
+} from 'services/engagementContentTranslationService';
 
 const WhoIsListeningForm = () => {
     const { setWidgetDrawerOpen, widgets, loadWidgets } = useContext(WidgetDrawerContext);
@@ -30,6 +35,8 @@ const WhoIsListeningForm = () => {
     const [savingWidgetItems, setSavingWidgetItems] = useState(false);
     const [createWidgetItems] = useCreateWidgetItemsMutation();
     const { widgetLocation } = useContext(WidgetDrawerContext);
+    const { languageCode } = useParams<{ languageCode?: string }>();
+    const activeLanguageCode = (languageCode ?? 'en').toLowerCase();
     const widget =
         widgets.find(
             (widget) => widget.widget_type_id === WidgetType.WhoIsListening && widget.location === widgetLocation,
@@ -57,9 +64,7 @@ const WhoIsListeningForm = () => {
 
             const contactsMap = new Map(contacts.map((contact) => [contact.id, contact]));
 
-            return contactsToSet
-                .map((contactToSet) => contactsMap.get(contactToSet.id))
-                .filter((contact) => Boolean(contact)) as Contact[];
+            return contactsToSet.map((contactToSet) => contactsMap.get(contactToSet.id)).filter(Boolean) as Contact[];
         });
     }, [contacts, widget]);
 
@@ -89,9 +94,28 @@ const WhoIsListeningForm = () => {
             await createWidgetItems({ widget_id: widget.id, widget_items_data: widgetsToUpdate }).unwrap();
             await loadWidgets();
             if (listeningWidget.id) {
-                await patchListeningWidget(widget.id, listeningWidget.id, {
-                    description: listeningWidget.description,
-                });
+                if (activeLanguageCode == 'en') {
+                    await patchListeningWidget(widget.id, listeningWidget.id, {
+                        description: listeningWidget.description,
+                    });
+                } else {
+                    const existingTranslations = await getEngagementContentTranslationsByCode(
+                        widget.engagement_id,
+                        activeLanguageCode,
+                    );
+                    const existingTranslation = existingTranslations.widgets.find((t) => t.widget_id === widget.id);
+                    const nextTranslations = existingTranslation
+                        ? existingTranslations.widgets.map((t) =>
+                              t.widget_id === widget.id ? { ...t, description: listeningWidget.description } : t,
+                          )
+                        : [
+                              ...existingTranslations.widgets,
+                              { widget_id: widget.id, description: listeningWidget.description },
+                          ];
+                    await syncEngagementContentTranslationsByCode(widget.engagement_id, activeLanguageCode, {
+                        widgets: nextTranslations,
+                    });
+                }
             } else {
                 await postListeningWidget(widget.id, {
                     engagement_id: widget.engagement_id,
@@ -128,9 +152,7 @@ const WhoIsListeningForm = () => {
                         setListeningWidget({ ...listeningWidget, description: e.target.value });
                     }}
                     aria-label="Description: optional."
-                    InputLabelProps={{
-                        shrink: false,
-                    }}
+                    slotProps={{ inputLabel: { shrink: false } }}
                     fullWidth
                     multiline
                     rows={4}
@@ -146,9 +168,7 @@ const WhoIsListeningForm = () => {
                             <TextField
                                 {...params}
                                 aria-label="Select an existing contact."
-                                InputLabelProps={{
-                                    shrink: false,
-                                }}
+                                slotProps={{ inputLabel: { shrink: false } }}
                             />
                         )}
                         getOptionLabel={(contact: Contact) => `${contact.name} - ${contact.title}`}

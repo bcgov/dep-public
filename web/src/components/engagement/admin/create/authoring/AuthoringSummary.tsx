@@ -1,6 +1,6 @@
 import { Grid2 as Grid } from '@mui/material';
-import React, { useEffect } from 'react';
-import { useOutletContext, useRouteLoaderData } from 'react-router';
+import React, { useCallback } from 'react';
+import { useOutletContext, useParams, useRouteLoaderData } from 'react-router';
 import { TextField } from 'components/common/Input';
 import { AuthoringTemplateOutletContext } from './types';
 import { Heading3, ErrorMessage, BodyText } from 'components/common/Typography';
@@ -12,9 +12,10 @@ import { EngagementLoaderAdminData } from 'components/engagement/admin/Engagemen
 import WidgetPicker from '../widgets';
 import { WidgetLocation } from 'models/widget';
 import { getEditorStateFromRaw } from 'components/common/RichTextEditor/utils';
-import UnsavedWorkConfirmation from 'components/common/Navigation/UnsavedWorkConfirmation';
 import { AuthoringFormContainer, AuthoringFormSection } from './AuthoringFormLayout';
 import { tryParse } from './utils';
+import { getEngagementTranslationByCode } from 'services/engagementService';
+import { useAuthoringPageHydration } from './useAuthoringPageHydration';
 
 const AuthoringSummary = () => {
     const { setDefaultValues, fetcher, pageName }: AuthoringTemplateOutletContext = useOutletContext(); // Access the form functions and values from the authoring template.
@@ -23,40 +24,37 @@ const AuthoringSummary = () => {
         getValues,
         reset,
         control,
-        formState: { errors, isDirty, isSubmitting },
+        formState: { errors },
     } = useFormContext<EngagementUpdateData>();
 
     const { engagement } = useRouteLoaderData('single-engagement') as EngagementLoaderAdminData;
-    const hasUnsavedWork = isDirty && !isSubmitting;
+    const { languageCode = 'en' } = useParams();
+    const loadSummaryValues = useCallback(async () => {
+        const eng = await engagement;
+        const translation = await getEngagementTranslationByCode(Number(eng.id), languageCode);
+        const descriptionTitle = translation?.description_title ?? eng.description_title;
+        const description = translation?.description ?? eng.description;
+        const richDescription = translation?.rich_description ?? eng.rich_description;
 
-    // Set current values to default state after saving form
-    useEffect(() => {
-        if (typeof fetcher.data !== 'string' || fetcher.data !== 'success') {
-            return;
-        }
-        const newDefaults = getValues();
-        setDefaultValues(newDefaults);
-        reset(newDefaults);
-    }, [fetcher.data]);
+        return {
+            ...defaultValuesObject,
+            form_source: pageName,
+            id: Number(eng.id),
+            rich_description: tryParse(richDescription) ? richDescription : '',
+            description_title: descriptionTitle || '',
+            description: description || '',
+            summary_editor_state: getEditorStateFromRaw(richDescription || ''),
+        };
+    }, [engagement, languageCode, pageName]);
 
-    // Reset values to default and retrieve relevant content from loader.
-    useEffect(() => {
-        engagement.then((eng) => {
-            reset(defaultValuesObject);
-            setValue('form_source', pageName);
-            setValue('id', Number(eng.id));
-            // Make sure it is valid JSON.
-            if (tryParse(eng.rich_description)) {
-                setValue('rich_description', eng.rich_description);
-            }
-            setValue('description_title', eng.description_title || '');
-            setValue('description', eng.description);
-            setValue('summary_editor_state', getEditorStateFromRaw(eng.rich_description || ''));
-            // Update default values so that our loaded values are default.
-            setDefaultValues(getValues());
-            reset(getValues());
-        });
-    }, []);
+    const { isHydrating } = useAuthoringPageHydration<EngagementUpdateData>({
+        deps: [engagement, languageCode, pageName],
+        fetcherData: fetcher.data,
+        getValues,
+        loadValues: loadSummaryValues,
+        reset,
+        setDefaultValues,
+    });
 
     const toolbar = {
         options: ['inline', 'list', 'link', 'blockType', 'history'],
@@ -76,85 +74,80 @@ const AuthoringSummary = () => {
     };
 
     return (
-        <>
-            {/* prevent navigating away when the user has unsaved work */}
-            <UnsavedWorkConfirmation blockNavigationWhen={hasUnsavedWork} />
+        <AuthoringFormContainer isHydrating={isHydrating}>
+            <Grid sx={{ mt: '1rem' }} direction="column" gap="0.5rem">
+                <Heading3 bold>Primary Content (Required)</Heading3>
+                <BodyText size="small">
+                    This section of content should provide a brief overview of your approach to feedback and what you
+                    would like your audience to do.
+                </BodyText>
+            </Grid>
+            <AuthoringFormSection
+                name="Section Heading"
+                required
+                labelFor="description_title"
+                details="Your section heading should be descriptive, short and succinct."
+            >
+                <Controller
+                    control={control}
+                    name="description_title"
+                    rules={{ required: true }}
+                    render={({ field }) => {
+                        return (
+                            <TextField
+                                {...field}
+                                id="description_title"
+                                counter
+                                maxLength={60}
+                                placeholder="Section heading text"
+                                error={errors.description_title?.message ?? ''}
+                            />
+                        );
+                    }}
+                />
+            </AuthoringFormSection>
 
-            <AuthoringFormContainer>
-                <Grid sx={{ mt: '1rem' }} direction="column" gap="0.5rem">
-                    <Heading3 bold>Primary Content (Required)</Heading3>
-                    <BodyText size="small">
-                        This section of content should provide a brief overview of your approach to feedback and what
-                        you would like your audience to do.
-                    </BodyText>
+            <AuthoringFormSection
+                name="Body Copy"
+                required
+                labelFor="summary_editor_state"
+                details="Body copy for the summary section of your engagement should provide a short overview of what your engagement is about and describe what you are asking your audience to do."
+            >
+                <ErrorMessage error={errors.summary_editor_state?.message ?? ''} />
+                <Controller
+                    control={control}
+                    name="summary_editor_state"
+                    rules={{ required: true }}
+                    render={({ field }) => {
+                        return (
+                            <RichTextArea
+                                ariaLabel="Body Copy: Body copy for the summary section of your engagement should provide a short overview of what your engagement is about and describe what you are asking your audience to do."
+                                spellCheck
+                                editorState={field.value}
+                                onEditorStateChange={(value) => {
+                                    field.onChange(handleEditorChange(value));
+                                }}
+                                placeholder="Body copy"
+                                handlePastedText={() => false}
+                                toolbar={toolbar}
+                            />
+                        );
+                    }}
+                />
+            </AuthoringFormSection>
+
+            <Grid sx={{ mt: '1rem' }}>
+                <Heading3 bold pb="0.5rem">
+                    Supporting Content (Optional)
+                </Heading3>
+                <BodyText size="small">
+                    You may use a widget to add supporting content to your primary content.
+                </BodyText>
+                <Grid container sx={{ maxWidth: '700px', mt: '1rem' }} direction="column">
+                    <WidgetPicker location={WidgetLocation.Summary} />
                 </Grid>
-                <AuthoringFormSection
-                    name="Section Heading"
-                    required
-                    labelFor="description_title"
-                    details="Your section heading should be descriptive, short and succinct."
-                >
-                    <Controller
-                        control={control}
-                        name="description_title"
-                        rules={{ required: true }}
-                        render={({ field }) => {
-                            return (
-                                <TextField
-                                    {...field}
-                                    id="description_title"
-                                    counter
-                                    maxLength={60}
-                                    placeholder="Section heading text"
-                                    error={errors.description_title?.message ?? ''}
-                                />
-                            );
-                        }}
-                    />
-                </AuthoringFormSection>
-
-                <AuthoringFormSection
-                    name="Body Copy"
-                    required
-                    labelFor="summary_editor_state"
-                    details="Body copy for the summary section of your engagement should provide a short overview of what your engagement is about and describe what you are asking your audience to do."
-                >
-                    <ErrorMessage error={errors.summary_editor_state?.message ?? ''} />
-                    <Controller
-                        control={control}
-                        name="summary_editor_state"
-                        rules={{ required: true }}
-                        render={({ field }) => {
-                            return (
-                                <RichTextArea
-                                    ariaLabel="Body Copy: Body copy for the summary section of your engagement should provide a short overview of what your engagement is about and describe what you are asking your audience to do."
-                                    spellCheck
-                                    editorState={field.value}
-                                    onEditorStateChange={(value) => {
-                                        field.onChange(handleEditorChange(value));
-                                    }}
-                                    placeholder="Body copy"
-                                    handlePastedText={() => false}
-                                    toolbar={toolbar}
-                                />
-                            );
-                        }}
-                    />
-                </AuthoringFormSection>
-
-                <Grid sx={{ mt: '1rem' }}>
-                    <Heading3 bold pb="0.5rem">
-                        Supporting Content (Optional)
-                    </Heading3>
-                    <BodyText size="small">
-                        You may use a widget to add supporting content to your primary content.
-                    </BodyText>
-                    <Grid container sx={{ maxWidth: '700px', mt: '1rem' }} direction="column">
-                        <WidgetPicker location={WidgetLocation.Summary} />
-                    </Grid>
-                </Grid>
-            </AuthoringFormContainer>
-        </>
+            </Grid>
+        </AuthoringFormContainer>
     );
 };
 

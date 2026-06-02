@@ -3,7 +3,7 @@ import { Grid2 as Grid, Grid2Props as GridProps } from '@mui/material';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { StatusIcon } from '../Communication/StatusIcon';
 import { colors } from 'styles/Theme';
-import { faClose } from '@fortawesome/pro-regular-svg-icons';
+import { faClose, IconDefinition } from '@fortawesome/pro-regular-svg-icons';
 import { Button } from 'components/common/Input/Button';
 
 /**
@@ -52,14 +52,14 @@ export const SystemMessage = ({
     onDismiss?: () => void;
     color?: string;
     coloredBackground?: boolean;
-    icon?: string;
+    icon?: IconDefinition;
 } & GridProps) => {
     return (
         <Grid
             container
             direction="row"
             justifyContent="flex-start"
-            alignItems="center"
+            alignItems="flex-start"
             sx={{
                 maxWidth: { xs: '100%', md: '700px' },
                 borderRadius: '8px',
@@ -73,7 +73,11 @@ export const SystemMessage = ({
             }}
         >
             <Grid sx={{ pr: 1, fontSize: '18px' }}>
-                <StatusIcon status={status} color={color} />
+                {icon ? (
+                    <FontAwesomeIcon icon={icon} color={color || colors.notification[status].icon} />
+                ) : (
+                    <StatusIcon status={status} color={color} />
+                )}
             </Grid>
             <Grid sx={{ width: '100%', maxWidth: { xs: '100%', md: '600px', fontSize: '14px' } }}>{children}</Grid>
             <Grid justifySelf="flex-end" sx={{ mt: -0.75, opacity: onDismiss ? 1 : 0 }}>

@@ -59,9 +59,9 @@ const DrawerBox = ({ isMediumScreenOrLarger, setOpen }: DrawerBoxProps) => {
     const permissions = useAppSelector((state) => state.user.roles);
     const bottomRouteNames = new Set(['Tenant Admin', 'Site Feedback']);
 
-    const currentBaseRoute = Routes.map((route) => route.base)
-        .filter((route) => location.pathname.includes(route))
-        .reduce((prev, curr) => (prev.length > curr.length ? prev : curr));
+    const matchingBaseRoutes = Routes.map((route) => route.base).filter((route) => location.pathname.includes(route));
+    const currentBaseRoute =
+        matchingBaseRoutes.length > 0 ? matchingBaseRoutes.toSorted((a, b) => a.length - b.length).at(-1) : '';
 
     const allowedRoutes = Routes.filter((route) => {
         return !route.authenticated || route.allowedRoles.some((role) => permissions.includes(role));
@@ -262,8 +262,15 @@ const SideNav = ({ open, setOpen, isMediumScreen }: SideNavProps) => {
         );
     return (
         <SwipeableDrawer
-            PaperProps={{
-                sx: { width: '100%', height: '100%', minHeight: 'calc(100vh)', background: colors.surface.blue[90] },
+            slotProps={{
+                paper: {
+                    sx: {
+                        width: '100%',
+                        height: '100%',
+                        minHeight: 'calc(100vh)',
+                        background: colors.surface.blue[90],
+                    },
+                },
             }}
             sx={{
                 mt: '80px',

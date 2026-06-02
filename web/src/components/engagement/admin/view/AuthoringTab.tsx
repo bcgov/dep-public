@@ -1,15 +1,24 @@
-import React, { useState, useEffect } from 'react';
-import { AuthoringValue, AuthoringButtonProps, StatusCircleProps } from './types';
+import React, { useState, useEffect, useMemo } from 'react';
+import { AuthoringButtonProps, StatusCircleProps } from './types';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowRightLong } from '@fortawesome/pro-light-svg-icons';
 import { faCheck } from '@fortawesome/pro-solid-svg-icons';
 import { BodyText, Heading2, Heading3 } from 'components/common/Typography';
 import { SystemMessage } from 'components/common/Layout/SystemMessage';
 import { Unless, When } from 'react-if';
-import { Grid2 as Grid } from '@mui/material';
+import { Grid2 as Grid, MenuItem, Select, SelectChangeEvent, Skeleton } from '@mui/material';
 import { colors } from 'styles/Theme';
 import { Link } from 'components/common/Navigation';
 import { getDefaultAuthoringTabValues } from './AuthoringTabElements';
+import { useAppSelector } from 'hooks';
+import { useParams, useRouteLoaderData } from 'react-router';
+import { EngagementLoaderAdminData } from '../EngagementLoaderAdmin';
+import { Language } from 'models/language';
+import { faCircleEllipsis, faGlobe } from '@fortawesome/pro-regular-svg-icons';
+import {
+    AuthoringSectionName,
+    useAuthoringSectionCompletion,
+} from 'components/engagement/admin/create/authoring/useAuthoringSectionCompletion';
 
 export const StatusCircle = (props: StatusCircleProps) => {
     const statusCircleStyles = {
@@ -25,7 +34,7 @@ export const StatusCircle = (props: StatusCircleProps) => {
     return <span style={statusCircleStyles}> </span>;
 };
 
-const AuthoringButton = (props: AuthoringButtonProps) => {
+const AuthoringButton = (props: AuthoringButtonProps & { isLoading?: boolean }) => {
     const buttonStyles = {
         display: 'flex',
         width: '100%',
@@ -54,6 +63,11 @@ const AuthoringButton = (props: AuthoringButtonProps) => {
         fontWeight: 'bold',
         paddingRight: '0.4rem',
     };
+
+    if (props.isLoading) {
+        return <Skeleton variant="rounded" height={48} width="100%" sx={{ mb: '0.5rem', borderRadius: '8px' }} />;
+    }
+
     return (
         <Link underline="none" style={{ ...buttonStyles }} to={props.item.link}>
             <When condition={props.item.completed}>
@@ -70,10 +84,72 @@ const AuthoringButton = (props: AuthoringButtonProps) => {
 
 export const AuthoringTab = () => {
     // Set useStates. When data is imported, it will be set with setSectionValues and setFeedbackMethods.
-    const [sectionValues] = useState(getDefaultAuthoringTabValues('sections'));
-    const [feedbackMethods] = useState(getDefaultAuthoringTabValues('feedback'));
-    const [requiredSectionsCompleted, setRequiredSectionsCompleted] = useState(false);
-    const [feedbackCompleted, setFeedbackCompleted] = useState(false);
+    const { engagementId } = useParams();
+    const { engagement, languages } = useRouteLoaderData('single-engagement') as EngagementLoaderAdminData;
+    const currentLanguageCode = useAppSelector((state) => state.language.id) || 'en';
+    const [selectedLanguageCode, setSelectedLanguageCode] = useState(currentLanguageCode);
+    const [languageOptions, setLanguageOptions] = useState<Language[]>([]);
+    const selectedLanguageCodes = useMemo(() => {
+        if (languageOptions.length > 0) {
+            return languageOptions.map((language) => language.code);
+        }
+
+        return ['en'];
+    }, [languageOptions]);
+    const numericEngagementId = Number(engagementId);
+    const {
+        completionBySection,
+        requiredSectionsComplete,
+        isLoading: isLoadingSectionCompletion,
+    } = useAuthoringSectionCompletion({
+        engagementId: numericEngagementId,
+        languageCode: selectedLanguageCode,
+        selectedLanguageCodes,
+        engagementPromise: engagement,
+    });
+
+    const sectionValues = useMemo(
+        () =>
+            getDefaultAuthoringTabValues('sections', engagementId ?? '', selectedLanguageCode).map((section) => ({
+                ...section,
+                completed: completionBySection[section.title as AuthoringSectionName] ?? false,
+            })),
+        [completionBySection, engagementId, selectedLanguageCode],
+    );
+    const feedbackCompleted = completionBySection['Provide Feedback'];
+    const feedbackMethods = useMemo(
+        () =>
+            getDefaultAuthoringTabValues('feedback', engagementId ?? '', selectedLanguageCode).map((method) => ({
+                ...method,
+                completed: feedbackCompleted,
+            })),
+        [engagementId, feedbackCompleted, selectedLanguageCode],
+    );
+    const optionalSectionValues = useMemo(
+        () =>
+            sectionValues.filter((section) => {
+                if (section.required) {
+                    return false;
+                }
+                return true;
+            }),
+        [sectionValues],
+    );
+
+    const availableLanguageOptions =
+        languageOptions.length > 0
+            ? languageOptions
+            : [{ id: 0, code: 'en', name: 'English', right_to_left: false } as Language];
+
+    const languageSelectWidthCh = useMemo(() => {
+        const longestOptionLength = availableLanguageOptions.reduce((maxLength, language) => {
+            const labelLength = `${language.name}${language.code === 'en' ? ' (Default)' : ''}`.length;
+            return Math.max(maxLength, labelLength);
+        }, 0);
+
+        // Add extra space for select padding and dropdown icon.
+        return longestOptionLength + 5;
+    }, [availableLanguageOptions]);
 
     // Define styles
     const systemMessageStyles = {
@@ -89,39 +165,93 @@ export const AuthoringTab = () => {
         padding: '0',
     };
 
-    // Listen to the sectionValues useState and update the boolean value that controls the presence of the "sections" incomplete message.
     useEffect(() => {
-        if (true !== requiredSectionsCompleted && allRequiredItemsComplete(sectionValues)) {
-            setRequiredSectionsCompleted(true);
-        } else if (false !== requiredSectionsCompleted) {
-            setRequiredSectionsCompleted(false);
-        }
-    }, [sectionValues]);
-
-    // Listen to the feedbackMethods useState and update the boolean value that controls the presence of the "feedback" incomplete message.
-    useEffect(() => {
-        if (true !== feedbackCompleted && allRequiredItemsComplete(feedbackMethods)) {
-            setFeedbackCompleted(true);
-        } else if (false !== feedbackCompleted) {
-            setRequiredSectionsCompleted(false);
-        }
-    }, [feedbackMethods]);
-
-    // Check if all required items are completed.
-    const allRequiredItemsComplete = (values: AuthoringValue[]) => {
-        return values.every((item) => {
-            if (!item.required) return true;
-            return item.completed;
+        let isMounted = true;
+        void languages.then((resolvedLanguages) => {
+            if (!isMounted) {
+                return;
+            }
+            setLanguageOptions(resolvedLanguages);
+            const hasCurrentSelection = resolvedLanguages.some((language) => language.code === selectedLanguageCode);
+            if (!hasCurrentSelection) {
+                setSelectedLanguageCode('en');
+            }
         });
+
+        return () => {
+            isMounted = false;
+        };
+    }, [languages, selectedLanguageCode]);
+
+    useEffect(() => {
+        setSelectedLanguageCode(currentLanguageCode);
+    }, [currentLanguageCode]);
+
+    const handleLanguageSelectionChange = (event: SelectChangeEvent<string>) => {
+        setSelectedLanguageCode(event.target.value);
     };
 
     return (
         <Grid container id="admin-authoring-section" direction="column" maxWidth={'700px'}>
-            <Heading2 decorated>Authoring</Heading2>
-            <Heading3 bold mb="1.5rem">
-                Page Section Authoring
-            </Heading3>
-            <When condition={!requiredSectionsCompleted}>
+            <Grid container direction="row" justifyContent="space-between" mb="1.5rem" rowGap={1}>
+                <Grid>
+                    <Heading2 decorated>Authoring</Heading2>
+                    <Heading3 bold>Page Section Authoring</Heading3>
+                </Grid>
+                <Grid pt={1}>
+                    <Grid container alignItems="center" columnSpacing={1}>
+                        <Grid>
+                            <FontAwesomeIcon
+                                icon={faGlobe}
+                                aria-hidden="true"
+                                style={{ color: colors.type.regular.secondary }}
+                            />
+                        </Grid>
+                        <Grid>
+                            <Select
+                                sx={{ height: '2.5rem', width: `${languageSelectWidthCh}ch` }}
+                                id="authoring-overview-language-select"
+                                value={selectedLanguageCode}
+                                onChange={handleLanguageSelectionChange}
+                                inputProps={{
+                                    'aria-label': 'Select language for authoring overview',
+                                    'aria-describedby': 'authoring-overview-language-select-description',
+                                }}
+                            >
+                                {availableLanguageOptions.map((language) => (
+                                    <MenuItem key={language.code} value={language.code}>
+                                        {language.name}
+                                        {language.code === 'en' ? ' (Default)' : ''}
+                                    </MenuItem>
+                                ))}
+                            </Select>
+                        </Grid>
+                        <span
+                            id="authoring-overview-language-select-description"
+                            style={{
+                                border: 0,
+                                clip: 'rect(0 0 0 0)',
+                                height: '1px',
+                                margin: '-1px',
+                                overflow: 'hidden',
+                                padding: 0,
+                                position: 'absolute',
+                                width: '1px',
+                            }}
+                        >
+                            Selecting a language changes which language version of each authoring section link is
+                            opened.
+                        </span>
+                    </Grid>
+                </Grid>
+            </Grid>
+            <When condition={isLoadingSectionCompletion}>
+                <SystemMessage icon={faCircleEllipsis} sx={systemMessageStyles} status="info">
+                    <Skeleton variant="text" width={250} />
+                    <Skeleton variant="text" width={200} />
+                </SystemMessage>
+            </When>
+            <When condition={!isLoadingSectionCompletion && !requiredSectionsComplete}>
                 <SystemMessage sx={systemMessageStyles} status="danger">
                     There are incomplete or missing sections of required content in your engagement. Please complete all
                     required content in all of the languages included in your engagement.
@@ -142,24 +272,26 @@ export const AuthoringTab = () => {
                     <BodyText bold sx={sectionLabelStyles}>
                         Required Sections
                     </BodyText>
-                    {sectionValues.map(
-                        (section) => section.required && <AuthoringButton key={section.id} item={section} />,
+                    {sectionValues.map((section) =>
+                        section.required ? (
+                            <AuthoringButton key={section.id} item={section} isLoading={isLoadingSectionCompletion} />
+                        ) : null,
                     )}
                 </Grid>
                 <Grid size={{ xs: 12, md: 6 }}>
                     <BodyText bold sx={sectionLabelStyles}>
                         Optional Sections
                     </BodyText>
-                    {sectionValues.map(
-                        (section) => !section.required && <AuthoringButton key={section.id} item={section} />,
-                    )}
+                    {optionalSectionValues.map((section) => (
+                        <AuthoringButton key={section.id} item={section} isLoading={isLoadingSectionCompletion} />
+                    ))}
                 </Grid>
             </Grid>
             <Grid container direction="column" id="feedback-container" sx={{ ...anchorContainerStyles }}>
                 <Heading3 bold mb="1.5rem">
                     Feedback Configuration
                 </Heading3>
-                <When condition={!feedbackCompleted}>
+                <When condition={!isLoadingSectionCompletion && !feedbackCompleted}>
                     <SystemMessage sx={systemMessageStyles} status="danger">
                         There are feedback methods included in your engagement that are incomplete. Please complete
                         configuration for all of the feedback methods included in your engagement.
@@ -170,7 +302,7 @@ export const AuthoringTab = () => {
                 </BodyText>
                 <Grid size={12} sx={{ width: '100%' }}>
                     {feedbackMethods.map((method) => (
-                        <AuthoringButton item={method} key={method.id} />
+                        <AuthoringButton item={method} key={method.id} isLoading={isLoadingSectionCompletion} />
                     ))}
                 </Grid>
             </Grid>
