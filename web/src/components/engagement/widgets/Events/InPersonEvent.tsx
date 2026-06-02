@@ -1,7 +1,7 @@
 import React from 'react';
 import { EventItem } from 'models/event';
 import { Grid2 as Grid } from '@mui/material';
-import { formatDate } from 'components/common/dateHelper';
+import { formatToPacific } from 'components/common/dateHelper';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faLocationDot, faCalendarDays, faClock } from '@fortawesome/pro-regular-svg-icons';
 import { BodyText } from 'components/common/Typography/Body';
@@ -31,9 +31,9 @@ const InPersonEvent = ({ eventItem }: EventProps) => {
         : parsedAddress.map((line, index) => (parsedAddress.length - 1 === index ? line : line + ','));
 
     // Create start and end time/date
-    const startDate = formatDate(eventItem.start_date, 'DD MMM, YYYY');
-    const startTime = formatDate(eventItem.start_date, 'h:mm a');
-    const endTime = formatDate(eventItem.end_date, 'h:mm a');
+    const startDate = formatToPacific(eventItem.start_date, 'DD MMM, YYYY');
+    const startTime = formatToPacific(eventItem.start_date, 'h:mm a');
+    const endTime = formatToPacific(eventItem.end_date, 'h:mm a');
 
     return (
         <>

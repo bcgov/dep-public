@@ -14,7 +14,7 @@ import ControlledTextField from 'components/common/ControlledInputComponents/Con
 import { openNotification } from 'services/notificationService/notificationSlice';
 import { postEvent, patchEvent } from 'services/widgetService/EventService';
 import { Event, EVENT_TYPE } from 'models/event';
-import { formatToUTC, formatDate } from 'components/common/dateHelper';
+import { formatToUTC, formatToPacific } from 'components/common/dateHelper';
 import { formEventDates } from './utils';
 import dayjs from 'dayjs';
 import tz from 'dayjs/plugin/timezone';
@@ -71,7 +71,7 @@ const VirtualSessionFormDrawer = () => {
     useEffect(() => {
         methods.setValue('event_name', eventItemToEdit?.event_name || '');
         methods.setValue('description', eventItemToEdit?.description || '');
-        methods.setValue('date', eventItemToEdit ? formatDate(eventItemToEdit.start_date) : '');
+        methods.setValue('date', eventItemToEdit ? formatToPacific(eventItemToEdit.start_date) : '');
         methods.setValue('session_link', eventItemToEdit?.url || '');
         methods.setValue('session_link_text', eventItemToEdit?.url_label || 'Click here to register');
         methods.setValue('time_from', pad(startDate.hour()) + ':' + pad(startDate.minute()) || '');

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Grid2 as Grid } from '@mui/material';
-import { formatDate } from 'components/common/dateHelper';
+import { formatToPacific } from 'components/common/dateHelper';
 import { EventProps } from './InPersonEvent';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCalendarDays, faClock } from '@fortawesome/pro-regular-svg-icons';
@@ -22,9 +22,9 @@ const VirtualSession = ({ eventItem }: EventProps) => {
     };
 
     // Define time/date
-    const startDate = formatDate(eventItem.start_date, 'DD MMM, YYYY');
-    const startTime = formatDate(eventItem.start_date, 'h:mm a');
-    const endTime = formatDate(eventItem.end_date, 'h:mm a');
+    const startDate = formatToPacific(eventItem.start_date, 'DD MMM, YYYY');
+    const startTime = formatToPacific(eventItem.start_date, 'h:mm a');
+    const endTime = formatToPacific(eventItem.end_date, 'h:mm a');
 
     return (
         <>

@@ -3,10 +3,10 @@
 Manages the Subscription
 """
 from __future__ import annotations
-from datetime import datetime
 from sqlalchemy import ForeignKey
 
 from api.constants.subscription_type import SubscriptionType
+from api.utils.datetime import utc_now
 
 from .base_model import BaseModel
 from .db import db
@@ -66,7 +66,7 @@ class Subscription(BaseModel):  # pylint: disable=too-few-public-methods
             is_subscribed=subscription.get('is_subscribed', False),
             project_id=subscription.get('project_id', None),
             type=subscription.get('type', None),
-            created_date=datetime.utcnow(),
+            created_date=utc_now(),
             created_by=subscription.get('created_by', None),
         )
         db.session.add(new_subscription)
@@ -81,7 +81,7 @@ class Subscription(BaseModel):  # pylint: disable=too-few-public-methods
         """Update subscription for a participant."""
         update_fields = {
             'is_subscribed': subscription.get('is_subscribed', False),
-            'updated_date': datetime.utcnow(),
+            'updated_date': utc_now(),
             'updated_by': subscription.get('updated_by', None),
         }
         participant_id = subscription.get('participant_id', None)
@@ -99,7 +99,7 @@ class Subscription(BaseModel):  # pylint: disable=too-few-public-methods
         """Update subscription for a participant and engagement."""
         update_fields = {
             'is_subscribed': subscription.get('is_subscribed', False),
-            'updated_date': datetime.utcnow(),
+            'updated_date': utc_now(),
             'updated_by': subscription.get('updated_by', None),
         }
         participant_id = subscription.get('participant_id', None)

@@ -4,13 +4,18 @@ import tz from 'dayjs/plugin/timezone';
 dayjs.extend(utc);
 dayjs.extend(tz);
 
-const formatToPacificTimeZone = (date: string, fmt: string, tz: string) => dayjs.utc(date).tz(tz).format(fmt);
+export const convertToPacific = (date: string) => {
+    return dayjs.utc(date).tz('America/Vancouver');
+};
 
-const formatToUTCTimeZone = (date: string, fmt: string) => dayjs(date).utc().format(fmt);
+export const convertToUTC = (date: string) => {
+    return dayjs(date).utc();
+};
 
-export const formatDate = (date: Dayjs | string, formatString = 'YYYY-MM-DD') => {
+export const formatToPacific = (date: Dayjs | string, formatString = 'YYYY-MM-DD HH:mm:ss') => {
     if (date) {
-        return formatToPacificTimeZone(date.toString(), formatString, 'US/Pacific');
+        const pacificDate = convertToPacific(date.toString());
+        return pacificDate.format(formatString);
     } else {
         return '';
     }
@@ -18,7 +23,8 @@ export const formatDate = (date: Dayjs | string, formatString = 'YYYY-MM-DD') =>
 
 export const formatToUTC = (date: Dayjs | string, formatString = 'YYYY-MM-DD HH:mm:ss') => {
     if (date) {
-        return formatToUTCTimeZone(date.toString(), formatString);
+        const utcDate = convertToUTC(date.toString());
+        return utcDate.format(formatString);
     } else {
         return '';
     }

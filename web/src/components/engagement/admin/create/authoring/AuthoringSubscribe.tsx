@@ -7,7 +7,7 @@ import { getEditorStateFromRaw } from 'components/common/RichTextEditor/utils';
 import { ContentState, EditorState } from 'draft-js';
 import React, { useEffect } from 'react';
 import { Controller, useFormContext } from 'react-hook-form';
-import { useOutletContext } from 'react-router';
+import { useOutletContext, useParams } from 'react-router';
 import { defaultValuesObject, EngagementUpdateData } from './AuthoringContext';
 import { AuthoringFormContainer, AuthoringFormSection } from './AuthoringFormLayout';
 import { AuthoringTemplateOutletContext } from './types';
@@ -29,6 +29,9 @@ const AuthoringSubscribe = () => {
         formState: { errors, isDirty, isSubmitting },
     } = useFormContext<SubscribeAuthoringData>();
 
+    const { engagementId: engId } = useParams();
+    const engagementId = Number(engId);
+
     const hasUnsavedWork = isDirty && !isSubmitting;
 
     useEffect(() => {
@@ -41,14 +44,16 @@ const AuthoringSubscribe = () => {
     }, [fetcher.data]);
 
     useEffect(() => {
-        reset(defaultValuesObject);
-        setValue('form_source', pageName);
-        setValue('id', Number(eng.id));
-        setValue('subscribe_section_heading', eng.subscribe_section_heading || '');
-        setValue('subscribe_section_description', getEditorState(eng.subscribe_section_description));
-        setValue('subscribe_consent_message', getEditorState(eng.subscribe_consent_message || eng.consent_message));
-        setDefaultValues(getValues());
-        reset(getValues());
+        eng.then((e) => {
+            reset(defaultValuesObject);
+            setValue('form_source', pageName);
+            setValue('id', engagementId);
+            setValue('subscribe_section_heading', e.subscribe_section_heading || '');
+            setValue('subscribe_section_description', getEditorState(e.subscribe_section_description));
+            setValue('subscribe_consent_message', getEditorState(e.subscribe_consent_message || e.consent_message));
+            setDefaultValues(getValues());
+            reset(getValues());
+        });
     }, [eng, pageName]);
 
     const getEditorState = (value?: string) => {

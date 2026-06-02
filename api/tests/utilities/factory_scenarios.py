@@ -34,6 +34,7 @@ from api.utils.enums import LoginSource, UserStatus
 fake = Faker()
 
 CONFIG = get_named_config('testing')
+DATE_FORMAT = '%Y/%m/%d, %H:%M:%S'
 
 
 class TestUserInfo(dict, Enum):
@@ -180,13 +181,19 @@ class TestTenantInfo(dict, Enum):
     }
 
 
-class TestEngagementInfo(dict, Enum):
+class TestEngagementInfo:
     """Test scenarios of engagement."""
+
+    @staticmethod
+    def _get_offset_date(days, direction):
+        if direction == 'future':
+            return (datetime.today() + timedelta(days=days)).strftime(DATE_FORMAT)
+        return (datetime.today() - timedelta(days=days)).strftime(DATE_FORMAT)
 
     engagement1 = {
         'name': fake.name(),
-        'start_date': (datetime.today() - timedelta(days=1)).strftime('%Y-%m-%d'),
-        'end_date': (datetime.today() + timedelta(days=1)).strftime('%Y-%m-%d'),
+        'start_date': _get_offset_date(1, 'past'),
+        'end_date': _get_offset_date(1, 'future'),
         'banner_url': '',
         'created_by': '123',
         'updated_by': '123',
@@ -206,8 +213,8 @@ class TestEngagementInfo(dict, Enum):
 
     engagement_draft = {
         'name': fake.name(),
-        'start_date': (datetime.today() - timedelta(days=1)).strftime('%Y-%m-%d'),
-        'end_date': (datetime.today() + timedelta(days=1)).strftime('%Y-%m-%d'),
+        'start_date': _get_offset_date(1, 'past'),
+        'end_date': _get_offset_date(1, 'future'),
         'banner_url': '',
         'created_by': '123',
         'updated_by': '123',
@@ -226,8 +233,8 @@ class TestEngagementInfo(dict, Enum):
 
     engagement2 = {
         'name': fake.name(),
-        'start_date': (datetime.today() - timedelta(days=1)).strftime('%Y-%m-%d'),
-        'end_date': (datetime.today() + timedelta(days=1)).strftime('%Y-%m-%d'),
+        'start_date': _get_offset_date(1, 'past'),
+        'end_date': _get_offset_date(1, 'future'),
         'banner_url': '',
         'created_by': '123',
         'updated_by': '123',
@@ -258,8 +265,8 @@ class TestEngagementInfo(dict, Enum):
 
     engagement3 = {
         'name': fake.name(),
-        'start_date': (datetime.today() - timedelta(days=1)).strftime('%Y-%m-%d'),
-        'end_date': (datetime.today() + timedelta(days=1)).strftime('%Y-%m-%d'),
+        'start_date': _get_offset_date(1, 'past'),
+        'end_date': _get_offset_date(1, 'future'),
         'banner_url': '',
         'tenant_id': 1,
         'created_by': '123',

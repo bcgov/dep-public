@@ -11,6 +11,7 @@ from api.constants.notification_status import NotificationStatus
 from api.models.engagement import Engagement
 from api.utils.datetime import local_datetime
 from api.utils.enums import SourceAction, SourceType
+
 from .base_model import BaseModel
 from .db import db
 

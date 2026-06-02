@@ -4,7 +4,7 @@ import { RouterLinkRenderer } from 'components/common/Navigation/Link';
 import CustomTable from 'components/common/Table';
 import { HeadCell } from 'components/common/Table/types';
 import { ENGAGEMENT_MEMBERSHIP_STATUS_NAME, EngagementTeamMember } from 'models/engagementTeamMember';
-import { formatDate } from 'components/common/dateHelper';
+import { formatToPacific } from 'components/common/dateHelper';
 import { UserDetailsContext } from './UserDetailsContext';
 import { ActionsDropDown } from './ActionsDropDown';
 import { ROUTES, getPath } from 'routes/routes';
@@ -42,7 +42,7 @@ export const AssignedEngagementsListing = () => {
             disablePadding: true,
             label: 'Date Added',
             allowSort: false,
-            renderCell: (row: EngagementTeamMember) => formatDate(row.created_date),
+            renderCell: (row: EngagementTeamMember) => formatToPacific(row.created_date, 'YYYY-MM-DD'),
         },
         {
             key: 'revoked_date',
@@ -50,7 +50,8 @@ export const AssignedEngagementsListing = () => {
             disablePadding: true,
             label: 'Date Revoked',
             allowSort: false,
-            renderCell: (row: EngagementTeamMember) => (row.revoked_date ? formatDate(row.revoked_date) : null),
+            renderCell: (row: EngagementTeamMember) =>
+                row.revoked_date ? formatToPacific(row.revoked_date, 'YYYY-MM-DD') : null,
         },
         {
             key: 'id',

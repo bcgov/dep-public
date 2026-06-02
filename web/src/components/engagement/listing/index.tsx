@@ -15,7 +15,7 @@ import { ResponsiveContainer } from 'components/common/Layout';
 import { Engagement } from 'models/engagement';
 import { useAppSelector } from 'hooks';
 import { createDefaultPageInfo, HeadCell, PageInfo, PaginationOptions } from 'components/common/Table/types';
-import { formatDate } from 'components/common/dateHelper';
+import { formatToPacific } from 'components/common/dateHelper';
 import { Link, useMediaQuery, Theme, Tooltip } from '@mui/material';
 import Stack from '@mui/material/Stack';
 import CustomTable from 'components/common/Table';
@@ -148,7 +148,7 @@ const EngagementListing = () => {
             disablePadding: true,
             label: 'Date Created',
             allowSort: true,
-            renderCell: (row: Engagement) => formatDate(row.created_date),
+            renderCell: (row: Engagement) => formatToPacific(row.created_date, 'YYYY-MM-DD'),
         },
         {
             key: 'published_date',
@@ -161,7 +161,7 @@ const EngagementListing = () => {
                 if (row.published_date === 'None' || !row.published_date) {
                     return '';
                 }
-                return formatDate(row.published_date);
+                return formatToPacific(row.published_date, 'YYYY-MM-DD');
             },
         },
         {

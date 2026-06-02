@@ -8,6 +8,7 @@ import { Heading1, Heading2 } from 'components/common/Typography';
 import { SystemMessage } from 'components/common/Layout/SystemMessage';
 import Grid from '@mui/material/Grid2';
 import { ROUTES, getPath } from 'routes/routes';
+import { formatToUTC } from 'components/common/dateHelper';
 
 const EngagementCreationWizard = () => {
     const fetcher = useFetcher({ key: 'config-update' });
@@ -17,7 +18,9 @@ const EngagementCreationWizard = () => {
             name: '',
             feedback_methods: [],
             start_date: undefined,
+            start_time: undefined,
             end_date: undefined,
+            end_time: undefined,
             _dateConfirmed: true,
             languages: [],
             is_internal: undefined,
@@ -30,12 +33,14 @@ const EngagementCreationWizard = () => {
     });
 
     const onSubmit = async (data: EngagementConfigurationData) => {
+        const startDate = `${data.start_date.format('YYYY-MM-DD')} ${data.start_time.format('HH:mm')}:00`; // Don't save seconds
+        const endDate = `${data.end_date.format('YYYY-MM-DD')} ${data.end_time.format('HH:mm')}:00`; // Don't save seconds
         fetcher.submit(
             createSearchParams({
                 name: data.name,
                 feedback_methods: data.feedback_methods,
-                start_date: data.start_date.format('YYYY-MM-DD'),
-                end_date: data.end_date.format('YYYY-MM-DD'),
+                start_date: formatToUTC(startDate, 'YYYY-MM-DD HH:mm:ss'),
+                end_date: formatToUTC(endDate, 'YYYY-MM-DD HH:mm:ss'),
                 languages: data.languages.map((l) => l.code),
                 is_internal: data.is_internal ? 'true' : 'false',
                 slug: data.slug,

@@ -37,6 +37,7 @@ from api.utils.enums import SourceAction, SourceType
 from api.utils.roles import Role
 from api.utils.template import Template
 from api.utils.token_info import TokenInfo
+from api.utils.datetime import utc_now
 
 
 class EngagementService:
@@ -216,7 +217,7 @@ class EngagementService:
             end_date=engagement_data.get('end_date', None),
             status_id=Status.Draft.value,
             created_by=engagement_data.get('created_by', None),
-            created_date=datetime.utcnow(),
+            created_date=utc_now(),
             updated_by=engagement_data.get('updated_by', None),
             updated_date=None,
             published_date=None,
@@ -313,7 +314,8 @@ class EngagementService:
     @staticmethod
     def _validate_engagement_edit_data(engagement: EngagementModel, data: dict):
         draft_status_restricted_changes = (EngagementModel.is_internal.key,)
-        engagement_has_been_opened = engagement.status_id != Status.Draft.value
+        valid_statuses = [Status.Draft.value, Status.Scheduled.value]
+        engagement_has_been_opened = engagement.status_id not in valid_statuses
         if engagement_has_been_opened and any(
             field in data for field in draft_status_restricted_changes
         ):

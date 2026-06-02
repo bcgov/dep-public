@@ -14,6 +14,8 @@ import { AuthoringPreviewWindowProvider } from './AuthoringPreviewWindowContext'
 import { ROUTES, getPath } from 'routes/routes';
 import AuthoringTemplate from './AuthoringTemplate';
 import { AuthoringFormContext } from './AuthoringFormContext';
+import { AuthoringHeader } from './AuthoringHeader';
+import { ResponsiveContainer } from 'components/common/Layout';
 
 const tabSchema = yup.object({
     id: yup.number().required(),
@@ -401,9 +403,12 @@ export const AuthoringContext = () => {
     return (
         <AuthoringFormContext.Provider value={contextValue}>
             <AuthoringPreviewWindowProvider>
-                <FormProvider key={pageName || 'authoring-form'} {...engagementUpdateForm}>
-                    <AuthoringTemplate />
-                </FormProvider>
+                <ResponsiveContainer>
+                    <AuthoringHeader />
+                    <FormProvider key={pageName || 'authoring-form'} {...engagementUpdateForm}>
+                        <AuthoringTemplate />
+                    </FormProvider>
+                </ResponsiveContainer>
             </AuthoringPreviewWindowProvider>
         </AuthoringFormContext.Provider>
     );

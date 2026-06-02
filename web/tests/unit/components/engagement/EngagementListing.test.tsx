@@ -58,8 +58,8 @@ const mockEngagementOne = {
         '{"blocks":[{"key":"bqupg","text":"Test description","type":"unstyled","depth":0,"inlineStyleRanges":[],"entityRanges":[],"data":{}}],"entityMap":{}}',
     description: 'Test description',
     description_title: 'Test Description Title',
-    start_date: '2022-09-01',
-    end_date: '2022-09-30',
+    start_date: '2026-01-17 12:00:00',
+    end_date: '2026-09-30 12:00:00',
     status_id: EngagementStatus.Draft,
     engagement_status: {
         id: EngagementStatus.Draft,
@@ -84,8 +84,8 @@ const mockEngagementTwo = {
         '{"blocks":[{"key":"bqupg","text":"Test description","type":"unstyled","depth":0,"inlineStyleRanges":[],"entityRanges":[],"data":{}}],"entityMap":{}}',
     description: 'Test description',
     description_title: 'Test Description Title',
-    start_date: '2026-01-17',
-    end_date: '2026-09-30',
+    start_date: '2026-01-17 12:00:00',
+    end_date: '2026-09-30 12:00:00',
     surveys: mockSurveys,
     submissions_meta_data: {
         total: 1,

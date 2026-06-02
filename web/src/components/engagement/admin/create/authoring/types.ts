@@ -64,7 +64,7 @@ export interface LabelWithStatusProps {
 export type StatusLabelProps = LabelProps | LabelWithStatusProps;
 
 export interface AuthoringTemplateOutletContext {
-    engagement: Engagement;
+    engagement: Promise<Engagement>;
     defaultValues: EngagementUpdateData;
     setDefaultValues: Dispatch<SetStateAction<EngagementUpdateData>>;
     fetcher: FetcherWithComponents<object>;

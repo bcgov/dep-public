@@ -2,13 +2,13 @@
 
 Manages the feedback
 """
-from datetime import datetime
 
 from sqlalchemy import TEXT, asc, cast, desc
 from sqlalchemy.sql import text
 
 from api.constants.feedback import CommentType, FeedbackSourceType, FeedbackStatusType, RatingType
 from api.models.pagination_options import PaginationOptions
+from api.utils.datetime import utc_now
 
 from .base_model import BaseModel
 from .db import db
@@ -75,7 +75,7 @@ class Feedback(BaseModel):
             status=feedback.get('status', None),
             comment=feedback.get('comment', None),
             submission_path=feedback.get('submission_path', None),
-            created_date=datetime.utcnow(),
+            created_date=utc_now(),
             rating=feedback.get('rating'),
             comment_type=feedback.get('comment_type', None),
             source=feedback.get('source', None)
