@@ -8,6 +8,7 @@ import { getEngagement, getEngagements } from 'services/engagementService';
 import { getSurveysPage } from 'services/surveyService';
 import { Page } from 'services/type';
 import { getEngagementContentTranslationsByCode } from 'services/engagementContentTranslationService';
+import { AppConfig } from 'config';
 
 export type SurveyData = {
     items: Survey[];
@@ -26,14 +27,15 @@ const authoringLoader = async ({ params }: { params: Params<string> }) => {
     const { engagementId, tenantId, languageCode } = params;
     const id = Number(engagementId);
     const tId = Number(tenantId);
-    const activeLanguageCode = (languageCode ?? 'en').toLowerCase();
+    const defaultLanguageCode = AppConfig.language.defaultLanguageId.toLowerCase();
+    const activeLanguageCode = (languageCode ?? defaultLanguageCode).toLowerCase();
 
     const engagementPromise = getEngagement(id);
     // Retrieves a maximum of 1000 engagements
     const engagementListPromise = getEngagements({ size: 1000, tenant_id: tId });
     const detailsTabsPromise = Promise.all([
         getDetailsTabs(id),
-        activeLanguageCode === 'en'
+        activeLanguageCode === defaultLanguageCode
             ? Promise.resolve({
                   details_tabs: [],
                   widgets: [],

@@ -199,11 +199,14 @@ const AuthoringDetails = () => {
 
     const renumberTabs = (tabs: FormDetailsTab[]): FormDetailsTab[] => {
         return tabs.map((tab, index) => {
-            if (tab.label.includes('Tab ') && !tab.label.includes(` ${String(index + 1)}`)) {
+            const isDefaultNumericTabLabel = /^Tab\s+\d+$/i.test(tab.label.trim());
+
+            if (isDefaultNumericTabLabel) {
                 tab.label = `Tab ${index + 1}`;
                 tab.slug = `tab_${index + 1}`;
-                tab.sort_index = index + 1;
             }
+
+            tab.sort_index = index + 1;
             return tab;
         });
     };

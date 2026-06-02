@@ -113,6 +113,31 @@ class EventItemTranslationResourceByLanguage(Resource):
             return str(err), HTTPStatus.INTERNAL_SERVER_ERROR
 
 
+@cors_preflight('GET, OPTIONS')
+@API.route('/language/<int:language_id>')
+class EventItemTranslationsResourceByLanguage(Resource):
+    """Resource for all event item translations for an event and language."""
+
+    @staticmethod
+    @cross_origin(origins=allowedorigins())
+    def get(event_id, language_id, **_):
+        """Fetch all event item translations for an event by language_id."""
+        try:
+            event_item_translations = (
+                EventItemTranslationService.get_event_item_translations(
+                    event_id, language_id
+                )
+            )
+            return (
+                EventItemTranslationSchema().dump(
+                    event_item_translations, many=True
+                ),
+                HTTPStatus.OK,
+            )
+        except (KeyError, ValueError) as err:
+            return str(err), HTTPStatus.INTERNAL_SERVER_ERROR
+
+
 @cors_preflight('POST, OPTIONS')
 @API.route('/')
 class EventItemTranslations(Resource):

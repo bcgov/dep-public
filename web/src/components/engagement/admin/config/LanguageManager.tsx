@@ -37,12 +37,7 @@ export const LanguageManager = () => {
         return false;
     };
     const isSingleLanguage = determineSingleLanguage(selectedLanguages);
-    let languageTypeValue = '';
-    if (isSingleLanguage === true) {
-        languageTypeValue = 'single';
-    } else if (isSingleLanguage === false) {
-        languageTypeValue = 'multi';
-    }
+    const languageTypeValue = isSingleLanguage === null ? '' : isSingleLanguage ? 'single' : 'multi';
 
     useEffect(() => {
         fetcher.load(`${getPath(ROUTES.LANGUAGES)}/`);

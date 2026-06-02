@@ -33,6 +33,7 @@ import {
     useAuthoringSectionCompletion,
 } from 'components/engagement/admin/create/authoring/useAuthoringSectionCompletion';
 import { EngagementLoaderAdminData } from 'components/engagement/admin/EngagementLoaderAdmin';
+import { AppConfig } from 'config';
 
 export const routeItemStyle = {
     padding: 0,
@@ -63,12 +64,13 @@ const areLanguageCodesEqual = (left: string[], right: string[]) => {
 const DrawerBox = ({ isMediumScreenOrLarger, setOpen, engagementId }: DrawerBoxProps) => {
     const permissions = useAppSelector((state) => state.user.roles);
     const { languageCode } = useParams() as { languageCode?: string };
+    const defaultLanguageCode = AppConfig.language.defaultLanguageId.toLowerCase();
     const location = useLocation();
     const { engagement, languages } = useRouteLoaderData('single-engagement') as EngagementLoaderAdminData;
     const fetchers = useFetchers();
     const inFlightFetcherKeysRef = useRef<Set<string>>(new Set());
     const [saveRefreshNonce, setSaveRefreshNonce] = useState(0);
-    const [selectedLanguageCodes, setSelectedLanguageCodes] = useState<string[]>(['en']);
+    const [selectedLanguageCodes, setSelectedLanguageCodes] = useState<string[]>([defaultLanguageCode]);
 
     const fetchersByKey = useMemo(() => {
         return fetchers.map((fetcher) => ({
@@ -114,7 +116,7 @@ const DrawerBox = ({ isMediumScreenOrLarger, setOpen, engagementId }: DrawerBoxP
                     nextCodes.push(language.code);
                 }
             } else {
-                nextCodes.push('en');
+                nextCodes.push(defaultLanguageCode);
             }
 
             if (areLanguageCodesEqual(selectedLanguageCodes, nextCodes)) {
@@ -127,17 +129,17 @@ const DrawerBox = ({ isMediumScreenOrLarger, setOpen, engagementId }: DrawerBoxP
         return () => {
             isMounted = false;
         };
-    }, [languages, selectedLanguageCodes]);
+    }, [defaultLanguageCode, languages, selectedLanguageCodes]);
 
     const { completionBySection } = useAuthoringSectionCompletion({
         engagementId: Number(engagementId),
-        languageCode: languageCode ?? 'en',
+        languageCode: languageCode ?? defaultLanguageCode,
         selectedLanguageCodes,
         engagementPromise: engagement,
         refreshToken: `${location.pathname}|${saveRefreshNonce}`,
     });
 
-    const authoringRoutes = getRoutes(Number(engagementId), languageCode ?? 'en');
+    const authoringRoutes = getRoutes(Number(engagementId), languageCode ?? defaultLanguageCode);
     const matchingRoutePaths: string[] = authoringRoutes
         .map((route) => route.path)
         .filter((route) => globalThis.location.pathname.includes(route));

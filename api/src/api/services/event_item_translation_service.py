@@ -41,6 +41,13 @@ class EventItemTranslationService:
         )
 
     @staticmethod
+    def get_event_item_translations(event_id: int, language_id: int):
+        """Get all event item translations for an event and language."""
+        return EventItemTranslationModel.get_by_event_and_language(
+            event_id, language_id
+        )
+
+    @staticmethod
     def create_event_item_translation(event_id: int, data: dict, pre_populate: bool = True):
         """Insert a new EventItemTranslation with authorization check."""
         try:
@@ -56,7 +63,8 @@ class EventItemTranslationService:
             )
             # Pre populating with event item base langauge data
             if pre_populate:
-                event_item = WidgetEventsService.get_event_item_by_id(data['event_item_id'])
+                event_item = WidgetEventsService.get_event_item_by_id(
+                    data['event_item_id'])
                 if not event_item:
                     raise BusinessException(
                         'EventItem not found', HTTPStatus.NOT_FOUND
@@ -80,7 +88,8 @@ class EventItemTranslationService:
     def update_event_item_translation(event_id: int, translation_id: int, data: dict):
         """Update an existing EventItemTranslation with authorization check."""
         try:
-            event_item_translation = EventItemTranslationModel.find_by_id(translation_id)
+            event_item_translation = EventItemTranslationModel.find_by_id(
+                translation_id)
             if not event_item_translation:
                 raise BusinessException(
                     'EventItemTranslation not found', HTTPStatus.NOT_FOUND
@@ -112,7 +121,8 @@ class EventItemTranslationService:
     def delete_event_item_translation(event_id: int, translation_id: int):
         """Delete an EventItemTranslation with authorization check."""
         try:
-            event_item_translation = EventItemTranslationModel.find_by_id(translation_id)
+            event_item_translation = EventItemTranslationModel.find_by_id(
+                translation_id)
             if not event_item_translation:
                 raise BusinessException(
                     'EventItemTranslation not found', HTTPStatus.NOT_FOUND

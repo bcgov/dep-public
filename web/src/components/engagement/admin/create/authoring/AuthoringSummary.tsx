@@ -16,6 +16,7 @@ import { AuthoringFormContainer, AuthoringFormSection } from './AuthoringFormLay
 import { tryParse } from './utils';
 import { getEngagementTranslationByCode } from 'services/engagementService';
 import { useAuthoringPageHydration } from './useAuthoringPageHydration';
+import { AppConfig } from 'config';
 
 const AuthoringSummary = () => {
     const { setDefaultValues, fetcher, pageName }: AuthoringTemplateOutletContext = useOutletContext(); // Access the form functions and values from the authoring template.
@@ -28,10 +29,11 @@ const AuthoringSummary = () => {
     } = useFormContext<EngagementUpdateData>();
 
     const { engagement } = useRouteLoaderData('single-engagement') as EngagementLoaderAdminData;
-    const { languageCode = 'en' } = useParams();
+    const { languageCode } = useParams();
+    const activeLanguageCode = (languageCode ?? AppConfig.language.defaultLanguageId).toLowerCase();
     const loadSummaryValues = useCallback(async () => {
         const eng = await engagement;
-        const translation = await getEngagementTranslationByCode(Number(eng.id), languageCode);
+        const translation = await getEngagementTranslationByCode(Number(eng.id), activeLanguageCode);
         const descriptionTitle = translation?.description_title ?? eng.description_title;
         const description = translation?.description ?? eng.description;
         const richDescription = translation?.rich_description ?? eng.rich_description;
@@ -45,10 +47,10 @@ const AuthoringSummary = () => {
             description: description || '',
             summary_editor_state: getEditorStateFromRaw(richDescription || ''),
         };
-    }, [engagement, languageCode, pageName]);
+    }, [activeLanguageCode, engagement, pageName]);
 
     const { isHydrating } = useAuthoringPageHydration<EngagementUpdateData>({
-        deps: [engagement, languageCode, pageName],
+        deps: [engagement, activeLanguageCode, pageName],
         fetcherData: fetcher.data,
         getValues,
         loadValues: loadSummaryValues,

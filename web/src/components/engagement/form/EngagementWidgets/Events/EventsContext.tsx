@@ -2,7 +2,7 @@ import React, { createContext, JSX, useContext, useEffect, useMemo, useState } f
 import { useAppDispatch } from 'hooks';
 import { WidgetDrawerContext } from '../WidgetDrawerContext';
 import { Widget, WidgetType } from 'models/widget';
-import { getEvents, sortWidgetEvents, getEventItemTranslation } from 'services/widgetService/EventService';
+import { getEvents, sortWidgetEvents, getEventItemTranslations } from 'services/widgetService/EventService';
 import { EVENT_TYPE, Event, EventTypeLabel } from 'models/event';
 import { openNotification } from 'services/notificationService/notificationSlice';
 import { useParams } from 'react-router';
@@ -93,16 +93,13 @@ export const EventsProvider = ({ children }: { children: JSX.Element | JSX.Eleme
                     ]),
                 );
 
-                const itemTranslationResults = await Promise.all(
-                    loadedEvents.map(async (eventRecord) => {
-                        const item = eventRecord.event_items?.[0];
-                        if (!item) return { eventId: eventRecord.id, translation: null };
-                        const translation = await getEventItemTranslation(eventRecord.id, item.id, languageId);
-                        return { eventId: eventRecord.id, translation };
-                    }),
-                );
-                const itemTranslationsById = new Map(
-                    itemTranslationResults.map(({ eventId, translation }) => [eventId, translation]),
+                const itemTranslationsByEvent = new Map(
+                    await Promise.all(
+                        loadedEvents.map(async (eventRecord) => {
+                            const translations = await getEventItemTranslations(eventRecord.id, languageId);
+                            return [eventRecord.id, translations] as const;
+                        }),
+                    ),
                 );
 
                 setEvents(
@@ -116,7 +113,10 @@ export const EventsProvider = ({ children }: { children: JSX.Element | JSX.Eleme
                             if (index !== 0) {
                                 return item;
                             }
-                            const itemTranslation = itemTranslationsById.get(eventRecord.id);
+                            const eventItemTranslations = itemTranslationsByEvent.get(eventRecord.id) ?? [];
+                            const itemTranslation = eventItemTranslations.find(
+                                (translation) => translation.event_item_id === item.id,
+                            );
                             return {
                                 ...item,
                                 event_name: translatedEvent?.title ?? item.event_name,

@@ -1,13 +1,7 @@
-declare global {
-    interface Window {
-        _env_: {
-            [key: string]: string;
-        };
-    }
-}
-
 const getEnv = (key: string, defaultValue = '') => {
-    return window._env_[key] ?? process.env[key] ?? defaultValue;
+    return (
+        (globalThis as unknown as { _env_: { [key: string]: string } })._env_[key] ?? process.env[key] ?? defaultValue
+    );
 };
 
 const API_URL = getEnv('REACT_APP_API_URL');

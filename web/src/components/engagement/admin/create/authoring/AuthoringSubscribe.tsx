@@ -13,6 +13,7 @@ import { AuthoringTemplateOutletContext } from './types';
 import { tryParse } from './utils';
 import { getEngagementTranslationByCode } from 'services/engagementService';
 import { useAuthoringPageHydration } from './useAuthoringPageHydration';
+import { AppConfig } from 'config';
 
 type SubscribeAuthoringData = EngagementUpdateData & {
     subscribe_section_heading: string;
@@ -22,7 +23,8 @@ type SubscribeAuthoringData = EngagementUpdateData & {
 
 const AuthoringSubscribe = () => {
     const { setDefaultValues, fetcher, pageName, engagement: eng }: AuthoringTemplateOutletContext = useOutletContext();
-    const { languageCode = 'en' } = useParams();
+    const { languageCode } = useParams();
+    const activeLanguageCode = (languageCode ?? AppConfig.language.defaultLanguageId).toLowerCase();
     const {
         getValues,
         reset,
@@ -31,7 +33,7 @@ const AuthoringSubscribe = () => {
     } = useFormContext<SubscribeAuthoringData>();
 
     const loadSubscribeValues = useCallback(async () => {
-        const translation = await getEngagementTranslationByCode(Number(eng.id), languageCode);
+        const translation = await getEngagementTranslationByCode(Number(eng.id), activeLanguageCode);
         const subscribeHeading = translation?.subscribe_section_heading ?? eng.subscribe_section_heading;
         const subscribeDescription = translation?.subscribe_section_description ?? eng.subscribe_section_description;
         const subscribeConsent =
@@ -48,10 +50,10 @@ const AuthoringSubscribe = () => {
             subscribe_section_description: getEditorState(subscribeDescription),
             subscribe_consent_message: getEditorState(subscribeConsent),
         };
-    }, [eng, languageCode, pageName]);
+    }, [activeLanguageCode, eng, pageName]);
 
     const { isHydrating } = useAuthoringPageHydration<SubscribeAuthoringData>({
-        deps: [eng, languageCode, pageName],
+        deps: [eng, activeLanguageCode, pageName],
         fetcherData: fetcher.data,
         getValues,
         loadValues: loadSubscribeValues,

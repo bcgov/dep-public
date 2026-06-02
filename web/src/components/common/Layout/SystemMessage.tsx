@@ -41,6 +41,7 @@ import { Button } from 'components/common/Input/Button';
  */
 export const SystemMessage = ({
     status,
+    ref,
     onDismiss,
     color,
     coloredBackground,
@@ -48,6 +49,7 @@ export const SystemMessage = ({
     children,
     ...props
 }: {
+    ref?: React.Ref<HTMLDivElement>;
     status: 'success' | 'warning' | 'danger' | 'info';
     onDismiss?: () => void;
     color?: string;
@@ -56,6 +58,7 @@ export const SystemMessage = ({
 } & GridProps) => {
     return (
         <Grid
+            ref={ref}
             container
             direction="row"
             justifyContent="flex-start"
@@ -100,5 +103,5 @@ export const SystemMessage = ({
                 />
             </Grid>
         </Grid>
-    );
+    ) as React.ReactElement;
 };

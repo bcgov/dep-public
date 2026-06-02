@@ -14,6 +14,7 @@ import { Engagement } from 'models/engagement';
 import { EngagementLoaderAdminData } from 'components/engagement/admin/EngagementLoaderAdmin';
 import { saveLanguage } from 'reduxSlices/languageSlice';
 import Grid from '@mui/material/Grid2';
+import Collapse from '@mui/material/Collapse';
 import { StatusLabel } from './StatusLabel';
 import AuthoringMorePreform from './AuthoringMorePreform';
 import { ROUTES } from 'routes/routes';
@@ -25,10 +26,14 @@ import {
     useAuthoringSectionCompletion,
 } from 'components/engagement/admin/create/authoring/useAuthoringSectionCompletion';
 import { SystemMessage } from 'components/common/Layout/SystemMessage';
+import { AppConfig } from 'config';
+
+const DEFAULT_LANGUAGE_CODE = AppConfig.language.defaultLanguageId.toLowerCase();
+const DEFAULT_LANGUAGE_NAME = AppConfig.language.defaultLanguageName;
 
 export const getLanguageValue = (languageCode: string, languages: Language[]) => {
-    if (languageCode === 'en') {
-        return 'English';
+    if (languageCode === DEFAULT_LANGUAGE_CODE) {
+        return DEFAULT_LANGUAGE_NAME;
     }
     return languages.find((language) => language.code === languageCode)?.name || '';
 };
@@ -40,6 +45,7 @@ const isAuthoringSectionName = (value: string | undefined): value is AuthoringSe
 const AuthoringTemplate = () => {
     const { onSubmit, defaultValues, setDefaultValues, fetcher } = useAuthoringFormContext();
     const { engagementId, languageCode } = useParams() as { engagementId: string; languageCode: string };
+    const activeLanguageCode = (languageCode ?? DEFAULT_LANGUAGE_CODE).toLowerCase();
     const location = useLocation();
     const { engagement, languages } = useRouteLoaderData('single-engagement') as EngagementLoaderAdminData;
     const dispatch = useAppDispatch();
@@ -76,15 +82,16 @@ const AuthoringTemplate = () => {
 
     // Sync Redux language state whenever the URL language code changes.
     useEffect(() => {
-        if (!languageCode) return;
         languages.then((lngs) => {
-            const lang = lngs.find((l) => l.code === languageCode);
-            const name = lang?.name ?? (languageCode === 'en' ? 'English' : languageCode);
-            dispatch(saveLanguage({ id: languageCode, name }));
+            const lang = lngs.find((l) => l.code === activeLanguageCode);
+            const name =
+                lang?.name ??
+                (activeLanguageCode === DEFAULT_LANGUAGE_CODE ? DEFAULT_LANGUAGE_NAME : activeLanguageCode);
+            dispatch(saveLanguage({ id: activeLanguageCode, name }));
         });
-    }, [languageCode]);
+    }, [activeLanguageCode, dispatch, languages]);
 
-    const authoringRoutes = getAuthoringRoutes(Number(engagementId), languageCode ?? 'en');
+    const authoringRoutes = getAuthoringRoutes(Number(engagementId), activeLanguageCode);
     const pageName = useMatch(ROUTES.AUTHORING_PAGE)?.params.page;
     const pageTitle = authoringRoutes.find((route) => {
         const pathArray = route.path.split('/');
@@ -96,7 +103,7 @@ const AuthoringTemplate = () => {
         isLoading: isLoadingSectionCompletion,
     } = useAuthoringSectionCompletion({
         engagementId: Number(engagementId),
-        languageCode: languageCode ?? 'en',
+        languageCode: activeLanguageCode,
         selectedLanguageCodes,
         engagementPromise: engagement,
         refreshToken: fetcher.data,
@@ -188,21 +195,23 @@ const AuthoringTemplate = () => {
             incompleteLanguagesForCurrentSection.length > 0 &&
             !isLoadingBadgesAndMessages ? (
                 <Grid size={12} mt="1rem">
-                    <SystemMessage status="danger" sx={{ mb: '1rem' }}>
-                        <BodyText component="p" m={0}>
-                            There is incomplete required content in this section of your engagement page.
-                        </BodyText>
-                        <BodyText component="p" m={0}>
-                            Required content must be added for all languages in order to publish your engagement.
-                        </BodyText>
-                        <ul style={{ margin: '0.5rem 0 0', paddingLeft: '1.2rem' }}>
-                            {incompleteLanguagesForCurrentSection.map((language) => (
-                                <li key={language.code}>
-                                    <strong>{language.name}</strong> content is incomplete
-                                </li>
-                            ))}
-                        </ul>
-                    </SystemMessage>
+                    <Collapse in appear easing="cubic-bezier(.5,0,.5,1)">
+                        <SystemMessage status="danger" sx={{ mb: '1rem' }}>
+                            <BodyText component="p" m={0}>
+                                There is incomplete required content in this section of your engagement page.
+                            </BodyText>
+                            <BodyText component="p" m={0}>
+                                Required content must be added for all languages in order to publish your engagement.
+                            </BodyText>
+                            <ul style={{ margin: '0.5rem 0 0', paddingLeft: '1.2rem' }}>
+                                {incompleteLanguagesForCurrentSection.map((language) => (
+                                    <li key={language.code}>
+                                        <strong>{language.name}</strong> content is incomplete
+                                    </li>
+                                ))}
+                            </ul>
+                        </SystemMessage>
+                    </Collapse>
                 </Grid>
             ) : null}
             <Grid size={12}>

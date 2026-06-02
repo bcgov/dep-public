@@ -156,6 +156,7 @@ const Endpoints = {
         UPDATE: `${AppConfig.apiUrl}/widgets/widget_id/events/event_id/item/item_id`,
         DELETE: `${AppConfig.apiUrl}/widgets/widget_id/events/event_id`,
         SORT: `${AppConfig.apiUrl}/widgets/widget_id/events/sort_index`,
+        GET_ITEM_TRANSLATIONS: `${AppConfig.apiUrl}/events/event_id/translations/language/language_id`,
         GET_ITEM_TRANSLATION: `${AppConfig.apiUrl}/events/event_id/translations/item/event_item_id/language/language_id`,
         CREATE_ITEM_TRANSLATION: `${AppConfig.apiUrl}/events/event_id/translations/`,
         UPDATE_ITEM_TRANSLATION: `${AppConfig.apiUrl}/events/event_id/translations/translation_id`,

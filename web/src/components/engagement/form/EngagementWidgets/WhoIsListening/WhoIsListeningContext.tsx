@@ -103,8 +103,6 @@ export const WhoIsListeningProvider = ({ children }: { children: JSX.Element | J
                             ...contact,
                             name: translation.name ?? contact.name,
                             title: translation.title ?? contact.title,
-                            email: translation.email ?? contact.email,
-                            phone_number: translation.phone_number ?? contact.phone_number,
                             address: translation.address ?? contact.address,
                             bio: translation.bio ?? contact.bio,
                         };

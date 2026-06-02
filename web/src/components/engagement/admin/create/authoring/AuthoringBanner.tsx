@@ -17,9 +17,11 @@ import { convertToRaw, EditorState } from 'draft-js';
 import { defaultValuesObject, EngagementUpdateData } from './AuthoringContext';
 import { Engagement } from 'models/engagement';
 import { getEngagementTranslationByCode } from 'services/engagementService';
+import { AppConfig } from 'config';
 
 const ENGAGEMENT_UPLOADER_HEIGHT = '360px';
 const ENGAGEMENT_CROPPER_ASPECT_RATIO = 1920 / 700;
+const DEFAULT_LANGUAGE_CODE = AppConfig.language.defaultLanguageId.toLowerCase();
 
 const sectionOptions = [
     ['Summary', Sections.DESCRIPTION],
@@ -45,7 +47,8 @@ const AuthoringBanner = () => {
         formState: { errors },
     } = useFormContext<EngagementUpdateData>();
     const { engagement } = useRouteLoaderData('single-engagement') as EngagementLoaderAdminData;
-    const { languageCode = 'en' } = useParams();
+    const { languageCode } = useParams();
+    const activeLanguageCode = (languageCode ?? DEFAULT_LANGUAGE_CODE).toLowerCase();
 
     const [upcomingEditorState, setUpcomingEditorState] = useState<EditorState>(getEditorStateFromRaw(''));
     const [closedEditorState, setClosedEditorState] = useState<EditorState>(getEditorStateFromRaw(''));
@@ -74,7 +77,9 @@ const AuthoringBanner = () => {
             );
 
             const translation =
-                languageCode == 'en' ? null : await getEngagementTranslationByCode(Number(eng.id), languageCode);
+                activeLanguageCode == DEFAULT_LANGUAGE_CODE
+                    ? null
+                    : await getEngagementTranslationByCode(Number(eng.id), activeLanguageCode);
 
             if (cancelled) return;
 
@@ -111,7 +116,7 @@ const AuthoringBanner = () => {
         return () => {
             cancelled = true;
         };
-    }, [engagement, languageCode]);
+    }, [engagement, activeLanguageCode]);
 
     // Set current values to default state after saving form
     useEffect(() => {

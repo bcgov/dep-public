@@ -39,8 +39,6 @@ export interface ContactTranslation {
     language_id: number;
     name?: string;
     title?: string;
-    email?: string;
-    phone_number?: string;
     address?: string;
     bio?: string;
 }
@@ -67,8 +65,6 @@ export const createContactTranslation = async (data: {
     language_id: number;
     name?: string;
     title?: string;
-    email?: string;
-    phone_number?: string;
     address?: string;
     bio?: string;
 }): Promise<ContactTranslation> => {
@@ -91,8 +87,6 @@ export const saveContactTranslation = async (
     data: {
         name?: string;
         title?: string;
-        email?: string;
-        phone_number?: string;
         address?: string;
         bio?: string;
     },

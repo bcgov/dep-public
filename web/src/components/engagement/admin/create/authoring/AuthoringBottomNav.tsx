@@ -38,6 +38,7 @@ import { useAppDispatch } from 'hooks';
 import { openNotification } from 'services/notificationService/notificationSlice';
 import { createEngagementTranslation, getEngagementTranslationByLanguage } from 'services/engagementService';
 import axios from 'axios';
+import { AppConfig } from 'config';
 const PREVIEW_CLOSE_GRACE_MS = 800;
 
 const AuthoringBottomNav = ({
@@ -64,6 +65,7 @@ const AuthoringBottomNav = ({
         schedulePreviewClose,
         closePreviewWindow,
     } = useAuthoringPreviewWindow();
+    const defaultLanguageCode = AppConfig.language.defaultLanguageId.toLowerCase();
 
     const getBasePathPrefix = () => {
         const basename = sessionStorage.getItem('basename');
@@ -94,7 +96,7 @@ const AuthoringBottomNav = ({
     const getTargetPreviewBasePath = () =>
         `${getBasePathPrefix()}${getPath(ROUTES.ADMIN_ENGAGEMENT_PREVIEW, {
             engagementId: engagementId ?? '',
-            languageCode: languageCode ?? 'en',
+            languageCode: languageCode ?? defaultLanguageCode,
         })}`;
 
     const postPreviewScrollMessage = (previewWindow: Window, section?: string) => {
@@ -178,7 +180,7 @@ const AuthoringBottomNav = ({
 
             const expectedPathPrefix = `${getBasePathPrefix()}/${getPath(ROUTES.ADMIN_ENGAGEMENT_PREVIEW, {
                 engagementId: engagementId ?? '',
-                languageCode: languageCode ?? 'en',
+                languageCode: languageCode ?? defaultLanguageCode,
             })}`;
             try {
                 if (!previewWindow.location.pathname.startsWith(expectedPathPrefix)) {
@@ -426,6 +428,7 @@ const LanguageSelector = ({
     isSubmitting,
     setUnsavedWorkPromptSuppressed,
 }: Omit<LanguageSelectorProps, 'setCurrentLanguage'>) => {
+    const defaultLanguageCode = AppConfig.language.defaultLanguageId.toLowerCase();
     const { engagementId, languageCode: urlLanguageCode } = useParams();
     const navigate = useNavigate();
     const pageName = useMatch(ROUTES.AUTHORING_PAGE)?.params.page;
@@ -449,11 +452,11 @@ const LanguageSelector = ({
         if (!languagesLoaded) {
             return;
         }
-        if (isEnglishOnly && currentLanguage.id !== 'en') {
+        if (isEnglishOnly && currentLanguage.id !== defaultLanguageCode) {
             navigate(
                 getPath(ROUTES.AUTHORING_PAGE, {
                     engagementId: engagementId ?? '',
-                    languageCode: 'en',
+                    languageCode: defaultLanguageCode,
                     page: pageName ?? 'banner',
                 }),
                 {
@@ -464,10 +467,10 @@ const LanguageSelector = ({
                 },
             );
         }
-    }, [languagesLoaded, isEnglishOnly, currentLanguage.id, navigate, engagementId, pageName]);
+    }, [defaultLanguageCode, languagesLoaded, isEnglishOnly, currentLanguage.id, navigate, engagementId, pageName]);
 
     const ensureTranslationResources = async (languageCode: string): Promise<boolean> => {
-        if (languageCode === 'en') {
+        if (languageCode === defaultLanguageCode) {
             return true;
         }
 

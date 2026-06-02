@@ -17,6 +17,7 @@ import { AuthoringFormContainer, AuthoringFormSection } from './AuthoringFormLay
 import { tryParse } from './utils';
 import { getEngagementTranslationByCode } from 'services/engagementService';
 import { useAuthoringPageHydration } from './useAuthoringPageHydration';
+import { AppConfig } from 'config';
 
 type SelectOption = { label: string; value: number };
 
@@ -38,7 +39,8 @@ const AuthoringFeedback = () => {
 
     // Must be a loader assigned to this route or data won't be refreshed on page change.
     const { engagement, surveys } = useLoaderData() as AuthoringLoaderData; // Get fresh data to avoid DB sync issues
-    const { languageCode = 'en' } = useParams();
+    const { languageCode } = useParams();
+    const activeLanguageCode = (languageCode ?? AppConfig.language.defaultLanguageId).toLowerCase();
 
     const loadFeedbackValues = useCallback(async () => {
         const [surveyData, loadedEngagement] = await Promise.all([surveys, engagement]);
@@ -46,7 +48,7 @@ const AuthoringFeedback = () => {
         handleSurveyData(surveyData);
 
         statusId = loadedEngagement.status_id || statusId;
-        const translation = await getEngagementTranslationByCode(Number(loadedEngagement.id), languageCode);
+        const translation = await getEngagementTranslationByCode(Number(loadedEngagement.id), activeLanguageCode);
         const feedbackHeading = translation?.feedback_heading ?? loadedEngagement.feedback_heading;
         const feedbackBody = translation?.feedback_body ?? loadedEngagement.feedback_body;
 
@@ -64,10 +66,10 @@ const AuthoringFeedback = () => {
                 : -1,
             surveys: loadedEngagement.surveys || [],
         };
-    }, [engagement, languageCode, pageName, surveys]);
+    }, [activeLanguageCode, engagement, pageName, surveys]);
 
     const { isHydrating } = useAuthoringPageHydration<EngagementUpdateData>({
-        deps: [engagement, surveys, languageCode, pageName],
+        deps: [engagement, surveys, activeLanguageCode, pageName],
         fetcherData: fetcher.data,
         getValues,
         loadValues: loadFeedbackValues,

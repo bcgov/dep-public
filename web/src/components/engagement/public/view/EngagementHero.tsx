@@ -89,6 +89,11 @@ export const EngagementHero = () => {
                         '0px 20px 11px 0px rgba(0, 0, 0, 0.00), 0px 12px 10px 0px rgba(0, 0, 0, 0.01), 0px 7px 9px 0px rgba(0, 0, 0, 0.05), 0px 3px 6px 0px rgba(0, 0, 0, 0.09), 0px 1px 3px 0px rgba(0, 0, 0, 0.10)',
                     alignSelf: { xs: 'flex-start', md: 'center' },
                     alignContent: 'center',
+                    '@supports (backdrop-filter: blur(10px)) or (-webkit-backdrop-filter: blur(10px))': {
+                        backgroundColor: `color-mix(in srgb, ${colors.surface.white} 90%, transparent)`,
+                        backdropFilter: 'blur(10px)',
+                        WebkitBackdropFilter: 'blur(10px)',
+                    },
                 }}
             >
                 <Suspense

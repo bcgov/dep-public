@@ -87,8 +87,6 @@ const AddContactDrawer = () => {
                 await saveContactTranslation(contactToEdit.id, languageId, {
                     name: data.name,
                     title: data.title ?? undefined,
-                    email: data.email,
-                    phone_number: data.phone_number ?? undefined,
                     address: data.address ?? undefined,
                     bio: data.bio ?? undefined,
                 });

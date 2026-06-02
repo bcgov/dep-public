@@ -49,7 +49,7 @@ export const StatusLabel = ({
     const getLabelText = (status: EngagementStatus | undefined, completed: boolean | undefined) => {
         if (text) return text;
         if (status !== undefined) return EngagementStatus[status];
-        if (completed !== undefined) return completed ? 'Complete Section' : 'Incomplete Section';
+        if (completed !== undefined) return completed ? 'Section Complete' : 'Section Incomplete';
         return 'Unknown Status';
     };
 

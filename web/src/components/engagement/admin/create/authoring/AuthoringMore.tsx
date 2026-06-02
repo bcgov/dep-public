@@ -12,6 +12,7 @@ import { Engagement } from 'models/engagement';
 import { Page } from 'services/type';
 import { getEngagementTranslationByCode } from 'services/engagementService';
 import { useAuthoringPageHydration } from './useAuthoringPageHydration';
+import { AppConfig } from 'config';
 
 type EngagementOption = { label: string; value: number };
 type EngagementSlot = 'more_engagements_1' | 'more_engagements_2' | 'more_engagements_3';
@@ -21,7 +22,8 @@ const AuthoringMore = () => {
         { label: 'None', value: -1 },
     ]);
     const { setDefaultValues, fetcher, pageName, engagement: eng }: AuthoringTemplateOutletContext = useOutletContext(); // Access the form functions and values from the authoring template.
-    const { languageCode = 'en' } = useParams();
+    const { languageCode } = useParams();
+    const activeLanguageCode = (languageCode ?? AppConfig.language.defaultLanguageId).toLowerCase();
     const tenantId = eng.tenant_id;
     const engagementId = eng.id;
     const {
@@ -41,7 +43,7 @@ const AuthoringMore = () => {
             engagement,
             suggestions,
         ]);
-        const translation = await getEngagementTranslationByCode(Number(loadedEngagement.id), languageCode);
+        const translation = await getEngagementTranslationByCode(Number(loadedEngagement.id), activeLanguageCode);
 
         updateEngagementListValues(engagementPage);
 
@@ -57,10 +59,10 @@ const AuthoringMore = () => {
             more_engagements_2: loadedSuggestions.find((s) => s.sort_index === 2)?.suggested_engagement_id || -1,
             more_engagements_3: loadedSuggestions.find((s) => s.sort_index === 3)?.suggested_engagement_id || -1,
         };
-    }, [engagement, engagementId, engagementList, languageCode, pageName, suggestions]);
+    }, [activeLanguageCode, engagement, engagementId, engagementList, pageName, suggestions]);
 
     const { isHydrating } = useAuthoringPageHydration<EngagementUpdateData>({
-        deps: [engagement, engagementList, suggestions, languageCode, pageName, engagementId],
+        deps: [engagement, engagementList, suggestions, activeLanguageCode, pageName, engagementId],
         fetcherData: fetcher.data,
         getValues,
         loadValues: loadMoreValues,

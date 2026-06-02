@@ -8,6 +8,7 @@ import {
 } from 'services/engagementContentTranslationService';
 import { getDetailsTabs } from 'services/engagementDetailsTabService';
 import { EngagementDetailsTab } from 'models/engagementDetailsTab';
+import { AppConfig } from 'config';
 
 export const AUTHORING_SECTION_NAMES = [
     'Hero Banner',
@@ -82,43 +83,14 @@ const DEFAULT_EXPECTED_FIELDS: Record<AuthoringSectionName, string[]> = {
     'More Engagements': ['more_engagements_heading'],
 };
 
-const DEFAULT_SECTION_DEBUG: AuthoringSectionCompletionDebugMap = {
-    'Hero Banner': {
-        expectedFields: DEFAULT_EXPECTED_FIELDS['Hero Banner'],
+const DEFAULT_SECTION_DEBUG = AUTHORING_SECTION_NAMES.reduce((acc, sectionName) => {
+    acc[sectionName] = {
+        expectedFields: DEFAULT_EXPECTED_FIELDS[sectionName],
         completedFields: [],
         isComplete: false,
-    },
-    Summary: {
-        expectedFields: DEFAULT_EXPECTED_FIELDS.Summary,
-        completedFields: [],
-        isComplete: false,
-    },
-    Details: {
-        expectedFields: DEFAULT_EXPECTED_FIELDS.Details,
-        completedFields: [],
-        isComplete: false,
-    },
-    'Provide Feedback': {
-        expectedFields: DEFAULT_EXPECTED_FIELDS['Provide Feedback'],
-        completedFields: [],
-        isComplete: false,
-    },
-    'View Results': {
-        expectedFields: DEFAULT_EXPECTED_FIELDS['View Results'],
-        completedFields: [],
-        isComplete: false,
-    },
-    Subscribe: {
-        expectedFields: DEFAULT_EXPECTED_FIELDS.Subscribe,
-        completedFields: [],
-        isComplete: false,
-    },
-    'More Engagements': {
-        expectedFields: DEFAULT_EXPECTED_FIELDS['More Engagements'],
-        completedFields: [],
-        isComplete: false,
-    },
-};
+    };
+    return acc;
+}, {} as AuthoringSectionCompletionDebugMap);
 
 const EMPTY_TRANSLATIONS: EngagementContentTranslations = {
     details_tabs: [],
@@ -203,7 +175,8 @@ const getDetailsForLanguage = (
     contentTranslations: EngagementContentTranslations,
     languageCode: string,
 ) => {
-    if (languageCode === 'en') {
+    const defaultLanguageCode = AppConfig.language.defaultLanguageId.toLowerCase();
+    if (languageCode === defaultLanguageCode) {
         return detailsTabs;
     }
 
@@ -248,14 +221,15 @@ const computeSectionCompletion = async (
     languageCode: string,
     engagementPromise?: Promise<Engagement>,
 ): Promise<CompletionComputationResult> => {
-    const normalizedLanguageCode = languageCode || 'en';
+    const defaultLanguageCode = AppConfig.language.defaultLanguageId.toLowerCase();
+    const normalizedLanguageCode = languageCode || defaultLanguageCode;
 
     const engagement = await (engagementPromise ?? getEngagement(engagementId));
 
     const [translation, detailsTabs, contentTranslations] = await Promise.all([
         getEngagementTranslationByCode(engagementId, normalizedLanguageCode).catch(() => null),
         getDetailsTabs(engagementId).catch(() => []),
-        normalizedLanguageCode === 'en'
+        normalizedLanguageCode === defaultLanguageCode
             ? Promise.resolve(EMPTY_TRANSLATIONS)
             : getEngagementContentTranslationsByCode(engagementId, normalizedLanguageCode).catch(
                   () => EMPTY_TRANSLATIONS,
@@ -269,177 +243,166 @@ const computeSectionCompletion = async (
 
     const localizedDetails = getDetailsForLanguage(detailsTabs, contentTranslations, normalizedLanguageCode);
 
-    const heroBannerFields: SectionFieldStatus[] = [
-        {
-            key: 'name',
-            complete: hasText(getLocalizedField(engagement.name, translation, 'name')),
-        },
-        {
-            key: 'banner_url',
-            complete: hasText(engagement.banner_url),
-        },
-        {
-            key: 'open_link',
-            complete: isBlockLinkComplete(openBlock?.link_type, openBlock?.internal_link, openBlock?.external_link),
-        },
-    ];
-
-    const summaryFields: SectionFieldStatus[] = [
-        {
-            key: 'description_title',
-            complete: hasText(getLocalizedField(engagement.description_title, translation, 'description_title')),
-        },
-        {
-            key: 'rich_description',
-            complete: hasText(getLocalizedField(engagement.rich_description, translation, 'rich_description')),
-        },
-    ];
-
-    const detailsFields: SectionFieldStatus[] =
-        localizedDetails.length > 0
-            ? localizedDetails.flatMap((tab, index) => [
-                  {
-                      key: `details_tabs[${index}].label`,
-                      complete: hasText(tab.label),
-                  },
-                  {
-                      key: `details_tabs[${index}].heading`,
-                      complete: hasText(tab.heading),
-                  },
-                  {
-                      key: `details_tabs[${index}].body`,
-                      complete: hasText(tab.body),
-                  },
-              ])
-            : [
-                  {
-                      key: 'details_tabs.length',
-                      complete: false,
-                  },
-              ];
-
-    const provideFeedbackFields: SectionFieldStatus[] = [
-        {
-            key: 'feedback_heading',
-            complete: hasText(getLocalizedField(engagement.feedback_heading, translation, 'feedback_heading')),
-        },
-        {
-            key: 'feedback_body',
-            complete: hasText(getLocalizedField(engagement.feedback_body, translation, 'feedback_body')),
-        },
-    ];
-
-    const viewResultsFields: SectionFieldStatus[] = [
-        {
-            key: 'view_results_status_block_button_text',
-            complete: hasText(
-                getLocalizedField(viewResultsBlock?.button_text, translation, 'view_results_status_block_button_text'),
-            ),
-        },
-        {
-            key: 'view_results_link',
-            complete: isBlockLinkComplete(
-                viewResultsBlock?.link_type,
-                viewResultsBlock?.internal_link,
-                viewResultsBlock?.external_link,
-            ),
-        },
-    ];
-
-    const subscribeConsentMessage =
-        getLocalizedField(
-            engagement.subscribe_consent_message ?? engagement.consent_message,
-            translation,
-            'subscribe_consent_message',
-        ) ||
-        getLocalizedField(
-            engagement.subscribe_consent_message ?? engagement.consent_message,
-            translation,
-            'consent_message',
-        );
-
-    const subscribeFields: SectionFieldStatus[] = [
-        {
-            key: 'subscribe_section_heading',
-            complete: hasText(
-                getLocalizedField(engagement.subscribe_section_heading, translation, 'subscribe_section_heading'),
-            ),
-        },
-        {
-            key: 'subscribe_section_description',
-            complete: hasText(
-                getLocalizedField(
-                    engagement.subscribe_section_description,
-                    translation,
-                    'subscribe_section_description',
+    const sectionFields = {
+        'Hero Banner': [
+            {
+                key: 'name',
+                complete: hasText(getLocalizedField(engagement.name, translation, 'name')),
+            },
+            {
+                key: 'banner_url',
+                complete: hasText(engagement.banner_url),
+            },
+            {
+                key: 'open_link',
+                complete: isBlockLinkComplete(openBlock?.link_type, openBlock?.internal_link, openBlock?.external_link),
+            },
+        ],
+        Summary: [
+            {
+                key: 'description_title',
+                complete: hasText(getLocalizedField(engagement.description_title, translation, 'description_title')),
+            },
+            {
+                key: 'rich_description',
+                complete: hasText(getLocalizedField(engagement.rich_description, translation, 'rich_description')),
+            },
+        ],
+        Details:
+            localizedDetails.length > 0
+                ? localizedDetails.flatMap((tab, index) => [
+                      {
+                          key: `details_tabs[${index}].label`,
+                          complete: hasText(tab.label),
+                      },
+                      {
+                          key: `details_tabs[${index}].heading`,
+                          complete: hasText(tab.heading),
+                      },
+                      {
+                          key: `details_tabs[${index}].body`,
+                          complete: hasText(tab.body),
+                      },
+                  ])
+                : [
+                      {
+                          key: 'details_tabs.length',
+                          complete: false,
+                      },
+                  ],
+        'Provide Feedback': [
+            {
+                key: 'feedback_heading',
+                complete: hasText(getLocalizedField(engagement.feedback_heading, translation, 'feedback_heading')),
+            },
+            {
+                key: 'feedback_body',
+                complete: hasText(getLocalizedField(engagement.feedback_body, translation, 'feedback_body')),
+            },
+        ],
+        'View Results': [
+            {
+                key: 'view_results_status_block_button_text',
+                complete: hasText(
+                    getLocalizedField(
+                        viewResultsBlock?.button_text,
+                        translation,
+                        'view_results_status_block_button_text',
+                    ),
                 ),
-            ),
-        },
-        {
-            key: 'subscribe_consent_message',
-            complete: hasText(subscribeConsentMessage),
-        },
-    ];
-
-    const moreEngagementsFields: SectionFieldStatus[] = [
-        {
-            key: 'more_engagements_heading',
-            complete: hasText(
-                getLocalizedField(engagement.more_engagements_heading, translation, 'more_engagements_heading'),
-            ),
-        },
-    ];
+            },
+            {
+                key: 'view_results_link',
+                complete: isBlockLinkComplete(
+                    viewResultsBlock?.link_type,
+                    viewResultsBlock?.internal_link,
+                    viewResultsBlock?.external_link,
+                ),
+            },
+        ],
+        Subscribe: [
+            {
+                key: 'subscribe_section_heading',
+                complete: hasText(
+                    getLocalizedField(engagement.subscribe_section_heading, translation, 'subscribe_section_heading'),
+                ),
+            },
+            {
+                key: 'subscribe_section_description',
+                complete: hasText(
+                    getLocalizedField(
+                        engagement.subscribe_section_description,
+                        translation,
+                        'subscribe_section_description',
+                    ),
+                ),
+            },
+            {
+                key: 'subscribe_consent_message',
+                complete: hasText(
+                    getLocalizedField(
+                        engagement.subscribe_consent_message ?? engagement.consent_message,
+                        translation,
+                        'subscribe_consent_message',
+                    ) ||
+                        getLocalizedField(
+                            engagement.subscribe_consent_message ?? engagement.consent_message,
+                            translation,
+                            'consent_message',
+                        ),
+                ),
+            },
+        ],
+        'More Engagements': [
+            {
+                key: 'more_engagements_heading',
+                complete: hasText(
+                    getLocalizedField(engagement.more_engagements_heading, translation, 'more_engagements_heading'),
+                ),
+            },
+        ],
+    };
 
     const sectionComputation: Record<AuthoringSectionName, SectionComputationResult> = {
         'Hero Banner': {
-            complete: heroBannerFields.every((field) => field.complete),
-            fields: heroBannerFields,
+            complete: sectionFields['Hero Banner'].every((field) => field.complete),
+            fields: sectionFields['Hero Banner'],
         },
         Summary: {
-            complete: summaryFields.every((field) => field.complete),
-            fields: summaryFields,
+            complete: sectionFields['Summary'].every((field) => field.complete),
+            fields: sectionFields['Summary'],
         },
         Details: {
-            complete: localizedDetails.length > 0 && detailsFields.every((field) => field.complete),
-            fields: detailsFields,
+            complete: localizedDetails.length > 0 && sectionFields['Details'].every((field) => field.complete),
+            fields: sectionFields['Details'],
         },
         'Provide Feedback': {
-            complete: provideFeedbackFields.every((field) => field.complete),
-            fields: provideFeedbackFields,
+            complete: sectionFields['Provide Feedback'].every((field) => field.complete),
+            fields: sectionFields['Provide Feedback'],
         },
         'View Results': {
-            complete: viewResultsFields.every((field) => field.complete),
-            fields: viewResultsFields,
+            complete: sectionFields['View Results'].every((field) => field.complete),
+            fields: sectionFields['View Results'],
         },
         Subscribe: {
-            complete: subscribeFields.every((field) => field.complete),
-            fields: subscribeFields,
+            complete: sectionFields['Subscribe'].every((field) => field.complete),
+            fields: sectionFields['Subscribe'],
         },
         'More Engagements': {
-            complete: moreEngagementsFields.every((field) => field.complete),
-            fields: moreEngagementsFields,
+            complete: sectionFields['More Engagements'].every((field) => field.complete),
+            fields: sectionFields['More Engagements'],
         },
     };
 
-    const completionBySection: AuthoringSectionCompletion = {
-        'Hero Banner': sectionComputation['Hero Banner'].complete,
-        Summary: sectionComputation.Summary.complete,
-        Details: sectionComputation.Details.complete,
-        'Provide Feedback': sectionComputation['Provide Feedback'].complete,
-        'View Results': sectionComputation['View Results'].complete,
-        Subscribe: sectionComputation.Subscribe.complete,
-        'More Engagements': sectionComputation['More Engagements'].complete,
-    };
+    const completionBySection: AuthoringSectionCompletion = AUTHORING_SECTION_NAMES.reduce((acc, sectionName) => {
+        acc[sectionName] = sectionComputation[sectionName].complete;
+        return acc;
+    }, {} as AuthoringSectionCompletion);
 
-    const debugBySection: AuthoringSectionCompletionDebugMap = {
-        'Hero Banner': toDebug(sectionComputation['Hero Banner']),
-        Summary: toDebug(sectionComputation.Summary),
-        Details: toDebug(sectionComputation.Details),
-        'Provide Feedback': toDebug(sectionComputation['Provide Feedback']),
-        'View Results': toDebug(sectionComputation['View Results']),
-        Subscribe: toDebug(sectionComputation.Subscribe),
-        'More Engagements': toDebug(sectionComputation['More Engagements']),
-    };
+    const debugBySection: AuthoringSectionCompletionDebugMap = AUTHORING_SECTION_NAMES.reduce((acc, sectionName) => {
+        acc[sectionName] = toDebug(sectionComputation[sectionName]);
+        return acc;
+    }, {} as AuthoringSectionCompletionDebugMap);
 
     return {
         completionBySection,

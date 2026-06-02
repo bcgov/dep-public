@@ -115,6 +115,25 @@ export const getEventItemTranslation = async (
     }
 };
 
+export const getEventItemTranslations = async (
+    eventId: number,
+    languageId: number,
+): Promise<EventItemTranslation[]> => {
+    try {
+        const url = replaceAllInURL({
+            URL: Endpoints.Events.GET_ITEM_TRANSLATIONS,
+            params: {
+                event_id: String(eventId),
+                language_id: String(languageId),
+            },
+        });
+        const response = await http.GetRequest<EventItemTranslation[]>(url);
+        return response.data ?? [];
+    } catch {
+        return [];
+    }
+};
+
 export const createEventItemTranslation = async (
     eventId: number,
     data: { event_item_id: number; language_id: number } & EventItemTranslationData,
@@ -146,7 +165,8 @@ export const saveEventItemTranslation = async (
     languageId: number,
     data: EventItemTranslationData,
 ): Promise<EventItemTranslation> => {
-    const existing = await getEventItemTranslation(eventId, eventItemId, languageId);
+    const existingTranslations = await getEventItemTranslations(eventId, languageId);
+    const existing = existingTranslations.find((translation) => translation.event_item_id === eventItemId);
     if (existing?.id) {
         return updateEventItemTranslation(eventId, existing.id, data);
     }

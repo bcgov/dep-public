@@ -6,7 +6,7 @@ import { faCheck } from '@fortawesome/pro-solid-svg-icons';
 import { BodyText, Heading2, Heading3 } from 'components/common/Typography';
 import { SystemMessage } from 'components/common/Layout/SystemMessage';
 import { Unless, When } from 'react-if';
-import { Grid2 as Grid, MenuItem, Select, SelectChangeEvent, Skeleton } from '@mui/material';
+import { Collapse, Grid2 as Grid, MenuItem, Select, SelectChangeEvent, Skeleton } from '@mui/material';
 import { colors } from 'styles/Theme';
 import { Link } from 'components/common/Navigation';
 import { getDefaultAuthoringTabValues } from './AuthoringTabElements';
@@ -14,7 +14,7 @@ import { useAppSelector } from 'hooks';
 import { useParams, useRouteLoaderData } from 'react-router';
 import { EngagementLoaderAdminData } from '../EngagementLoaderAdmin';
 import { Language } from 'models/language';
-import { faCircleEllipsis, faGlobe } from '@fortawesome/pro-regular-svg-icons';
+import { faGlobe } from '@fortawesome/pro-regular-svg-icons';
 import {
     AuthoringSectionName,
     useAuthoringSectionCompletion,
@@ -125,16 +125,7 @@ export const AuthoringTab = () => {
             })),
         [engagementId, feedbackCompleted, selectedLanguageCode],
     );
-    const optionalSectionValues = useMemo(
-        () =>
-            sectionValues.filter((section) => {
-                if (section.required) {
-                    return false;
-                }
-                return true;
-            }),
-        [sectionValues],
-    );
+    const optionalSectionValues = useMemo(() => sectionValues.filter((section) => !section.required), [sectionValues]);
 
     const availableLanguageOptions =
         languageOptions.length > 0
@@ -245,18 +236,17 @@ export const AuthoringTab = () => {
                     </Grid>
                 </Grid>
             </Grid>
-            <When condition={isLoadingSectionCompletion}>
-                <SystemMessage icon={faCircleEllipsis} sx={systemMessageStyles} status="info">
-                    <Skeleton variant="text" width={250} />
-                    <Skeleton variant="text" width={200} />
-                </SystemMessage>
-            </When>
-            <When condition={!isLoadingSectionCompletion && !requiredSectionsComplete}>
+            <Collapse
+                in={!isLoadingSectionCompletion && !requiredSectionsComplete}
+                appear
+                timeout={150}
+                easing="ease-in"
+            >
                 <SystemMessage sx={systemMessageStyles} status="danger">
                     There are incomplete or missing sections of required content in your engagement. Please complete all
                     required content in all of the languages included in your engagement.
                 </SystemMessage>
-            </When>
+            </Collapse>
             <Grid
                 container
                 direction="row"
@@ -291,12 +281,12 @@ export const AuthoringTab = () => {
                 <Heading3 bold mb="1.5rem">
                     Feedback Configuration
                 </Heading3>
-                <When condition={!isLoadingSectionCompletion && !feedbackCompleted}>
+                <Collapse in={!isLoadingSectionCompletion && !feedbackCompleted} appear timeout={150} easing="ease-in">
                     <SystemMessage sx={systemMessageStyles} status="danger">
                         There are feedback methods included in your engagement that are incomplete. Please complete
                         configuration for all of the feedback methods included in your engagement.
                     </SystemMessage>
-                </When>
+                </Collapse>
                 <BodyText bold sx={sectionLabelStyles}>
                     Feedback Methods
                 </BodyText>

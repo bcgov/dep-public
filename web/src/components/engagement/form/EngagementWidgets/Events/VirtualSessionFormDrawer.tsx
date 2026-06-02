@@ -15,7 +15,7 @@ import { openNotification } from 'services/notificationService/notificationSlice
 import {
     postEvent,
     patchEvent,
-    getEventItemTranslation,
+    getEventItemTranslations,
     saveEventItemTranslation,
 } from 'services/widgetService/EventService';
 import { Event, EVENT_TYPE } from 'models/event';
@@ -99,10 +99,9 @@ const VirtualSessionFormDrawer = () => {
 
                 if (eventItemToEdit) {
                     const languageId = await getLanguageIdByCode(activeLanguageCode);
-                    const itemTranslation = await getEventItemTranslation(
-                        eventToEdit.id,
-                        eventItemToEdit.id,
-                        languageId,
+                    const itemTranslations = await getEventItemTranslations(eventToEdit.id, languageId);
+                    const itemTranslation = itemTranslations.find(
+                        (translation) => translation.event_item_id === eventItemToEdit.id,
                     );
                     if (itemTranslation) {
                         translatedDescription = itemTranslation.description ?? translatedDescription;
