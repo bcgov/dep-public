@@ -25,10 +25,7 @@ export type EngagementLoaderPublicData = {
 export const engagementLoaderPublic = async ({ params }: { params: Params<string> }) => {
     const { slug: slugParam, engagementId } = params;
 
-    const tenantId =
-        typeof window !== 'undefined' && typeof window.sessionStorage !== 'undefined'
-            ? window.sessionStorage.getItem('tenantId')
-            : null;
+    const tenantId = globalThis?.sessionStorage?.getItem('tenantId') ?? null;
     const languages = tenantId ? getTenantLanguages(tenantId) : Promise.resolve([]);
     const slug = slugParam
         ? Promise.resolve(slugParam)
@@ -48,9 +45,7 @@ export const engagementLoaderPublic = async ({ params }: { params: Params<string
         metaResponse.forEach((metaEntry) => {
             const taxon = taxaResponse[metaEntry.taxon_id];
             if (taxon) {
-                if (taxon.entries === undefined) {
-                    taxon.entries = [];
-                }
+                taxon.entries ??= [];
                 taxon.entries.push(metaEntry);
             }
         });

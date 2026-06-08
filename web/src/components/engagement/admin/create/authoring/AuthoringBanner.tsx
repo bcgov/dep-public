@@ -46,13 +46,17 @@ const AuthoringBanner = () => {
         control,
         formState: { errors },
     } = useFormContext<EngagementUpdateData>();
-    const { engagement } = useRouteLoaderData('single-engagement') as EngagementLoaderAdminData;
+    const { engagement, hasDefaultLanguageTranslation } = useRouteLoaderData(
+        'single-engagement',
+    ) as EngagementLoaderAdminData;
     const { languageCode } = useParams();
     const activeLanguageCode = (languageCode ?? DEFAULT_LANGUAGE_CODE).toLowerCase();
 
     const [upcomingEditorState, setUpcomingEditorState] = useState<EditorState>(getEditorStateFromRaw(''));
     const [closedEditorState, setClosedEditorState] = useState<EditorState>(getEditorStateFromRaw(''));
     const [isLoadingTranslation, setIsLoadingTranslation] = useState(false);
+    const canFallbackToBaseLanguage =
+        activeLanguageCode === DEFAULT_LANGUAGE_CODE || Boolean(React.use(hasDefaultLanguageTranslation));
 
     // Set loading state synchronously before the browser paints when the language changes,
     // preventing React 18's automatic batching from collapsing true→false into a single render.
@@ -91,34 +95,38 @@ const AuthoringBanner = () => {
                         ? null
                         : await getEngagementTranslationByCode(Number(eng.id), activeLanguageCode);
 
-                const defaultLanguageTranslation =
-                    activeLanguageCode === DEFAULT_LANGUAGE_CODE
-                        ? await getEngagementTranslationByCode(Number(eng.id), activeLanguageCode).catch(() => null)
-                        : null;
-
                 if (cancelled) return;
 
-                const closedMessage = translation?.closed_status_block_text ?? closedSection?.block_text;
-                const upcomingMessage = translation?.upcoming_status_block_text ?? upcomingSection?.block_text;
+                const closedMessage =
+                    translation?.closed_status_block_text ??
+                    (canFallbackToBaseLanguage ? closedSection?.block_text : '');
+                const upcomingMessage =
+                    translation?.upcoming_status_block_text ??
+                    (canFallbackToBaseLanguage ? upcomingSection?.block_text : '');
 
                 const newValues: EngagementUpdateData = {
                     ...defaultValuesObject,
                     form_source: pageName,
                     id: Number(eng.id),
-                    name: translation?.name ?? eng.name,
+                    name: translation?.name ?? (canFallbackToBaseLanguage ? eng.name : ''),
                     image_url: eng.banner_url,
-                    eyebrow: translation?.sponsor_name ?? eng.sponsor_name ?? defaultLanguageTranslation?.sponsor_name,
-                    open_cta: translation?.open_status_block_button_text ?? openSection?.button_text,
+                    eyebrow: translation?.sponsor_name ?? (canFallbackToBaseLanguage ? eng.sponsor_name : ''),
+                    open_cta:
+                        translation?.open_status_block_button_text ??
+                        (canFallbackToBaseLanguage ? openSection?.button_text : ''),
                     open_cta_link_type: openSection?.link_type || 'internal',
                     open_section_link: openSection?.internal_link,
                     open_external_link: openSection?.external_link,
                     view_results_cta:
-                        translation?.view_results_status_block_button_text ?? viewResultsSection?.button_text,
+                        translation?.view_results_status_block_button_text ??
+                        (canFallbackToBaseLanguage ? viewResultsSection?.button_text : ''),
                     view_results_link_type: viewResultsSection?.link_type || 'internal',
                     view_results_section_link: viewResultsSection?.internal_link,
                     view_results_external_link: viewResultsSection?.external_link,
-                    closed_message: closedMessage,
-                    upcoming_message: upcomingMessage,
+                    closed_message:
+                        translation?.closed_status_block_text ?? (canFallbackToBaseLanguage ? closedMessage : ''),
+                    upcoming_message:
+                        translation?.upcoming_status_block_text ?? (canFallbackToBaseLanguage ? upcomingMessage : ''),
                 };
 
                 // Update editor states and form values in one batch to avoid intermediate renders
