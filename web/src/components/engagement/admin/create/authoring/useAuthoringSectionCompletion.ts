@@ -220,6 +220,7 @@ const computeSectionCompletion = async (
     engagementId: number,
     languageCode: string,
     engagementPromise?: Promise<Engagement>,
+    detailsTabsPromise?: Promise<EngagementDetailsTab[]>,
 ): Promise<CompletionComputationResult> => {
     const defaultLanguageCode = AppConfig.language.defaultLanguageId.toLowerCase();
     const normalizedLanguageCode = languageCode || defaultLanguageCode;
@@ -228,7 +229,7 @@ const computeSectionCompletion = async (
 
     const [translation, detailsTabs, contentTranslations] = await Promise.all([
         getEngagementTranslationByCode(engagementId, normalizedLanguageCode).catch(() => null),
-        getDetailsTabs(engagementId).catch(() => []),
+        detailsTabsPromise ?? getDetailsTabs(engagementId).catch(() => []),
         normalizedLanguageCode === defaultLanguageCode
             ? Promise.resolve(EMPTY_TRANSLATIONS)
             : getEngagementContentTranslationsByCode(engagementId, normalizedLanguageCode).catch(
@@ -415,6 +416,7 @@ interface UseAuthoringSectionCompletionOptions {
     languageCode: string;
     selectedLanguageCodes?: string[];
     engagementPromise?: Promise<Engagement>;
+    detailsTabsPromise?: Promise<EngagementDetailsTab[]>;
     refreshToken?: unknown;
 }
 
@@ -460,6 +462,7 @@ export const useAuthoringSectionCompletion = ({
     languageCode,
     selectedLanguageCodes,
     engagementPromise,
+    detailsTabsPromise,
     refreshToken,
 }: UseAuthoringSectionCompletionOptions) => {
     const [completionBySection, setCompletionBySection] =
@@ -490,10 +493,16 @@ export const useAuthoringSectionCompletion = ({
             normalizedLanguageCodesKey.length > 0
                 ? normalizedLanguageCodesKey.split('|')
                 : [normalizedCurrentLanguageCode];
+        const sharedDetailsTabsPromise = detailsTabsPromise ?? getDetailsTabs(engagementId).catch(() => []);
 
         void Promise.all(
             normalizedLanguageCodes.map(async (code) => {
-                const result = await computeSectionCompletion(engagementId, code, engagementPromise);
+                const result = await computeSectionCompletion(
+                    engagementId,
+                    code,
+                    engagementPromise,
+                    sharedDetailsTabsPromise,
+                );
                 return [code, result] as const;
             }),
         )
@@ -541,7 +550,14 @@ export const useAuthoringSectionCompletion = ({
         return () => {
             cancelled = true;
         };
-    }, [engagementId, normalizedCurrentLanguageCode, normalizedLanguageCodesKey, engagementPromise, refreshToken]);
+    }, [
+        engagementId,
+        normalizedCurrentLanguageCode,
+        normalizedLanguageCodesKey,
+        engagementPromise,
+        detailsTabsPromise,
+        refreshToken,
+    ]);
 
     const requiredSectionsComplete = useMemo(
         () => REQUIRED_SECTION_NAMES.every((sectionName) => completionBySection[sectionName]),

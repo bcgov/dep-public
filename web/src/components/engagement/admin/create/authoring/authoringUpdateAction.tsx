@@ -219,12 +219,13 @@ export const authoringUpdateAction: ActionFunction = async ({ request }) => {
             label: 'Error updating engagement',
             errors,
             task: async () => {
+                const sponsorName = getOptionalFormText(formData, 'eyebrow');
                 await patchTranslationForLanguage({
                     engagementId,
                     languageCode,
                     payload: {
                         name: getOptionalFormText(formData, 'name'),
-                        sponsor_name: getOptionalFormText(formData, 'eyebrow'),
+                        sponsor_name: sponsorName,
                         description: getOptionalFormText(formData, 'description'),
                         rich_description: getOptionalFormText(formData, 'rich_description'),
                         description_title: getOptionalFormText(formData, 'description_title'),
@@ -241,6 +242,7 @@ export const authoringUpdateAction: ActionFunction = async ({ request }) => {
                     status_id: Number(formData.get('status_id')) || undefined,
                     end_date: (formData.get('end_date') as string) || undefined,
                     banner_filename: (formData.get('banner_filename') as string) || undefined,
+                    sponsor_name: languageCode === defaultLanguageCode ? sponsorName : undefined,
                     status_block: statusBlock,
                 });
             },

@@ -20,7 +20,7 @@ def test_get_engagement_content_translation_includes_new_widget_translation_buck
     """Assert aggregated GET includes timeline/events/documents/image translation buckets."""
     headers = factory_auth_header(jwt=jwt, claims={})
 
-    engagement = factory_engagement_model({**TestEngagementInfo.engagement1.value})
+    engagement = factory_engagement_model({**TestEngagementInfo.engagement1})
     details_tab = factory_engagement_details_tab_model(
         {
             **TestEngagementDetailsTabsInfo.details_tab1.value,
@@ -38,7 +38,8 @@ def test_get_engagement_content_translation_includes_new_widget_translation_buck
     _ = factory_widget_model({'engagement_id': engagement.id})
 
     # Use a Timeline-type widget so get_timeline_translations filters correctly
-    timeline_widget = factory_widget_model({**TestWidgetInfo.widget_timeline.value, 'engagement_id': engagement.id})
+    timeline_widget = factory_widget_model(
+        {**TestWidgetInfo.widget_timeline.value, 'engagement_id': engagement.id})
     widget_timeline = factory_widget_timeline_model(
         {
             'widget_id': timeline_widget.id,
@@ -55,7 +56,8 @@ def test_get_engagement_content_translation_includes_new_widget_translation_buck
     )
     timeline_translation.save()
 
-    events_widget = factory_widget_model({**TestWidgetInfo.widget_events.value, 'engagement_id': engagement.id})
+    events_widget = factory_widget_model(
+        {**TestWidgetInfo.widget_events.value, 'engagement_id': engagement.id})
     event = factory_widget_event_model(widget_model=events_widget)
     event_translation = WidgetTranslation(
         widget_id=events_widget.id,
@@ -65,7 +67,8 @@ def test_get_engagement_content_translation_includes_new_widget_translation_buck
     )
     event_translation.save()
 
-    docs_widget = factory_widget_model({**TestWidgetInfo.widget2.value, 'engagement_id': engagement.id})
+    docs_widget = factory_widget_model(
+        {**TestWidgetInfo.widget2.value, 'engagement_id': engagement.id})
     document = factory_document_model(
         {
             **TestWidgetDocumentInfo.document1.value,
@@ -81,7 +84,8 @@ def test_get_engagement_content_translation_includes_new_widget_translation_buck
     )
     document_translation.save()
 
-    image_widget = factory_widget_model({**TestWidgetInfo.widget_image.value, 'engagement_id': engagement.id})
+    image_widget = factory_widget_model(
+        {**TestWidgetInfo.widget_image.value, 'engagement_id': engagement.id})
     image = WidgetImage(
         widget_id=image_widget.id,
         engagement_id=engagement.id,
@@ -130,9 +134,10 @@ def test_put_engagement_content_translation_syncs_new_widget_translation_buckets
     _, claims = setup_admin_user_and_claims
     headers = factory_auth_header(jwt=jwt, claims=claims)
 
-    engagement = factory_engagement_model({**TestEngagementInfo.engagement1.value})
+    engagement = factory_engagement_model({**TestEngagementInfo.engagement1})
 
-    timeline_widget = factory_widget_model({**TestWidgetInfo.widget_timeline.value, 'engagement_id': engagement.id})
+    timeline_widget = factory_widget_model(
+        {**TestWidgetInfo.widget_timeline.value, 'engagement_id': engagement.id})
     widget_timeline = factory_widget_timeline_model(
         {
             'widget_id': timeline_widget.id,
@@ -149,7 +154,8 @@ def test_put_engagement_content_translation_syncs_new_widget_translation_buckets
     )
     timeline_translation.save()
 
-    events_widget = factory_widget_model({**TestWidgetInfo.widget_events.value, 'engagement_id': engagement.id})
+    events_widget = factory_widget_model(
+        {**TestWidgetInfo.widget_events.value, 'engagement_id': engagement.id})
     event = factory_widget_event_model(widget_model=events_widget)
     event_translation = WidgetTranslation(
         widget_id=events_widget.id,
@@ -159,7 +165,8 @@ def test_put_engagement_content_translation_syncs_new_widget_translation_buckets
     )
     event_translation.save()
 
-    docs_widget = factory_widget_model({**TestWidgetInfo.widget2.value, 'engagement_id': engagement.id})
+    docs_widget = factory_widget_model(
+        {**TestWidgetInfo.widget2.value, 'engagement_id': engagement.id})
     document = factory_document_model(
         {
             **TestWidgetDocumentInfo.document1.value,
@@ -176,7 +183,8 @@ def test_put_engagement_content_translation_syncs_new_widget_translation_buckets
     document_translation.save()
     document_translation_id = document_translation.id
 
-    image_widget = factory_widget_model({**TestWidgetInfo.widget_image.value, 'engagement_id': engagement.id})
+    image_widget = factory_widget_model(
+        {**TestWidgetInfo.widget_image.value, 'engagement_id': engagement.id})
     image = WidgetImage(
         widget_id=image_widget.id,
         engagement_id=engagement.id,
@@ -239,10 +247,14 @@ def test_put_engagement_content_translation_syncs_new_widget_translation_buckets
     assert response['documents_widgets']['summary']['deleted'] == 1
     assert response['image_widgets']['summary']['updated'] == 1
 
-    updated_timeline_translation = WidgetTimelineTranslation.query.get(timeline_translation.id)
-    updated_event_translation = WidgetTranslation.query.get(event_translation.id)
-    deleted_document_translation = WidgetTranslation.query.get(document_translation_id)
-    updated_image_translation = WidgetImageTranslation.query.get(image_translation.id)
+    updated_timeline_translation = WidgetTimelineTranslation.query.get(
+        timeline_translation.id)
+    updated_event_translation = WidgetTranslation.query.get(
+        event_translation.id)
+    deleted_document_translation = WidgetTranslation.query.get(
+        document_translation_id)
+    updated_image_translation = WidgetImageTranslation.query.get(
+        image_translation.id)
 
     assert updated_timeline_translation.title == 'Timeline FR Updated'
     assert updated_event_translation.title == 'Evenement FR Updated'
@@ -255,7 +267,7 @@ def test_put_engagement_content_translation_requires_payload(client, jwt, sessio
     _, claims = setup_admin_user_and_claims
     headers = factory_auth_header(jwt=jwt, claims=claims)
 
-    engagement = factory_engagement_model({**TestEngagementInfo.engagement1.value})
+    engagement = factory_engagement_model({**TestEngagementInfo.engagement1})
 
     rv = client.put(
         f'/api/engagement/{engagement.id}/content/translations/language/{49}',
@@ -265,4 +277,5 @@ def test_put_engagement_content_translation_requires_payload(client, jwt, sessio
     )
 
     assert rv.status_code == HTTPStatus.BAD_REQUEST
-    assert rv.get_json()['message'] == 'No content translation payload provided'
+    assert rv.get_json()[
+        'message'] == 'No content translation payload provided'

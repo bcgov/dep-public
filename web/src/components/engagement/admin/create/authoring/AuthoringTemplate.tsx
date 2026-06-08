@@ -47,7 +47,7 @@ const AuthoringTemplate = () => {
     const { engagementId, languageCode } = useParams() as { engagementId: string; languageCode: string };
     const activeLanguageCode = (languageCode ?? DEFAULT_LANGUAGE_CODE).toLowerCase();
     const location = useLocation();
-    const { engagement, languages } = useRouteLoaderData('single-engagement') as EngagementLoaderAdminData;
+    const { engagement, languages, details } = useRouteLoaderData('single-engagement') as EngagementLoaderAdminData;
     const dispatch = useAppDispatch();
     const currentLanguage = useAppSelector((state) => state.language);
     const [selectedLanguages, setSelectedLanguages] = React.useState<Language[]>([]);
@@ -106,6 +106,7 @@ const AuthoringTemplate = () => {
         languageCode: activeLanguageCode,
         selectedLanguageCodes,
         engagementPromise: engagement,
+        detailsTabsPromise: details,
         refreshToken: fetcher.data,
     });
     const currentSectionName = isAuthoringSectionName(pageTitle) ? pageTitle : undefined;
@@ -255,6 +256,10 @@ const AuthoringTemplate = () => {
                         languages={languages}
                         pageTitle={pageTitle || 'untitled'} // Full title
                         pageName={pageName || 'untitled'} // Slug
+                        currentSectionIncompleteLanguageCodes={incompleteLanguagesForCurrentSection.map(
+                            (language) => language.code,
+                        )}
+                        isSectionCompletionLoading={isLoadingBadgesAndMessages}
                         onSaveSection={onSaveSection}
                         setUnsavedWorkPromptSuppressed={setUnsavedWorkPromptSuppressed}
                     />

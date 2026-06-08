@@ -34,6 +34,8 @@ export interface LanguageSelectorProps {
     languages: Promise<Language[]>;
     isDirty: boolean;
     isSubmitting: boolean;
+    currentSectionIncompleteLanguageCodes: string[];
+    isSectionCompletionLoading: boolean;
     setUnsavedWorkPromptSuppressed: Dispatch<SetStateAction<boolean>>;
 }
 
@@ -46,6 +48,8 @@ export interface AuthoringBottomNavProps {
     languages: Promise<Language[]>;
     pageTitle: string;
     pageName: string;
+    currentSectionIncompleteLanguageCodes: string[];
+    isSectionCompletionLoading: boolean;
     onSaveSection: () => void;
     setUnsavedWorkPromptSuppressed: Dispatch<SetStateAction<boolean>>;
 }

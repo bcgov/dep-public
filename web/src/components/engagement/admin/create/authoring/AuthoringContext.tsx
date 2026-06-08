@@ -14,6 +14,7 @@ import { AuthoringPreviewWindowProvider } from './AuthoringPreviewWindowContext'
 import { ROUTES, getPath } from 'routes/routes';
 import AuthoringTemplate from './AuthoringTemplate';
 import { AuthoringFormContext } from './AuthoringFormContext';
+import { AppConfig } from 'config';
 
 const tabSchema = yup.object({
     id: yup.number().required(),
@@ -278,7 +279,7 @@ export const AuthoringContext = () => {
         }
     }, [fetcher.data]);
     const { languageCode } = useParams() as { languageCode: string };
-    const currentLanguageCode = languageCode || 'en';
+    const currentLanguageCode = languageCode || AppConfig.language.defaultLanguageId;
     const pageName = useMatch(ROUTES.AUTHORING_PAGE)?.params.page;
     /* Changes the resolver based on the page name. 
     If you require more complex validation, you can 
@@ -408,7 +409,7 @@ export const AuthoringContext = () => {
     return (
         <AuthoringFormContext.Provider value={contextValue}>
             <AuthoringPreviewWindowProvider>
-                <FormProvider key={`${currentLanguageCode}-${pageName || 'authoring-form'}`} {...engagementUpdateForm}>
+                <FormProvider {...engagementUpdateForm}>
                     <AuthoringTemplate />
                 </FormProvider>
             </AuthoringPreviewWindowProvider>

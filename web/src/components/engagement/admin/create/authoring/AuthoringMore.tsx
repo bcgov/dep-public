@@ -71,12 +71,17 @@ const AuthoringMore = () => {
     const updateEngagementListValues = (list: Page<Engagement>, tenantId: number, engagementId: number) => {
         if (list.items && Array.isArray(list.items) && list.items.length > 0) {
             const filteredOptions: EngagementOption[] = [];
+            const validStatuses = new Set([
+                EngagementStatus.Published,
+                EngagementStatus.Closed,
+                EngagementStatus.Scheduled,
+            ]);
             list.items.forEach((eng) => {
                 if (
                     eng.tenant_id === tenantId && // Must be engagements from same tenant
                     eng.id !== engagementId && // Can't suggest the current engagement
-                    // Only suggest open or closed engagements, not drafts or unpublished
-                    (eng.status_id === EngagementStatus.Published || eng.status_id === EngagementStatus.Closed)
+                    // Only suggest published, scheduled, or closed engagements.
+                    validStatuses.has(eng.status_id)
                 ) {
                     filteredOptions.push({
                         label: eng?.name || '',

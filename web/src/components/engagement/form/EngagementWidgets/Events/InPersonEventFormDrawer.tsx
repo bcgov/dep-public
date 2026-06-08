@@ -20,7 +20,7 @@ import {
     saveEventItemTranslation,
 } from 'services/widgetService/EventService';
 import { Event, EVENT_TYPE } from 'models/event';
-import { formatToUTC, formatDate } from 'components/common/dateHelper';
+import { formatToUTC, formatToPacific } from 'components/common/dateHelper';
 import { formEventDates } from './utils';
 import dayjs from 'dayjs';
 import tz from 'dayjs/plugin/timezone';
@@ -120,7 +120,7 @@ const InPersonEventFormDrawer = () => {
             methods.setValue('description', translatedDescription);
             methods.setValue('location_name', translatedLocationName);
             methods.setValue('location_address', translatedLocationAddress);
-            methods.setValue('date', eventItemToEdit ? formatDate(eventItemToEdit.start_date) : '');
+            methods.setValue('date', eventItemToEdit ? formatToPacific(eventItemToEdit.start_date, 'YYYY-MM-DD') : '');
             methods.setValue('time_from', pad(startDate.hour()) + ':' + pad(startDate.minute()) || '');
             methods.setValue('time_to', pad(endDate.hour()) + ':' + pad(endDate.minute()) || '');
         };

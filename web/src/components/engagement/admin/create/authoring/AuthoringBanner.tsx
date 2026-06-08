@@ -1,4 +1,4 @@
-import React, { useState, useEffect, Suspense } from 'react';
+import React, { useState, useEffect, useLayoutEffect, Suspense } from 'react';
 import { FormControlLabel, Grid2 as Grid, MenuItem, Radio, RadioGroup, Select } from '@mui/material';
 import { Await, useOutletContext, useParams, useRouteLoaderData } from 'react-router';
 import { TextField } from 'components/common/Input';
@@ -53,6 +53,13 @@ const AuthoringBanner = () => {
     const [upcomingEditorState, setUpcomingEditorState] = useState<EditorState>(getEditorStateFromRaw(''));
     const [closedEditorState, setClosedEditorState] = useState<EditorState>(getEditorStateFromRaw(''));
     const [isLoadingTranslation, setIsLoadingTranslation] = useState(false);
+
+    // Set loading state synchronously before the browser paints when the language changes,
+    // preventing React 18's automatic batching from collapsing true→false into a single render.
+    useLayoutEffect(() => {
+        setIsLoadingTranslation(true);
+    }, [activeLanguageCode]);
+
     const handleAddBannerImage = (files: File[]) => {
         if (files.length > 0) {
             setValue('image_file', files[0], { shouldDirty: true });
@@ -66,52 +73,68 @@ const AuthoringBanner = () => {
         let cancelled = false;
         setIsLoadingTranslation(true);
 
-        engagement.then(async (eng) => {
-            const openSection = eng.status_block.find((block) => block.survey_status === SUBMISSION_STATUS.OPEN);
-            const closedSection = eng.status_block.find((block) => block.survey_status === SUBMISSION_STATUS.CLOSED);
-            const upcomingSection = eng.status_block.find(
-                (block) => block.survey_status === SUBMISSION_STATUS.UPCOMING,
-            );
-            const viewResultsSection = eng.status_block.find(
-                (block) => block.survey_status === SUBMISSION_STATUS.VIEW_RESULTS,
-            );
+        void engagement
+            .then(async (eng) => {
+                const openSection = eng.status_block.find((block) => block.survey_status === SUBMISSION_STATUS.OPEN);
+                const closedSection = eng.status_block.find(
+                    (block) => block.survey_status === SUBMISSION_STATUS.CLOSED,
+                );
+                const upcomingSection = eng.status_block.find(
+                    (block) => block.survey_status === SUBMISSION_STATUS.UPCOMING,
+                );
+                const viewResultsSection = eng.status_block.find(
+                    (block) => block.survey_status === SUBMISSION_STATUS.VIEW_RESULTS,
+                );
 
-            const translation =
-                activeLanguageCode == DEFAULT_LANGUAGE_CODE
-                    ? null
-                    : await getEngagementTranslationByCode(Number(eng.id), activeLanguageCode);
+                const translation =
+                    activeLanguageCode == DEFAULT_LANGUAGE_CODE
+                        ? null
+                        : await getEngagementTranslationByCode(Number(eng.id), activeLanguageCode);
 
-            if (cancelled) return;
+                const defaultLanguageTranslation =
+                    activeLanguageCode === DEFAULT_LANGUAGE_CODE
+                        ? await getEngagementTranslationByCode(Number(eng.id), activeLanguageCode).catch(() => null)
+                        : null;
 
-            const closedMessage = translation?.closed_status_block_text ?? closedSection?.block_text;
-            const upcomingMessage = translation?.upcoming_status_block_text ?? upcomingSection?.block_text;
+                if (cancelled) return;
 
-            const newValues: EngagementUpdateData = {
-                ...defaultValuesObject,
-                form_source: pageName,
-                id: Number(eng.id),
-                name: translation?.name ?? eng.name,
-                image_url: eng.banner_url,
-                eyebrow: translation?.sponsor_name ?? eng.sponsor_name,
-                open_cta: translation?.open_status_block_button_text ?? openSection?.button_text,
-                open_cta_link_type: openSection?.link_type || 'internal',
-                open_section_link: openSection?.internal_link,
-                open_external_link: openSection?.external_link,
-                view_results_cta: translation?.view_results_status_block_button_text ?? viewResultsSection?.button_text,
-                view_results_link_type: viewResultsSection?.link_type || 'internal',
-                view_results_section_link: viewResultsSection?.internal_link,
-                view_results_external_link: viewResultsSection?.external_link,
-                closed_message: closedMessage,
-                upcoming_message: upcomingMessage,
-            };
+                const closedMessage = translation?.closed_status_block_text ?? closedSection?.block_text;
+                const upcomingMessage = translation?.upcoming_status_block_text ?? upcomingSection?.block_text;
 
-            // Update editor states and form values in one batch to avoid intermediate renders
-            setUpcomingEditorState(getEditorStateFromRaw(upcomingMessage || ''));
-            setClosedEditorState(getEditorStateFromRaw(closedMessage || ''));
-            reset(newValues);
-            setDefaultValues(newValues);
-            setIsLoadingTranslation(false);
-        });
+                const newValues: EngagementUpdateData = {
+                    ...defaultValuesObject,
+                    form_source: pageName,
+                    id: Number(eng.id),
+                    name: translation?.name ?? eng.name,
+                    image_url: eng.banner_url,
+                    eyebrow: translation?.sponsor_name ?? eng.sponsor_name ?? defaultLanguageTranslation?.sponsor_name,
+                    open_cta: translation?.open_status_block_button_text ?? openSection?.button_text,
+                    open_cta_link_type: openSection?.link_type || 'internal',
+                    open_section_link: openSection?.internal_link,
+                    open_external_link: openSection?.external_link,
+                    view_results_cta:
+                        translation?.view_results_status_block_button_text ?? viewResultsSection?.button_text,
+                    view_results_link_type: viewResultsSection?.link_type || 'internal',
+                    view_results_section_link: viewResultsSection?.internal_link,
+                    view_results_external_link: viewResultsSection?.external_link,
+                    closed_message: closedMessage,
+                    upcoming_message: upcomingMessage,
+                };
+
+                // Update editor states and form values in one batch to avoid intermediate renders
+                setUpcomingEditorState(getEditorStateFromRaw(upcomingMessage || ''));
+                setClosedEditorState(getEditorStateFromRaw(closedMessage || ''));
+                reset(newValues);
+                setDefaultValues(newValues);
+            })
+            .catch((error) => {
+                console.error('Error loading authoring banner content', error);
+            })
+            .finally(() => {
+                if (!cancelled) {
+                    setIsLoadingTranslation(false);
+                }
+            });
 
         return () => {
             cancelled = true;

@@ -66,7 +66,7 @@ const DrawerBox = ({ isMediumScreenOrLarger, setOpen, engagementId }: DrawerBoxP
     const { languageCode } = useParams() as { languageCode?: string };
     const defaultLanguageCode = AppConfig.language.defaultLanguageId.toLowerCase();
     const location = useLocation();
-    const { engagement, languages } = useRouteLoaderData('single-engagement') as EngagementLoaderAdminData;
+    const { engagement, languages, details } = useRouteLoaderData('single-engagement') as EngagementLoaderAdminData;
     const fetchers = useFetchers();
     const inFlightFetcherKeysRef = useRef<Set<string>>(new Set());
     const [saveRefreshNonce, setSaveRefreshNonce] = useState(0);
@@ -136,6 +136,7 @@ const DrawerBox = ({ isMediumScreenOrLarger, setOpen, engagementId }: DrawerBoxP
         languageCode: languageCode ?? defaultLanguageCode,
         selectedLanguageCodes,
         engagementPromise: engagement,
+        detailsTabsPromise: details,
         refreshToken: `${location.pathname}|${saveRefreshNonce}`,
     });
 

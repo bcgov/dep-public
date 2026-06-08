@@ -10,7 +10,6 @@ from datetime import datetime
 from typing import List, Optional
 
 from sqlalchemy import and_, asc, desc, or_, select
-from sqlalchemy.dialects.postgresql import JSON
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.orderinglist import ordering_list
 from sqlalchemy.sql import text
@@ -53,7 +52,8 @@ class Engagement(BaseModel):
     end_date = db.Column(db.DateTime)
     status_id = db.Column(db.Integer, ForeignKey(
         'engagement_status.id', ondelete='CASCADE'))
-    status = db.relationship('EngagementStatus', backref='engagement', viewonly=True)
+    status = db.relationship(
+        'EngagementStatus', backref='engagement', viewonly=True)
     published_date = db.Column(db.DateTime, nullable=True)
     scheduled_date = db.Column(db.DateTime, nullable=True)
     banner_filename = db.Column(db.String(), unique=False, nullable=True)
@@ -93,8 +93,10 @@ class Engagement(BaseModel):
         passive_deletes=True,
         lazy='selectin',
     )
-    suggested_engagements = association_proxy('suggested_engagement_links', 'suggested_engagement')
-    suggested_engagement_ids = association_proxy('suggested_engagement_links', 'suggested_engagement_id')
+    suggested_engagements = association_proxy(
+        'suggested_engagement_links', 'suggested_engagement')
+    suggested_engagement_ids = association_proxy(
+        'suggested_engagement_links', 'suggested_engagement_id')
 
     @classmethod
     def get_engagements_paginated(
@@ -156,7 +158,7 @@ class Engagement(BaseModel):
         return items, total_count
 
     @classmethod
-    def update_engagement(cls, engagement: EngagementSchema) -> Engagement:
+    def update_engagement(cls, engagement: EngagementSchema) -> Optional[Engagement]:
         """Update engagement."""
         engagement_id = engagement.get('id', None)
         query = Engagement.query.filter_by(id=engagement_id)
@@ -195,7 +197,8 @@ class Engagement(BaseModel):
             return None
         engagement_data['updated_date'] = utc_now()
         # Ensure no relationship fields are included in the update payload, only real columns
-        updatable_columns = {column.name for column in Engagement.__table__.columns}
+        updatable_columns = {
+            column.name for column in Engagement.__table__.columns}
         updatable_columns.discard('id')  # ID can never be updated
         update_payload = {
             key: value for key, value in engagement_data.items() if key in updatable_columns
@@ -233,10 +236,11 @@ class Engagement(BaseModel):
         return records
 
     @classmethod
-    def publish_scheduled_engagements_due(cls) -> List[Engagement]:
+    def publish_scheduled_engagements_due(cls) -> Optional[List[Engagement]]:
         """Update scheduled engagements to published."""
         datetime_due = utc_now()
-        logging.getLogger(__name__).debug('Publish due date (UTC): %s', datetime_due)
+        logging.getLogger(__name__).debug(
+            'Publish due date (UTC): %s', datetime_due)
         update_fields = {
             'status_id': Status.Published.value,
             'published_date': utc_now(),
@@ -323,9 +327,8 @@ class Engagement(BaseModel):
 
     @staticmethod
     def _filter_by_internal(query, search_options):
-        if exclude_internal := search_options.get('exclude_internal'):
-            if exclude_internal:
-                query = query.filter(Engagement.is_internal.is_(False))
+        if search_options.get('exclude_internal'):
+            query = query.filter(Engagement.is_internal.is_(False))
         return query
 
     @staticmethod

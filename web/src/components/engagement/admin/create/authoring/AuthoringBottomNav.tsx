@@ -14,12 +14,10 @@ import {
     CircularProgress,
 } from '@mui/material';
 import { colors, AdminDarkTheme, AdminTheme, ZIndex } from 'styles/Theme';
-import { When, Unless } from 'react-if';
+import { When } from 'react-if';
 import { BodyText } from 'components/common/Typography/Body';
 import { elevations } from 'components/common';
 import { Button } from 'components/common/Input/Button';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCheck } from '@fortawesome/pro-regular-svg-icons';
 import { StatusCircle } from '../../view/AuthoringTab';
 import { ReactComponent as PagePreviewIcon } from 'assets/images/pagePreview.svg';
 import { AuthoringBottomNavProps, LanguageSelectorProps } from './types';
@@ -39,6 +37,7 @@ import { openNotification } from 'services/notificationService/notificationSlice
 import { createEngagementTranslation, getEngagementTranslationByLanguage } from 'services/engagementService';
 import axios from 'axios';
 import { AppConfig } from 'config';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 const PREVIEW_CLOSE_GRACE_MS = 800;
 
 const AuthoringBottomNav = ({
@@ -46,6 +45,8 @@ const AuthoringBottomNav = ({
     languages,
     pageTitle,
     pageName,
+    currentSectionIncompleteLanguageCodes,
+    isSectionCompletionLoading,
     onSaveSection,
     setUnsavedWorkPromptSuppressed,
 }: Omit<AuthoringBottomNavProps, 'setCurrentLanguage'>) => {
@@ -337,6 +338,8 @@ const AuthoringBottomNav = ({
                                     languages={languages}
                                     isDirty={isDirty}
                                     isSubmitting={isSubmitting}
+                                    currentSectionIncompleteLanguageCodes={currentSectionIncompleteLanguageCodes}
+                                    isSectionCompletionLoading={isSectionCompletionLoading}
                                     setUnsavedWorkPromptSuppressed={setUnsavedWorkPromptSuppressed}
                                 />
                             </ThemeProvider>
@@ -426,6 +429,8 @@ const LanguageSelector = ({
     languages,
     isDirty,
     isSubmitting,
+    currentSectionIncompleteLanguageCodes,
+    isSectionCompletionLoading,
     setUnsavedWorkPromptSuppressed,
 }: Omit<LanguageSelectorProps, 'setCurrentLanguage'>) => {
     const defaultLanguageCode = AppConfig.language.defaultLanguageId.toLowerCase();
@@ -440,6 +445,39 @@ const LanguageSelector = ({
     const [isSwitchingLanguage, setIsSwitchingLanguage] = useState(false);
 
     const isEnglishOnly = languagesLoaded && languageList.length <= 1;
+    const normalizedIncompleteLanguageCodes = React.useMemo(
+        () =>
+            [...currentSectionIncompleteLanguageCodes]
+                .map((code) => code.toLowerCase())
+                .toSorted((a, b) => a.localeCompare(b)),
+        [currentSectionIncompleteLanguageCodes],
+    );
+    const normalizedIncompleteLanguageCodesKey = normalizedIncompleteLanguageCodes.join('|');
+    const [stableIncompleteLanguageCodes, setStableIncompleteLanguageCodes] = useState<string[]>(
+        normalizedIncompleteLanguageCodes,
+    );
+    const stableIncompleteLanguageCodesKey = stableIncompleteLanguageCodes.join('|');
+    const effectiveIncompleteLanguageCodeSet = React.useMemo(
+        () => new Set(isSectionCompletionLoading ? stableIncompleteLanguageCodes : normalizedIncompleteLanguageCodes),
+        [isSectionCompletionLoading, stableIncompleteLanguageCodes, normalizedIncompleteLanguageCodes],
+    );
+
+    // Preserve known completeness indicators while the next language is hydrating.
+    useEffect(() => {
+        if (!isSectionCompletionLoading && stableIncompleteLanguageCodesKey !== normalizedIncompleteLanguageCodesKey) {
+            setStableIncompleteLanguageCodes(normalizedIncompleteLanguageCodes);
+        }
+    }, [
+        isSectionCompletionLoading,
+        normalizedIncompleteLanguageCodes,
+        normalizedIncompleteLanguageCodesKey,
+        stableIncompleteLanguageCodesKey,
+    ]);
+
+    // Reset switching flag once the URL actually reflects the new language.
+    useEffect(() => {
+        setIsSwitchingLanguage(false);
+    }, [urlLanguageCode]);
 
     useEffect(() => {
         languages.then((lngs) => {
@@ -582,67 +620,79 @@ const LanguageSelector = ({
                 }
             >
                 <Await resolve={languages}>
-                    {(languages) => (
-                        <Select
-                            disabled={isEnglishOnly || isSwitchingLanguage || isSubmitting}
-                            value={urlLanguageCode ?? currentLanguage.id}
-                            onChange={handleSelectChange}
-                            variant="standard"
-                            disableUnderline
-                            slotProps={{
-                                input: {
-                                    sx: {
+                    {(languages) =>
+                        (() => {
+                            const selectedLanguageCode = (urlLanguageCode ?? currentLanguage.id).toLowerCase();
+                            const selectedLanguageName =
+                                languages.find((language) => language.code.toLowerCase() === selectedLanguageCode)
+                                    ?.name ?? currentLanguage.name;
+
+                            return (
+                                <Select
+                                    disabled={isEnglishOnly || isSwitchingLanguage || isSubmitting}
+                                    value={urlLanguageCode ?? currentLanguage.id}
+                                    onChange={handleSelectChange}
+                                    variant="standard"
+                                    disableUnderline
+                                    slotProps={{
+                                        input: {
+                                            sx: {
+                                                height: '100%',
+                                                lineHeight: '32px',
+                                                paddingLeft: { xs: '0.5rem !important', sm: '0.875rem !important' },
+                                                paddingRight: { xs: '2rem !important', sm: '3rem !important' },
+                                            },
+                                        },
+                                    }}
+                                    sx={{
+                                        opacity: isEnglishOnly ? 0.45 : 1,
+                                        color: 'text.primary',
+                                        fontSize: '0.875rem',
+                                        cursor: 'pointer',
                                         height: '100%',
-                                        lineHeight: '32px',
-                                        paddingLeft: { xs: '0.5rem !important', sm: '0.875rem !important' },
-                                        paddingRight: { xs: '2rem !important', sm: '3rem !important' },
-                                    },
-                                },
-                            }}
-                            sx={{
-                                opacity: isEnglishOnly ? 0.45 : 1,
-                                color: 'text.primary',
-                                fontSize: '0.875rem',
-                                cursor: 'pointer',
-                                height: '100%',
-                                '&.Mui-disabled': {
-                                    pointerEvents: 'none',
-                                },
-                                '& svg': {
-                                    right: '0.5rem',
-                                },
-                            }}
-                            renderValue={() => {
-                                const completed = false;
-                                return (
-                                    <span>
-                                        <When condition={completed}>
-                                            <FontAwesomeIcon style={{ marginRight: '0.3rem' }} icon={faCheck} />
-                                        </When>
-                                        {currentLanguage.name}
-                                        <Unless condition={completed}>
-                                            <StatusCircle required={true} />
-                                        </Unless>
-                                    </span>
-                                );
-                            }}
-                        >
-                            {languages.map((language) => {
-                                const completed = false;
-                                return (
-                                    <MenuItem value={language.code} key={language.code}>
-                                        <When condition={completed}>
-                                            <FontAwesomeIcon style={{ marginRight: '0.3rem' }} icon={faCheck} />
-                                        </When>
-                                        {language.name}
-                                        <Unless condition={completed}>
-                                            <StatusCircle required={true} />
-                                        </Unless>
-                                    </MenuItem>
-                                );
-                            })}
-                        </Select>
-                    )}
+                                        '&.Mui-disabled': {
+                                            pointerEvents: 'none',
+                                        },
+                                        '& svg': {
+                                            right: '0.5rem',
+                                        },
+                                    }}
+                                    renderValue={() => {
+                                        const isIncomplete =
+                                            effectiveIncompleteLanguageCodeSet.has(selectedLanguageCode);
+                                        return (
+                                            <span style={{ display: 'inline-flex', alignItems: 'center' }}>
+                                                {selectedLanguageName}
+                                                <When condition={isIncomplete}>
+                                                    <span style={{ marginLeft: '0.3rem', display: 'inline-flex' }}>
+                                                        <StatusCircle required={true} />
+                                                    </span>
+                                                </When>
+                                            </span>
+                                        );
+                                    }}
+                                >
+                                    {languages.map((language) => {
+                                        const isIncomplete = effectiveIncompleteLanguageCodeSet.has(
+                                            language.code.toLowerCase(),
+                                        );
+                                        return (
+                                            <MenuItem value={language.code} key={language.code}>
+                                                <span style={{ display: 'inline-flex', alignItems: 'center' }}>
+                                                    {language.name}
+                                                    <When condition={isIncomplete}>
+                                                        <span style={{ marginLeft: '0.3rem', display: 'inline-flex' }}>
+                                                            <StatusCircle required={true} />
+                                                        </span>
+                                                    </When>
+                                                </span>
+                                            </MenuItem>
+                                        );
+                                    })}
+                                </Select>
+                            );
+                        })()
+                    }
                 </Await>
             </Suspense>
         </>

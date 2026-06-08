@@ -45,20 +45,20 @@ class EngagementService:
     """Engagement management service."""
 
     otherdateformat = '%Y-%m-%d'
-    JSONScalar = Union[str, int, float, bool, None]
-    JSONValue = Union[
-        JSONScalar,
-        Sequence['JSONValue'],          # e.g., list/tuple of JSONValue
-        Mapping[str, 'JSONValue'],      # e.g., dict[str, JSONValue]
+    json_scalar = Union[str, int, float, bool, None]
+    json_value = Union[
+        json_scalar,
+        Sequence['json_value'],          # e.g., list/tuple of JSONValue
+        Mapping[str, 'json_value'],      # e.g., dict[str, JSONValue]
     ]
 
-    EngagementDump = Mapping[str, JSONValue]
+    engagement_dump = Mapping[str, json_value]
 
     def __init__(self):
         """Initialize."""
         self.object_storage = ObjectStorageService()
 
-    def get_engagement(self, engagement_id) -> Optional[EngagementDump]:
+    def get_engagement(self, engagement_id) -> Optional[engagement_dump]:
         """Get Engagement by the id."""
         engagement_model: EngagementModel = (
             EngagementModel.query
