@@ -81,59 +81,58 @@ export const EventsProvider = ({ children }: { children: JSX.Element | JSX.Eleme
             const loadedEvents = await getEvents(widget.id);
             if (activeLanguageCode === 'en') {
                 setEvents(loadedEvents);
-            } else {
-                const [contentTranslations, languageId] = await Promise.all([
-                    getEngagementContentTranslationsByCode(widget.engagement_id, activeLanguageCode),
-                    getLanguageIdByCode(activeLanguageCode),
-                ]);
-                const eventTranslationsById = new Map(
-                    contentTranslations.events_widgets.map((translation) => [
-                        translation.widget_events_id,
-                        translation,
-                    ]),
-                );
-
-                const itemTranslationsByEvent = new Map(
-                    await Promise.all(
-                        loadedEvents.map(async (eventRecord) => {
-                            const translations = await getEventItemTranslations(eventRecord.id, languageId);
-                            return [eventRecord.id, translations] as const;
-                        }),
-                    ),
-                );
-
-                setEvents(
-                    loadedEvents.map((eventRecord) => {
-                        const translatedEvent = eventTranslationsById.get(eventRecord.id);
-                        if (!translatedEvent) {
-                            return eventRecord;
-                        }
-
-                        const eventItems = eventRecord.event_items?.map((item, index) => {
-                            if (index !== 0) {
-                                return item;
-                            }
-                            const eventItemTranslations = itemTranslationsByEvent.get(eventRecord.id) ?? [];
-                            const itemTranslation = eventItemTranslations.find(
-                                (translation) => translation.event_item_id === item.id,
-                            );
-                            return {
-                                ...item,
-                                event_name: translatedEvent?.title ?? item.event_name,
-                                description: itemTranslation?.description ?? item.description,
-                                location_name: itemTranslation?.location_name ?? item.location_name,
-                                location_address: itemTranslation?.location_address ?? item.location_address,
-                                url_label: itemTranslation?.url_label ?? item.url_label,
-                            };
-                        });
-
-                        return {
-                            ...eventRecord,
-                            event_items: eventItems,
-                        };
-                    }),
-                );
+                setIsLoadingEvents(false);
+                return;
             }
+            const [contentTranslations, languageId] = await Promise.all([
+                getEngagementContentTranslationsByCode(widget.engagement_id, activeLanguageCode),
+                getLanguageIdByCode(activeLanguageCode),
+            ]);
+            const eventTranslationsById = new Map(
+                contentTranslations.events_widgets.map((translation) => [translation.widget_events_id, translation]),
+            );
+
+            const itemTranslationsByEvent = new Map(
+                await Promise.all(
+                    loadedEvents.map(async (eventRecord) => {
+                        const translations = await getEventItemTranslations(eventRecord.id, languageId);
+                        return [eventRecord.id, translations] as const;
+                    }),
+                ),
+            );
+
+            const findTranslationForEventItem = (eventItemId: number, eventId: number) => {
+                const eventItemTranslations = itemTranslationsByEvent.get(eventId) ?? [];
+                return eventItemTranslations.find((translation) => translation.event_item_id === eventItemId);
+            };
+
+            const translatedEvents = loadedEvents.map((eventRecord) => {
+                const translatedEvent = eventTranslationsById.get(eventRecord.id);
+                if (!translatedEvent) {
+                    return eventRecord;
+                }
+
+                const eventItems = eventRecord.event_items?.map((item, index) => {
+                    if (index !== 0) {
+                        return item;
+                    }
+                    const itemTranslation = findTranslationForEventItem(item.id, eventRecord.id);
+                    return {
+                        ...item,
+                        event_name: translatedEvent?.title ?? item.event_name,
+                        description: itemTranslation?.description ?? item.description,
+                        location_name: itemTranslation?.location_name ?? item.location_name,
+                        location_address: itemTranslation?.location_address ?? item.location_address,
+                        url_label: itemTranslation?.url_label ?? item.url_label,
+                    };
+                });
+
+                return {
+                    ...eventRecord,
+                    event_items: eventItems,
+                };
+            });
+            setEvents(translatedEvents);
             setIsLoadingEvents(false);
         } catch {
             dispatch(

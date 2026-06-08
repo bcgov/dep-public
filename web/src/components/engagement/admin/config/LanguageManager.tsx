@@ -37,7 +37,8 @@ export const LanguageManager = () => {
         return false;
     };
     const isSingleLanguage = determineSingleLanguage(selectedLanguages);
-    const languageTypeValue = isSingleLanguage === null ? '' : isSingleLanguage ? 'single' : 'multi';
+    const languageCardinality = isSingleLanguage ? 'single' : 'multi';
+    const languageTypeValue = isSingleLanguage === null ? '' : languageCardinality;
 
     useEffect(() => {
         fetcher.load(`${getPath(ROUTES.LANGUAGES)}/`);
