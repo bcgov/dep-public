@@ -28,7 +28,7 @@ jest.mock('hooks', () => {
 });
 
 // Setting the mock ResizeObserver on the global window object
-window.ResizeObserver = jest.fn().mockImplementation(() => {
+globalThis.ResizeObserver = jest.fn().mockImplementation(() => {
     return {
         observe: jest.fn(),
         unobserve: jest.fn(),

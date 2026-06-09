@@ -33,8 +33,8 @@ const UnsavedWorkConfirmation: React.FC<UnsavedWorkConfirmationProps> = ({ block
         const handler = (event: BeforeUnloadEvent) => {
             event.preventDefault();
         };
-        window.addEventListener('beforeunload', handler);
-        return () => window.removeEventListener('beforeunload', handler);
+        globalThis.addEventListener('beforeunload', handler);
+        return () => globalThis.removeEventListener('beforeunload', handler);
     }, [blockNavigationWhen]);
 
     // If navigating at the SPA level, show a nicer confirmation modal

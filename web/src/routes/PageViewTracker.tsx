@@ -5,7 +5,7 @@ const PageViewTracker = () => {
     const location = useLocation();
     useEffect(() => {
         try {
-            window.snowplow('trackPageView');
+            globalThis.snowplow('trackPageView');
         } catch (error) {
             console.log('Track page view snowplow error:', error);
         }

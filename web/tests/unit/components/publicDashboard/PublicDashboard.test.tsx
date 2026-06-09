@@ -121,7 +121,7 @@ describe('Public Dashboard page tests', () => {
         const user = userEvent.setup();
         await user.click(returnLink);
         await waitFor(() => {
-            expect(window.location.pathname).toBe(
+            expect(globalThis.location.pathname).toBe(
                 getPath(ROUTES.ENGAGEMENT_DETAILS_AUTHORING, { engagementId: closedEngagement.id }),
             );
         });

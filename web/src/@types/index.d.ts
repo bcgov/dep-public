@@ -1,9 +1,8 @@
 export {};
 
 declare global {
-    interface Window {
-        snowplow: Void;
-    }
+    function snowplow(...args: any[]): Void;
+    var _env_: { [key: string]: string };
 }
 
 declare module '*.svg' {

@@ -53,6 +53,10 @@ const authoringLoader = async ({ params }: { params: Params<string> }) => {
                   image_widgets: [],
               })),
     ]).then(([tabs, contentTranslations]) => {
+        if (activeLanguageCode === defaultLanguageCode) {
+            return tabs;
+        }
+
         const detailTranslationsByTabId = new Map(
             contentTranslations.details_tabs.map((translation) => [translation.engagement_details_tab_id, translation]),
         );
@@ -60,16 +64,23 @@ const authoringLoader = async ({ params }: { params: Params<string> }) => {
         return tabs.map((tab) => {
             const translatedTab = detailTranslationsByTabId.get(tab.id);
             if (!translatedTab) {
-                return tab;
+                return {
+                    ...tab,
+                    // Slug remains structural and language-invariant.
+                    slug: tab.slug,
+                    label: '',
+                    heading: '',
+                    body: '',
+                };
             }
 
             return {
                 ...tab,
                 // Slug remains structural and language-invariant.
                 slug: tab.slug,
-                label: translatedTab.label ?? tab.label,
-                heading: translatedTab.heading ?? tab.heading,
-                body: translatedTab.body ?? tab.body,
+                label: translatedTab.label ?? '',
+                heading: translatedTab.heading ?? '',
+                body: translatedTab.body ?? '',
             };
         });
     });

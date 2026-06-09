@@ -46,6 +46,6 @@ export const createDefaultFeedback = (): Feedback => {
 export const setFeedbackPath = (existingFeedback: Feedback): Feedback => {
     return {
         ...existingFeedback,
-        submission_path: window.location.pathname,
+        submission_path: globalThis.location.pathname,
     };
 };

@@ -30,7 +30,7 @@ const withLanguageParam = <P extends object>(Component: ComponentType<P>) => {
         const navigate = useNavigate();
 
         useEffect(() => {
-            const currentUrl = window.location.pathname;
+            const currentUrl = globalThis.location.pathname;
             if (languageCode && !currentUrl.includes(languageCode)) {
                 let newUrl = currentUrl;
 

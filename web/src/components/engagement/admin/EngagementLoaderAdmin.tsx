@@ -10,6 +10,7 @@ import { EngagementTeamMember } from 'models/engagementTeamMember';
 import { EngagementDetailsTab } from 'models/engagementDetailsTab';
 import { getDetailsTabs } from 'services/engagementDetailsTabService';
 import { Language } from 'models/language';
+import { AppConfig } from 'config';
 
 export type EngagementLoaderAdminData = {
     engagement: Promise<Engagement>;
@@ -25,7 +26,7 @@ export type EngagementLoaderAdminData = {
 
 export const engagementLoaderAdmin = async ({ params }: { params: Params<string> }) => {
     const { slug: slugParam, engagementId } = params;
-
+    const defaultLanguageCode = AppConfig.language.defaultLanguageId.toLowerCase();
     const slug = slugParam
         ? Promise.resolve(slugParam)
         : getSlugByEngagementId(Number(engagementId)).then((response) => response.slug);
@@ -34,19 +35,19 @@ export const engagementLoaderAdmin = async ({ params }: { params: Params<string>
         : getEngagement(Number(engagementId));
     const translationLanguages = engagement.then((response) => getAvailableTranslationLanguages(response.id));
     const hasDefaultLanguageTranslation = translationLanguages.then((availableLanguages) =>
-        availableLanguages.some((language) => language.code === 'en'),
+        availableLanguages.some((language) => language.code === defaultLanguageCode),
     );
     const languages = translationLanguages.then((availableLanguages) => {
-        const hasEnglish = availableLanguages.some((language) => language.code === 'en');
-        if (hasEnglish) {
+        const hasDefaultLanguage = availableLanguages.some((language) => language.code === defaultLanguageCode);
+        if (hasDefaultLanguage) {
             return availableLanguages;
         }
 
         return [
             {
                 id: 0,
-                code: 'en',
-                name: 'English',
+                code: defaultLanguageCode,
+                name: AppConfig.language.defaultLanguageName,
                 right_to_left: false,
             },
             ...availableLanguages,

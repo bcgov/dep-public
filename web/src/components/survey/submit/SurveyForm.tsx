@@ -59,7 +59,7 @@ export const SurveyForm = () => {
             });
 
             try {
-                window.snowplow('trackSelfDescribingEvent', {
+                globalThis.snowplow('trackSelfDescribingEvent', {
                     schema: 'iglu:ca.bc.gov.dep/submit-survey/jsonschema/1-0-0',
                     data: { survey_id: survey.id, engagement_id: survey.engagement_id },
                 });

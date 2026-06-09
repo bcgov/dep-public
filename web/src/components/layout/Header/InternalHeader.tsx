@@ -78,7 +78,7 @@ const InternalHeader = ({ showSideNav = true }: { showSideNav?: boolean }) => {
 
     // Get the authoring nav elements and current route so we can check their last two slugs against the current route's last two slugs.
     // This will be used to determine which sidenav menu is displayed.
-    const pathname = window.location.href;
+    const pathname = globalThis.location.href;
     const { engagementId, languageCode } = useParams() as { engagementId: string; languageCode?: string };
     const currentAuthoringSlug = pathname.split('/').slice(-2).join('/');
     const authoringRoutes = getAuthoringRoutes(Number(engagementId), languageCode ?? 'en').map((route) => {

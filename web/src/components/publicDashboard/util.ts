@@ -157,5 +157,5 @@ export const generateDashboardPdf = async (
             top += elHeight + marginTop;
         }
     }
-    window.open(doc.output('bloburl'));
+    globalThis.open(doc.output('bloburl'));
 };

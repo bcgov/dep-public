@@ -603,61 +603,71 @@ const AuthoringDetails = () => {
                                 }
                             }}
                         >
-                            {authoringDetailsTabs.map((value, key) => (
-                                <Tab
-                                    component="button"
-                                    aria-label={`${value.label || 'Tab ' + key} is selected. Press the delete key to remove.`}
-                                    key={getTabReactKey(value, key)}
-                                    value={String(key)}
-                                    onKeyDown={(event) => {
-                                        tabKeyDown(event, 'tab', key);
-                                    }}
-                                    disableFocusRipple
-                                    ref={currentTab === String(key) ? selectedTabRef : null}
-                                    // Add an X when appropriate: not on first tab, only if there are 3 or more tabs.
-                                    label={
-                                        <Box sx={closeTabXContainer}>
-                                            <span>{value.label}</span>
-                                            {key !== 0 && authoringDetailsTabs.length > 2 ? (
-                                                <IconButton
-                                                    component="span"
-                                                    focusVisibleClassName="activated-x"
-                                                    sx={iconButtonStyles}
-                                                    disableRipple
-                                                    tabIndex={currentTab === String(key) ? 0 : -1}
-                                                    size="small"
-                                                    edge="end"
-                                                    aria-label={`Remove tab: ${value.label || key + 1}.`}
-                                                    onClick={(event) => {
-                                                        event.stopPropagation();
-                                                        removeTab(event, key);
-                                                    }}
-                                                    onKeyDown={(event) => {
-                                                        tabKeyDown(event, 'tabx', key);
-                                                    }}
-                                                >
-                                                    <FontAwesomeIcon style={{ ...fontAwesomeXStyles }} icon={faXmark} />
-                                                </IconButton>
-                                            ) : null}
-                                        </Box>
-                                    }
-                                    // Colour the tab labels red if they contain errors so the user sees them from another tab.
-                                    sx={{
-                                        ...tabStyles,
-                                        backgroundColor: errors.details_tabs?.[key]
-                                            ? colors.button.error.tint
-                                            : 'gray.10',
-                                        '&.Mui-selected': {
+                            {authoringDetailsTabs.map((value, key) => {
+                                const hasLabel = Boolean(value.label?.trim());
+                                const displayLabel = hasLabel ? value.label : 'Add tab title';
+
+                                return (
+                                    <Tab
+                                        component="button"
+                                        aria-label={`${displayLabel} is selected. Press the delete key to remove.`}
+                                        key={getTabReactKey(value, key)}
+                                        value={String(key)}
+                                        onKeyDown={(event) => {
+                                            tabKeyDown(event, 'tab', key);
+                                        }}
+                                        disableFocusRipple
+                                        ref={currentTab === String(key) ? selectedTabRef : null}
+                                        // Add an X when appropriate: not on first tab, only if there are 3 or more tabs.
+                                        label={
+                                            <Box sx={closeTabXContainer}>
+                                                <span style={{ fontStyle: hasLabel ? 'normal' : 'italic' }}>
+                                                    {displayLabel}
+                                                </span>
+                                                {key !== 0 && authoringDetailsTabs.length > 2 ? (
+                                                    <IconButton
+                                                        component="span"
+                                                        focusVisibleClassName="activated-x"
+                                                        sx={iconButtonStyles}
+                                                        disableRipple
+                                                        tabIndex={currentTab === String(key) ? 0 : -1}
+                                                        size="small"
+                                                        edge="end"
+                                                        aria-label={`Remove tab: ${displayLabel}.`}
+                                                        onClick={(event) => {
+                                                            event.stopPropagation();
+                                                            removeTab(event, key);
+                                                        }}
+                                                        onKeyDown={(event) => {
+                                                            tabKeyDown(event, 'tabx', key);
+                                                        }}
+                                                    >
+                                                        <FontAwesomeIcon
+                                                            style={{ ...fontAwesomeXStyles }}
+                                                            icon={faXmark}
+                                                        />
+                                                    </IconButton>
+                                                ) : null}
+                                            </Box>
+                                        }
+                                        // Colour the tab labels red if they contain errors so the user sees them from another tab.
+                                        sx={{
+                                            ...tabStyles,
                                             backgroundColor: errors.details_tabs?.[key]
-                                                ? colors.button.error.shade
-                                                : 'primary.main',
-                                            borderColor: 'primary.main',
-                                            color: 'white',
-                                            fontWeight: 'bold',
-                                        },
-                                    }}
-                                ></Tab>
-                            ))}
+                                                ? colors.button.error.tint
+                                                : 'gray.10',
+                                            '&.Mui-selected': {
+                                                backgroundColor: errors.details_tabs?.[key]
+                                                    ? colors.button.error.shade
+                                                    : 'primary.main',
+                                                borderColor: 'primary.main',
+                                                color: 'white',
+                                                fontWeight: 'bold',
+                                            },
+                                        }}
+                                    ></Tab>
+                                );
+                            })}
 
                             <Tab
                                 value="add"

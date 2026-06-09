@@ -49,7 +49,7 @@ const VideoWidgetView = ({ widget }: VideoWidgetProps) => {
     const playerConfig = {
         youtube: {
             playerVars: {
-                origin: window.location.origin,
+                origin: globalThis.location.origin,
             },
         },
     };
