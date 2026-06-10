@@ -1,5 +1,5 @@
 import React, { useEffect, ComponentType, useMemo } from 'react';
-import { useParams, useNavigate } from 'react-router';
+import { useParams, useNavigate, useLocation } from 'react-router';
 import { useAppSelector } from '../hooks';
 import { LanguageState } from 'reduxSlices/languageSlice';
 
@@ -12,6 +12,7 @@ interface RouteParams {
     dashboardType?: string;
     token?: string;
     widgetId?: string;
+    language?: string;
 }
 
 /**
@@ -28,23 +29,33 @@ const withLanguageParam = <P extends object>(Component: ComponentType<P>) => {
         const rawParams = useParams<RouteParams>();
         const params = useMemo(() => rawParams, [rawParams]);
         const navigate = useNavigate();
+        const location = useLocation();
 
         useEffect(() => {
-            const currentUrl = globalThis.location.pathname;
-            if (languageCode && !currentUrl.includes(languageCode)) {
-                let newUrl = currentUrl;
-
-                for (const param in params) {
-                    if (params[param as keyof RouteParams]) {
-                        newUrl = newUrl.replace(`:${param}`, params[param as keyof RouteParams] as string);
-                    }
-                }
-
-                newUrl = newUrl.replace(':language', languageCode);
-
-                navigate(newUrl, { replace: true });
+            if (!languageCode) {
+                return;
             }
-        }, [languageCode, navigate, params]);
+
+            // If the URL already contains a language segment, preserve it.
+            if (params.language) {
+                return;
+            }
+
+            const targetLanguage = languageCode.toLowerCase();
+            const normalizedPathname = location.pathname.endsWith('/')
+                ? location.pathname.slice(0, -1)
+                : location.pathname;
+            const newPathname = `${normalizedPathname}/${targetLanguage}`;
+
+            navigate(
+                {
+                    pathname: newPathname,
+                    search: location.search,
+                    hash: location.hash,
+                },
+                { replace: true },
+            );
+        }, [languageCode, location.hash, location.pathname, location.search, navigate, params.language]);
 
         return <Component {...props} />;
     };

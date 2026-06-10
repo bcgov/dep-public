@@ -1,6 +1,6 @@
-import React, { useEffect, useState, useRef } from 'react';
-import { useLoaderData, useRevalidator } from 'react-router';
-import { Box } from '@mui/material';
+import React, { useEffect, useState, useRef, useMemo } from 'react';
+import { useBlocker, useLoaderData, useParams, useRevalidator } from 'react-router';
+import { Box, Modal } from '@mui/material';
 import PreviewControlBar from './PreviewControlBar';
 import PreviewContent from './PreviewContent';
 import { SubmissionStatusTypes } from './PreviewStateTabs';
@@ -9,9 +9,79 @@ import { Engagement } from 'models/engagement';
 import { EngagementLoaderPublicData } from '../public/view/EngagementLoaderPublic';
 import { SubmissionStatus } from 'constants/engagementStatus';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faArrowLeft, faArrowRight } from '@fortawesome/pro-regular-svg-icons';
+import { faArrowLeft, faArrowRight, faGlobePointer } from '@fortawesome/pro-regular-svg-icons';
 import { PreviewLoaderDataProvider } from './PreviewLoaderDataContext';
 import PublicHeader from 'components/layout/Header/PublicHeader';
+import ConfirmModal from 'components/common/Modals/ConfirmModal';
+
+interface PreviewNavigationGuardProps {
+    previewPathPrefix: string;
+}
+
+const PreviewNavigationGuard: React.FC<PreviewNavigationGuardProps> = ({ previewPathPrefix }) => {
+    const [blockedDestinationHref, setBlockedDestinationHref] = useState<string | null>(null);
+    const previewBlocker = useBlocker(({ currentLocation, nextLocation }) => {
+        const leavingPreview = !nextLocation.pathname.startsWith(previewPathPrefix);
+        const pathChanged =
+            nextLocation.pathname !== currentLocation.pathname ||
+            nextLocation.search !== currentLocation.search ||
+            nextLocation.hash !== currentLocation.hash;
+
+        if (leavingPreview && pathChanged) {
+            const nextHref = `${nextLocation.pathname}${nextLocation.search}${nextLocation.hash}`;
+            setBlockedDestinationHref((previousHref) => (previousHref === nextHref ? previousHref : nextHref));
+            return true;
+        }
+
+        return false;
+    });
+
+    const blockedLocationHref = previewBlocker.location
+        ? `${previewBlocker.location.pathname}${previewBlocker.location.search}${previewBlocker.location.hash}`
+        : null;
+
+    const closeBlockedNavigationModal = () => {
+        if (previewBlocker.state === 'blocked') {
+            previewBlocker.reset();
+        }
+        setBlockedDestinationHref(null);
+    };
+
+    const handleOpenBlockedDestinationInNewTab = () => {
+        const destinationHref = blockedDestinationHref ?? blockedLocationHref;
+        if (!destinationHref) {
+            return;
+        }
+
+        globalThis.open(destinationHref, '_blank', 'noopener,noreferrer');
+        closeBlockedNavigationModal();
+    };
+
+    return (
+        <Modal
+            open={Boolean(blockedDestinationHref)}
+            onClose={(_event) => {
+                closeBlockedNavigationModal();
+            }}
+        >
+            <ConfirmModal
+                style="warning"
+                header="Open Outside of Preview?"
+                icon={faGlobePointer}
+                subHeader="This link can't be opened in the current preview tab."
+                subText={[
+                    {
+                        text: 'To ensure this preview works correctly, links to other pages must be opened in a new tab.',
+                    },
+                ]}
+                cancelButtonText="Back to Preview"
+                confirmButtonText="Open in New Tab"
+                handleClose={closeBlockedNavigationModal}
+                handleConfirm={handleOpenBlockedDestinationInNewTab}
+            />
+        </Modal>
+    );
+};
 
 const MeasurementBar: React.FC = () => {
     const [viewportWidth, setViewportWidth] = useState(globalThis.innerWidth);
@@ -117,11 +187,14 @@ const MeasurementBar: React.FC = () => {
  */
 export const EngagementPreview: React.FC = () => {
     const loaderData = useLoaderData() as EngagementLoaderPublicData;
+    const { engagementId, languageCode } = useParams();
     const revalidator = useRevalidator();
     const [previewState, setPreviewState] = useState<SubmissionStatusTypes>('Upcoming');
     const [isReloading, setIsReloading] = useState(false);
     const [contentVersion, setContentVersion] = useState(0);
     const [resolvedEngagement, setResolvedEngagement] = useState<Engagement | null>(null);
+
+    const previewPathPrefix = `/manage/engagements/${engagementId ?? ''}/preview`;
 
     const getPreviewStateFromEngagement = (engagement: Engagement): SubmissionStatusTypes => {
         switch (engagement.submission_status) {
@@ -296,18 +369,25 @@ export const EngagementPreview: React.FC = () => {
 
     const isComplete = resolvedEngagement ? checkEngagementCompleteness(resolvedEngagement) : false;
 
-    const previewLoaderData: EngagementLoaderPublicData = {
-        ...loaderData,
-        engagement: resolvedEngagement
-            ? Promise.resolve({
-                  ...resolvedEngagement,
-                  submission_status: getSubmissionStatusId(previewState),
-              })
-            : loaderData.engagement,
-    };
+    const previewLoaderData: EngagementLoaderPublicData = useMemo(
+        () => ({
+            ...loaderData,
+            engagement: resolvedEngagement
+                ? Promise.resolve({
+                      ...resolvedEngagement,
+                      submission_status: getSubmissionStatusId(previewState),
+                  })
+                : loaderData.engagement,
+        }),
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        [loaderData, resolvedEngagement, previewState],
+    );
+
+    const previewContentKey = `${engagementId ?? 'engagement'}-${languageCode ?? 'language'}-${contentVersion}`;
 
     return (
         <PreviewLoaderDataProvider loaderData={previewLoaderData}>
+            <PreviewNavigationGuard previewPathPrefix={previewPathPrefix} />
             <PreviewControlBar
                 engagement={resolvedEngagement ?? undefined}
                 previewState={previewState}
@@ -317,7 +397,7 @@ export const EngagementPreview: React.FC = () => {
                 isComplete={isComplete}
             />
             <PublicHeader />
-            <PreviewContent key={contentVersion} previewStateType={previewState} />
+            <PreviewContent key={previewContentKey} previewStateType={previewState} />
             <MeasurementBar />
         </PreviewLoaderDataProvider>
     );

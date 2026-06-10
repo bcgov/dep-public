@@ -175,25 +175,33 @@ const AuthoringBottomNav = ({
 
     useEffect(() => {
         syncPreviewWindowUrl(pageName);
-        const interval = globalThis.setInterval(() => {
+
+        const syncIfPreviewLeftEngagement = () => {
             const previewWindow = getActivePreviewWindow();
             if (!previewWindow || previewWindow.closed) return;
 
-            const expectedPathPrefix = `${getBasePathPrefix()}/${getPath(ROUTES.ADMIN_ENGAGEMENT_PREVIEW, {
-                engagementId: engagementId ?? '',
-                languageCode: languageCode ?? defaultLanguageCode,
-            })}`;
+            const engagementPreviewPrefix = `${getBasePathPrefix()}/manage/engagements/${engagementId ?? ''}/preview/`;
             try {
-                if (!previewWindow.location.pathname.startsWith(expectedPathPrefix)) {
+                if (!previewWindow.location.pathname.startsWith(engagementPreviewPrefix)) {
                     syncPreviewWindowUrl(pageName);
                 }
             } catch {
                 syncPreviewWindowUrl(pageName);
             }
-        }, 10000);
+        };
+
+        const handleVisibilityChange = () => {
+            if (document.visibilityState === 'visible') {
+                syncIfPreviewLeftEngagement();
+            }
+        };
+
+        globalThis.addEventListener('focus', syncIfPreviewLeftEngagement);
+        document.addEventListener('visibilitychange', handleVisibilityChange);
 
         return () => {
-            globalThis.clearInterval(interval);
+            globalThis.removeEventListener('focus', syncIfPreviewLeftEngagement);
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
         };
     }, [engagementId, languageCode, pageName]);
 

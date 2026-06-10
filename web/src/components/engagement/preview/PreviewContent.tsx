@@ -7,6 +7,8 @@ import { EngagementSurveyBlock } from '../public/view/EngagementSurveyBlock';
 import { EngagementSubscribeBlock } from '../public/view/EngagementSubscribeBlock';
 import { SuggestedEngagements } from 'engagements/public/view/SuggestedEngagements';
 import { SubmissionStatusTypes } from 'constants/engagementStatus';
+import { Box } from '@mui/material';
+import { PreviewLanguageSwitcher } from './PreviewLanguageSwitcher';
 
 interface PreviewContentProps {
     previewStateType: SubmissionStatusTypes;
@@ -19,14 +21,15 @@ interface PreviewContentProps {
 export const PreviewContent: React.FC<PreviewContentProps> = ({ previewStateType }) => {
     return (
         <PreviewProvider isPreviewMode={true} showPlaceholders={true} previewStateType={previewStateType}>
-            <main>
+            <Box component="main" sx={{ position: 'relative' }}>
+                <PreviewLanguageSwitcher />
                 <EngagementHero />
                 <EngagementDescription />
                 <EngagementDetailsTabs />
                 <EngagementSurveyBlock />
                 <EngagementSubscribeBlock />
                 <SuggestedEngagements />
-            </main>
+            </Box>
         </PreviewProvider>
     );
 };
