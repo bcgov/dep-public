@@ -379,7 +379,6 @@ export const EngagementPreview: React.FC = () => {
                   })
                 : loaderData.engagement,
         }),
-        // eslint-disable-next-line react-hooks/exhaustive-deps
         [loaderData, resolvedEngagement, previewState],
     );
 

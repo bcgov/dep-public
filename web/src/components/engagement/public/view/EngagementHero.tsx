@@ -27,7 +27,7 @@ import { useEngagementLoaderData } from 'components/engagement/preview/PreviewLo
 import { TranslationBundle } from './engagementTranslationResolution';
 
 const getStatusMessageFromTranslation = (
-    translation: TranslationBundle['currentTranslation'] | TranslationBundle['defaultTranslation'],
+    translation: TranslationBundle['currentTranslation'] | TranslationBundle['defaultTranslation'] | undefined,
     status: string | null,
 ) => {
     if (status === 'Upcoming') {
@@ -40,7 +40,7 @@ const getStatusMessageFromTranslation = (
 };
 
 const getStatusButtonTextFromTranslation = (
-    translation: TranslationBundle['currentTranslation'] | TranslationBundle['defaultTranslation'],
+    translation: TranslationBundle['currentTranslation'] | TranslationBundle['defaultTranslation'] | undefined,
     status: string | null,
 ) => {
     if (status === 'Open') {
@@ -60,24 +60,24 @@ const getResolvedHeroText = ({
     activeStatusButtonText,
 }: {
     engagement: Engagement;
-    translationBundle: TranslationBundle;
+    translationBundle?: TranslationBundle;
     status: string | null;
     activeStatusBlockText?: string;
     activeStatusButtonText?: string;
 }) => {
-    const resolvedSponsorName = translationBundle.defaultTranslation?.sponsor_name ?? engagement.sponsor_name;
+    const resolvedSponsorName = translationBundle?.defaultTranslation?.sponsor_name ?? engagement.sponsor_name;
 
     const resolvedEngagementName =
-        translationBundle.currentTranslation?.name ?? translationBundle.defaultTranslation?.name ?? engagement.name;
+        translationBundle?.currentTranslation?.name ?? translationBundle?.defaultTranslation?.name ?? engagement.name;
 
     const resolvedStateMessage =
-        getStatusMessageFromTranslation(translationBundle.currentTranslation, status) ??
-        getStatusMessageFromTranslation(translationBundle.defaultTranslation, status) ??
+        getStatusMessageFromTranslation(translationBundle?.currentTranslation, status) ??
+        getStatusMessageFromTranslation(translationBundle?.defaultTranslation, status) ??
         activeStatusBlockText;
 
     const resolvedButtonLabel =
-        getStatusButtonTextFromTranslation(translationBundle.currentTranslation, status) ??
-        getStatusButtonTextFromTranslation(translationBundle.defaultTranslation, status) ??
+        getStatusButtonTextFromTranslation(translationBundle?.currentTranslation, status) ??
+        getStatusButtonTextFromTranslation(translationBundle?.defaultTranslation, status) ??
         activeStatusButtonText;
 
     return {
@@ -93,7 +93,7 @@ export const EngagementHero = () => {
     const semanticDateFormat = 'YYYY-MM-DD';
     const { engagement, translationBundle } = useEngagementLoaderData();
     const { isPreviewMode, previewStateType } = usePreview();
-    const engagementInfo = Promise.all([engagement, translationBundle]);
+    const engagementInfo = Promise.all([engagement, translationBundle ?? Promise.resolve(undefined)]);
 
     return (
         <section aria-label="Engagement Overview" id={EngagementViewSections.HERO} style={{ position: 'relative' }}>
@@ -189,7 +189,7 @@ export const EngagementHero = () => {
                     }
                 >
                     <Await resolve={engagementInfo}>
-                        {([engagement, resolvedTranslationBundle]: [Engagement, TranslationBundle]) => {
+                        {([engagement, resolvedTranslationBundle]: [Engagement, TranslationBundle | undefined]) => {
                             const startDate = dayjs(engagement.start_date);
                             const endDate = dayjs(engagement.end_date);
                             const usePreviewState = Boolean(isPreviewMode && previewStateType);

@@ -1,7 +1,7 @@
 export {};
 
 declare global {
-    function snowplow(...args: any[]): Void;
+    function snowplow(...args: unknown[]): Void;
     var _env_: { [key: string]: string };
 }
 
