@@ -43,8 +43,7 @@
             "$id": "#/properties/time",
             "type": "string",
             "title": "Time",
-            "description": "The time associated with the timeline event.",
-            "pattern": "^(\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2})$"
+            "description": "The time associated with the timeline event."
         }
     }
 }
