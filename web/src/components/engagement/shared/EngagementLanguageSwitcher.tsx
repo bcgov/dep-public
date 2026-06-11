@@ -1,5 +1,5 @@
-import React, { Suspense } from 'react';
-import { Box, MenuItem } from '@mui/material';
+import React, { Suspense, useState } from 'react';
+import { Box, CircularProgress, MenuItem } from '@mui/material';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faChevronDown, faGlobe } from '@fortawesome/pro-regular-svg-icons';
 import { Await } from 'react-router';
@@ -74,6 +74,7 @@ export const EngagementLanguageSwitcher = ({
     top = 0,
     onLanguageSelect,
 }: EngagementLanguageSwitcherProps) => {
+    const [targetLanguageCode, setTargetLanguageCode] = useState(currentLanguageCode ?? defaultLanguage.code);
     if (!translationLanguages) {
         return null;
     }
@@ -158,7 +159,7 @@ export const EngagementLanguageSwitcher = ({
                                                 if (item.code === activeLanguage.code) {
                                                     return;
                                                 }
-
+                                                setTargetLanguageCode(item.code);
                                                 onLanguageSelect(item.code);
                                             }}
                                             sx={{
@@ -169,6 +170,9 @@ export const EngagementLanguageSwitcher = ({
                                             }}
                                         >
                                             {item.name}
+                                            {item.code === targetLanguageCode && item.code !== activeLanguage.code && (
+                                                <CircularProgress size={16} sx={{ marginLeft: 1 }} />
+                                            )}
                                         </MenuItem>
                                     ))}
                                 </DropdownMenu>
