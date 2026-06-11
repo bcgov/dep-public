@@ -78,10 +78,10 @@ const InternalHeader = ({ showSideNav = true }: { showSideNav?: boolean }) => {
 
     // Get the authoring nav elements and current route so we can check their last two slugs against the current route's last two slugs.
     // This will be used to determine which sidenav menu is displayed.
-    const pathname = window.location.href;
-    const { engagementId } = useParams() as { engagementId: string };
+    const pathname = globalThis.location.href;
+    const { engagementId, languageCode } = useParams() as { engagementId: string; languageCode?: string };
     const currentAuthoringSlug = pathname.split('/').slice(-2).join('/');
-    const authoringRoutes = getAuthoringRoutes(Number(engagementId)).map((route) => {
+    const authoringRoutes = getAuthoringRoutes(Number(engagementId), languageCode ?? 'en').map((route) => {
         // skip the "Engagement Home" link
         if ('Engagement Home' !== route.name) {
             const pathArray = route.path.split('/');
@@ -520,7 +520,7 @@ const UserMenu = () => {
 
                 if (viewSwitcher) {
                     try {
-                        const target = await viewSwitcher(match.data, match.params, currentLanguageId);
+                        const target = await viewSwitcher(match.loaderData, match.params, currentLanguageId);
                         if (!cancelled) setSwitchTargetIfChanged(target ?? defaultTarget);
                     } catch {
                         if (!cancelled) setSwitchTargetIfChanged(defaultTarget);

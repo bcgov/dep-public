@@ -106,7 +106,7 @@ const WhoIsListeningWidget = ({ widget }: WhoIsListeningWidgetProps) => {
                 </Heading2>
             </Grid>
             <Grid size={12} sx={{ whiteSpace: 'pre-line' }}>
-                <BodyText>{listeningWidget?.description}</BodyText>
+                <BodyText>{widget.description ?? listeningWidget?.description}</BodyText>
             </Grid>
 
             {contacts.map((contact) => {

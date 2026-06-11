@@ -8,6 +8,7 @@ from __future__ import annotations
 from sqlalchemy import UniqueConstraint
 from sqlalchemy.sql.schema import ForeignKey
 
+from .event_item import EventItem
 from .base_model import BaseModel
 from .db import db
 
@@ -62,6 +63,19 @@ class EventItemTranslation(BaseModel):
 
         event_item_translation_records = query.all()
         return event_item_translation_records
+
+    @staticmethod
+    def get_by_event_and_language(widget_events_id: int, language_id: int):
+        """Get all event item translations for an event in a specific language."""
+        return (
+            EventItemTranslation.query
+            .join(EventItem, EventItem.id == EventItemTranslation.event_item_id)
+            .filter(
+                EventItem.widget_events_id == widget_events_id,
+                EventItemTranslation.language_id == language_id,
+            )
+            .all()
+        )
 
     @classmethod
     def create_event_item_translation(cls, data):

@@ -31,10 +31,12 @@ export interface AuthoringContextType {
 
 export interface LanguageSelectorProps {
     currentLanguage: LanguageState;
-    setCurrentLanguage: (code: string, name: string) => void;
     languages: Promise<Language[]>;
     isDirty: boolean;
     isSubmitting: boolean;
+    currentSectionIncompleteLanguageCodes: string[];
+    isSectionCompletionLoading: boolean;
+    setUnsavedWorkPromptSuppressed: Dispatch<SetStateAction<boolean>>;
 }
 
 export interface AuthoringMorePreformProps {
@@ -43,33 +45,37 @@ export interface AuthoringMorePreformProps {
 
 export interface AuthoringBottomNavProps {
     currentLanguage: LanguageState;
-    setCurrentLanguage: (code: string, name: string) => void;
     languages: Promise<Language[]>;
     pageTitle: string;
     pageName: string;
+    currentSectionIncompleteLanguageCodes: string[];
+    isSectionCompletionLoading: boolean;
+    onSaveSection: () => void;
+    setUnsavedWorkPromptSuppressed: Dispatch<SetStateAction<boolean>>;
 }
 
 export interface LabelProps {
-    text: string;
+    text?: string;
     completed?: boolean;
     status?: never;
+    isLoading?: boolean;
 }
 
 export interface LabelWithStatusProps {
     text?: string;
     completed?: never;
     status: EngagementStatus;
+    isLoading?: boolean;
 }
 
 export type StatusLabelProps = LabelProps | LabelWithStatusProps;
 
 export interface AuthoringTemplateOutletContext {
-    engagement: Promise<Engagement>;
+    engagement: Engagement;
     defaultValues: EngagementUpdateData;
     setDefaultValues: Dispatch<SetStateAction<EngagementUpdateData>>;
     fetcher: FetcherWithComponents<object>;
     pageName: string;
-    tenantId: number;
 }
 
 export type FormDetailsTab = Omit<EngagementDetailsTab, 'body'> & {

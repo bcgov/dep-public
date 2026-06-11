@@ -23,6 +23,7 @@ import { ROUTES, getPath } from 'routes/routes';
 import { AppConfig } from 'config';
 import { RichTextArea } from 'components/common/Input/RichTextArea';
 import { getEditorStateFromRaw } from 'components/common/RichTextEditor/utils';
+import { resolveTranslationValue } from './engagementTranslationResolution';
 
 const gridContainerStyles = {
     bgcolor: 'blue.90',
@@ -39,9 +40,10 @@ const EngagementSurveyContent = ({}) => {
     const { t: translate } = useAppTranslation();
     const { language, slug } = useParams();
     const { isPreviewMode, previewStateType } = usePreview();
-    const { engagement, widgets } = useEngagementLoaderData();
+    const { engagement, widgets, translationBundle } = useEngagementLoaderData();
     const loadedEngagement = React.use(engagement);
     const loadedWidgets = React.use(widgets);
+    const loadedTranslationBundle = React.use(translationBundle);
     const hasWidget = loadedWidgets.some((widget) => widget.location === WidgetLocation.Feedback);
     const [currentPanel, setCurrentPanel] = React.useState('email');
     const [isEmailModalOpen, setIsEmailModalOpen] = React.useState(false);
@@ -50,7 +52,7 @@ const EngagementSurveyContent = ({}) => {
         setCurrentPanel('email');
         setIsEmailModalOpen(true);
         try {
-            window.snowplow('trackPageView', 'Verify Email Modal');
+            globalThis.snowplow('trackPageView', 'Verify Email Modal');
         } catch (error) {
             console.log('Verify email modal snowplow error:', error);
         }
@@ -67,10 +69,22 @@ const EngagementSurveyContent = ({}) => {
             value: getSubmissionStatusFromPreviewState(previewStateType),
             fallback: loadedEngagement.submission_status,
         }) ?? loadedEngagement.submission_status;
-    const feedbackBodyEditorState = getEditorStateFromRaw(loadedEngagement.feedback_body || '');
+
+    const feedbackHeading = resolveTranslationValue<string>({
+        translatedValue: loadedTranslationBundle.currentTranslation?.feedback_heading,
+        defaultValue: loadedTranslationBundle.defaultTranslation?.feedback_heading,
+        baseValue: loadedEngagement.feedback_heading,
+    }).value;
+
+    const feedbackBody = resolveTranslationValue<string>({
+        translatedValue: loadedTranslationBundle.currentTranslation?.feedback_body,
+        defaultValue: loadedTranslationBundle.defaultTranslation?.feedback_body,
+        baseValue: loadedEngagement.feedback_body,
+    }).value;
+
+    const feedbackBodyEditorState = getEditorStateFromRaw(feedbackBody || '');
     const hasFeedbackContent =
-        Boolean(loadedEngagement.feedback_heading?.trim()) ||
-        Boolean(feedbackBodyEditorState?.getCurrentContent()?.hasText?.());
+        Boolean(feedbackHeading?.trim()) || Boolean(feedbackBodyEditorState?.getCurrentContent()?.hasText?.());
     const shouldDisplayFeedbackColumn =
         isPreviewMode || hasFeedbackContent || effectiveStatus !== SubmissionStatus.Upcoming;
 
@@ -89,10 +103,10 @@ const EngagementSurveyContent = ({}) => {
             >
                 <Box>
                     <PreviewSwitch
-                        hasValue={Boolean(loadedEngagement.feedback_heading?.trim())}
+                        hasValue={Boolean(feedbackHeading?.trim())}
                         value={
                             <Heading2 decorated weight="thin" mt={0} mb={'16px'}>
-                                {loadedEngagement.feedback_heading}
+                                {feedbackHeading}
                             </Heading2>
                         }
                         previewFallback={
@@ -129,7 +143,7 @@ const EngagementSurveyContent = ({}) => {
                                         iconPosition="right"
                                         onClick={handleOpenEmailModal}
                                     >
-                                        Provide Feedback Now
+                                        {translate('buttonText.provideFeedback')}
                                     </Button>
                                 </Case>
                                 <Case condition={effectiveStatus === SubmissionStatus.Closed}>

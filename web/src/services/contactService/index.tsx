@@ -3,37 +3,6 @@ import Endpoints from 'apiManager/endpoints';
 import { replaceUrl } from 'helper';
 import { Contact } from 'models/contact';
 
-/**
- * @deprecated The method was replaced by Redux RTK query to have caching behaviour
- */
-export const getContact = async (contactId: number): Promise<Contact> => {
-    const url = replaceUrl(Endpoints.Contacts.GET, 'contact_id', String(contactId));
-    try {
-        const response = await http.GetRequest<Contact>(url);
-        if (response.data) {
-            return response.data;
-        }
-        return Promise.reject('Failed to fetch contact');
-    } catch (err) {
-        return Promise.reject(err);
-    }
-};
-
-/**
- * @deprecated The method was replaced by Redux RTK query to have caching behaviour
- */
-export const getContacts = async (): Promise<Contact[]> => {
-    try {
-        const response = await http.GetRequest<Contact[]>(Endpoints.Contacts.GET_LIST);
-        if (response.data) {
-            return response.data;
-        }
-        return Promise.reject('Failed to fetch contacts');
-    } catch (err) {
-        return Promise.reject(err);
-    }
-};
-
 interface PostContactRequest {
     name?: string;
     title?: string;
@@ -56,18 +25,75 @@ export interface PatchContactRequest {
 }
 
 export const postContact = async (data: PostContactRequest): Promise<Contact> => {
-    try {
-        const response = await http.PostRequest<Contact>(Endpoints.Contacts.CREATE, data);
-        return response.data;
-    } catch (err) {
-        return Promise.reject(err);
-    }
+    const response = await http.PostRequest<Contact>(Endpoints.Contacts.CREATE, data);
+    return response.data || Promise.reject(new Error('Failed to create contact'));
 };
 export const patchContact = async (data: PatchContactRequest): Promise<Contact> => {
+    const response = await http.PatchRequest<Contact>(Endpoints.Contacts.UPDATE, data);
+    return response.data || Promise.reject(new Error('Failed to update contact'));
+};
+
+export interface ContactTranslation {
+    id: number;
+    contact_id: number;
+    language_id: number;
+    name?: string;
+    title?: string;
+    address?: string;
+    bio?: string;
+}
+
+export const getContactTranslation = async (
+    contactId: number,
+    languageId: number,
+): Promise<ContactTranslation | null> => {
+    const url = replaceUrl(
+        replaceUrl(Endpoints.Contacts.GET_TRANSLATION, 'contact_id', String(contactId)),
+        'language_id',
+        String(languageId),
+    );
     try {
-        const response = await http.PatchRequest<Contact>(Endpoints.Contacts.UPDATE, data);
-        return response.data;
-    } catch (err) {
-        return Promise.reject(err);
+        const response = await http.GetRequest<ContactTranslation>(url);
+        return response.data ?? null;
+    } catch {
+        return null;
     }
+};
+
+export const createContactTranslation = async (data: {
+    contact_id: number;
+    language_id: number;
+    name?: string;
+    title?: string;
+    address?: string;
+    bio?: string;
+}): Promise<ContactTranslation> => {
+    const response = await http.PostRequest<ContactTranslation>(Endpoints.Contacts.CREATE_TRANSLATION, data);
+    return response.data;
+};
+
+export const updateContactTranslation = async (
+    translationId: number,
+    data: Partial<Omit<ContactTranslation, 'id'>>,
+): Promise<ContactTranslation> => {
+    const url = replaceUrl(Endpoints.Contacts.UPDATE_TRANSLATION, 'translation_id', String(translationId));
+    const response = await http.PatchRequest<ContactTranslation>(url, data);
+    return response.data;
+};
+
+export const saveContactTranslation = async (
+    contactId: number,
+    languageId: number,
+    data: {
+        name?: string;
+        title?: string;
+        address?: string;
+        bio?: string;
+    },
+): Promise<ContactTranslation> => {
+    const existing = await getContactTranslation(contactId, languageId);
+    if (existing?.id) {
+        return updateContactTranslation(existing.id, data);
+    }
+    return createContactTranslation({ contact_id: contactId, language_id: languageId, ...data });
 };

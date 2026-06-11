@@ -89,6 +89,27 @@ class TimelineEventTranslationResource(Resource):
 
 
 @cors_preflight('GET, OPTIONS')
+@API.route('/language/<int:language_id>')
+class TimelineEventTranslationsByLanguage(Resource):
+    """Resource for fetching all event translations for a timeline and language."""
+
+    @staticmethod
+    @cross_origin(origins=allowedorigins())
+    def get(timeline_id, language_id, **_):
+        """Fetch all event translations for a timeline widget and language."""
+        try:
+            translations = TimelineEventTranslationService.get_by_timeline_and_language(
+                timeline_id, language_id
+            )
+            return (
+                TimelineEventTranslationSchema(many=True).dump(translations),
+                HTTPStatus.OK,
+            )
+        except (KeyError, ValueError) as err:
+            return str(err), HTTPStatus.INTERNAL_SERVER_ERROR
+
+
+@cors_preflight('GET, OPTIONS')
 @API.route('/event/<int:timeline_event_id>/language/<int:language_id>')
 class TimelineEventTranslationResourceByLanguage(Resource):
     """Resource for timeline event using language_id."""

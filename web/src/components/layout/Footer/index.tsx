@@ -248,7 +248,7 @@ const Footer = () => {
                             href="/"
                             onClick={(event) => {
                                 event.preventDefault();
-                                const currentUrl = new URL(window.location.href);
+                                const currentUrl = new URL(globalThis.location.href);
                                 const basePath = new URL(baseURL).pathname.replace(/\/$/, '');
                                 const currentPath = currentUrl.pathname.replace(/\/$/, '');
                                 const isOnPublicLanding = currentPath === basePath;

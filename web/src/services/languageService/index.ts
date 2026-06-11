@@ -4,12 +4,33 @@ import { replaceUrl, replaceAllInURL } from 'helper';
 import Endpoints from 'apiManager/endpoints';
 import http from 'apiManager/httpRequestHandler';
 
+let languagesCache: Language[] | null = null;
+let languagesInFlight: Promise<Language[]> | null = null;
+
 export const getLanguages = async (): Promise<Language[]> => {
-    const response = await http.GetRequest<Language[]>(Endpoints.Languages.GET);
-    if (response.data) {
-        return response.data;
+    if (languagesCache) {
+        return languagesCache;
     }
-    throw new Error('Failed to fetch languages.');
+
+    if (languagesInFlight) {
+        return languagesInFlight;
+    }
+
+    languagesInFlight = http
+        .GetRequest<Language[]>(Endpoints.Languages.GET)
+        .then((response) => {
+            if (!response.data) {
+                throw new Error('Failed to fetch languages.');
+            }
+
+            languagesCache = response.data;
+            return response.data;
+        })
+        .finally(() => {
+            languagesInFlight = null;
+        });
+
+    return languagesInFlight;
 };
 
 export const getTenantLanguages = async (tenantId: string): Promise<Language[]> => {

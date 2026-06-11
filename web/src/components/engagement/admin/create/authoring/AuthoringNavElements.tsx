@@ -10,7 +10,7 @@ export interface AuthoringRoute {
     required?: boolean;
 }
 
-export const getAuthoringRoutes = (engagementId: number): AuthoringRoute[] => [
+export const getAuthoringRoutes = (engagementId: number, languageCode: string = 'en'): AuthoringRoute[] => [
     {
         name: 'Engagement Home',
         path: getPath(ROUTES.ENGAGEMENT_DETAILS_AUTHORING, { engagementId }),
@@ -21,7 +21,7 @@ export const getAuthoringRoutes = (engagementId: number): AuthoringRoute[] => [
     },
     {
         name: 'Hero Banner',
-        path: getPath(ROUTES.AUTHORING_BANNER, { engagementId }),
+        path: getPath(ROUTES.AUTHORING_BANNER, { engagementId, languageCode }),
         base: `/engagements`,
         authenticated: true,
         allowedRoles: [USER_ROLES.EDIT_ENGAGEMENT],
@@ -29,7 +29,7 @@ export const getAuthoringRoutes = (engagementId: number): AuthoringRoute[] => [
     },
     {
         name: 'Summary',
-        path: getPath(ROUTES.AUTHORING_SUMMARY, { engagementId }),
+        path: getPath(ROUTES.AUTHORING_SUMMARY, { engagementId, languageCode }),
         base: `/engagements`,
         authenticated: true,
         allowedRoles: [USER_ROLES.EDIT_ENGAGEMENT],
@@ -37,7 +37,7 @@ export const getAuthoringRoutes = (engagementId: number): AuthoringRoute[] => [
     },
     {
         name: 'Details',
-        path: getPath(ROUTES.AUTHORING_DETAILS, { engagementId }),
+        path: getPath(ROUTES.AUTHORING_DETAILS, { engagementId, languageCode }),
         base: `/engagements`,
         authenticated: true,
         allowedRoles: [USER_ROLES.EDIT_ENGAGEMENT],
@@ -45,7 +45,7 @@ export const getAuthoringRoutes = (engagementId: number): AuthoringRoute[] => [
     },
     {
         name: 'Provide Feedback',
-        path: getPath(ROUTES.AUTHORING_FEEDBACK, { engagementId }),
+        path: getPath(ROUTES.AUTHORING_FEEDBACK, { engagementId, languageCode }),
         base: `/engagements`,
         authenticated: true,
         allowedRoles: [USER_ROLES.EDIT_ENGAGEMENT],
@@ -53,7 +53,7 @@ export const getAuthoringRoutes = (engagementId: number): AuthoringRoute[] => [
     },
     {
         name: 'View Results',
-        path: getPath(ROUTES.AUTHORING_RESULTS, { engagementId }),
+        path: getPath(ROUTES.AUTHORING_RESULTS, { engagementId, languageCode }),
         base: `/engagements`,
         authenticated: true,
         allowedRoles: [USER_ROLES.EDIT_ENGAGEMENT],
@@ -61,7 +61,7 @@ export const getAuthoringRoutes = (engagementId: number): AuthoringRoute[] => [
     },
     {
         name: 'Subscribe',
-        path: getPath(ROUTES.AUTHORING_SUBSCRIBE, { engagementId }),
+        path: getPath(ROUTES.AUTHORING_SUBSCRIBE, { engagementId, languageCode }),
         base: `/engagements`,
         authenticated: true,
         allowedRoles: [USER_ROLES.EDIT_ENGAGEMENT],
@@ -69,7 +69,7 @@ export const getAuthoringRoutes = (engagementId: number): AuthoringRoute[] => [
     },
     {
         name: 'More Engagements',
-        path: getPath(ROUTES.AUTHORING_MORE, { engagementId }),
+        path: getPath(ROUTES.AUTHORING_MORE, { engagementId, languageCode }),
         base: `/engagements`,
         authenticated: true,
         allowedRoles: [USER_ROLES.EDIT_ENGAGEMENT],

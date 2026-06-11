@@ -19,10 +19,12 @@ import { EngagementWidgetDisplay } from './EngagementWidgetDisplay';
 import { useEngagementLoaderData } from 'components/engagement/preview/PreviewLoaderDataContext';
 import { RouterLinkRenderer } from 'components/common/Navigation/Link';
 import { getPath, ROUTES } from 'routes/routes';
+import { TranslationBundle } from './engagementTranslationResolution';
 
 export const EngagementDescription = () => {
-    const { engagement } = useEngagementLoaderData();
+    const { engagement, translationBundle } = useEngagementLoaderData();
     const { isPreviewMode } = usePreview();
+    const descriptionInfo = Promise.all([engagement, translationBundle]);
     return (
         <section
             id={EngagementViewSections.DESCRIPTION}
@@ -69,9 +71,19 @@ export const EngagementDescription = () => {
                         </Grid>
                     </Grid>
                     <Suspense fallback={<Skeleton variant="rectangular" height="288px" width="100%" />}>
-                        <Await resolve={engagement}>
-                            {(engagement: Engagement) => {
-                                const summaryEditorState = getEditorStateFromRaw(engagement.rich_description);
+                        <Await resolve={descriptionInfo}>
+                            {([engagement, resolvedTranslationBundle]: [Engagement, TranslationBundle]) => {
+                                const resolvedSummaryTitle =
+                                    resolvedTranslationBundle.currentTranslation?.description_title ??
+                                    resolvedTranslationBundle.defaultTranslation?.description_title ??
+                                    engagement.description_title;
+
+                                const resolvedSummaryBody =
+                                    resolvedTranslationBundle.currentTranslation?.rich_description ??
+                                    resolvedTranslationBundle.defaultTranslation?.rich_description ??
+                                    engagement.rich_description;
+
+                                const summaryEditorState = getEditorStateFromRaw(resolvedSummaryBody || '');
                                 const hasSummaryBody = summaryEditorState?.getCurrentContent()?.hasText?.() ?? false;
 
                                 return (
@@ -80,8 +92,8 @@ export const EngagementDescription = () => {
                                             <Heading2 decorated id="description-header" sx={{ mb: 1 }}>
                                                 <PreviewSwitch
                                                     isPreviewMode={isPreviewMode}
-                                                    hasValue={Boolean(engagement.description_title?.trim())}
-                                                    value={engagement.description_title}
+                                                    hasValue={Boolean(resolvedSummaryTitle?.trim())}
+                                                    value={resolvedSummaryTitle}
                                                     fallback={'Summary'}
                                                     previewFallback={<TextPlaceholder text="Summary Section" />}
                                                 />

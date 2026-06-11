@@ -56,10 +56,10 @@ export const ToggleNav = ({ isNav, children }: { isNav?: boolean; children: Reac
  *   buttonProps={{ color: 'primary' }}
  *   popperProps={{ placement: 'bottom-end' }}
  * >
- *   <MenuItem onClick={() => window.location.href = '/option1'}>
+ *   <MenuItem onClick={() => globalThis.location.href = '/option1'}>
  *     Option 1
  *   </MenuItem>
- *   <MenuItem onClick={() => window.location.href = '/option2'}>
+ *   <MenuItem onClick={() => globalThis.location.href = '/option2'}>
  *     Option 2
  *   </MenuItem>
  * </DropdownMenu>

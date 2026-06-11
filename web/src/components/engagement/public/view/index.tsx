@@ -6,6 +6,7 @@ import { EngagementDetailsTabs } from './EngagementDetailsTabs';
 import { EngagementSurveyBlock } from './EngagementSurveyBlock';
 import { EngagementSubscribeBlock } from './EngagementSubscribeBlock';
 import { SuggestedEngagements } from './SuggestedEngagements';
+import { PublicLanguageSwitcher } from './PublicLanguageSwitcher';
 
 export enum EngagementViewSections {
     HERO = 'hero',
@@ -23,6 +24,7 @@ export const PublicEngagementView = () => {
     const viewKey = `${slug ?? engagementId ?? 'engagement'}-${language ?? 'default'}`;
     return (
         <React.Fragment key={viewKey}>
+            <PublicLanguageSwitcher />
             <EngagementHero />
             <EngagementDescription />
             <EngagementDetailsTabs />

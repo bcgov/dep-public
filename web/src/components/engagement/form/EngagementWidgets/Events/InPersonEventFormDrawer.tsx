@@ -12,7 +12,13 @@ import { useAppDispatch } from 'hooks';
 import { EventsContext } from './EventsContext';
 import ControlledTextField from 'components/common/ControlledInputComponents/ControlledTextField';
 import { openNotification } from 'services/notificationService/notificationSlice';
-import { postEvent, patchEvent, PatchEventProps } from 'services/widgetService/EventService';
+import {
+    postEvent,
+    patchEvent,
+    PatchEventProps,
+    getEventItemTranslations,
+    saveEventItemTranslation,
+} from 'services/widgetService/EventService';
 import { Event, EVENT_TYPE } from 'models/event';
 import { formatToUTC, formatToPacific } from 'components/common/dateHelper';
 import { formEventDates } from './utils';
@@ -20,6 +26,12 @@ import dayjs from 'dayjs';
 import tz from 'dayjs/plugin/timezone';
 import { updatedDiff } from 'deep-object-diff';
 import { WidgetLocation } from 'models/widget';
+import { useParams } from 'react-router';
+import {
+    getEngagementContentTranslationsByCode,
+    syncEngagementContentTranslationsByCode,
+    getLanguageIdByCode,
+} from 'services/engagementContentTranslationService';
 
 dayjs.extend(tz);
 
@@ -64,6 +76,8 @@ const InPersonEventFormDrawer = () => {
     const methods = useForm<InPersonEventForm>({
         resolver: yupResolver(schema) as unknown as Resolver<InPersonEventForm>,
     });
+    const { languageCode } = useParams<{ languageCode?: string }>();
+    const activeLanguageCode = (languageCode ?? 'en').toLowerCase();
 
     const pad = (num: number) => {
         let timeString = num.toString();
@@ -72,14 +86,47 @@ const InPersonEventFormDrawer = () => {
     };
 
     useEffect(() => {
-        methods.setValue('event_name', eventItemToEdit?.event_name || '');
-        methods.setValue('description', eventItemToEdit?.description || '');
-        methods.setValue('location_name', eventItemToEdit?.location_name || '');
-        methods.setValue('location_address', eventItemToEdit?.location_address || '');
-        methods.setValue('date', eventItemToEdit ? formatToPacific(eventItemToEdit.start_date) : '');
-        methods.setValue('time_from', pad(startDate.hour()) + ':' + pad(startDate.minute()) || '');
-        methods.setValue('time_to', pad(endDate.hour()) + ':' + pad(endDate.minute()) || '');
-    }, [eventToEdit]);
+        const initializeEventForm = async () => {
+            let translatedEventName = eventItemToEdit?.event_name || '';
+            let translatedDescription = eventItemToEdit?.description || '';
+            let translatedLocationName = eventItemToEdit?.location_name || '';
+            let translatedLocationAddress = eventItemToEdit?.location_address || '';
+
+            if (eventToEdit && widget && activeLanguageCode !== 'en') {
+                const contentTranslations = await getEngagementContentTranslationsByCode(
+                    widget.engagement_id,
+                    activeLanguageCode,
+                );
+                const eventTranslation = contentTranslations.events_widgets.find(
+                    (translation) => translation.widget_events_id === eventToEdit.id,
+                );
+                translatedEventName = eventTranslation?.title ?? translatedEventName;
+
+                if (eventItemToEdit) {
+                    const languageId = await getLanguageIdByCode(activeLanguageCode);
+                    const itemTranslations = await getEventItemTranslations(eventToEdit.id, languageId);
+                    const itemTranslation = itemTranslations.find(
+                        (translation) => translation.event_item_id === eventItemToEdit.id,
+                    );
+                    if (itemTranslation) {
+                        translatedDescription = itemTranslation.description ?? translatedDescription;
+                        translatedLocationName = itemTranslation.location_name ?? translatedLocationName;
+                        translatedLocationAddress = itemTranslation.location_address ?? translatedLocationAddress;
+                    }
+                }
+            }
+
+            methods.setValue('event_name', translatedEventName);
+            methods.setValue('description', translatedDescription);
+            methods.setValue('location_name', translatedLocationName);
+            methods.setValue('location_address', translatedLocationAddress);
+            methods.setValue('date', eventItemToEdit ? formatToPacific(eventItemToEdit.start_date, 'YYYY-MM-DD') : '');
+            methods.setValue('time_from', pad(startDate.hour()) + ':' + pad(startDate.minute()) || '');
+            methods.setValue('time_to', pad(endDate.hour()) + ':' + pad(endDate.minute()) || '');
+        };
+
+        initializeEventForm();
+    }, [eventToEdit, activeLanguageCode, widget?.engagement_id]);
 
     const { handleSubmit, reset } = methods;
 
@@ -96,7 +143,48 @@ const InPersonEventFormDrawer = () => {
                 start_date: formatToUTC(dateFrom),
                 end_date: formatToUTC(dateTo),
                 ...eventUpdatesToPatch,
+                event_name: activeLanguageCode === 'en' ? validatedData.event_name : eventItemToEdit.event_name,
+                ...(activeLanguageCode !== 'en' && {
+                    description: eventItemToEdit.description,
+                    location_name: eventItemToEdit.location_name,
+                    location_address: eventItemToEdit.location_address,
+                }),
             });
+
+            if (activeLanguageCode !== 'en') {
+                const existingContentTranslations = await getEngagementContentTranslationsByCode(
+                    widget.engagement_id,
+                    activeLanguageCode,
+                );
+                const existingTranslation = existingContentTranslations.events_widgets.find(
+                    (translation) => translation.widget_events_id === eventToEdit.id,
+                );
+                const nextTranslations = existingTranslation
+                    ? existingContentTranslations.events_widgets.map((translation) =>
+                          translation.widget_events_id === eventToEdit.id
+                              ? { ...translation, title: validatedData.event_name }
+                              : translation,
+                      )
+                    : [
+                          ...existingContentTranslations.events_widgets,
+                          {
+                              widget_id: widget.id,
+                              widget_events_id: eventToEdit.id,
+                              title: validatedData.event_name,
+                          },
+                      ];
+
+                await syncEngagementContentTranslationsByCode(widget.engagement_id, activeLanguageCode, {
+                    events_widgets: nextTranslations,
+                });
+
+                const languageId = await getLanguageIdByCode(activeLanguageCode);
+                await saveEventItemTranslation(eventToEdit.id, eventItemToEdit.id, languageId, {
+                    description: validatedData.description,
+                    location_name: validatedData.location_name,
+                    location_address: validatedData.location_address,
+                });
+            }
 
             handleEventDrawerOpen(EVENT_TYPE.MEETUP, false);
             dispatch(openNotification({ severity: 'success', text: 'Event was successfully updated' }));
@@ -124,6 +212,34 @@ const InPersonEventFormDrawer = () => {
                 location: widget.location in WidgetLocation ? widget.location : null,
             });
 
+            if (activeLanguageCode !== 'en' && createdWidgetEvent?.id) {
+                const existingContentTranslations = await getEngagementContentTranslationsByCode(
+                    widget.engagement_id,
+                    activeLanguageCode,
+                );
+                const nextTranslations = [
+                    ...existingContentTranslations.events_widgets,
+                    {
+                        widget_id: widget.id,
+                        widget_events_id: createdWidgetEvent.id,
+                        title: event_name,
+                    },
+                ];
+                await syncEngagementContentTranslationsByCode(widget.engagement_id, activeLanguageCode, {
+                    events_widgets: nextTranslations,
+                });
+
+                const createdEventItemId = createdWidgetEvent.event_items?.[0]?.id;
+                if (createdEventItemId) {
+                    const languageId = await getLanguageIdByCode(activeLanguageCode);
+                    await saveEventItemTranslation(createdWidgetEvent.id, createdEventItemId, languageId, {
+                        description: description,
+                        location_name: location_name,
+                        location_address: location_address,
+                    });
+                }
+            }
+
             setEvents((prevWidgetEvents: Event[]) => [...prevWidgetEvents, createdWidgetEvent]);
         }
         dispatch(openNotification({ severity: 'success', text: 'A new event was successfully added' }));
@@ -143,7 +259,7 @@ const InPersonEventFormDrawer = () => {
         try {
             setIsCreating(true);
             await saveEvent(data);
-            await loadEvents();
+            loadEvents();
             setIsCreating(false);
             reset({});
             setInPersonFormTabOpen(false);

@@ -26,7 +26,9 @@ export const ConfigSummary = () => {
     const siteUrl = getBaseUrl();
     const engagementId = useParams().engagementId;
     const language: LanguageState = useAppSelector((state) => state.language);
-    const { engagement, teamMembers, slug } = useRouteLoaderData('single-engagement') as EngagementLoaderAdminData;
+    const { engagement, teamMembers, slug, languages } = useRouteLoaderData(
+        'single-engagement',
+    ) as EngagementLoaderAdminData;
     const [tooltipOpen, setTooltipOpen] = React.useState(false);
 
     useEffect(() => {
@@ -265,13 +267,46 @@ export const ConfigSummary = () => {
                     <OutlineBox>
                         <Grid container direction="column" spacing={1}>
                             <Grid>
-                                <BodyText bold color="primary.main">
-                                    Language(s) Included (1)
-                                </BodyText>
+                                <Suspense
+                                    fallback={
+                                        <BodyText bold color="primary.main">
+                                            Language(s) Included
+                                        </BodyText>
+                                    }
+                                >
+                                    <Await resolve={languages}>
+                                        {(resolvedLanguages) => (
+                                            <BodyText bold color="primary.main">
+                                                Language(s) Included ({resolvedLanguages.length})
+                                            </BodyText>
+                                        )}
+                                    </Await>
+                                </Suspense>
                             </Grid>
-                            <Grid>
-                                <BodyText bold>English (Default)</BodyText>
-                            </Grid>
+                            <Suspense
+                                fallback={
+                                    <Grid container direction="column" spacing={0.5}>
+                                        <Grid>
+                                            <Skeleton variant="text" width={160} />
+                                        </Grid>
+                                    </Grid>
+                                }
+                            >
+                                <Await resolve={languages}>
+                                    {(resolvedLanguages) => (
+                                        <Grid container direction="column" spacing={0.5}>
+                                            {resolvedLanguages.map((language) => (
+                                                <Grid key={language.code}>
+                                                    <BodyText bold>
+                                                        {language.name}
+                                                        {language.code === 'en' ? ' (Default)' : ''}
+                                                    </BodyText>
+                                                </Grid>
+                                            ))}
+                                        </Grid>
+                                    )}
+                                </Await>
+                            </Suspense>
                         </Grid>
                     </OutlineBox>
                 </Grid>

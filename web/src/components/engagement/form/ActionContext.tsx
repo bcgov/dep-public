@@ -66,13 +66,13 @@ export const ActionProvider = ({ children }: { children: JSX.Element }) => {
     const [engagementMetadata, setEngagementMetadata] = useState<EngagementMetadata[]>([]);
     const [bannerImage, setBannerImage] = useState<File | null>();
     const [savedBannerImageFileName, setSavedBannerImageFileName] = useState('');
-    const isCreate = window.location.pathname.includes(CREATE);
+    const isCreate = globalThis.location.pathname.includes(CREATE);
     const { engagement, metadata, taxa } = (useRouteLoaderData('single-engagement') ??
         {}) as EngagementLoaderPublicData;
 
     // Load the engagement from the shared individual engagement loader and watch the engagement variable for any changes.
     useEffect(() => {
-        if (!isCreate && isNaN(Number(engagementId))) {
+        if (!isCreate && Number.isNaN(Number(engagementId))) {
             navigate(getPath(ROUTES.PUBLIC_LANDING));
         }
         if (isCreate && !engagementId) {

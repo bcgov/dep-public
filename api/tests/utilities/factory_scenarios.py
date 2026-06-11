@@ -509,14 +509,6 @@ class TestWidgetInfo(dict, Enum):
         'updated_date': datetime.now().strftime('%Y-%m-%d'),
         'location': 3,
     }
-    widget_subscribe = {
-        'widget_type_id': WidgetType.SUBSCRIBE.value,
-        'created_by': '123',
-        'updated_by': '123',
-        'created_date': datetime.now().strftime('%Y-%m-%d'),
-        'updated_date': datetime.now().strftime('%Y-%m-%d'),
-        'location': 1,
-    }
     widget_map = {
         'widget_type_id': WidgetType.Map.value,
         'created_by': '123',
@@ -783,42 +775,6 @@ class TestReportSettingInfo(dict, Enum):
     }
 
 
-class TestSubscribeInfo(Enum):
-    """Test scenarios of subscribe."""
-
-    subscribe_info_1 = {
-        'widget_id': 1,
-        'type': 'EMAIL_LIST',
-        'items': [
-            {
-                'description': '{\"blocks\":[{\"key\":\"2ku94\",\"text\":\
-                    "Rich Description Sample\",\"type\":\"unstyled\", \
-                    "depth\":0,\"inlineStyleRanges\":[],\
-                    "entityRanges\":[],\"data\":{}}],\"entityMap\":{}}',
-                'call_to_action_type': 'link',
-                'call_to_action_text': 'Click here to sign up',
-                'form_type': 'EMAIL_LIST'
-            }
-        ]
-    }
-
-    subscribe_info_2 = {
-        'widget_id': 1,
-        'type': 'SIGN_UP',
-        'items': [
-            {
-                'description': '{\"blocks\":[{\"key\":\"2ku94\",\"text\":\
-                    "Rich Description Sample\",\"type\":\"unstyled\", \
-                    "depth\":0,\"inlineStyleRanges\":[],\
-                    "entityRanges\":[],\"data\":{}}],\"entityMap\":{}}',
-                'call_to_action_type': 'link',
-                'call_to_action_text': 'Click here to sign up',
-                'form_type': 'SIGN_UP'
-            }
-        ]
-    }
-
-
 class TestWidgetMap(dict, Enum):
     """Test scenarios of video widget."""
 
@@ -994,16 +950,6 @@ class TestPollAnswerTranslationInfo(dict, Enum):
         'poll_answer_id': 1,
         'language_id': 2,
         'answer_text': 'Answer 1'
-    }
-
-
-class TestSubscribeItemTranslationInfo(dict, Enum):
-    """Test scenarios of Subscribe Item Translation."""
-
-    translate_info1 = {
-        'subscribe_item_id': 1,
-        'language_id': 2,
-        'description': fake.text(),
     }
 
 

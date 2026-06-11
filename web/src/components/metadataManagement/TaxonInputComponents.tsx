@@ -41,7 +41,7 @@ export const DefaultAutocomplete = ({ taxon, taxonType, field, setValue, errors,
 
     const handleChipClick = (option: string) => () => {
         if (taxonType.externalResource) {
-            window.open(taxonType.externalResource(option), '_blank');
+            globalThis.open(taxonType.externalResource(option), '_blank');
         }
     };
     const renderTags = (value: string[], getTagProps: AutocompleteRenderGetTagProps) => {

@@ -1,4 +1,4 @@
-import React, { createContext, useState, useEffect, useContext, JSX } from 'react';
+import React, { createContext, useState, useEffect, useContext, JSX, useMemo } from 'react';
 import { useAppDispatch } from 'hooks';
 import { openNotification } from 'services/notificationService/notificationSlice';
 import { ActionContext } from '../../ActionContext';
@@ -6,6 +6,8 @@ import { DocumentItem } from 'models/document';
 import { WidgetDrawerContext } from '../WidgetDrawerContext';
 import { Widget, WidgetType } from 'models/widget';
 import { fetchDocuments } from 'services/widgetService/DocumentService';
+import { useParams } from 'react-router';
+import { getEngagementContentTranslationsByCode } from 'services/engagementContentTranslationService';
 
 export interface DocumentsContextProps {
     documentToEdit: DocumentItem | null;
@@ -49,12 +51,14 @@ export const DocumentsContext = createContext<DocumentsContextProps>({
 
 export const DocumentsProvider = ({ children }: { children: JSX.Element | JSX.Element[] }) => {
     const dispatch = useAppDispatch();
+    const { languageCode } = useParams<{ languageCode?: string }>();
+    const activeLanguageCode = (languageCode ?? 'en').toLowerCase();
     const { widgets, isWidgetInScope } = useContext(WidgetDrawerContext);
     const { savedEngagement } = useContext(ActionContext);
     const [documentToEdit, setDocumentToEdit] = useState<DocumentItem | null>(null);
     const [documents, setDocuments] = useState<DocumentItem[]>([]);
     const [loadingDocuments, setLoadingDocuments] = useState(true);
-    const [addFileDrawerOpen, setAddDrawerFileOpen] = useState(false);
+    const [addFileDrawerOpen, setAddFileDrawerOpen] = useState(false);
     const [uploadFileDrawerOpen, setUploadFileDrawerOpen] = useState(false);
 
     const widget =
@@ -64,12 +68,37 @@ export const DocumentsProvider = ({ children }: { children: JSX.Element | JSX.El
         try {
             if (!savedEngagement.id || !widget) {
                 setLoadingDocuments(false);
-                return Promise.resolve([]);
+                return [];
             }
             setLoadingDocuments(true);
-            //TODO: setDocuments to fetched Data
             const savedDocuments = await fetchDocuments(widget.id);
-            setDocuments(savedDocuments);
+            if (activeLanguageCode === 'en') {
+                setDocuments(savedDocuments);
+            } else {
+                const contentTranslations = await getEngagementContentTranslationsByCode(
+                    widget.engagement_id,
+                    activeLanguageCode,
+                );
+                const documentTranslationsById = new Map(
+                    contentTranslations.documents_widgets.map((translation) => [
+                        translation.widget_documents_id,
+                        translation,
+                    ]),
+                );
+
+                const applyDocumentTranslations = (items: DocumentItem[]): DocumentItem[] => {
+                    return items.map((item) => {
+                        const translatedItem = documentTranslationsById.get(item.id);
+                        return {
+                            ...item,
+                            title: translatedItem?.title ?? item.title,
+                            children: item.children ? applyDocumentTranslations(item.children) : item.children,
+                        };
+                    });
+                };
+
+                setDocuments(applyDocumentTranslations(savedDocuments));
+            }
             setLoadingDocuments(false);
             return documents;
         } catch (error) {
@@ -85,7 +114,7 @@ export const DocumentsProvider = ({ children }: { children: JSX.Element | JSX.El
     };
 
     const handleAddFileDrawerOpen = (open: boolean) => {
-        setAddDrawerFileOpen(open);
+        setAddFileDrawerOpen(open);
         if (!open && documentToEdit) {
             setDocumentToEdit(null);
         }
@@ -93,25 +122,36 @@ export const DocumentsProvider = ({ children }: { children: JSX.Element | JSX.El
 
     useEffect(() => {
         loadDocuments();
-    }, [savedEngagement, widget]);
+    }, [savedEngagement, widget, activeLanguageCode]);
 
-    return (
-        <DocumentsContext.Provider
-            value={{
-                handleChangeDocumentToEdit,
-                documentToEdit,
-                loadingDocuments,
-                documents,
-                setDocuments,
-                loadDocuments,
-                addFileDrawerOpen,
-                handleAddFileDrawerOpen,
-                widget,
-                uploadFileDrawerOpen,
-                setUploadFileDrawerOpen,
-            }}
-        >
-            {children}
-        </DocumentsContext.Provider>
+    const contextValue = useMemo(
+        () => ({
+            handleChangeDocumentToEdit,
+            documentToEdit,
+            loadingDocuments,
+            documents,
+            setDocuments,
+            loadDocuments,
+            addFileDrawerOpen,
+            handleAddFileDrawerOpen,
+            widget,
+            uploadFileDrawerOpen,
+            setUploadFileDrawerOpen,
+        }),
+        [
+            handleChangeDocumentToEdit,
+            documentToEdit,
+            loadingDocuments,
+            documents,
+            setDocuments,
+            loadDocuments,
+            addFileDrawerOpen,
+            handleAddFileDrawerOpen,
+            widget,
+            uploadFileDrawerOpen,
+            setUploadFileDrawerOpen,
+        ],
     );
+
+    return <DocumentsContext.Provider value={contextValue}>{children}</DocumentsContext.Provider>;
 };

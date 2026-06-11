@@ -10,13 +10,15 @@ import { useForm, FormProvider, SubmitHandler, Resolver } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import ControlledTextField from 'components/common/ControlledInputComponents/ControlledTextField';
-import { patchContact, postContact, PatchContactRequest } from 'services/contactService';
+import { patchContact, postContact, PatchContactRequest, saveContactTranslation } from 'services/contactService';
 import { useAppDispatch } from 'hooks';
 import { openNotification } from 'services/notificationService/notificationSlice';
 import { updatedDiff } from 'deep-object-diff';
 import { WhoIsListeningContext } from './WhoIsListeningContext';
 import { saveObject } from 'services/objectStorageService';
 import { Contact } from 'models/contact';
+import { useParams } from 'react-router';
+import { getLanguageIdByCode } from 'services/engagementContentTranslationService';
 
 const schema = yup
     .object({
@@ -33,6 +35,9 @@ type ContactForm = yup.TypeOf<typeof schema>;
 
 const AddContactDrawer = () => {
     const dispatch = useAppDispatch();
+    const { languageCode } = useParams<{ languageCode?: string }>();
+    const activeLanguageCode = (languageCode ?? 'en').toLowerCase();
+    const isNonEnglish = activeLanguageCode !== 'en';
     const {
         addContactDrawerOpen,
         handleAddContactDrawerOpen,
@@ -77,16 +82,26 @@ const AddContactDrawer = () => {
 
     const updateContact = async (data: ContactForm) => {
         if (contactToEdit) {
-            const uploadedAvatarImageFileName = await handleUploadAvatarImage();
-            const contactUpdatesToPatch = updatedDiff(contactToEdit, {
-                ...data,
-                avatar_filename: uploadedAvatarImageFileName,
-            }) as PatchContactRequest;
+            if (isNonEnglish) {
+                const languageId = await getLanguageIdByCode(activeLanguageCode);
+                await saveContactTranslation(contactToEdit.id, languageId, {
+                    name: data.name,
+                    title: data.title ?? undefined,
+                    address: data.address ?? undefined,
+                    bio: data.bio ?? undefined,
+                });
+            } else {
+                const uploadedAvatarImageFileName = await handleUploadAvatarImage();
+                const contactUpdatesToPatch = updatedDiff(contactToEdit, {
+                    ...data,
+                    avatar_filename: uploadedAvatarImageFileName,
+                }) as PatchContactRequest;
 
-            await patchContact({
-                ...contactUpdatesToPatch,
-                id: contactToEdit.id,
-            });
+                await patchContact({
+                    ...contactUpdatesToPatch,
+                    id: contactToEdit.id,
+                });
+            }
 
             handleChangeContactToEdit(null);
             dispatch(openNotification({ severity: 'success', text: 'Contact was successfully updated' }));

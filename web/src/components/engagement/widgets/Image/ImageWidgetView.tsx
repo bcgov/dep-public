@@ -7,6 +7,8 @@ import { openNotification } from 'services/notificationService/notificationSlice
 import { ImageWidget } from 'models/imageWidget';
 import { fetchImageWidgets } from 'services/widgetService/ImageService';
 import { BodyText, Heading2 } from 'components/common/Typography';
+import { useEngagementLoaderData } from 'components/engagement/preview/PreviewLoaderDataContext';
+import { resolveTranslationValue } from 'components/engagement/public/view/engagementTranslationResolution';
 
 interface ImageWidgetProps {
     widget: Widget;
@@ -16,12 +18,26 @@ const ImageWidgetView = ({ widget }: ImageWidgetProps) => {
     const dispatch = useAppDispatch();
     const [imageWidget, setImageWidget] = useState<ImageWidget | null>(null);
     const [isLoading, setIsLoading] = useState(true);
+    const { translationBundle } = useEngagementLoaderData();
+    const loadedTranslationBundle = React.use(translationBundle);
+
+    const currentImageTranslationsById = new Map(
+        loadedTranslationBundle.currentContentTranslations.image_widgets.map((translation) => [
+            translation.widget_image_id,
+            translation,
+        ]),
+    );
+    const defaultImageTranslationsById = new Map(
+        loadedTranslationBundle.defaultContentTranslations.image_widgets.map((translation) => [
+            translation.widget_image_id,
+            translation,
+        ]),
+    );
 
     const fetchImage = async () => {
         try {
             const images = await fetchImageWidgets(widget.id);
-            const image = images[images.length - 1];
-            setImageWidget(image);
+            setImageWidget(images.at(-1) ?? null);
             setIsLoading(false);
         } catch (error) {
             setIsLoading(false);
@@ -60,6 +76,20 @@ const ImageWidgetView = ({ widget }: ImageWidgetProps) => {
         return null;
     }
 
+    const resolvedImageDescription =
+        resolveTranslationValue<string>({
+            translatedValue: currentImageTranslationsById.get(imageWidget.id)?.description,
+            defaultValue: defaultImageTranslationsById.get(imageWidget.id)?.description,
+            baseValue: imageWidget.description,
+        }).value ?? imageWidget.description;
+
+    const resolvedImageAltText =
+        resolveTranslationValue<string>({
+            translatedValue: currentImageTranslationsById.get(imageWidget.id)?.alt_text,
+            defaultValue: defaultImageTranslationsById.get(imageWidget.id)?.alt_text,
+            baseValue: imageWidget.alt_text,
+        }).value ?? imageWidget.alt_text;
+
     return (
         <Grid container size={12} alignItems="center" rowSpacing={2}>
             <Grid
@@ -72,7 +102,7 @@ const ImageWidgetView = ({ widget }: ImageWidgetProps) => {
                 <Heading2>{widget.title}</Heading2>
             </Grid>
             <Grid size={12}>
-                <BodyText>{imageWidget.description}</BodyText>
+                <BodyText>{resolvedImageDescription}</BodyText>
             </Grid>
             <Grid
                 container
@@ -90,7 +120,7 @@ const ImageWidgetView = ({ widget }: ImageWidgetProps) => {
                         borderRadius: '16px',
                     }}
                     src={imageWidget.image_url}
-                    alt={imageWidget.alt_text}
+                    alt={resolvedImageAltText}
                 />
             </Grid>
         </Grid>

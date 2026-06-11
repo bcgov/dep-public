@@ -14,9 +14,9 @@
         n.src = w; 
         g.parentNode.insertBefore(n, g)
     }
-}(window, document, "script", "https://www2.gov.bc.ca/StaticWebResources/static/sp/sp-2-14-0.js", "snowplow"));
+}(globalThis, document, "script", "https://www2.gov.bc.ca/StaticWebResources/static/sp/sp-2-14-0.js", "snowplow"));
 const collector = 'spt.apps.gov.bc.ca';
-window.snowplow('newTracker', 'rt', collector, {
+globalThis.snowplow('newTracker', 'rt', collector, {
     appId: 'Snowplow_standalone_DEP',
     cookieLifetime: 86400 * 548,
     platform: 'web',
@@ -27,6 +27,6 @@ window.snowplow('newTracker', 'rt', collector, {
         performanceTiming: true,
     },
 });
-window.snowplow('enableActivityTracking', 30, 30); // Ping every 30 seconds after 30 seconds
-window.snowplow('enableLinkClickTracking');
+globalThis.snowplow('enableActivityTracking', 30, 30); // Ping every 30 seconds after 30 seconds
+globalThis.snowplow('enableLinkClickTracking');
 // <!-- Snowplow stops plowing -->

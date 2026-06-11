@@ -19,6 +19,7 @@ import { EmailVerificationType } from 'models/emailVerification';
 import { SubscriptionType } from 'constants/subscriptionType';
 import { LanguageState } from 'reduxSlices/languageSlice';
 import { openNotification } from 'services/notificationService/notificationSlice';
+import { resolveTranslationValue } from './engagementTranslationResolution';
 
 const previewSubscribeSummary = (
     <Grid container gap={0} direction="column">
@@ -35,7 +36,7 @@ const defaultConsentMessage =
     'Personal information collected by the Ministry of Citizens’ Services is under the authority of section 26(c) and 26(e) of the Freedom of Information and Protection of Privacy Act for the purpose of informing this engagement.';
 
 export const EngagementSubscribeBlock = () => {
-    const { engagement } = useEngagementLoaderData();
+    const { engagement, translationBundle } = useEngagementLoaderData();
     const { isPreviewMode } = usePreview();
     const dispatch = useAppDispatch();
     const language: LanguageState = useAppSelector((state) => state.language);
@@ -96,7 +97,7 @@ export const EngagementSubscribeBlock = () => {
             });
 
             try {
-                window.snowplow('trackSelfDescribingEvent', {
+                globalThis.snowplow('trackSelfDescribingEvent', {
                     schema: 'iglu:ca.bc.gov.dep/verify-email/jsonschema/1-0-0',
                     data: {
                         survey_id: resolvedEngagement.surveys[0].id,
@@ -129,18 +130,33 @@ export const EngagementSubscribeBlock = () => {
 
     return (
         <Suspense>
-            <Await resolve={engagement}>
-                {(resolvedEngagement) => {
-                    const subscribeDescriptionEditorState = getEditorStateFromRaw(
-                        resolvedEngagement.subscribe_section_description || '',
-                    );
+            <Await resolve={Promise.all([engagement, translationBundle])}>
+                {([resolvedEngagement, resolvedTranslationBundle]) => {
+                    const resolvedSubscribeHeading = resolveTranslationValue<string>({
+                        translatedValue: resolvedTranslationBundle.currentTranslation?.subscribe_section_heading,
+                        defaultValue: resolvedTranslationBundle.defaultTranslation?.subscribe_section_heading,
+                        baseValue: resolvedEngagement.subscribe_section_heading,
+                    }).value;
+
+                    const resolvedSubscribeDescription = resolveTranslationValue<string>({
+                        translatedValue: resolvedTranslationBundle.currentTranslation?.subscribe_section_description,
+                        defaultValue: resolvedTranslationBundle.defaultTranslation?.subscribe_section_description,
+                        baseValue: resolvedEngagement.subscribe_section_description,
+                    }).value;
+
+                    const resolvedConsentMessage = resolveTranslationValue<string>({
+                        translatedValue: resolvedTranslationBundle.currentTranslation?.subscribe_consent_message,
+                        defaultValue: resolvedTranslationBundle.defaultTranslation?.subscribe_consent_message,
+                        baseValue: resolvedEngagement.subscribe_consent_message || resolvedEngagement.consent_message,
+                        literalFallback: defaultConsentMessage,
+                    }).value;
+
+                    const subscribeDescriptionEditorState = getEditorStateFromRaw(resolvedSubscribeDescription || '');
                     const hasSubscribeDescription =
                         subscribeDescriptionEditorState?.getCurrentContent()?.hasText?.() ?? false;
-                    const consentMessageEditorState = getEditorStateFromRaw(
-                        resolvedEngagement.subscribe_consent_message || resolvedEngagement.consent_message || '',
-                    );
+                    const consentMessageEditorState = getEditorStateFromRaw(resolvedConsentMessage || '');
                     const hasConsentMessage = consentMessageEditorState?.getCurrentContent()?.hasText?.() ?? false;
-                    const hasSubscribeHeading = Boolean(resolvedEngagement.subscribe_section_heading?.trim());
+                    const hasSubscribeHeading = Boolean(resolvedSubscribeHeading?.trim());
                     const isSubscribeSectionComplete =
                         hasSubscribeHeading && hasSubscribeDescription && hasConsentMessage;
 
@@ -172,8 +188,8 @@ export const EngagementSubscribeBlock = () => {
                                 <Grid size={{ xs: 12, lg: 3.5 }}>
                                     <Heading2 weight="thin" decorated sx={{ mb: '24px' }}>
                                         <PreviewSwitch
-                                            hasValue={!!resolvedEngagement.subscribe_section_heading}
-                                            value={resolvedEngagement.subscribe_section_heading}
+                                            hasValue={!!resolvedSubscribeHeading}
+                                            value={resolvedSubscribeHeading}
                                             previewFallback={<TextPlaceholder text="Subscribe Section" />}
                                             fallback="Subscribe Section"
                                         />
@@ -257,7 +273,7 @@ export const EngagementSubscribeBlock = () => {
                                                 label=" "
                                                 value={email}
                                                 onChange={(event) => setEmail(event.target.value)}
-                                                InputLabelProps={{ shrink: false }}
+                                                slotProps={{ inputLabel: { shrink: false } }}
                                                 fullWidth
                                                 disabled={isPreviewMode || isSaving}
                                                 sx={{

@@ -1,3 +1,11 @@
+## June 10, 2026
+
+- **Feature** Added language switcher to public, preview engagement pages [🎟️ DEP-233](https://citz-gdx.atlassian.net/browse/DEP-233) and [🎟️ DEP-235](https://citz-gdx.atlassian.net/browse/DEP-235)
+  - Added a common language switcher component that can be used to switch between language views within a language context.
+  - Integrated the language switcher into the public engagement details page and the engagement preview page, allowing users to switch between available languages for the engagement content.
+  - Improved the preview experience with a focus on language switching
+  - Updated the widget components to support language switching and to display content in the selected language.
+
 ## May 25, 2026
 
 - **Feature** Added start/end time to engagement period in engagement configuration. [🎟️ DEP-272](https://citz-gdx.atlassian.net/browse/DEP-272)
@@ -18,6 +26,16 @@
   - Removed several async/await components that were causing flickering
 - Utilized useParams instead of waiting on engagement values in some cases
 - Allowed modifying of engagement config while it's scheduled but not published
+
+## May 19, 2026
+
+- **Feature** Multi-language authoring support [🎟️ DEP-234](https://citz-gdx.atlassian.net/browse/DEP-234)
+  - Authoring now supports engagement-level multilingual content across sections with translation-aware loading and save paths.
+  - In multilingual engagements, the language selector reflects all languages configured during setup and supports switching between authoring languages while preserving page context.
+  - Improved language switching UX in authoring to reduce remount/layout shift: state hydration now avoids clearing forms before translated content arrives, preserves details-tab selection, and keeps scroll position during language changes.
+  - Added/expanded translation infrastructure for engagement and widget content (including timeline, image, contact, and related widget translation resources), plus supporting migrations and tests.
+  - Publishing behavior aligns with requirements: English required sections can be completed/published independently; incomplete non-English content does not block publishing, and incomplete languages are not exposed on the public view.
+  - English-only engagements now keep language controls effectively non-interactive/disabled in authoring contexts where no alternate language is configured.
 
 ## May 7, 2026
 

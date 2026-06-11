@@ -2,21 +2,22 @@ import { Autocomplete, Grid2 as Grid, Modal, TextField as MUITextField } from '@
 import { BodyText, ErrorMessage, Heading3 } from 'components/common/Typography';
 import { TextField } from 'components/common/Input';
 import { RichTextArea } from 'components/common/Input/RichTextArea';
-import React, { Suspense, useEffect, useState } from 'react';
+import React, { Suspense, useCallback, useState } from 'react';
 import WidgetPicker from '../widgets';
 import { WidgetLocation } from 'models/widget';
 import { Await, useLoaderData, useOutletContext, useParams } from 'react-router';
 import { Controller, useFormContext } from 'react-hook-form';
 import { defaultValuesObject, EngagementUpdateData } from './AuthoringContext';
 import { AuthoringTemplateOutletContext } from './types';
-import UnsavedWorkConfirmation from 'components/common/Navigation/UnsavedWorkConfirmation';
 import { AuthoringLoaderData, SurveyData } from './authoringLoader';
 import { getEditorStateFromRaw } from 'components/common/RichTextEditor/utils';
 import ConfirmModal from 'components/common/Modals/ConfirmModal';
 import { EngagementStatus } from 'constants/engagementStatus';
 import { AuthoringFormContainer, AuthoringFormSection } from './AuthoringFormLayout';
-import { Engagement } from 'models/engagement';
 import { tryParse } from './utils';
+import { getEngagementTranslationByCode } from 'services/engagementService';
+import { useAuthoringPageHydration } from './useAuthoringPageHydration';
+import { AppConfig } from 'config';
 
 type SelectOption = { label: string; value: number };
 
@@ -24,42 +25,57 @@ const AuthoringFeedback = () => {
     const [surveySelectOptions, setSurveySelectOptions] = useState<SelectOption[]>([{ label: 'None', value: -1 }]);
     const [surveyChangeModalOpen, setSurveyChangeModalOpen] = useState(false);
     const [surveyChangeValue, setSurveyChangeValue] = useState<SelectOption | null>(null);
-    const { setDefaultValues, fetcher, pageName }: AuthoringTemplateOutletContext = useOutletContext(); // Access the form functions and values from the authoring template.
-    const { tenantId: tenId, engagmentId: engId } = useParams();
-    const tenantId = Number(tenId);
-    const engagementId = Number(engId);
+    const { setDefaultValues, fetcher, pageName, engagement: eng }: AuthoringTemplateOutletContext = useOutletContext(); // Access the form functions and values from the authoring template.
+    const tenantId = eng.tenant_id;
+    const engagementId = eng.id;
+    let statusId = eng.status_id;
     const {
         setValue,
         getValues,
         reset,
         control,
-        formState: { errors, isDirty, isSubmitting },
+        formState: { errors },
     } = useFormContext<EngagementUpdateData>();
 
     // Must be a loader assigned to this route or data won't be refreshed on page change.
     const { engagement, surveys } = useLoaderData() as AuthoringLoaderData; // Get fresh data to avoid DB sync issues
-    const hasUnsavedWork = isDirty && !isSubmitting;
-    let statusId = 2;
+    const { languageCode } = useParams();
+    const activeLanguageCode = (languageCode ?? AppConfig.language.defaultLanguageId).toLowerCase();
 
-    // Set current values to default state after saving form
-    useEffect(() => {
-        if (typeof fetcher.data !== 'string' || fetcher.data !== 'success') {
-            return;
-        }
-        const newDefaults = getValues();
-        setDefaultValues(newDefaults);
-        reset(newDefaults);
-    }, [fetcher.data]);
+    const loadFeedbackValues = useCallback(async () => {
+        const [surveyData, loadedEngagement] = await Promise.all([surveys, engagement]);
 
-    // Reset values to default and retrieve relevant content from loader.
-    useEffect(() => {
-        surveys.then((surveys) => {
-            handleSurveyData(surveys);
-            engagement.then((eng) => {
-                handleEngagementData(eng);
-            });
-        });
-    }, [engagement, surveys]);
+        handleSurveyData(surveyData);
+
+        statusId = loadedEngagement.status_id || statusId;
+        const translation = await getEngagementTranslationByCode(Number(loadedEngagement.id), activeLanguageCode);
+        const feedbackHeading = translation?.feedback_heading ?? loadedEngagement.feedback_heading;
+        const feedbackBody = translation?.feedback_body ?? loadedEngagement.feedback_body;
+
+        return {
+            ...defaultValuesObject,
+            form_source: pageName,
+            id: Number(loadedEngagement.id),
+            status_id: Number(loadedEngagement.id),
+            feedback_heading: feedbackHeading || '',
+            feedback_body: tryParse(feedbackBody) ? getEditorStateFromRaw(feedbackBody) || '' : '',
+            selected_survey_id: loadedEngagement.surveys?.find(
+                (s) => Number(s.id) === loadedEngagement.selected_survey_id,
+            )
+                ? loadedEngagement.selected_survey_id
+                : -1,
+            surveys: loadedEngagement.surveys || [],
+        };
+    }, [activeLanguageCode, engagement, pageName, surveys]);
+
+    const { isHydrating } = useAuthoringPageHydration<EngagementUpdateData>({
+        deps: [engagement, surveys, activeLanguageCode, pageName],
+        fetcherData: fetcher.data,
+        getValues,
+        loadValues: loadFeedbackValues,
+        reset,
+        setDefaultValues,
+    });
 
     const handleSurveyData = (surveys: SurveyData) => {
         if (surveys?.items && Array.isArray(surveys.items) && surveys.items.length > 0) {
@@ -75,27 +91,6 @@ const AuthoringFeedback = () => {
             });
             setSurveySelectOptions([{ label: 'None', value: -1 }, ...filteredOptions]);
         }
-    };
-
-    const handleEngagementData = (eng: Engagement) => {
-        statusId = eng.status_id;
-        reset(defaultValuesObject);
-        setValue('form_source', pageName);
-        setValue('id', Number(eng.id));
-        setValue('status_id', Number(eng.id));
-        setValue('feedback_heading', eng.feedback_heading);
-        // Check if feedback_body is valid stringified JSON, then convert it to an editor state
-        if (tryParse(eng.feedback_body)) {
-            setValue('feedback_body', getEditorStateFromRaw(eng.feedback_body) || '');
-        }
-        // Check if the selected survey exists in the array of available surveys
-        setValue(
-            'selected_survey_id',
-            eng.surveys?.find((s) => Number(s.id) === eng.selected_survey_id) ? eng.selected_survey_id : -1,
-        );
-        setValue('surveys', eng.surveys || []);
-        setDefaultValues(getValues());
-        reset(getValues());
     };
 
     // Change the survey value if the change survey modal is opened and the user confirms.
@@ -138,11 +133,8 @@ const AuthoringFeedback = () => {
                 />
             </Modal>
 
-            {/* prevent navigating away when the user has unsaved work */}
-            <UnsavedWorkConfirmation blockNavigationWhen={hasUnsavedWork} />
-
             {/* Feedback form */}
-            <AuthoringFormContainer>
+            <AuthoringFormContainer isHydrating={isHydrating}>
                 <Grid sx={{ mt: '1rem' }} direction="column" gap="0.5rem">
                     <Heading3 bold>Primary Content (Required)</Heading3>
                     <BodyText size="small">

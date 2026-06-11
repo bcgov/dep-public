@@ -13,7 +13,7 @@ export function getErrorMessage(error: unknown) {
 }
 
 export function checkEmail(email: string) {
-    const filter = /^([a-zA-Z0-9_\.\-])+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+$/;
+    const filter = /^([a-zA-Z0-9_.-])+@(([a-zA-Z0-9-])+\.)+([a-zA-Z0-9]{2,4})+$/;
     return filter.test(email);
 }
 
@@ -22,7 +22,7 @@ export const downloadFile = (response: AxiosResponse<Blob, unknown>, filename: s
         throw new Error('Filename must be specified');
     }
 
-    const url = window.URL.createObjectURL(new Blob([response.data]));
+    const url = globalThis.URL.createObjectURL(new Blob([response.data]));
     const link = document.createElement('a');
     link.href = url;
     link.setAttribute('download', filename);
@@ -49,7 +49,7 @@ export const blobToFile = (theBlob: Blob, fileName: string): File => {
 };
 
 export const determinePathSegments = () => {
-    const url = new URL(window.location.href);
+    const url = new URL(globalThis.location.href);
     // filters out empty segments, which can occur if there are leading or trailing slashes in the pathname
     const pathSegments = url.pathname.split('/').filter((segment) => segment.trim() !== '');
     return pathSegments;

@@ -178,7 +178,7 @@ const PollWidgetView = ({ widget }: PollWidgetViewProps) => {
 
         try {
             await postPollResponse(widget.id, pollWidget.id, {
-                selected_answer_id: parseInt(selectedOption),
+                selected_answer_id: Number.parseInt(selectedOption),
             });
 
             setIsSubmitted(true);
@@ -239,16 +239,24 @@ const PollWidgetView = ({ widget }: PollWidgetViewProps) => {
                     <ThemeProvider theme={BaseTheme}>
                         <Suspense fallback={<PollWidgetSkeleton />}>
                             <Await resolve={cachedPollDetails} errorElement={<PollWidgetLoadingErrorElement />}>
-                                {(pollWidget: PollWidget) => (
-                                    <PollContent
-                                        pollWidget={pollWidget}
-                                        isSubmitted={isSubmitted}
-                                        isLoggedIn={isLoggedIn}
-                                        responseMessage={responseMessage}
-                                        handleSubmit={handleSubmit}
-                                        handleOptionChange={handleOptionChange}
-                                    />
-                                )}
+                                {(pollWidget: PollWidget) => {
+                                    const localizedPollWidget: PollWidget = {
+                                        ...pollWidget,
+                                        title: widget.poll_title ?? pollWidget.title,
+                                        description: widget.poll_description ?? pollWidget.description,
+                                    };
+
+                                    return (
+                                        <PollContent
+                                            pollWidget={localizedPollWidget}
+                                            isSubmitted={isSubmitted}
+                                            isLoggedIn={isLoggedIn}
+                                            responseMessage={responseMessage}
+                                            handleSubmit={handleSubmit}
+                                            handleOptionChange={handleOptionChange}
+                                        />
+                                    );
+                                }}
                             </Await>
                         </Suspense>
                     </ThemeProvider>

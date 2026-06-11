@@ -49,7 +49,7 @@ const VideoWidgetView = ({ widget }: VideoWidgetProps) => {
     const playerConfig = {
         youtube: {
             playerVars: {
-                origin: window.location.origin,
+                origin: globalThis.location.origin,
             },
         },
     };
@@ -95,6 +95,9 @@ const VideoWidgetView = ({ widget }: VideoWidgetProps) => {
         return null;
     }
 
+    const localizedVideoUrl = widget.video_url ?? videoWidget.video_url;
+    const localizedVideoDescription = widget.video_description ?? videoWidget.description;
+
     const formatVideoDuration = (duration: number) => {
         let minutes = 0;
         let hours = 0;
@@ -126,7 +129,7 @@ const VideoWidgetView = ({ widget }: VideoWidgetProps) => {
         { domain: 'facebook.com', name: 'Facebook', icon: faFacebookF },
     ];
 
-    const hostname = new URL(videoWidget.video_url).hostname;
+    const hostname = new URL(localizedVideoUrl).hostname;
     const videoSource = videoSources.find((source) => hostname.includes(source.domain))?.name || 'Unknown';
 
     const getVideoTitle = (player: ReactPlayer, source: string, widgetTitle: string) => {
@@ -151,7 +154,7 @@ const VideoWidgetView = ({ widget }: VideoWidgetProps) => {
                 </Heading3>
             </Grid>
             <Grid size={12}>
-                <BodyText mb="1.5rem">{videoWidget.description}</BodyText>
+                <BodyText mb="1.5rem">{localizedVideoDescription}</BodyText>
             </Grid>
             <Grid size={12} container pt={0} mt={0} spacing={0} position="relative">
                 <When condition={showOverlay && 'Mixcloud' !== videoSource}>
@@ -175,7 +178,7 @@ const VideoWidgetView = ({ widget }: VideoWidgetProps) => {
                         onDuration={(duration) => {
                             setVideoDuration(formatVideoDuration(duration));
                         }}
-                        url={videoWidget.video_url}
+                        url={localizedVideoUrl}
                         controls
                         onReady={(player) => {
                             setVideoOverlayTitle(getVideoTitle(player, videoSource, widget.title));
@@ -222,7 +225,7 @@ const VideoOverlay = ({ videoOverlayTitle, source, videoSources }: VideoOverlayP
                 padding="0.65rem 1rem"
                 bgcolor="black"
             >
-                <Grid container alignItems="center" size={12}>
+                <Grid container alignItems="center" size={12} color={colors.surface.white}>
                     <BodyText size="small" textOverflow="ellipsis" whiteSpace="nowrap" overflow="hidden" width="100%">
                         <FontAwesomeIcon
                             icon={videoSources.find((vs) => vs.name === source)?.icon || faQuestionCircle}

@@ -53,7 +53,7 @@ const FilterBlock = () => {
     useEffect(() => {
         if (didMount) {
             const yOffset = tileBlockRef?.current?.offsetTop;
-            window.scrollTo({ top: yOffset || 0, behavior: 'smooth' });
+            globalThis.scrollTo({ top: yOffset || 0, behavior: 'smooth' });
         }
     }, [page]);
 

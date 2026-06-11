@@ -10,7 +10,6 @@ from datetime import datetime
 from typing import List, Optional
 
 from sqlalchemy import and_, asc, desc, or_, select
-from sqlalchemy.dialects.postgresql import JSON
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.orderinglist import ordering_list
 from sqlalchemy.sql import text
@@ -49,19 +48,15 @@ class Engagement(BaseModel):
     __tablename__ = 'engagement'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.String(50))
-    description = db.Column(db.Text, unique=False, nullable=False)
-    rich_description = db.Column(JSON, unique=False, nullable=False)
-    description_title = db.Column(db.String(255), unique=False, nullable=False)
     start_date = db.Column(db.DateTime)
     end_date = db.Column(db.DateTime)
     status_id = db.Column(db.Integer, ForeignKey(
         'engagement_status.id', ondelete='CASCADE'))
-    status = db.relationship('EngagementStatus', backref='engagement', viewonly=True)
+    status = db.relationship(
+        'EngagementStatus', backref='engagement', viewonly=True)
     published_date = db.Column(db.DateTime, nullable=True)
     scheduled_date = db.Column(db.DateTime, nullable=True)
     banner_filename = db.Column(db.String(), unique=False, nullable=True)
-    feedback_heading = db.Column(db.String(60), unique=False, nullable=True)
-    feedback_body = db.Column(JSON, unique=False, nullable=True)
     selected_survey_id = db.Column(db.Integer, ForeignKey(
         'survey.id', ondelete='SET NULL'
     ), nullable=True)
@@ -79,12 +74,6 @@ class Engagement(BaseModel):
         db.Integer, db.ForeignKey('tenant.id'), nullable=True)
     tenant = db.relationship('Tenant', backref='engagements')
     is_internal = db.Column(db.Boolean, nullable=False)
-    consent_message = db.Column(JSON, unique=False, nullable=True)
-    subscribe_section_heading = db.Column(db.String(60), unique=False, nullable=True)
-    subscribe_section_description = db.Column(JSON, unique=False, nullable=True)
-    subscribe_consent_message = db.Column(JSON, unique=False, nullable=True)
-    sponsor_name = db.Column(db.String(50), nullable=True)
-    more_engagements_heading = db.Column(db.String(60), nullable=True)
     suggested_engagement_links = db.relationship(
         'SuggestedEngagement',
         back_populates='source_engagement',
@@ -104,8 +93,10 @@ class Engagement(BaseModel):
         passive_deletes=True,
         lazy='selectin',
     )
-    suggested_engagements = association_proxy('suggested_engagement_links', 'suggested_engagement')
-    suggested_engagement_ids = association_proxy('suggested_engagement_links', 'suggested_engagement_id')
+    suggested_engagements = association_proxy(
+        'suggested_engagement_links', 'suggested_engagement')
+    suggested_engagement_ids = association_proxy(
+        'suggested_engagement_links', 'suggested_engagement_id')
 
     @classmethod
     def get_engagements_paginated(
@@ -167,7 +158,7 @@ class Engagement(BaseModel):
         return items, total_count
 
     @classmethod
-    def update_engagement(cls, engagement: EngagementSchema) -> Engagement:
+    def update_engagement(cls, engagement: EngagementSchema) -> Optional[Engagement]:
         """Update engagement."""
         engagement_id = engagement.get('id', None)
         query = Engagement.query.filter_by(id=engagement_id)
@@ -176,15 +167,9 @@ class Engagement(BaseModel):
             return None
 
         update_fields = {
-            'name': engagement.get('name', None),
-            'description': engagement.get('description', None),
-            'rich_description': engagement.get('rich_description', None),
-            'description_title': engagement.get('description_title', None),
             'start_date': engagement.get('start_date', None),
             'end_date': engagement.get('end_date', None),
             'status_id': engagement.get('status_id', None),
-            'feedback_heading': engagement.get('feedback_heading', None),
-            'feedback_body': engagement.get('feedback_body', None),
             'selected_survey_id': engagement.get('selected_survey_id', None),
             # to fix the bug with UI not passing published date always.
             # Defaulting to existing
@@ -196,19 +181,7 @@ class Engagement(BaseModel):
             'updated_by': engagement.get('updated_by', None),
             'banner_filename': engagement.get('banner_filename', None),
             'is_internal': engagement.get('is_internal', record.is_internal),
-            'consent_message': engagement.get(
-                'consent_message', record.consent_message),
-            'subscribe_section_heading': engagement.get(
-                'subscribe_section_heading', record.subscribe_section_heading),
-            'subscribe_section_description': engagement.get(
-                'subscribe_section_description', record.subscribe_section_description),
-            'subscribe_consent_message': engagement.get(
-                'subscribe_consent_message',
-                engagement.get('subscribe_consent', record.subscribe_consent_message)
-            ),
-            'sponsor_name': engagement.get('sponsor_name', record.sponsor_name),
             'cta_url': engagement.get('cta_url', record.cta_url),
-            'more_engagements_heading': engagement.get('more_engagements_heading', record.more_engagements_heading)
         }
         query.update(update_fields)
         db.session.commit()
@@ -224,7 +197,8 @@ class Engagement(BaseModel):
             return None
         engagement_data['updated_date'] = utc_now()
         # Ensure no relationship fields are included in the update payload, only real columns
-        updatable_columns = {column.name for column in Engagement.__table__.columns}
+        updatable_columns = {
+            column.name for column in Engagement.__table__.columns}
         updatable_columns.discard('id')  # ID can never be updated
         update_payload = {
             key: value for key, value in engagement_data.items() if key in updatable_columns
@@ -262,10 +236,11 @@ class Engagement(BaseModel):
         return records
 
     @classmethod
-    def publish_scheduled_engagements_due(cls) -> List[Engagement]:
+    def publish_scheduled_engagements_due(cls) -> Optional[List[Engagement]]:
         """Update scheduled engagements to published."""
         datetime_due = utc_now()
-        logging.getLogger(__name__).debug('Publish due date (UTC): %s', datetime_due)
+        logging.getLogger(__name__).debug(
+            'Publish due date (UTC): %s', datetime_due)
         update_fields = {
             'status_id': Status.Published.value,
             'published_date': utc_now(),
@@ -352,9 +327,8 @@ class Engagement(BaseModel):
 
     @staticmethod
     def _filter_by_internal(query, search_options):
-        if exclude_internal := search_options.get('exclude_internal'):
-            if exclude_internal:
-                query = query.filter(Engagement.is_internal.is_(False))
+        if search_options.get('exclude_internal'):
+            query = query.filter(Engagement.is_internal.is_(False))
         return query
 
     @staticmethod

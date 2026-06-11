@@ -16,8 +16,9 @@ const AuthenticatedRoutes = resolveLazyRouteTree(
                 path="engagements/:engagementId/preview"
                 ComponentLazy={() => import('components/appLayouts/SimplifiedLayout')}
             >
+                <LazyRoute index element={<Navigate to="en" replace />} />
                 <LazyRoute
-                    index
+                    path=":languageCode"
                     ComponentLazy={() => import('components/engagement/preview/EngagementPreview')}
                     loaderLazy={() => import('components/engagement/preview/engagementPreviewLoader')}
                 />
@@ -137,8 +138,8 @@ const AuthenticatedRoutes = resolveLazyRouteTree(
                         );
                     }}
                 >
-                    <LazyRoute index element={<Navigate to="details/authoring" />} />
-                    <LazyRoute path="details">
+                    <LazyRoute index element={<Navigate to="authoring" />} />
+                    <LazyRoute>
                         <LazyRoute
                             path="config/edit"
                             ComponentLazy={() => import('engagements/admin/config/wizard/ConfigWizard')}
@@ -168,14 +169,26 @@ const AuthenticatedRoutes = resolveLazyRouteTree(
                                 lazy={() => import('routes/NotFound').then((module) => ({ Component: module.default }))}
                             />
                         </LazyRoute>
+                    </LazyRoute>
+                    {/* Authoring editing pages — /manage/engagements/:engagementId/authoring/:languageCode/:page */}
+                    <LazyRoute
+                        path="authoring"
+                        handle={{
+                            allowedRoles: [USER_ROLES.EDIT_ENGAGEMENT],
+                            crumb: (data?: { engagement?: { id?: number } }) => ({
+                                name: 'Authoring',
+                                link: data?.engagement?.id
+                                    ? `/manage/engagements/${data.engagement.id}/details/authoring`
+                                    : undefined,
+                            }),
+                        }}
+                    >
                         <LazyRoute
-                            path="authoring"
-                            handle={{
-                                crumb: () => ({ name: 'Authoring' }),
-                                allowedRoles: [USER_ROLES.EDIT_ENGAGEMENT],
-                            }}
+                            path=":languageCode"
+                            handle={{ allowedRoles: [USER_ROLES.EDIT_ENGAGEMENT] }}
                             ComponentLazy={() => import('routes/AuthGateRoute')}
                         >
+                            <LazyRoute index element={<Navigate to="banner" />} />
                             <LazyRoute
                                 ComponentLazy={() => import('engagements/admin/create/authoring/AuthoringContext')}
                             >
@@ -202,7 +215,10 @@ const AuthenticatedRoutes = resolveLazyRouteTree(
                                     actionLazy={() =>
                                         import('engagements/admin/create/authoring/authoringUpdateAction')
                                     }
-                                    shouldRevalidate={({ actionResult }) => actionResult === 'success'}
+                                    shouldRevalidate={({ actionResult, currentParams, nextParams }) =>
+                                        actionResult === 'success' ||
+                                        currentParams.languageCode !== nextParams.languageCode
+                                    }
                                     handle={{ crumb: () => ({ name: 'Details' }) }}
                                 />
                                 <LazyRoute
@@ -212,7 +228,10 @@ const AuthenticatedRoutes = resolveLazyRouteTree(
                                     actionLazy={() =>
                                         import('engagements/admin/create/authoring/authoringUpdateAction')
                                     }
-                                    shouldRevalidate={({ actionResult }) => actionResult === 'success'}
+                                    shouldRevalidate={({ actionResult, currentParams, nextParams }) =>
+                                        actionResult === 'success' ||
+                                        currentParams.languageCode !== nextParams.languageCode
+                                    }
                                     handle={{ crumb: () => ({ name: 'Provide Feedback' }) }}
                                 />
                                 <LazyRoute
@@ -237,7 +256,10 @@ const AuthenticatedRoutes = resolveLazyRouteTree(
                                     actionLazy={() =>
                                         import('engagements/admin/create/authoring/authoringUpdateAction')
                                     }
-                                    shouldRevalidate={({ actionResult }) => actionResult === 'success'}
+                                    shouldRevalidate={({ actionResult, currentParams, nextParams }) =>
+                                        actionResult === 'success' ||
+                                        currentParams.languageCode !== nextParams.languageCode
+                                    }
                                     handle={{ crumb: () => ({ name: 'More Engagements' }) }}
                                 />
                             </LazyRoute>

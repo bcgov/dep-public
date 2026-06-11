@@ -1,6 +1,6 @@
 import { Box, FormControlLabel, Grid2 as Grid, IconButton, Modal, Radio, RadioGroup, Tab } from '@mui/material';
 import { BodyText, ErrorMessage } from 'components/common/Typography';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
 import { AuthoringFormContainer, AuthoringFormSection } from './AuthoringFormLayout';
 import { Heading3 } from 'components/common/Typography/Headings';
@@ -19,7 +19,6 @@ import ConfirmModal from 'components/common/Modals/ConfirmModal';
 import { AuthoringLoaderData } from './authoringLoader';
 import { defaultValuesObject, EngagementUpdateData } from './AuthoringContext';
 import { getEditorStateFromRaw } from 'components/common/RichTextEditor/utils';
-import UnsavedWorkConfirmation from 'components/common/Navigation/UnsavedWorkConfirmation';
 
 const AuthoringDetails = () => {
     const { setDefaultValues, fetcher, pageName }: AuthoringTemplateOutletContext = useOutletContext();
@@ -29,30 +28,62 @@ const AuthoringDetails = () => {
         reset,
         watch,
         control,
-        formState: { errors, isDirty, isSubmitting },
+        formState: { errors },
     } = useFormContext<EngagementUpdateData>();
     const { detailsTabs } = useLoaderData() as AuthoringLoaderData; // Get fresh data to avoid DB sync issues
-    const [tabsEnabled, setTabsEnabled] = useState<boolean | undefined>(undefined);
-    const [currentTab, setCurrentTab] = useState<string | undefined>(undefined);
+    const { engagementId: engId } = useParams();
+    const engagementId = Number(engId);
+    const detailsUiStateKey = useMemo(() => `authoring-details-ui-${engagementId}`, [engagementId]);
+    const existingTabs = getValues('details_tabs') ?? [];
+    const persistedUiState = useMemo(() => {
+        try {
+            const raw = globalThis.sessionStorage.getItem(detailsUiStateKey);
+            if (!raw) {
+                return null;
+            }
+            return JSON.parse(raw) as { currentTab?: string; tabsEnabled?: boolean };
+        } catch {
+            return null;
+        }
+    }, [detailsUiStateKey]);
+    const [tabsEnabled, setTabsEnabled] = useState<boolean | undefined>(() => {
+        if (typeof persistedUiState?.tabsEnabled === 'boolean') {
+            return persistedUiState.tabsEnabled;
+        }
+        if (existingTabs.length > 0) {
+            return existingTabs.length >= 2;
+        }
+        return undefined;
+    });
+    const [currentTab, setCurrentTab] = useState<string | undefined>(() => {
+        if (persistedUiState?.currentTab) {
+            return persistedUiState.currentTab;
+        }
+        if (existingTabs.length > 0) {
+            return '0';
+        }
+        return undefined;
+    });
     const [delTabIndex, setDelTabIndex] = useState(-1);
     const [deleteModalOpen, setDeleteModalOpen] = useState(false);
     const [noTabsModalOpen, setNoTabsModalOpen] = useState(false);
+    const [isHydrating, setIsHydrating] = useState(false);
     const [updateFocus, setUpdateFocus] = useState(false);
-    const hasUnsavedWork = isDirty && !isSubmitting;
     const selectedTabRef = useRef<HTMLButtonElement | null>(null);
     const tabErrorsRef = useRef<HTMLDivElement>(null);
-    const { engagementId: engId } = useParams();
-    const engagementId = Number(engId);
     const authoringDetailsTabs = watch('details_tabs');
-    const defaultDetailsTabValues = {
-        id: -1,
-        engagement_id: engagementId,
-        label: 'Tab 1',
-        slug: 'tab_1',
-        heading: '',
-        body: EditorState.createEmpty(),
-        sort_index: 1,
-    };
+    const defaultDetailsTabValues = useMemo(
+        () => ({
+            id: -1,
+            engagement_id: engagementId,
+            label: 'Tab 1',
+            slug: 'tab_1',
+            heading: '',
+            body: EditorState.createEmpty(),
+            sort_index: 1,
+        }),
+        [engagementId],
+    );
 
     // Return focus to the newly selected element after an update focus request.
     useEffect(() => {
@@ -78,37 +109,75 @@ const AuthoringDetails = () => {
     }, [errors.details_tabs]);
 
     useEffect(() => {
-        reset(defaultValuesObject);
-        setValue('form_source', pageName);
-        setValue('id', engagementId);
+        try {
+            globalThis.sessionStorage.setItem(
+                detailsUiStateKey,
+                JSON.stringify({
+                    currentTab,
+                    tabsEnabled,
+                }),
+            );
+        } catch {
+            return;
+        }
+    }, [currentTab, detailsUiStateKey, tabsEnabled]);
+
+    useEffect(() => {
+        let isActive = true;
+        setIsHydrating(true);
+
         detailsTabs.then((tabs) => {
+            if (!isActive) {
+                return;
+            }
+
+            let nextTabs = [defaultDetailsTabValues];
+
             if (Array.isArray(tabs) && tabs.length > 0 && tabs[0].engagement_id === engagementId) {
-                const parsedTabs: FormDetailsTab[] = tabs.map((t) => ({
-                    id: t.id || -1,
-                    engagement_id: t.engagement_id || engagementId,
-                    label: t.label || '',
-                    slug: t.slug || '',
-                    heading: t.heading || '',
-                    body: getEditorStateFromRaw(JSON.stringify(t.body) || ''),
-                    sort_index: t.sort_index || -1,
-                }));
-                // Sort by sort_index value
-                const sortedTabs = [...parsedTabs].sort((a, b) => a.sort_index - b.sort_index);
-                updateTabs(sortedTabs, false);
-            } else {
-                setValue('details_tabs', [defaultDetailsTabValues]);
+                const parsedTabs: FormDetailsTab[] = tabs.map((t) => {
+                    // t.body may be a string (from API) or object (from form state)
+                    let bodyString = '';
+                    if (typeof t.body === 'string') {
+                        bodyString = t.body;
+                    } else if (t.body) {
+                        bodyString = JSON.stringify(t.body);
+                    }
+                    return {
+                        id: t.id || -1,
+                        engagement_id: t.engagement_id || engagementId,
+                        label: t.label || '',
+                        slug: t.slug || '',
+                        heading: t.heading || '',
+                        body: getEditorStateFromRaw(bodyString),
+                        sort_index: t.sort_index || -1,
+                    };
+                });
+                nextTabs = [...parsedTabs].sort((a, b) => a.sort_index - b.sort_index);
             }
-            // Pick single or tab mode based on the number of tabs
-            if (getValues()?.details_tabs?.length < 2) {
-                setTabsEnabled(false);
-            } else {
-                setTabsEnabled(true);
-            }
-            setDefaultValues(getValues());
-            reset(getValues());
-            setCurrentTab('0');
+
+            const newValues = {
+                ...defaultValuesObject,
+                form_source: pageName,
+                id: engagementId,
+                details_tabs: nextTabs,
+            };
+
+            reset(newValues);
+            setDefaultValues(newValues);
+            setTabsEnabled(nextTabs.length >= 2);
+            setCurrentTab((previousTab) => {
+                if (previousTab && nextTabs[Number(previousTab)]) {
+                    return previousTab;
+                }
+                return '0';
+            });
+            setIsHydrating(false);
         });
-    }, []);
+
+        return () => {
+            isActive = false;
+        };
+    }, [defaultDetailsTabValues, detailsTabs, engagementId, pageName, reset, setDefaultValues]);
 
     const addTab = () => {
         const newTabs = [...getValues('details_tabs')];
@@ -131,11 +200,14 @@ const AuthoringDetails = () => {
 
     const renumberTabs = (tabs: FormDetailsTab[]): FormDetailsTab[] => {
         return tabs.map((tab, index) => {
-            if (tab.label.includes('Tab ') && !tab.label.includes(` ${String(index + 1)}`)) {
+            const isDefaultNumericTabLabel = /^Tab\s+\d+$/i.test(tab.label.trim());
+
+            if (isDefaultNumericTabLabel) {
                 tab.label = `Tab ${index + 1}`;
                 tab.slug = `tab_${index + 1}`;
-                tab.sort_index = index + 1;
             }
+
+            tab.sort_index = index + 1;
             return tab;
         });
     };
@@ -151,12 +223,20 @@ const AuthoringDetails = () => {
 
     const labelChange = (value: string, index: number) => {
         const newTabs = [...getValues('details_tabs')];
-        // Search for duplicate label names and rename new label if necessary
         let newValue = value;
-        let suffixCounter = 1;
-        while (newTabs.some((tab, i) => tab.label === newValue && i !== index)) {
-            newValue = `${value} (${suffixCounter++})`;
+
+        if (newTabs.some((tab, i) => tab.label === newValue && i !== index)) {
+            // Resolve duplicate by finding the lowest available number suffix.
+            // Start from 1 when the name already ends in a number (so "Tab 2" can become
+            // "Tab 1" if that slot is free), or from 2 for plain names ("My Tab" → "My Tab 2").
+            const match = /^(.*\S)\s+(\d+)$/.exec(value);
+            const base = match ? match[1] : value;
+            let counter = match ? 1 : 2;
+            do {
+                newValue = `${base} ${counter++}`;
+            } while (newTabs.some((tab, i) => tab.label === newValue && i !== index));
         }
+
         newTabs[index].label = newValue;
         newTabs[index].slug = newValue.toLowerCase().replace(/\s+/g, '_');
         updateTabs(newTabs, true);
@@ -397,6 +477,13 @@ const AuthoringDetails = () => {
         top: '1px',
     };
 
+    const getTabReactKey = (tab: FormDetailsTab, index: number) => {
+        if (tab.id && tab.id > 0) {
+            return `tab-${tab.id}`;
+        }
+        return `tab-new-${tab.slug || 'tab'}-${index}`;
+    };
+
     return (
         <>
             {/* prevent user from accidentally deleting a tab */}
@@ -440,10 +527,7 @@ const AuthoringDetails = () => {
                 />
             </Modal>
 
-            {/* prevent navigating away when the user has unsaved work */}
-            <UnsavedWorkConfirmation blockNavigationWhen={hasUnsavedWork} />
-
-            <AuthoringFormContainer rowGap="1rem" mb="1rem">
+            <AuthoringFormContainer rowGap="1rem" mb="1rem" isHydrating={isHydrating}>
                 <BodyText size="small">
                     In the Details Section of your engagement, you have the option to display your content in a normal,
                     static page section view (no tabs) or, for lengthy content, use tabs. You may wish to use tabs if
@@ -484,7 +568,7 @@ const AuthoringDetails = () => {
             {/* Tab instructions */}
             {currentTab && (
                 <TabContext value={currentTab}>
-                    <AuthoringFormContainer rowSpacing="2rem" pt="0.5rem">
+                    <AuthoringFormContainer rowSpacing="2rem" pt="0.5rem" isHydrating={isHydrating}>
                         {tabsEnabled && (
                             <Grid container rowSpacing="0.5rem">
                                 <div ref={tabErrorsRef}></div>
@@ -519,61 +603,71 @@ const AuthoringDetails = () => {
                                 }
                             }}
                         >
-                            {authoringDetailsTabs.map((value, key) => (
-                                <Tab
-                                    component="button"
-                                    aria-label={`${value.label || 'Tab ' + key} is selected. Press the delete key to remove.`}
-                                    key={String(key)}
-                                    value={String(key)}
-                                    onKeyDown={(event) => {
-                                        tabKeyDown(event, 'tab', key);
-                                    }}
-                                    disableFocusRipple
-                                    ref={currentTab === String(key) ? selectedTabRef : null}
-                                    // Add an X when appropriate: not on first tab, only if there are 3 or more tabs.
-                                    label={
-                                        <Box sx={closeTabXContainer}>
-                                            <span>{value.label}</span>
-                                            {key !== 0 && authoringDetailsTabs.length > 2 ? (
-                                                <IconButton
-                                                    component="span"
-                                                    focusVisibleClassName="activated-x"
-                                                    sx={iconButtonStyles}
-                                                    disableRipple
-                                                    tabIndex={currentTab === String(key) ? 0 : -1}
-                                                    size="small"
-                                                    edge="end"
-                                                    aria-label={`Remove tab: ${value.label || key + 1}.`}
-                                                    onClick={(event) => {
-                                                        event.stopPropagation();
-                                                        removeTab(event, key);
-                                                    }}
-                                                    onKeyDown={(event) => {
-                                                        tabKeyDown(event, 'tabx', key);
-                                                    }}
-                                                >
-                                                    <FontAwesomeIcon style={{ ...fontAwesomeXStyles }} icon={faXmark} />
-                                                </IconButton>
-                                            ) : null}
-                                        </Box>
-                                    }
-                                    // Colour the tab labels red if they contain errors so the user sees them from another tab.
-                                    sx={{
-                                        ...tabStyles,
-                                        backgroundColor: errors.details_tabs?.[key]
-                                            ? colors.button.error.tint
-                                            : 'gray.10',
-                                        '&.Mui-selected': {
+                            {authoringDetailsTabs.map((value, key) => {
+                                const hasLabel = Boolean(value.label?.trim());
+                                const displayLabel = hasLabel ? value.label : 'Add tab title';
+
+                                return (
+                                    <Tab
+                                        component="button"
+                                        aria-label={`${displayLabel} is selected. Press the delete key to remove.`}
+                                        key={getTabReactKey(value, key)}
+                                        value={String(key)}
+                                        onKeyDown={(event) => {
+                                            tabKeyDown(event, 'tab', key);
+                                        }}
+                                        disableFocusRipple
+                                        ref={currentTab === String(key) ? selectedTabRef : null}
+                                        // Add an X when appropriate: not on first tab, only if there are 3 or more tabs.
+                                        label={
+                                            <Box sx={closeTabXContainer}>
+                                                <span style={{ fontStyle: hasLabel ? 'normal' : 'italic' }}>
+                                                    {displayLabel}
+                                                </span>
+                                                {key !== 0 && authoringDetailsTabs.length > 2 ? (
+                                                    <IconButton
+                                                        component="span"
+                                                        focusVisibleClassName="activated-x"
+                                                        sx={iconButtonStyles}
+                                                        disableRipple
+                                                        tabIndex={currentTab === String(key) ? 0 : -1}
+                                                        size="small"
+                                                        edge="end"
+                                                        aria-label={`Remove tab: ${displayLabel}.`}
+                                                        onClick={(event) => {
+                                                            event.stopPropagation();
+                                                            removeTab(event, key);
+                                                        }}
+                                                        onKeyDown={(event) => {
+                                                            tabKeyDown(event, 'tabx', key);
+                                                        }}
+                                                    >
+                                                        <FontAwesomeIcon
+                                                            style={{ ...fontAwesomeXStyles }}
+                                                            icon={faXmark}
+                                                        />
+                                                    </IconButton>
+                                                ) : null}
+                                            </Box>
+                                        }
+                                        // Colour the tab labels red if they contain errors so the user sees them from another tab.
+                                        sx={{
+                                            ...tabStyles,
                                             backgroundColor: errors.details_tabs?.[key]
-                                                ? colors.button.error.shade
-                                                : 'primary.main',
-                                            borderColor: 'primary.main',
-                                            color: 'white',
-                                            fontWeight: 'bold',
-                                        },
-                                    }}
-                                ></Tab>
-                            ))}
+                                                ? colors.button.error.tint
+                                                : 'gray.10',
+                                            '&.Mui-selected': {
+                                                backgroundColor: errors.details_tabs?.[key]
+                                                    ? colors.button.error.shade
+                                                    : 'primary.main',
+                                                borderColor: 'primary.main',
+                                                color: 'white',
+                                                fontWeight: 'bold',
+                                            },
+                                        }}
+                                    ></Tab>
+                                );
+                            })}
 
                             <Tab
                                 value="add"
@@ -590,8 +684,8 @@ const AuthoringDetails = () => {
 
                     {/* Tab contents */}
                     {authoringDetailsTabs.map((tab, key) => (
-                        <TabPanel sx={tabPanelStyles} value={String(key)} key={key}>
-                            <AuthoringFormContainer pt="2rem" pb="2.5rem">
+                        <TabPanel sx={tabPanelStyles} value={String(key)} key={getTabReactKey(tab, key)}>
+                            <AuthoringFormContainer pt="2rem" pb="2.5rem" isHydrating={isHydrating}>
                                 <AuthoringFormSection
                                     name={`Tab ${key + 1} Label`}
                                     required={true}
@@ -684,7 +778,7 @@ const AuthoringDetails = () => {
                                 </AuthoringFormSection>
                             </AuthoringFormContainer>
 
-                            {/* Todo: Replace with streamlined widget selector that saves on form save */}
+                            {/* Supporting content widget picker */}
                             <AuthoringFormContainer>
                                 <Grid container direction="column" gap="0.5rem">
                                     <Heading3 bold>Supporting Content (Optional)</Heading3>

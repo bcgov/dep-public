@@ -14,7 +14,7 @@ const MultiPageForm = ({ handleFormChange, savedForm, handleFormSubmit }: FormSu
     const [currentPage, setCurrentPage] = useState(0);
 
     const handleScrollUp = () => {
-        window.scrollTo({
+        globalThis.scrollTo({
             top: 100,
             behavior: 'smooth',
         });

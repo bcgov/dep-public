@@ -2,6 +2,8 @@ import React, { useId, useLayoutEffect, useRef, useState } from 'react';
 import { ContentBlock, ContentState, Editor, EditorProps } from 'react-draft-wysiwyg';
 import { SxProps, Theme } from '@mui/material/styles';
 import { Box } from '@mui/material';
+import 'react-draft-wysiwyg/dist/react-draft-wysiwyg.css';
+import '../RichTextEditor/RichEditorStyles.css';
 import { Button } from './Button';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faChevronUp, faChevronDown } from '@fortawesome/pro-regular-svg-icons';

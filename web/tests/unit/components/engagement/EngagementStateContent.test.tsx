@@ -6,6 +6,7 @@ import { createDefaultEngagement, Engagement } from '../../../../src/models/enga
 import { SubmissionStatus } from '../../../../src/constants/engagementStatus';
 import { EngagementHero } from '../../../../src/components/engagement/public/view/EngagementHero';
 import { EngagementSurveyBlock } from '../../../../src/components/engagement/public/view/EngagementSurveyBlock';
+import { TranslationBundle } from '../../../../src/components/engagement/public/view/engagementTranslationResolution';
 
 const mockUsePreview = jest.fn();
 const mockUseEngagementLoaderData = jest.fn();
@@ -135,6 +136,32 @@ jest.mock('components/engagement/widgets/WidgetSwitch', () => ({
 
 const rawText = (text: string) => JSON.stringify(convertToRaw(ContentState.createFromText(text)));
 
+const createTranslationBundle = (): TranslationBundle => ({
+    engagementId: 99,
+    activeLanguageCode: 'en',
+    defaultLanguageCode: 'en',
+    currentTranslation: null,
+    defaultTranslation: null,
+    currentContentTranslations: {
+        details_tabs: [],
+        widgets: [],
+        timeline_widgets: [],
+        events_widgets: [],
+        documents_widgets: [],
+        image_widgets: [],
+    },
+    defaultContentTranslations: {
+        details_tabs: [],
+        widgets: [],
+        timeline_widgets: [],
+        events_widgets: [],
+        documents_widgets: [],
+        image_widgets: [],
+    },
+    hasCurrentTranslation: false,
+    hasDefaultTranslation: false,
+});
+
 const createEngagement = (overrides: Partial<Engagement> = {}): Engagement => ({
     ...createDefaultEngagement(),
     id: 99,
@@ -201,6 +228,7 @@ describe('Public engagement state content', () => {
         mockUseEngagementLoaderData.mockReturnValue({
             engagement: Promise.resolve(createEngagement()),
             widgets: Promise.resolve([]),
+            translationBundle: Promise.resolve(createTranslationBundle()),
         });
 
         await renderPublicSections();
@@ -221,6 +249,7 @@ describe('Public engagement state content', () => {
                 }),
             ),
             widgets: Promise.resolve([]),
+            translationBundle: Promise.resolve(createTranslationBundle()),
         });
 
         await renderPublicSections();
@@ -240,12 +269,13 @@ describe('Public engagement state content', () => {
                 }),
             ),
             widgets: Promise.resolve([]),
+            translationBundle: Promise.resolve(createTranslationBundle()),
         });
 
         await renderPublicSections();
 
         expect(screen.getByRole('link', { name: 'Learn more' })).toBeInTheDocument();
-        expect(screen.getByRole('button', { name: 'Provide Feedback Now' })).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: 'buttonText.provideFeedback' })).toBeInTheDocument();
     });
 
     test('renders preview upcoming state text in the hero without duplicating it in the survey body', async () => {
@@ -260,6 +290,7 @@ describe('Public engagement state content', () => {
                 }),
             ),
             widgets: Promise.resolve([]),
+            translationBundle: Promise.resolve(createTranslationBundle()),
         });
 
         await renderPublicSections();

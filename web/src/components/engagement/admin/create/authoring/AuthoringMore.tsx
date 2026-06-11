@@ -1,75 +1,74 @@
 import { colors } from 'components/common';
 import { FormField, Select, TextField } from 'components/common/Input';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { useLoaderData, useOutletContext, useParams } from 'react-router';
 import { Controller, useFormContext } from 'react-hook-form';
 import { defaultValuesObject, EngagementUpdateData } from './AuthoringContext';
 import { AuthoringTemplateOutletContext } from './types';
-import UnsavedWorkConfirmation from 'components/common/Navigation/UnsavedWorkConfirmation';
 import { AuthoringFormContainer, AuthoringFormSection } from './AuthoringFormLayout';
 import { EngagementStatus } from 'constants/engagementStatus';
 import { AuthoringLoaderData } from './authoringLoader';
 import { Engagement } from 'models/engagement';
 import { Page } from 'services/type';
-import { SuggestedEngagement } from 'models/suggestedEngagement';
+import { getEngagementTranslationByCode } from 'services/engagementService';
+import { useAuthoringPageHydration } from './useAuthoringPageHydration';
+import { AppConfig } from 'config';
 
 type EngagementOption = { label: string; value: number };
+type EngagementSlot = 'more_engagements_1' | 'more_engagements_2' | 'more_engagements_3';
 
 const AuthoringMore = () => {
     const [engagementSelectOptions, setEngagementSelectOptions] = useState<EngagementOption[]>([
         { label: 'None', value: -1 },
     ]);
     const { setDefaultValues, fetcher, pageName }: AuthoringTemplateOutletContext = useOutletContext(); // Access the form functions and values from the authoring template.
-    const { engagementId: engId, tenantId: tenId } = useParams();
-    const engagementId = Number(engId);
-    const tenantId = Number(tenId);
+    const { languageCode } = useParams();
+    const activeLanguageCode = (languageCode ?? AppConfig.language.defaultLanguageId).toLowerCase();
     const {
-        setValue,
         getValues,
         reset,
         control,
-        formState: { errors, isDirty, isSubmitting },
+        formState: { errors },
     } = useFormContext<EngagementUpdateData>();
     // Must be a loader assigned to this route or data won't be refreshed on page change.
     const { suggestions, engagementList, engagement } = useLoaderData() as AuthoringLoaderData;
     const engagementSlots = ['more_engagements_1', 'more_engagements_2', 'more_engagements_3'];
-    type EngagementSlot = 'more_engagements_1' | 'more_engagements_2' | 'more_engagements_3';
     const iterance = ['first', 'second', 'third'];
 
-    const hasUnsavedWork = isDirty && !isSubmitting;
+    const loadMoreValues = useCallback(async () => {
+        const [engagementPage, loadedEngagement, loadedSuggestions] = await Promise.all([
+            engagementList,
+            engagement,
+            suggestions,
+        ]);
+        const translation = await getEngagementTranslationByCode(Number(loadedEngagement.id), activeLanguageCode);
 
-    // Set current values to default state after saving form
-    useEffect(() => {
-        if (typeof fetcher.data === 'string' && fetcher.data === 'success') {
-            const newDefaults = getValues();
-            setDefaultValues(newDefaults);
-            reset(newDefaults);
-        }
-    }, [fetcher.data]);
+        updateEngagementListValues(engagementPage, loadedEngagement.tenant_id, Number(loadedEngagement.id));
 
-    // Load data from three services
-    useEffect(() => {
-        const collectData = async () => {
-            try {
-                const [el, e, s] = await Promise.all([engagementList, engagement, suggestions]);
-                reset(defaultValuesObject);
-                setValue('form_source', pageName);
-                setValue('id', engagementId);
-                setValue('more_engagements_heading', e.more_engagements_heading ?? 'You may also be interested in');
-                updateEngagementListValues(el); // Options
-                updateSuggestionValues(s); // Selected
-            } catch (e) {
-                console.error('Failed to load page data. ', e);
-            } finally {
-                const newDefaults = getValues();
-                setDefaultValues(newDefaults);
-                reset(newDefaults);
-            }
+        return {
+            ...defaultValuesObject,
+            form_source: pageName,
+            id: Number(loadedEngagement.id),
+            more_engagements_heading:
+                translation?.more_engagements_heading ??
+                loadedEngagement.more_engagements_heading ??
+                'You may also be interested in',
+            more_engagements_1: loadedSuggestions.find((s) => s.sort_index === 1)?.suggested_engagement_id || -1,
+            more_engagements_2: loadedSuggestions.find((s) => s.sort_index === 2)?.suggested_engagement_id || -1,
+            more_engagements_3: loadedSuggestions.find((s) => s.sort_index === 3)?.suggested_engagement_id || -1,
         };
-        collectData();
-    }, [engagement, engagementList, suggestions]);
+    }, [activeLanguageCode, engagement, engagementList, pageName, suggestions]);
 
-    const updateEngagementListValues = (list: Page<Engagement>) => {
+    const { isHydrating } = useAuthoringPageHydration<EngagementUpdateData>({
+        deps: [engagement, engagementList, suggestions, activeLanguageCode, pageName],
+        fetcherData: fetcher.data,
+        getValues,
+        loadValues: loadMoreValues,
+        reset,
+        setDefaultValues,
+    });
+
+    const updateEngagementListValues = (list: Page<Engagement>, tenantId: number, engagementId: number) => {
         if (list.items && Array.isArray(list.items) && list.items.length > 0) {
             const filteredOptions: EngagementOption[] = [];
             const validStatuses = new Set([
@@ -81,7 +80,7 @@ const AuthoringMore = () => {
                 if (
                     eng.tenant_id === tenantId && // Must be engagements from same tenant
                     eng.id !== engagementId && // Can't suggest the current engagement
-                    // Only suggest open, upcoming, or closed engagements, not draft, scheduled, or unpublished
+                    // Only suggest published, scheduled, or closed engagements.
                     validStatuses.has(eng.status_id)
                 ) {
                     filteredOptions.push({
@@ -94,12 +93,6 @@ const AuthoringMore = () => {
         }
     };
 
-    const updateSuggestionValues = (sugs: SuggestedEngagement[]) => {
-        engagementSlots.forEach((es, i) => {
-            setValue(es as EngagementSlot, sugs.find((s) => s.sort_index === i + 1)?.suggested_engagement_id || -1);
-        });
-    };
-
     const getSelectedValue = (selected: number) => {
         const matchingOption = engagementSelectOptions.find((eso) => eso.value === selected);
         if (matchingOption?.label) {
@@ -110,11 +103,8 @@ const AuthoringMore = () => {
 
     return (
         <>
-            {/* prevent navigating away when the user has unsaved work */}
-            <UnsavedWorkConfirmation blockNavigationWhen={hasUnsavedWork} />
-
             {/* More Engagements form */}
-            <AuthoringFormContainer size={12}>
+            <AuthoringFormContainer size={12} isHydrating={isHydrating}>
                 <AuthoringFormSection
                     name="Section Heading"
                     required={true}

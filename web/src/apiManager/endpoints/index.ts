@@ -10,6 +10,13 @@ const Endpoints = {
     },
     EngagementTranslations: {
         GET_TRANSLATION_LANGUAGES: `${AppConfig.apiUrl}/engagement/engagement_id/translations/languages`,
+        GET_BY_LANGUAGE: `${AppConfig.apiUrl}/engagement/engagement_id/translations/language/language_id`,
+        CREATE: `${AppConfig.apiUrl}/engagement/engagement_id/translations/`,
+        PATCH: `${AppConfig.apiUrl}/engagement/engagement_id/translations/engagement_translation_id`,
+    },
+    EngagementContentTranslations: {
+        GET_BY_LANGUAGE: `${AppConfig.apiUrl}/engagement/engagement_id/content/translations/language/language_id`,
+        UPDATE_BY_LANGUAGE: `${AppConfig.apiUrl}/engagement/engagement_id/content/translations/language/language_id`,
     },
     EngagementMetadata: {
         GET_BY_ENG: `${AppConfig.apiUrl}/engagements/engagement_id/metadata`,
@@ -126,6 +133,9 @@ const Endpoints = {
         GET_LIST: `${AppConfig.apiUrl}/contacts/`,
         CREATE: `${AppConfig.apiUrl}/contacts/`,
         UPDATE: `${AppConfig.apiUrl}/contacts/`,
+        GET_TRANSLATION: `${AppConfig.apiUrl}/contact_translations/contact/contact_id/language/language_id`,
+        CREATE_TRANSLATION: `${AppConfig.apiUrl}/contact_translations/`,
+        UPDATE_TRANSLATION: `${AppConfig.apiUrl}/contact_translations/translation_id`,
     },
     Documents: {
         GET_LIST: `${AppConfig.apiUrl}/widgets/widget_id/documents`,
@@ -146,6 +156,10 @@ const Endpoints = {
         UPDATE: `${AppConfig.apiUrl}/widgets/widget_id/events/event_id/item/item_id`,
         DELETE: `${AppConfig.apiUrl}/widgets/widget_id/events/event_id`,
         SORT: `${AppConfig.apiUrl}/widgets/widget_id/events/sort_index`,
+        GET_ITEM_TRANSLATIONS: `${AppConfig.apiUrl}/events/event_id/translations/language/language_id`,
+        GET_ITEM_TRANSLATION: `${AppConfig.apiUrl}/events/event_id/translations/item/event_item_id/language/language_id`,
+        CREATE_ITEM_TRANSLATION: `${AppConfig.apiUrl}/events/event_id/translations/`,
+        UPDATE_ITEM_TRANSLATION: `${AppConfig.apiUrl}/events/event_id/translations/translation_id`,
     },
     Maps: {
         GET_LIST: `${AppConfig.apiUrl}/widgets/widget_id/maps`,

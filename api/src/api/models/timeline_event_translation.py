@@ -36,6 +36,20 @@ class TimelineEventTranslation(BaseModel):
         ),
     )
 
+    @classmethod
+    def get_by_timeline_and_language(cls, timeline_id: int, language_id: int):
+        """Return all event translations for a WidgetTimeline record and language."""
+        from .timeline_event import TimelineEvent  # pylint: disable=import-outside-toplevel
+        return (
+            cls.query
+            .join(TimelineEvent, TimelineEvent.id == cls.timeline_event_id)
+            .filter(
+                TimelineEvent.timeline_id == timeline_id,
+                cls.language_id == language_id,
+            )
+            .all()
+        )
+
     @staticmethod
     def get_by_event_and_language(timeline_event_id=None, language_id=None):
         """

@@ -122,7 +122,8 @@ class EngagementTranslation(Resource):
     def patch(engagement_id, engagement_translation_id):
         """Update engagement translation."""
         try:
-            translation_data = request.get_json()
+            request_json = request.get_json() or {}
+            translation_data = EngagementTranslationSchema(partial=True).load(request_json)
             updated_engagement = EngagementTranslationService().update_engagement_translation(
                 engagement_id, engagement_translation_id, translation_data)
             return updated_engagement, HTTPStatus.OK

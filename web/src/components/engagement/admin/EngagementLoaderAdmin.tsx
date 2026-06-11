@@ -1,5 +1,5 @@
 import { Params } from 'react-router';
-import { getEngagement } from 'services/engagementService';
+import { getAvailableTranslationLanguages, getEngagement } from 'services/engagementService';
 import { getEngagementIdBySlug, getSlugByEngagementId } from 'services/engagementSlugService';
 import { getWidgets } from 'services/widgetService';
 import { getEngagementMetadata, getMetadataTaxa } from 'services/engagementMetadataService';
@@ -9,8 +9,8 @@ import { getTeamMembers } from 'services/membershipService';
 import { EngagementTeamMember } from 'models/engagementTeamMember';
 import { EngagementDetailsTab } from 'models/engagementDetailsTab';
 import { getDetailsTabs } from 'services/engagementDetailsTabService';
-import { getTenantLanguages } from 'services/languageService';
 import { Language } from 'models/language';
+import { AppConfig } from 'config';
 
 export type EngagementLoaderAdminData = {
     engagement: Promise<Engagement>;
@@ -21,22 +21,38 @@ export type EngagementLoaderAdminData = {
     taxa: Promise<MetadataTaxon[]>;
     teamMembers: Promise<EngagementTeamMember[]>;
     languages: Promise<Language[]>;
+    hasDefaultLanguageTranslation: Promise<boolean>;
 };
 
 export const engagementLoaderAdmin = async ({ params }: { params: Params<string> }) => {
     const { slug: slugParam, engagementId } = params;
-
-    const tenantId =
-        typeof window !== 'undefined' && typeof window.sessionStorage !== 'undefined'
-            ? window.sessionStorage.getItem('tenantId')
-            : null;
-    const languages = tenantId ? getTenantLanguages(tenantId) : Promise.resolve([]);
+    const defaultLanguageCode = AppConfig.language.defaultLanguageId.toLowerCase();
     const slug = slugParam
         ? Promise.resolve(slugParam)
         : getSlugByEngagementId(Number(engagementId)).then((response) => response.slug);
     const engagement = slugParam
         ? getEngagementIdBySlug(slugParam).then((response) => getEngagement(response.engagement_id))
         : getEngagement(Number(engagementId));
+    const translationLanguages = engagement.then((response) => getAvailableTranslationLanguages(response.id));
+    const hasDefaultLanguageTranslation = translationLanguages.then((availableLanguages) =>
+        availableLanguages.some((language) => language.code === defaultLanguageCode),
+    );
+    const languages = translationLanguages.then((availableLanguages) => {
+        const hasDefaultLanguage = availableLanguages.some((language) => language.code === defaultLanguageCode);
+        if (hasDefaultLanguage) {
+            return availableLanguages;
+        }
+
+        return [
+            {
+                id: 0,
+                code: defaultLanguageCode,
+                name: AppConfig.language.defaultLanguageName,
+                right_to_left: false,
+            },
+            ...availableLanguages,
+        ];
+    });
     const widgets = engagement.then((response) => getWidgets(Number(response.id)));
     const details = engagement.then((response) => getDetailsTabs(response.id));
     const engagementMetadata = engagement.then((response) => getEngagementMetadata(Number(response.id)));
@@ -47,10 +63,9 @@ export const engagementLoaderAdmin = async ({ params }: { params: Params<string>
         metaResponse.forEach((metaEntry) => {
             const taxon = taxaResponse[metaEntry.taxon_id];
             if (taxon) {
-                if (taxon.entries === undefined) {
-                    taxon.entries = [];
-                }
-                taxon.entries.push(metaEntry);
+                const entries = taxon.entries ?? [];
+                entries.push(metaEntry);
+                taxon.entries = entries;
             }
         });
         return metaResponse;
@@ -67,6 +82,7 @@ export const engagementLoaderAdmin = async ({ params }: { params: Params<string>
         taxa,
         teamMembers,
         languages,
+        hasDefaultLanguageTranslation,
     };
 };
 

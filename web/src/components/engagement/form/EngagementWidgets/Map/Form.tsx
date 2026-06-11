@@ -15,7 +15,7 @@ import { postMap, previewShapeFile } from 'services/widgetService/MapService';
 import { WidgetDrawerContext } from '../WidgetDrawerContext';
 import ShapeFileUpload from 'components/engagement/form/EngagementWidgets/Map/ShapeFileUpload/FileUpload';
 import { geoJSONDecode } from './utils';
-import { FeatureCollection, GeoJSON, Point } from 'geojson';
+import { GeoJSON } from 'geojson';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faLinkSimple } from '@fortawesome/pro-regular-svg-icons/faLinkSimple';
 import { faCircleXmark } from '@fortawesome/pro-regular-svg-icons/faCircleXmark';
@@ -23,6 +23,11 @@ import { When } from 'react-if';
 import * as turf from '@turf/turf';
 import { WidgetTitle } from '../WidgetTitle';
 import { WidgetLocation } from 'models/widget';
+import { useParams } from 'react-router';
+import {
+    getEngagementContentTranslationsByCode,
+    syncEngagementContentTranslationsByCode,
+} from 'services/engagementContentTranslationService';
 
 const schema = yup
     .object({
@@ -51,6 +56,8 @@ const Form = () => {
     const dispatch = useAppDispatch();
     const { widget, mapData, isLoadingMap, setPreviewMapOpen, setPreviewMap, updateZoom } = useContext(MapContext);
     const { setWidgetDrawerOpen } = useContext(WidgetDrawerContext);
+    const { languageCode } = useParams<{ languageCode?: string }>();
+    const activeLanguageCode = (languageCode ?? 'en').toLowerCase();
     const [isCreating, setIsCreating] = useState(false);
     const [uploadName, setUploadName] = useState('');
     const [calculatingZoom, setCalculatingZoom] = useState(false);
@@ -60,14 +67,29 @@ const Form = () => {
     });
 
     useEffect(() => {
-        if (mapData) {
-            methods.setValue('markerLabel', mapData?.marker_label || '');
-            methods.setValue('latitude', mapData?.latitude || undefined);
-            methods.setValue('longitude', mapData?.longitude || undefined);
-            methods.setValue('geojson', mapData ? geoJSONDecode(mapData?.geojson) : undefined);
-            methods.setValue('filename', mapData ? mapData.file_name : undefined);
+        if (!mapData || !widget) {
+            return;
         }
-    }, [mapData]);
+        const initializeForm = async () => {
+            methods.setValue('latitude', mapData.latitude || undefined);
+            methods.setValue('longitude', mapData.longitude || undefined);
+            methods.setValue('geojson', geoJSONDecode(mapData.geojson) ?? undefined);
+            methods.setValue('filename', mapData.file_name ?? undefined);
+
+            if (activeLanguageCode === 'en') {
+                methods.setValue('markerLabel', mapData.marker_label || '');
+                return;
+            }
+
+            const contentTranslations = await getEngagementContentTranslationsByCode(
+                widget.engagement_id,
+                activeLanguageCode,
+            );
+            const widgetTranslation = contentTranslations.widgets.find((t) => t.widget_id === widget.id);
+            methods.setValue('markerLabel', widgetTranslation?.map_marker_label ?? mapData.marker_label ?? '');
+        };
+        initializeForm();
+    }, [mapData, activeLanguageCode, widget?.id]);
 
     const { handleSubmit, reset, trigger, watch } = methods;
 
@@ -99,18 +121,45 @@ const Form = () => {
         dispatch(openNotification({ severity: 'success', text: 'A new map was successfully added' }));
     };
 
+    const saveMarkerLabelTranslation = async (markerLabel: string | undefined) => {
+        if (!widget) {
+            return;
+        }
+        const existingContentTranslations = await getEngagementContentTranslationsByCode(
+            widget.engagement_id,
+            activeLanguageCode,
+        );
+        const existingTranslation = existingContentTranslations.widgets.find((t) => t.widget_id === widget.id);
+        const nextTranslations = existingTranslation
+            ? existingContentTranslations.widgets.map((t) =>
+                  t.widget_id === widget.id ? { ...t, map_marker_label: markerLabel } : t,
+              )
+            : [...existingContentTranslations.widgets, { widget_id: widget.id, map_marker_label: markerLabel }];
+        await syncEngagementContentTranslationsByCode(widget.engagement_id, activeLanguageCode, {
+            widgets: nextTranslations,
+        });
+        dispatch(
+            openNotification({ severity: 'success', text: 'Map marker label translation was successfully saved' }),
+        );
+    };
+
     const onSubmit: SubmitHandler<DetailsForm> = async (data: DetailsForm) => {
         if (!widget) {
             return;
         }
         try {
             setIsCreating(true);
-            await createMap(data);
+            if (activeLanguageCode == 'en') {
+                await createMap(data);
+            } else {
+                const validatedData = await schema.validate(data);
+                await saveMarkerLabelTranslation(validatedData.markerLabel);
+            }
             setIsCreating(false);
             reset({});
             setWidgetDrawerOpen(false);
         } catch {
-            dispatch(openNotification({ severity: 'error', text: 'An error occurred while trying to add map' }));
+            dispatch(openNotification({ severity: 'error', text: 'An error occurred while trying to save map' }));
             setIsCreating(false);
         }
     };
@@ -132,7 +181,7 @@ const Form = () => {
             longitude: validatedData.longitude,
             latitude: validatedData.latitude,
             markerLabel: validatedData.markerLabel,
-            geojson: previewGeoJson ? previewGeoJson : validatedData.geojson,
+            geojson: previewGeoJson ?? validatedData.geojson,
         });
         setPreviewMapOpen(true);
     };
@@ -141,12 +190,12 @@ const Form = () => {
         let previewGeoJson: turf.AllGeoJSON | GeoJSON | undefined;
         if (files.length > 0) {
             methods.setValue('shapefile', files[0]);
-            previewGeoJson = (await previewShapeFile({
+            previewGeoJson = await previewShapeFile({
                 file: files[0],
-            })) as unknown as FeatureCollection<Point>;
+            });
             setCalculatingZoom(true);
             updateZoom(previewGeoJson);
-            const centerPoint = turf.center(previewGeoJson as FeatureCollection<Point>);
+            const centerPoint = turf.center(previewGeoJson);
             methods.setValue('longitude', centerPoint.geometry.coordinates[0]);
             methods.setValue('latitude', centerPoint.geometry.coordinates[1]);
             setCalculatingZoom(false);

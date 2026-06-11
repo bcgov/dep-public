@@ -16,12 +16,18 @@ const mockGetValues = jest.fn(() => ({}));
 const mockReset = jest.fn();
 const mockSetDefaultValues = jest.fn();
 const mockFieldOnChange = jest.fn();
+const mockGetEngagementTranslationByCode = jest.fn();
 
 jest.mock('react-router', () => ({
     ...jest.requireActual('react-router'),
     useLoaderData: () => mockUseLoaderData(),
     useOutletContext: () => mockUseOutletContext(),
     useParams: () => mockUseParams(),
+}));
+
+jest.mock('services/engagementService', () => ({
+    ...jest.requireActual('services/engagementService'),
+    getEngagementTranslationByCode: (...args: unknown[]) => mockGetEngagementTranslationByCode(...args),
 }));
 
 jest.mock('react-hook-form', () => ({
@@ -102,6 +108,7 @@ const buildEngagement = (
 describe('AuthoringMore', () => {
     beforeEach(() => {
         jest.clearAllMocks();
+        mockGetEngagementTranslationByCode.mockResolvedValue(null);
 
         const currentEngagement = buildEngagement({
             id: 42,
