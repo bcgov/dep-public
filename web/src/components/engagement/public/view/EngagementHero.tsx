@@ -11,7 +11,7 @@ import {
     getStatusFromStatusId,
     getSubmissionStatusFromPreviewState,
 } from 'components/common/Indicators';
-import dayjs from 'dayjs';
+import { convertToPacific } from 'components/common/dateHelper';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faChevronRight } from '@fortawesome/pro-regular-svg-icons';
 import { Await } from 'react-router';
@@ -190,8 +190,8 @@ export const EngagementHero = () => {
                 >
                     <Await resolve={engagementInfo}>
                         {([engagement, resolvedTranslationBundle]: [Engagement, TranslationBundle | undefined]) => {
-                            const startDate = dayjs(engagement.start_date);
-                            const endDate = dayjs(engagement.end_date);
+                            const startDate = convertToPacific(engagement.start_date);
+                            const endDate = convertToPacific(engagement.end_date);
                             const usePreviewState = Boolean(isPreviewMode && previewStateType);
                             const effectiveSurveyStatus =
                                 previewValue<string | null>({
