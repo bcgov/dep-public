@@ -12,6 +12,7 @@ export interface Widget {
     engagement_details_tab_id?: number | null;
     items: WidgetItem[];
     title: string;
+    description?: string;
     location: WidgetLocation;
     // Translation-overridable fields returned from content translation endpoint
     video_url?: string;

@@ -11,7 +11,7 @@ import {
     getStatusFromStatusId,
     getSubmissionStatusFromPreviewState,
 } from 'components/common/Indicators';
-import dayjs from 'dayjs';
+import { convertToPacific } from 'components/common/dateHelper';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faChevronRight } from '@fortawesome/pro-regular-svg-icons';
 import { Await } from 'react-router';
@@ -24,15 +24,76 @@ import { TextPlaceholder } from 'components/engagement/preview/placeholders/Text
 import { previewValue, PreviewRender, PreviewSwitch } from 'components/engagement/preview/PreviewSwitch';
 import { EngagementPreviewTag } from './EngagementPreviewTag';
 import { useEngagementLoaderData } from 'components/engagement/preview/PreviewLoaderDataContext';
+import { TranslationBundle } from './engagementTranslationResolution';
+
+const getStatusMessageFromTranslation = (
+    translation: TranslationBundle['currentTranslation'] | TranslationBundle['defaultTranslation'] | undefined,
+    status: string | null,
+) => {
+    if (status === 'Upcoming') {
+        return translation?.upcoming_status_block_text;
+    }
+    if (status === 'Closed') {
+        return translation?.closed_status_block_text;
+    }
+    return undefined;
+};
+
+const getStatusButtonTextFromTranslation = (
+    translation: TranslationBundle['currentTranslation'] | TranslationBundle['defaultTranslation'] | undefined,
+    status: string | null,
+) => {
+    if (status === 'Open') {
+        return translation?.open_status_block_button_text;
+    }
+    if (status === 'ViewResults') {
+        return translation?.view_results_status_block_button_text;
+    }
+    return undefined;
+};
+
+const getResolvedHeroText = ({
+    engagement,
+    translationBundle,
+    status,
+    activeStatusBlockText,
+    activeStatusButtonText,
+}: {
+    engagement: Engagement;
+    translationBundle?: TranslationBundle;
+    status: string | null;
+    activeStatusBlockText?: string;
+    activeStatusButtonText?: string;
+}) => {
+    const resolvedSponsorName = translationBundle?.defaultTranslation?.sponsor_name ?? engagement.sponsor_name;
+
+    const resolvedEngagementName =
+        translationBundle?.currentTranslation?.name ?? translationBundle?.defaultTranslation?.name ?? engagement.name;
+
+    const resolvedStateMessage =
+        getStatusMessageFromTranslation(translationBundle?.currentTranslation, status) ??
+        getStatusMessageFromTranslation(translationBundle?.defaultTranslation, status) ??
+        activeStatusBlockText;
+
+    const resolvedButtonLabel =
+        getStatusButtonTextFromTranslation(translationBundle?.currentTranslation, status) ??
+        getStatusButtonTextFromTranslation(translationBundle?.defaultTranslation, status) ??
+        activeStatusButtonText;
+
+    return {
+        resolvedSponsorName,
+        resolvedEngagementName,
+        resolvedStateMessage,
+        resolvedButtonLabel,
+    };
+};
 
 export const EngagementHero = () => {
     const dateFormat = 'MMM DD, YYYY';
     const semanticDateFormat = 'YYYY-MM-DD';
-    const { engagement } = useEngagementLoaderData();
+    const { engagement, translationBundle } = useEngagementLoaderData();
     const { isPreviewMode, previewStateType } = usePreview();
-    const startDate = engagement?.then((engagement) => dayjs(engagement.start_date));
-    const endDate = engagement?.then((engagement) => dayjs(engagement.end_date));
-    const engagementInfo = Promise.all([engagement, startDate, endDate]);
+    const engagementInfo = Promise.all([engagement, translationBundle ?? Promise.resolve(undefined)]);
 
     return (
         <section aria-label="Engagement Overview" id={EngagementViewSections.HERO} style={{ position: 'relative' }}>
@@ -128,7 +189,9 @@ export const EngagementHero = () => {
                     }
                 >
                     <Await resolve={engagementInfo}>
-                        {([engagement, startDate, endDate]: [Engagement, dayjs.Dayjs | null, dayjs.Dayjs | null]) => {
+                        {([engagement, resolvedTranslationBundle]: [Engagement, TranslationBundle | undefined]) => {
+                            const startDate = convertToPacific(engagement.start_date);
+                            const endDate = convertToPacific(engagement.end_date);
                             const usePreviewState = Boolean(isPreviewMode && previewStateType);
                             const effectiveSurveyStatus =
                                 previewValue<string | null>({
@@ -151,6 +214,19 @@ export const EngagementHero = () => {
                                 : null;
                             const shouldShowStateMessage =
                                 effectiveSurveyStatus === 'Upcoming' || effectiveSurveyStatus === 'Closed';
+                            const {
+                                resolvedSponsorName,
+                                resolvedEngagementName,
+                                resolvedStateMessage,
+                                resolvedButtonLabel,
+                            } = getResolvedHeroText({
+                                engagement,
+                                translationBundle: resolvedTranslationBundle,
+                                status: effectiveSurveyStatus,
+                                activeStatusBlockText: activeStatusBlock?.block_text,
+                                activeStatusButtonText: activeStatusBlock?.button_text,
+                            });
+
                             const heroButtonContent =
                                 activeStatusBlock && activeStatusBlock.link_type !== 'none'
                                     ? {
@@ -158,7 +234,7 @@ export const EngagementHero = () => {
                                               activeStatusBlock.link_type === 'external'
                                                   ? activeStatusBlock.external_link || '#'
                                                   : `#${activeStatusBlock.internal_link || 'detailsTabs'}`,
-                                          label: activeStatusBlock.button_text || 'Learn More',
+                                          label: resolvedButtonLabel || 'Learn More',
                                       }
                                     : null;
                             const previewHeroButtonFallback =
@@ -174,15 +250,15 @@ export const EngagementHero = () => {
                                 <>
                                     <EyebrowText mb="24px">
                                         <PreviewSwitch
-                                            hasValue={Boolean(engagement.sponsor_name?.trim())}
-                                            value={engagement.sponsor_name}
+                                            hasValue={Boolean(resolvedSponsorName?.trim())}
+                                            value={resolvedSponsorName}
                                             previewFallback={<TextPlaceholder type="short" />}
                                         />
                                     </EyebrowText>
                                     <Heading1 weight="thin" sx={{ color: colors.surface.gray[110], mb: '32px', mt: 0 }}>
                                         <PreviewSwitch
-                                            hasValue={Boolean(engagement.name?.trim())}
-                                            value={engagement.name}
+                                            hasValue={Boolean(resolvedEngagementName?.trim())}
+                                            value={resolvedEngagementName}
                                             previewFallback={<TextPlaceholder type="short" />}
                                         />
                                     </Heading1>
@@ -205,15 +281,13 @@ export const EngagementHero = () => {
                                     {shouldShowStateMessage && (
                                         <Box sx={{ color: 'error.main', mt: '24px', mb: '8px' }}>
                                             <PreviewSwitch
-                                                hasValue={Boolean(activeStatusBlock?.block_text)}
+                                                hasValue={Boolean(resolvedStateMessage?.trim())}
                                                 value={
                                                     <RichTextArea
                                                         key={effectiveSurveyStatus}
                                                         readOnly
                                                         toolbarHidden
-                                                        editorState={getEditorStateFromRaw(
-                                                            activeStatusBlock?.block_text || '',
-                                                        )}
+                                                        editorState={getEditorStateFromRaw(resolvedStateMessage || '')}
                                                     />
                                                 }
                                                 previewFallback={<TextPlaceholder type="paragraph" />}

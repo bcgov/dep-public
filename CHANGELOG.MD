@@ -1,3 +1,11 @@
+## June 10, 2026
+
+- **Feature** Added language switcher to public, preview engagement pages [🎟️ DEP-233](https://citz-gdx.atlassian.net/browse/DEP-233) and [🎟️ DEP-235](https://citz-gdx.atlassian.net/browse/DEP-235)
+  - Added a common language switcher component that can be used to switch between language views within a language context.
+  - Integrated the language switcher into the public engagement details page and the engagement preview page, allowing users to switch between available languages for the engagement content.
+  - Improved the preview experience with a focus on language switching
+  - Updated the widget components to support language switching and to display content in the selected language.
+
 ## May 25, 2026
 
 - **Feature** Added start/end time to engagement period in engagement configuration. [🎟️ DEP-272](https://citz-gdx.atlassian.net/browse/DEP-272)

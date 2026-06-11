@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React from 'react';
 import { AppBar, Box, Toolbar } from '@mui/material';
 import { colors, Palette } from 'styles/Theme';
 import { ReactComponent as BCLogo } from 'assets/images/BritishColumbiaLogoDark.svg';
@@ -6,12 +6,9 @@ import { BodyText } from 'components/common/Typography';
 import { Link } from 'components/common/Navigation';
 import { elevations } from 'components/common';
 import EnvironmentBanner from './EnvironmentBanner';
-import { LanguageContext } from 'components/common/LanguageContext';
-import LanguageSelector from 'components/common/LanguageSelector';
 import { getPath, ROUTES } from 'routes/routes';
 
 const PublicHeader = () => {
-    const { engagementViewMounted, availableEngagementTranslations } = useContext(LanguageContext);
     const sidePadding = { xs: '0px 16px 0px 16px', md: '0px 5vw 0px 5vw', lg: '0px 10em 0px 10em' };
 
     return (
@@ -70,9 +67,6 @@ const PublicHeader = () => {
                         <span style={{ color: colors.surface.blue[90], fontWeight: 'normal' }}>BC</span>
                     </BodyText>
                 </Link>
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    {engagementViewMounted && availableEngagementTranslations.length > 0 && <LanguageSelector />}
-                </Box>
             </Toolbar>
             <EnvironmentBanner />
         </AppBar>

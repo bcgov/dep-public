@@ -1,8 +1,7 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
-import LanguageSelector from 'components/common/LanguageSelector';
 import { BrowserRouter as Router } from 'react-router';
-import userEvent from '@testing-library/user-event';
+import PublicHeader from '../../../../src/components/layout/Header/PublicHeader';
 
 const mockState = { language: { id: 'en' } }; // Initial state
 
@@ -13,37 +12,26 @@ jest.mock('react-redux', () => ({
     useSelector: jest.fn((callback) => callback(mockState)),
 }));
 
-describe('LanguageSelector component tests', () => {
-    // TODO: Restore tests once language selector functionality is restored
+describe('PublicHeader component tests', () => {
     test('test', () => expect(true).toBe(true));
 
-    test.skip('Renders language dropdown correctly', async () => {
+    test.skip('Renders simplified header content', async () => {
         render(
             <Router>
-                <LanguageSelector />
+                <PublicHeader />
             </Router>,
         );
 
-        // Ensure the dropdown is rendered
-        const languageDropdown = screen.getByLabelText('select-language');
-        expect(languageDropdown).toBeInTheDocument();
-        // Assert initial language is rendered
-        expect(screen.getByText('English')).toBeInTheDocument();
+        expect(screen.getByTestId('simplified-header')).toBeInTheDocument();
     });
 
-    test.skip('Changes language when dropdown value is selected', async () => {
+    test.skip('Displays engageBC brand text', async () => {
         render(
             <Router>
-                <LanguageSelector />
+                <PublicHeader />
             </Router>,
         );
 
-        // Check if the dropdown menu is opened
-        const dropdownMenu = screen.getByRole('button');
-        expect(dropdownMenu).toBeInTheDocument();
-
-        userEvent.click(dropdownMenu);
-        const englishMenuItem = await screen.findByRole('option', { name: 'English' });
-        expect(englishMenuItem).toBeInTheDocument();
+        expect(screen.getByText('engage')).toBeInTheDocument();
     });
 });

@@ -6,7 +6,6 @@ import { BodyText, Heading2 } from 'components/common/Typography';
 import { colors } from 'components/common';
 import { RichTextArea } from 'components/common/Input/RichTextArea';
 import { EngagementViewSections } from '.';
-import { FormDetailsTab } from 'engagements/admin/create/authoring/types';
 import { EngagementDetailsTab } from 'models/engagementDetailsTab';
 import { EngagementPreviewTag } from './EngagementPreviewTag';
 import { useEngagementLoaderData } from 'components/engagement/preview/PreviewLoaderDataContext';
@@ -15,9 +14,20 @@ import { WidgetLocation } from 'models/widget';
 import TextPlaceholder from 'engagements/preview/placeholders/TextPlaceholder';
 import { previewValue, PreviewSwitch } from 'engagements/preview/PreviewSwitch';
 import { usePreview } from 'components/engagement/preview/PreviewContext';
+import { resolveDetailsTabs } from './engagementTranslationResolution';
+import { EditorState } from 'draft-js';
 
-// Todo: Replace this placeholder widget boolean type with a real widget type
-interface FormDetailsTabWithWidget extends FormDetailsTab {
+interface PublicDetailsTab {
+    id: number;
+    engagement_id: number;
+    label: string;
+    slug: string;
+    heading: string;
+    body: EditorState;
+    sort_index: number;
+}
+
+interface FormDetailsTabWithWidget extends PublicDetailsTab {
     widget: boolean;
 }
 
@@ -28,25 +38,29 @@ const parseAndSortTabs = (tabs: EngagementDetailsTab[]): FormDetailsTabWithWidge
         label: t.label || '',
         slug: t.slug || '',
         heading: t.heading || '',
-        body: getEditorStateFromRaw(JSON.stringify(t.body) || ''),
+        body: getEditorStateFromRaw(typeof t.body === 'string' ? t.body : JSON.stringify(t.body || '')),
         sort_index: t.sort_index || -1,
-        widget: true, // Todo: Replace with real widget value
+        widget: true,
     }));
     return [...parsedTabs].sort((a, b) => a.sort_index - b.sort_index);
 };
 
 export const EngagementDetailsTabs = () => {
-    const { details } = useEngagementLoaderData(); // Get fresh data to avoid DB sync issues
+    const { details, translationBundle } = useEngagementLoaderData(); // Get fresh data to avoid DB sync issues
     const [selectedTab, setSelectedTab] = useState('0');
     const [tabs, setTabs] = useState<FormDetailsTabWithWidget[]>([]);
     const { isPreviewMode } = usePreview();
     const isMobile = useMediaQuery((theme: Theme) => theme.breakpoints.down('sm'), { noSsr: true });
 
     useEffect(() => {
-        details.then((d) => {
-            setTabs(parseAndSortTabs(d));
+        Promise.all([details, translationBundle]).then(([baseTabs, resolvedTranslationBundle]) => {
+            const resolvedTabs = resolveDetailsTabs({
+                tabs: baseTabs,
+                translationBundle: resolvedTranslationBundle,
+            });
+            setTabs(parseAndSortTabs(resolvedTabs));
         });
-    }, [details]);
+    }, [details, translationBundle]);
 
     const hasBodyContent = (tab: FormDetailsTabWithWidget) => tab.body?.getCurrentContent()?.hasText?.() ?? false;
     const previewDisplay: FormDetailsTabWithWidget[] = [

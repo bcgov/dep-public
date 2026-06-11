@@ -30,6 +30,8 @@ import {
 } from '@fortawesome/pro-regular-svg-icons';
 import { Link } from 'components/common/Navigation';
 import { faArrowUpRightFromSquare } from '@fortawesome/free-solid-svg-icons';
+import { useEngagementLoaderData } from 'components/engagement/preview/PreviewLoaderDataContext';
+import { resolveTranslationValue } from 'components/engagement/public/view/engagementTranslationResolution';
 
 interface DocumentTreeProps {
     documentItem: DocumentItem;
@@ -45,7 +47,7 @@ const getFileIcon = (url: string, isFile: boolean) => {
         return url ? faLink : faChainBroken;
     }
     // If there is no extension, it is a link rather than a file
-    if (url.indexOf('.') === -1) {
+    if (!url.includes('.')) {
         return faLink;
     }
     switch (url.split('.').pop()) {
@@ -211,13 +213,13 @@ const DocumentLabel = ({ documentItem, expandedItems }: DocumentTreeProps) =>
 // Skeleton component for the DocumentWidget
 const DocumentWidgetSkeleton = () => (
     <Grid container spacing={0.5}>
-        {[...Array(3)].map((_, index) => (
+        {['folder-1', 'folder-2', 'folder-3'].map((folderKey) => (
             // Simulate a folder with a title and two subitems
-            <Grid size={12} key={`skeleton-folder-${index}`} sx={{ mb: 1 }}>
+            <Grid size={12} key={folderKey} sx={{ mb: 1 }}>
                 <Skeleton variant="text" width="60%" height={20} />
                 <Grid container spacing={0.5} sx={{ pl: 3, mt: 0.5 }}>
-                    {[...Array(2)].map((_, subIndex) => (
-                        <Grid size={12} key={`skeleton-subitem-${index}-${subIndex}`}>
+                    {['subitem-1', 'subitem-2'].map((subitemKey) => (
+                        <Grid size={12} key={`${folderKey}-${subitemKey}`}>
                             <Skeleton variant="text" width="40%" height={15} />
                         </Grid>
                     ))}
@@ -234,6 +236,42 @@ const DocumentWidget = ({ widget }: DocumentWidgetProps) => {
     const [getDocuments] = useLazyGetDocumentsQuery();
     const [expandedItems, setExpandedItems] = useState<string[]>([]);
     const documents = useMemo(() => getDocuments(widget.id, false).unwrap(), [widget.id]);
+    const { translationBundle } = useEngagementLoaderData();
+    const loadedTranslationBundle = React.use(translationBundle);
+
+    const currentDocumentTranslationsById = useMemo(
+        () =>
+            new Map(
+                loadedTranslationBundle.currentContentTranslations.documents_widgets.map((translation) => [
+                    translation.widget_documents_id,
+                    translation,
+                ]),
+            ),
+        [loadedTranslationBundle.currentContentTranslations.documents_widgets],
+    );
+    const defaultDocumentTranslationsById = useMemo(
+        () =>
+            new Map(
+                loadedTranslationBundle.defaultContentTranslations.documents_widgets.map((translation) => [
+                    translation.widget_documents_id,
+                    translation,
+                ]),
+            ),
+        [loadedTranslationBundle.defaultContentTranslations.documents_widgets],
+    );
+
+    const applyDocumentTranslations = (items: DocumentItem[]): DocumentItem[] => {
+        return items.map((item) => ({
+            ...item,
+            title:
+                resolveTranslationValue<string>({
+                    translatedValue: currentDocumentTranslationsById.get(item.id)?.title,
+                    defaultValue: defaultDocumentTranslationsById.get(item.id)?.title,
+                    baseValue: item.title,
+                }).value ?? item.title,
+            children: item.children ? applyDocumentTranslations(item.children) : item.children,
+        }));
+    };
 
     return (
         <Grid container size={12} gap="1rem">
@@ -287,7 +325,8 @@ const DocumentWidget = ({ widget }: DocumentWidgetProps) => {
                                 >
                                     <Await resolve={documents}>
                                         {(documents: DocumentItem[]) => {
-                                            return documents.map((document: DocumentItem) => {
+                                            const translatedDocuments = applyDocumentTranslations(documents);
+                                            return translatedDocuments.map((document: DocumentItem) => {
                                                 return (
                                                     <RecursiveDocumentTree
                                                         expandedItems={expandedItems}
