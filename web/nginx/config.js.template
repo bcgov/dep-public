@@ -1,2 +1,2 @@
-window._env_ = window._env_ || {};
+globalThis._env_ = globalThis._env_ || {};
 $REACT_APP_VARS_JS

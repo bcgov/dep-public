@@ -42,8 +42,8 @@ class OIDCConfigAsJson(Resource):
 class OIDCConfigAsJs(Resource):
     """Resource for OpenID Connect configuration in JavaScript format."""
 
-    js_prefix = 'window._env_ = window._env_ || {};\n'
-    js_template = "window._env_.{VAR_NAME} = '{VAR_VALUE}';\n"
+    js_prefix = 'globalThis._env_ = globalThis._env_ || {};\n'
+    js_template = "globalThis._env_.{VAR_NAME} = '{VAR_VALUE}';\n"
 
     @staticmethod
     @cross_origin(origins=allowedorigins())

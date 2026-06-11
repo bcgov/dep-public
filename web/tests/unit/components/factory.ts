@@ -191,15 +191,6 @@ const videoWidget: Widget = {
     location: WidgetLocation.Summary,
 };
 
-const subscribeWidget: Widget = {
-    id: 1,
-    title: 'Subscribe',
-    widget_type_id: WidgetType.Subscribe,
-    engagement_id: 1,
-    items: [],
-    location: WidgetLocation.Summary,
-};
-
 const timeLineWidget: Widget = {
     id: 1,
     title: 'Timeline',
@@ -361,7 +352,6 @@ export {
     imageWidget,
     mockImage,
     mockTimeLine,
-    subscribeWidget,
     engagementDetailsTabData,
     staffUserState,
 };

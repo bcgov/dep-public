@@ -6,7 +6,6 @@ import { WidgetType } from 'models/widget';
 import {
     faCalendarStar,
     faClapperboardPlay,
-    faEnvelopeOpenText,
     faFileLines,
     faImageLandscape,
     faListTimeline,
@@ -38,15 +37,6 @@ const WidgetOptionCards = () => {
                     widgetType={WidgetType.Document}
                     tabValue="DOCUMENT_FORM"
                     icon={faFileLines}
-                />
-            </Grid>
-            <Grid size={{ xs: 12, lg: 6, xl: 4 }}>
-                <WidgetOptionCard
-                    title="Sign Up for Updates"
-                    description="Allow members of the public to subscribe to updates"
-                    widgetType={WidgetType.Subscribe}
-                    tabValue="SUBSCRIBE_FORM"
-                    icon={faEnvelopeOpenText}
                 />
             </Grid>
             <Grid size={{ xs: 12, lg: 6, xl: 4 }}>

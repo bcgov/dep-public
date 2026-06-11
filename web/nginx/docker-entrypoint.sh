@@ -22,8 +22,8 @@ REACT_APP_VARS_JS=$(
     env |
     # that starts with REACT_APP_,
     grep -E '^REACT_APP_' |
-    # Create a string of the form "window._env_.REACT_APP_VAR_NAME' = 'REACT_APP_VAR_VALUE';"
-    sed -E "s/^(REACT_APP_[^=]+)=(.*)/window._env_.\1 = '\2';/" |
+    # Create a string of the form "globalThis._env_.REACT_APP_VAR_NAME' = 'REACT_APP_VAR_VALUE';"
+    sed -E "s/^(REACT_APP_[^=]+)=(.*)/globalThis._env_.\1 = '\2';/" |
     # Join the lines with a newline character,
     awk '{printf "%s\n", $0}' |
     # then remove the last newline character

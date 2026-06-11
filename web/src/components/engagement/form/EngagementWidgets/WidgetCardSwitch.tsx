@@ -50,20 +50,6 @@ export const WidgetCardSwitch = ({ singleSelection = false, widget, removeWidget
                     }}
                 />
             </Case>
-            <Case condition={widget.widget_type_id === WidgetType.Subscribe}>
-                <WidgetPanel
-                    sortable={!singleSelection}
-                    widgetTypeId={widget.widget_type_id}
-                    testId={`subscribe-${widget.widget_type_id}`}
-                    title={widget.title}
-                    onDelete={() => {
-                        removeWidget(widget.id);
-                    }}
-                    onEdit={() => {
-                        openDrawerToTab(WidgetTabValues.SUBSCRIBE_FORM);
-                    }}
-                />
-            </Case>
             <Case condition={widget.widget_type_id === WidgetType.Events}>
                 <WidgetPanel
                     sortable={!singleSelection}
