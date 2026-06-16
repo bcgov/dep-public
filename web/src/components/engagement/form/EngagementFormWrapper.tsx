@@ -1,15 +1,17 @@
-import React, { useContext } from 'react';
+import React from 'react';
 import { MidScreenLoader } from 'components/common';
 import { ResponsiveContainer } from 'components/common/Layout';
-import { ActionContext } from './ActionContext';
 import { Grid2 as Grid } from '@mui/material';
 import WidgetsBlock from './EngagementWidgets';
+import { useRouteLoaderData } from 'react-router';
+import { EngagementLoaderAdminData } from 'engagements/admin/EngagementLoaderAdmin';
 
 const EngagementFormWrapper = () => {
-    const { loadingAuthorization, savedEngagement } = useContext(ActionContext);
+    const savedEngagement = React.use(
+        (useRouteLoaderData('single-engagement') as EngagementLoaderAdminData)?.engagement,
+    );
 
-    const loading = loadingAuthorization;
-    if (loading || !savedEngagement) {
+    if (!savedEngagement?.id) {
         return <MidScreenLoader data-testid="loader" />;
     }
 

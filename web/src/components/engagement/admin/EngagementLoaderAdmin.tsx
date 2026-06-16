@@ -1,6 +1,5 @@
-import { Params } from 'react-router';
-import { getAvailableTranslationLanguages, getEngagement } from 'services/engagementService';
-import { getEngagementIdBySlug, getSlugByEngagementId } from 'services/engagementSlugService';
+import { redirect, Params } from 'react-router';
+import { getAvailableTranslationLanguages, getEngagement, getEngagementBySlug } from 'services/engagementService';
 import { getWidgets } from 'services/widgetService';
 import { getEngagementMetadata, getMetadataTaxa } from 'services/engagementMetadataService';
 import { Engagement, EngagementMetadata, MetadataTaxon } from 'models/engagement';
@@ -11,10 +10,10 @@ import { EngagementDetailsTab } from 'models/engagementDetailsTab';
 import { getDetailsTabs } from 'services/engagementDetailsTabService';
 import { Language } from 'models/language';
 import { AppConfig } from 'config';
+import { ROUTES, getPath } from 'routes/routes';
 
 export type EngagementLoaderAdminData = {
     engagement: Promise<Engagement>;
-    slug: Promise<string>;
     widgets: Promise<Widget[]>;
     details: Promise<EngagementDetailsTab[]>;
     metadata: Promise<EngagementMetadata[]>;
@@ -27,12 +26,15 @@ export type EngagementLoaderAdminData = {
 export const engagementLoaderAdmin = async ({ params }: { params: Params<string> }) => {
     const { slug: slugParam, engagementId } = params;
     const defaultLanguageCode = AppConfig.language.defaultLanguageId.toLowerCase();
-    const slug = slugParam
-        ? Promise.resolve(slugParam)
-        : getSlugByEngagementId(Number(engagementId)).then((response) => response.slug);
-    const engagement = slugParam
-        ? getEngagementIdBySlug(slugParam).then((response) => getEngagement(response.engagement_id))
-        : getEngagement(Number(engagementId));
+    const engagement = (slugParam ? getEngagementBySlug(slugParam) : getEngagement(Number(engagementId))).then(
+        (resolvedEngagement) => {
+            if (!resolvedEngagement.authorization?.can_edit) {
+                throw redirect(getPath(ROUTES.UNAUTHORIZED));
+            }
+            return resolvedEngagement;
+        },
+    );
+
     const translationLanguages = engagement.then((response) => getAvailableTranslationLanguages(response.id));
     const hasDefaultLanguageTranslation = translationLanguages.then((availableLanguages) =>
         availableLanguages.some((language) => language.code === defaultLanguageCode),
@@ -75,7 +77,6 @@ export const engagementLoaderAdmin = async ({ params }: { params: Params<string>
 
     return {
         engagement,
-        slug,
         widgets,
         details,
         metadata,

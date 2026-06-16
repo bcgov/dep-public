@@ -165,8 +165,9 @@ def test_get_engagements_metadata_match_all(session):
     """Assert that engagements can be looked up by metadata (match all)."""
     engagements = [factory_engagement_model({
         **TestEngagementInfo.engagement1,
-        'tenant_id': 1
-    }) for _ in range(0, 10)]
+        'tenant_id': 1,
+        'slug': f"{TestEngagementInfo.engagement1['slug']}-{i}"
+    }) for i in range(0, 10)]
     taxon = factory_metadata_taxon_model(1, {
         'name': 'Category',
         'description': 'Category description',
@@ -238,8 +239,9 @@ def test_get_engagements_metadata_match_any(session):
     """Assert that engagements can be looked up by metadata (match any)."""
     engagements = [factory_engagement_model({
         **TestEngagementInfo.engagement1,
-        'tenant_id': 1
-    }) for _ in range(0, 10)]
+        'tenant_id': 1,
+        'slug': f"{TestEngagementInfo.engagement1['slug']}-{i}"
+    }) for i in range(0, 10)]
     taxon = factory_metadata_taxon_model(1, {
         'name': 'Category',
         'description': 'Category description',

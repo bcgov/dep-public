@@ -18,7 +18,6 @@ from api.models import Tenant as TenantModel
 from api.models.comment import Comment
 from api.models.comment_status import CommentStatus
 from api.models.db import db, transactional
-from api.models.engagement_slug import EngagementSlug as EngagementSlugModel
 from api.models.pagination_options import PaginationOptions
 from api.models.participant import Participant as ParticipantModel
 from api.models.staff_note import StaffNote
@@ -78,7 +77,8 @@ class SubmissionService:
     def create(cls, token, submission: SubmissionSchema):
         """Create submission."""
         cls._validate_fields(submission)
-        lang_code = submission.get('language_code', current_app.config['DEFAULT_LANGUAGE'])
+        lang_code = submission.get(
+            'language_code', current_app.config['DEFAULT_LANGUAGE'])
         survey_id = submission.get('survey_id')
         survey = SurveyService.get(survey_id)
         engagement_id = survey.get('engagement_id')
@@ -432,7 +432,8 @@ class SubmissionService:
         templates = current_app.config['EMAIL_TEMPLATES']
         template = Template.get_template('submission_response.html')
         subject = templates['SUBMISSION_RESPONSE']['SUBJECT']
-        dashboard_path = SubmissionService._get_dashboard_path(engagement, lang_code)
+        dashboard_path = SubmissionService._get_dashboard_path(
+            engagement, lang_code)
         engagement_url = notification.get_tenant_site_url(
             engagement.tenant_id, dashboard_path)
         email_environment = templates['ENVIRONMENT']
@@ -456,12 +457,10 @@ class SubmissionService:
 
     @staticmethod
     def _get_dashboard_path(engagement: EngagementModel, lang_code):
-        engagement_slug = EngagementSlugModel.find_by_engagement_id(
-            engagement.id)
         paths = current_app.config['PATH_CONFIG']
-        if engagement_slug:
+        if engagement.slug:
             return paths['ENGAGEMENT']['DASHBOARD_SLUG'].format(
-                slug=engagement_slug.slug,
+                slug=engagement.slug,
                 lang=lang_code
             )
         return paths['ENGAGEMENT']['DASHBOARD'].format(

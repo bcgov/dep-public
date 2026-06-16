@@ -26,6 +26,8 @@ class EngagementSchema(Schema):
     id = fields.Int(data_key='id')
     name = fields.Str(data_key='name', required=True, validate=validate.Length(
         min=1, error='Name cannot be blank'))
+    slug = fields.Str(data_key='slug', required=True, validate=validate.Length(
+        min=1, error='Slug cannot be blank'))
     description = fields.Str(data_key='description')
     rich_description = fields.Str(data_key='rich_description')
     description_title = fields.Str(data_key='description_title')

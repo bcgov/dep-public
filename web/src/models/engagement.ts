@@ -3,9 +3,15 @@ import { EngagementStatusBlock } from './engagementStatusBlock';
 import { SubmissionStatus } from 'constants/engagementStatus';
 import { SuggestedEngagementWithAttachment } from './suggestedEngagement';
 
+export interface EngagementAuthoringAuthorization {
+    can_edit: boolean;
+    access_level: 'ADMIN' | 'TEAM_MEMBER' | 'REVIEWER' | null;
+}
+
 export interface Engagement {
     id: number;
     name: string;
+    slug: string;
     description: string;
     rich_description: string;
     description_title: string;
@@ -38,6 +44,7 @@ export interface Engagement {
     subscribe_section_description?: string;
     more_engagements_heading?: string;
     suggested_engagements?: SuggestedEngagementWithAttachment[];
+    authorization?: EngagementAuthoringAuthorization;
 }
 
 export interface Status {
@@ -78,6 +85,7 @@ export const createDefaultEngagement = (sponsorName?: string): Engagement => {
     return {
         id: 0,
         name: '',
+        slug: '',
         description: '',
         rich_description: '',
         description_title: '',

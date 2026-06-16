@@ -111,8 +111,8 @@ const AuthenticatedRoutes = resolveLazyRouteTree(
                                 }),
                             })),
                         viewSwitcher: async (data: unknown, _params: unknown, languageId: string) => {
-                            const loaderData = data as { slug: Promise<string> };
-                            const slug = await loaderData.slug;
+                            const loaderData = data as { engagement: Promise<{ slug: string }> };
+                            const slug = (await loaderData.engagement).slug;
                             return {
                                 label: 'View Public Page',
                                 href: getPath(ROUTES.PUBLIC_ENGAGEMENT_BY_SLUG, {

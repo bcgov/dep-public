@@ -26,9 +26,11 @@ export const ConfigSummary = () => {
     const siteUrl = getBaseUrl();
     const engagementId = useParams().engagementId;
     const language: LanguageState = useAppSelector((state) => state.language);
-    const { engagement, teamMembers, slug, languages } = useRouteLoaderData(
-        'single-engagement',
-    ) as EngagementLoaderAdminData;
+    const {
+        engagement: $engagement,
+        teamMembers: $teamMembers,
+        languages: $languages,
+    } = useRouteLoaderData('single-engagement') as EngagementLoaderAdminData;
     const [tooltipOpen, setTooltipOpen] = React.useState(false);
 
     useEffect(() => {
@@ -77,8 +79,8 @@ export const ConfigSummary = () => {
                                                     />
                                                 }
                                             >
-                                                <Await resolve={slug}>
-                                                    {(slug: string) => (
+                                                <Await resolve={$engagement}>
+                                                    {(engagement: Engagement) => (
                                                         <IconButton
                                                             size="small"
                                                             sx={{
@@ -95,7 +97,7 @@ export const ConfigSummary = () => {
                                                             }}
                                                             onClick={() => {
                                                                 navigator.clipboard.writeText(
-                                                                    `${siteUrl}${getPath(ROUTES.PUBLIC_ENGAGEMENT_BY_SLUG, { slug, language: language.id })}`,
+                                                                    `${siteUrl}${getPath(ROUTES.PUBLIC_ENGAGEMENT_BY_SLUG, { slug: engagement.slug, language: language.id })}`,
                                                                 );
                                                                 setTooltipOpen(true);
                                                             }}
@@ -129,10 +131,10 @@ export const ConfigSummary = () => {
                                                 </Skeleton>
                                             }
                                         >
-                                            <Await resolve={slug}>
-                                                {(slug: string) => {
+                                            <Await resolve={$engagement}>
+                                                {(engagement: Engagement) => {
                                                     const path = getPath(ROUTES.PUBLIC_ENGAGEMENT_BY_SLUG, {
-                                                        slug,
+                                                        slug: engagement.slug,
                                                         language: language.id,
                                                     });
                                                     // remove leading slash from path if it exists to prevent double slashes in URL
@@ -173,7 +175,7 @@ export const ConfigSummary = () => {
                                                 />
                                             }
                                         >
-                                            <Await resolve={engagement}>
+                                            <Await resolve={$engagement}>
                                                 {(engagement) => {
                                                     const { date, valid } = getEngagementDate(engagement, 'start');
                                                     return (
@@ -209,7 +211,7 @@ export const ConfigSummary = () => {
                                                 />
                                             }
                                         >
-                                            <Await resolve={engagement}>
+                                            <Await resolve={$engagement}>
                                                 {(engagement) => {
                                                     const { date, valid } = getEngagementDate(engagement, 'end');
                                                     return (
@@ -242,7 +244,7 @@ export const ConfigSummary = () => {
                                     <Grid>
                                         <BodyText bold fontSize="72px" lineHeight="64px" color="inherit">
                                             <Suspense fallback={<Skeleton variant="text" width={85}></Skeleton>}>
-                                                <Await resolve={engagement}>
+                                                <Await resolve={$engagement}>
                                                     {(engagement) =>
                                                         dayjs(engagement.end_date)
                                                             .clone()
@@ -274,10 +276,10 @@ export const ConfigSummary = () => {
                                         </BodyText>
                                     }
                                 >
-                                    <Await resolve={languages}>
-                                        {(resolvedLanguages) => (
+                                    <Await resolve={$languages}>
+                                        {(languages) => (
                                             <BodyText bold color="primary.main">
-                                                Language(s) Included ({resolvedLanguages.length})
+                                                Language(s) Included ({languages.length})
                                             </BodyText>
                                         )}
                                     </Await>
@@ -292,10 +294,10 @@ export const ConfigSummary = () => {
                                     </Grid>
                                 }
                             >
-                                <Await resolve={languages}>
-                                    {(resolvedLanguages) => (
+                                <Await resolve={$languages}>
+                                    {(languages) => (
                                         <Grid container direction="column" spacing={0.5}>
-                                            {resolvedLanguages.map((language) => (
+                                            {languages.map((language) => (
                                                 <Grid key={language.code}>
                                                     <BodyText bold>
                                                         {language.name}
@@ -319,8 +321,8 @@ export const ConfigSummary = () => {
                                 </BodyText>
                             </Grid>
                             <Suspense fallback={<TeamMemberListSkeleton />}>
-                                <Await resolve={teamMembers}>
-                                    {(resolvedTeamMembers) => <TeamMemberList teamMembers={resolvedTeamMembers} />}
+                                <Await resolve={$teamMembers}>
+                                    {(teamMembers) => <TeamMemberList teamMembers={teamMembers} />}
                                 </Await>
                             </Suspense>
                         </Grid>

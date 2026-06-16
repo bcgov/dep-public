@@ -77,11 +77,13 @@ describe('CommentReview Component', () => {
         ...createDefaultSurvey(),
         id: 1,
         name: 'Survey One',
+        slug: 'survey-one',
         engagement_id: 1,
         created_date: '2022-09-14 10:00:00',
         engagement: {
             id: 0,
             name: '',
+            slug: '',
             description: '',
             rich_description: '',
             description_title: '',

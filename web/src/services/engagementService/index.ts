@@ -51,14 +51,23 @@ export const getEngagements = async (params: GetEngagementsParams = {}): Promise
 
 export const getEngagement = async (engagementId: number): Promise<Engagement> => {
     const url = replaceUrl(Endpoints.Engagement.GET, 'engagement_id', String(engagementId));
-    if (!engagementId || isNaN(Number(engagementId))) {
-        return Promise.reject('Invalid Engagement Id ' + engagementId);
+    if (!engagementId || Number.isNaN(Number(engagementId))) {
+        throw new Error('Invalid Engagement Id ' + engagementId);
     }
     const response = await http.GetRequest<Engagement>(url);
     if (response.data) {
         return response.data;
     }
-    return Promise.reject('Failed to fetch engagement');
+    throw new Error('Failed to fetch engagement');
+};
+
+export const getEngagementBySlug = async (slug: string): Promise<Engagement> => {
+    const url = replaceUrl(Endpoints.Engagement.GET_BY_SLUG, 'slug_id', slug);
+    const response = await http.GetRequest<Engagement>(url);
+    if (response.data) {
+        return response.data;
+    }
+    throw new Error('Failed to fetch engagement by slug');
 };
 
 export const getAvailableTranslationLanguages = async (engagementId: number): Promise<Language[]> => {
@@ -67,7 +76,7 @@ export const getAvailableTranslationLanguages = async (engagementId: number): Pr
         'engagement_id',
         String(engagementId),
     );
-    if (!engagementId || isNaN(Number(engagementId))) {
+    if (!engagementId || Number.isNaN(Number(engagementId))) {
         throw new Error('Invalid Engagement Id ' + engagementId);
     }
     const response = await http.GetRequest<Language[]>(url);
@@ -170,7 +179,7 @@ export const postEngagement = async (data: PostEngagementRequest): Promise<Engag
     if (response.data) {
         return response.data;
     }
-    return Promise.reject('Failed to create engagement');
+    throw new Error('Failed to create engagement');
 };
 
 export const putEngagement = async (data: PutEngagementRequest): Promise<Engagement> => {
@@ -178,7 +187,7 @@ export const putEngagement = async (data: PutEngagementRequest): Promise<Engagem
     if (response.data) {
         return response.data;
     }
-    return Promise.reject('Failed to update engagement');
+    throw new Error('Failed to update engagement');
 };
 
 export const patchEngagement = async (data: PatchEngagementRequest): Promise<Engagement> => {
@@ -186,7 +195,7 @@ export const patchEngagement = async (data: PatchEngagementRequest): Promise<Eng
     if (response.data) {
         return response.data;
     }
-    return Promise.reject('Failed to update engagement');
+    throw new Error('Failed to update engagement');
 };
 
 export const deleteEngagement = async (engagementId: number): Promise<{ id: number }> => {

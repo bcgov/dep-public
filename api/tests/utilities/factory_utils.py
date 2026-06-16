@@ -35,7 +35,6 @@ from api.models.engagement_details_tab_translation import \
     EngagementDetailsTabTranslation as EngagementDetailsTabTranslationModel
 from api.models.engagement_metadata import EngagementMetadata, MetadataTaxon
 from api.models.engagement_settings import EngagementSettingsModel
-from api.models.engagement_slug import EngagementSlug as EngagementSlugModel
 from api.models.engagement_translation import EngagementTranslation as EngagementTranslationModel
 from api.models.event_item import EventItem as EventItemModel
 from api.models.event_item_translation import EventItemTranslation as EventItemTranslationModel
@@ -69,12 +68,12 @@ from api.utils.constants import TENANT_ID_HEADER
 from api.utils.enums import CompositeRoleId, MembershipStatus
 from tests.utilities.factory_scenarios import (
     TestCommentInfo, TestEngagementDetailsTabsInfo, TestEngagementDetailsTabTranslationInfo, TestEngagementInfo,
-    TestEngagementMetadataInfo, TestEngagementMetadataTaxonInfo, TestEngagementSlugInfo, TestEngagementTranslationInfo,
-    TestEventInfo, TestEventItemTranslationInfo, TestFeedbackInfo, TestJwtClaims, TestParticipantInfo,
-    TestPollAnswerInfo, TestPollAnswerTranslationInfo, TestPollResponseInfo, TestReportSettingInfo, TestSubmissionInfo,
-    TestSurveyInfo, TestSurveyTranslationInfo, TestTenantInfo, TestTimelineEventTranslationInfo, TestTimelineInfo,
-    TestUserInfo, TestWidgetDocumentInfo, TestWidgetInfo, TestWidgetItemInfo, TestWidgetListening, TestWidgetMap,
-    TestWidgetPollInfo, TestWidgetTranslationInfo, TestWidgetVideo)
+    TestEngagementMetadataInfo, TestEngagementMetadataTaxonInfo, TestEngagementTranslationInfo, TestEventInfo,
+    TestEventItemTranslationInfo, TestFeedbackInfo, TestJwtClaims, TestParticipantInfo, TestPollAnswerInfo,
+    TestPollAnswerTranslationInfo, TestPollResponseInfo, TestReportSettingInfo, TestSubmissionInfo, TestSurveyInfo,
+    TestSurveyTranslationInfo, TestTenantInfo, TestTimelineEventTranslationInfo, TestTimelineInfo, TestUserInfo,
+    TestWidgetDocumentInfo, TestWidgetInfo, TestWidgetItemInfo, TestWidgetListening, TestWidgetMap, TestWidgetPollInfo,
+    TestWidgetTranslationInfo, TestWidgetVideo)
 
 
 fake = Faker()
@@ -164,9 +163,11 @@ def factory_email_verification(survey_id, type=None, submission_id=None):
 def factory_engagement_model(eng_info: dict = TestEngagementInfo.engagement1, name=None, status=None):
     """Produce an engagement model."""
     """Produce an engagement model."""
-    valid_columns = {column.name for column in EngagementModel.__table__.columns}
+    valid_columns = {
+        column.name for column in EngagementModel.__table__.columns}
     engagement_data = {
         'name': name if name else fake.name(),
+        'slug': eng_info.get('slug'),
         'created_by': eng_info.get('created_by'),
         'updated_by': eng_info.get('updated_by'),
         'status_id': status if status is not None else eng_info.get('status'),
@@ -217,11 +218,13 @@ def factory_metadata_requirements(auth: Optional[Auth] = None):
     """Create a tenant, an associated staff user, and engagement, for tests."""
     tenant = factory_tenant_model()
     tenant.short_name = fake.lexify(text='????').upper()
-    (engagement_info := TestEngagementInfo.engagement1.copy())['tenant_id'] = tenant.id
+    (engagement_info := TestEngagementInfo.engagement1.copy())[
+        'tenant_id'] = tenant.id
     engagement = factory_engagement_model(engagement_info)
     (staff_info := TestUserInfo.user_staff_1.copy())['tenant_id'] = tenant.id
     factory_staff_user_model(TestJwtClaims.staff_admin_role['sub'], staff_info)
-    factory_user_group_membership_model(TestJwtClaims.staff_admin_role['sub'], tenant.id)
+    factory_user_group_membership_model(
+        TestJwtClaims.staff_admin_role['sub'], tenant.id)
     taxon = factory_metadata_taxon_model(tenant.id)
     if auth:
         headers = factory_auth_header(
@@ -238,8 +241,10 @@ def factory_taxon_requirements(auth: Optional[Auth] = None):
     tenant = factory_tenant_model()
     tenant.short_name = fake.lexify(text='????').upper()
     (staff_info := TestUserInfo.user_staff_1.copy())['tenant_id'] = tenant.id
-    factory_staff_user_model(TestJwtClaims.staff_admin_role.get('sub'), staff_info)
-    factory_user_group_membership_model(TestJwtClaims.staff_admin_role['sub'], tenant.id)
+    factory_staff_user_model(
+        TestJwtClaims.staff_admin_role.get('sub'), staff_info)
+    factory_user_group_membership_model(
+        TestJwtClaims.staff_admin_role['sub'], tenant.id)
     if auth:
         headers = factory_auth_header(
             auth,
@@ -308,7 +313,8 @@ def factory_participant_model(
 ):
     """Produce a participant model."""
     participant = ParticipantModel(
-        email_address=ParticipantModel.encode_email(participant['email_address']),
+        email_address=ParticipantModel.encode_email(
+            participant['email_address']),
     )
     participant.save()
     return participant
@@ -359,7 +365,8 @@ def factory_auth_header(jwt, claims, tenant_id=None):
 def factory_widget_model(widget_info: dict = TestWidgetInfo.widget1):
     """Produce a widget model."""
     widget = WidgetModal(
-        widget_type_id=widget_info.get('widget_type_id', WidgetType.WHO_IS_LISTENING.value),
+        widget_type_id=widget_info.get(
+            'widget_type_id', WidgetType.WHO_IS_LISTENING.value),
         engagement_id=widget_info.get('engagement_id'),
         created_by=widget_info.get('created_by'),
         updated_by=widget_info.get('updated_by'),
@@ -453,19 +460,6 @@ def patch_token_info(claims, monkeypatch):
     # factory_staff_user_model(external_id=claims.get('sub'))
 
 
-def factory_engagement_slug_model(
-    eng_slug_info: dict = TestEngagementSlugInfo.slug1,
-):
-    """Produce a engagement model."""
-    slug = EngagementSlugModel(
-        slug=eng_slug_info.get('slug'),
-        engagement_id=eng_slug_info.get('engagement_id'),
-        created_date=eng_slug_info.get('created_date'),
-    )
-    slug.save()
-    return slug
-
-
 def factory_survey_report_setting_model(
     report_setting_info: dict = TestReportSettingInfo.report_setting_1,
 ):
@@ -507,7 +501,8 @@ def factory_poll_model(widget, poll_info: dict = TestWidgetPollInfo.poll1):
 
 def factory_poll_answer_model(poll, answer_info: dict = TestPollAnswerInfo.answer1):
     """Produce a Poll  model."""
-    answer = PollAnswerModel(answer_text=answer_info.get('answer_text'), poll_id=poll.id)
+    answer = PollAnswerModel(answer_text=answer_info.get(
+        'answer_text'), poll_id=poll.id)
     answer.save()
     return answer
 
@@ -637,7 +632,8 @@ def factory_survey_translation_and_engagement_model():
         survey_id=survey.id,
         language_id=49,  # French language ID from pre-populated DB.
         name=TestSurveyTranslationInfo.survey_translation1.get('name'),
-        form_json=TestSurveyTranslationInfo.survey_translation1.get('form_json'),
+        form_json=TestSurveyTranslationInfo.survey_translation1.get(
+            'form_json'),
     )
     translation.save()
     return translation, survey
@@ -667,10 +663,9 @@ def poll_answer_model_with_poll_enagement():
 
 def factory_widget_event_model(widget_model=None):
     """Produce a Widget Event model instance."""
-    engagement = factory_engagement_model()
-
-    TestWidgetInfo.widget1['engagement_id'] = engagement.id
     if widget_model is None:
+        engagement = factory_engagement_model()
+        TestWidgetInfo.widget1['engagement_id'] = engagement.id
         widget_model = factory_widget_model(TestWidgetInfo.widget1)
 
     event_info = {
@@ -811,7 +806,8 @@ def factory_engagement_details_tab_translation_model(
 ):
     """Produce an engagement details tab translation model."""
     engagement_details_tab_translation = EngagementDetailsTabTranslationModel(
-        engagement_details_tab_id=engagement_details_tab_translation.get('engagement_details_tab_id'),
+        engagement_details_tab_id=engagement_details_tab_translation.get(
+            'engagement_details_tab_id'),
         language_id=engagement_details_tab_translation.get('language_id'),
         label=engagement_details_tab_translation.get('label'),
         slug=engagement_details_tab_translation.get('slug'),

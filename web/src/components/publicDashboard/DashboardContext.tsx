@@ -3,10 +3,9 @@ import { SubmissionStatus } from 'constants/engagementStatus';
 import { useAppDispatch, useAppSelector } from 'hooks';
 import { Engagement, createDefaultEngagement } from 'models/engagement';
 import { useNavigate, useParams } from 'react-router';
-import { getEngagement } from 'services/engagementService';
+import { getEngagement, getEngagementBySlug } from 'services/engagementService';
 import { openNotification } from 'services/notificationService/notificationSlice';
 import { getErrorMessage } from 'utils';
-import { getEngagementIdBySlug } from 'services/engagementSlugService';
 import { DashboardType } from 'constants/dashboardType';
 import { ROUTES, getPath } from 'routes/routes';
 
@@ -45,7 +44,7 @@ export const DashboardContextProvider = ({ children }: DashboardContextProviderP
     const [engagement, setEngagement] = useState<Engagement>(createDefaultEngagement());
     const [isEngagementLoading, setEngagementLoading] = useState(true);
 
-    const dashboardType = dashboardTypeParam ? dashboardTypeParam : DashboardType.PUBLIC;
+    const dashboardType = dashboardTypeParam ?? DashboardType.PUBLIC;
 
     const validateEngagement = (engagementToValidate: Engagement) => {
         // submission status e.g. of pending or draft will have id less than of Open
@@ -68,15 +67,17 @@ export const DashboardContextProvider = ({ children }: DashboardContextProviderP
     };
 
     const fetchEngagement = async () => {
-        if (!engagementId && slug) {
+        if (!engagementId && !slug) {
+            navigate(getPath(ROUTES.PUBLIC_LANDING));
             return;
         }
-        if (isNaN(Number(engagementId))) {
+        if (Number.isNaN(Number(engagementId))) {
             navigate(getPath(ROUTES.PUBLIC_NOT_FOUND));
             return;
         }
+        const engagementPromise = engagementId ? getEngagement(engagementId) : getEngagementBySlug(slug!);
         try {
-            const result = await getEngagement(Number(engagementId));
+            const result = await engagementPromise;
             validateEngagement(result);
             setEngagement({ ...result });
             setEngagementLoading(false);
@@ -98,8 +99,8 @@ export const DashboardContextProvider = ({ children }: DashboardContextProviderP
             return;
         }
         try {
-            const result = await getEngagementIdBySlug(slug);
-            setEngagementId(result.engagement_id);
+            const result = await getEngagementBySlug(slug);
+            setEngagementId(result.id);
         } catch {
             navigate(getPath(ROUTES.PUBLIC_NOT_FOUND));
         }

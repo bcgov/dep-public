@@ -44,8 +44,8 @@ fake = Faker()
 
 @pytest.mark.parametrize('engagement_info', [TestEngagementInfo.engagement1])
 @pytest.mark.parametrize('side_effect, expected_status', [
-    (KeyError('Test error'), HTTPStatus.INTERNAL_SERVER_ERROR),
-    (ValueError('Test error'), HTTPStatus.INTERNAL_SERVER_ERROR),
+    (KeyError('Test error'), HTTPStatus.NOT_FOUND),
+    (ValueError('Test error'), HTTPStatus.NOT_FOUND),
 ])
 def test_add_engagements(client, jwt, session, engagement_info, side_effect, expected_status,
                          setup_admin_user_and_claims):  # pylint:disable=unused-argument
@@ -64,7 +64,7 @@ def test_add_engagements(client, jwt, session, engagement_info, side_effect, exp
     with patch.object(EngagementService, 'create_engagement', side_effect=ValidationError('Test error')):
         rv = client.post('/api/engagements/', data=json.dumps(engagement_info),
                          headers=headers, content_type=ContentType.JSON.value)
-    assert rv.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
+    assert rv.status_code == HTTPStatus.BAD_REQUEST
 
 
 def test_tenant_id_in_create_engagements(client, jwt, session,
@@ -146,33 +146,41 @@ def test_creating_engagments_cross_tenant(client, jwt, session, setup_admin_user
     assert tenant_1 is not None
     tenant_2 = factory_tenant_model(TestTenantInfo.tenant2)
 
-    engagement_info = TestEngagementInfo.engagement1
+    engagement_info = copy.deepcopy(TestEngagementInfo.engagement1)
 
     headers = factory_auth_header(jwt=jwt, claims=adm_claims)
     super_headers = factory_auth_header(jwt=jwt, claims=sup_claims)
 
     # Assert that the staff admin user can create engagements in their tenant,
     # but not in other tenants
-    rv = client.post('/api/engagements/', data=json.dumps(engagement_info),
-                     headers=headers, content_type=ContentType.JSON.value)
+    rv = client.post('/api/engagements/', data=json.dumps({
+        **engagement_info,
+        'slug': f"{engagement_info['slug']}-admin"
+    }), headers=headers, content_type=ContentType.JSON.value)
     assert rv.status_code == HTTPStatus.OK
     headers[TENANT_ID_HEADER] = tenant_2.short_name
-    rv = client.post('/api/engagements/', data=json.dumps(engagement_info),
-                     headers=headers, content_type=ContentType.JSON.value)
+    rv = client.post('/api/engagements/', data=json.dumps({
+        **engagement_info,
+        'slug': f"{engagement_info['slug']}-unauthorized"
+    }), headers=headers, content_type=ContentType.JSON.value)
     assert rv.status_code == HTTPStatus.UNAUTHORIZED
     # Assert that the super admin user can create engagements in any tenant
-    rv = client.post('/api/engagements/', data=json.dumps(engagement_info),
-                     headers=super_headers, content_type=ContentType.JSON.value)
+    rv = client.post('/api/engagements/', data=json.dumps({
+        **engagement_info,
+        'slug': f"{engagement_info['slug']}-super-admin"
+    }), headers=super_headers, content_type=ContentType.JSON.value)
     assert rv.status_code == HTTPStatus.OK
     super_headers[TENANT_ID_HEADER] = tenant_2.short_name
-    rv = client.post('/api/engagements/', data=json.dumps(engagement_info),
-                     headers=super_headers, content_type=ContentType.JSON.value)
+    rv = client.post('/api/engagements/', data=json.dumps({
+        **engagement_info,
+        'slug': f"{engagement_info['slug']}-super-admin-tenant-2"
+    }), headers=super_headers, content_type=ContentType.JSON.value)
     assert rv.status_code == HTTPStatus.OK
 
 
 @pytest.mark.parametrize('engagement_info', [TestEngagementInfo.engagement1])
 @pytest.mark.parametrize('side_effect, expected_status', [
-    (KeyError('Test error'), HTTPStatus.INTERNAL_SERVER_ERROR),
+    (KeyError('Test error'), HTTPStatus.NOT_FOUND),
     (ValueError('Test error'), HTTPStatus.INTERNAL_SERVER_ERROR),
 ])
 def test_get_engagements(client, jwt, session, engagement_info, side_effect, expected_status,
@@ -199,7 +207,7 @@ def test_get_engagements(client, jwt, session, engagement_info, side_effect, exp
     engagement_id = fake.pyint()
     rv = client.get(f'/api/engagements/{engagement_id}', data=json.dumps(engagement_info),
                     headers=headers, content_type=ContentType.JSON.value)
-    assert rv.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
+    assert rv.status_code == HTTPStatus.NOT_FOUND
 
 
 @pytest.mark.parametrize('engagement_info', [TestEngagementInfo.engagement_draft])
@@ -215,7 +223,8 @@ def test_get_engagements_reviewer(client, jwt, session, engagement_info,
     eng_id = created_eng.get('id')
     staff_2 = dict(TestUserInfo.user_staff_1)
     user = factory_staff_user_model(user_info=staff_2)
-    factory_user_group_membership_model(str(user.external_id), group_id=CompositeRoleId.REVIEWER.value)
+    factory_user_group_membership_model(
+        str(user.external_id), group_id=CompositeRoleId.REVIEWER.value)
     claims = copy.deepcopy(TestJwtClaims.reviewer_role.value)
     claims['sub'] = str(user.external_id)
     headers = factory_auth_header(jwt=jwt, claims=claims)
@@ -282,11 +291,23 @@ def test_search_engagements(client, jwt, session,
     for i in range(total_similar_engagements):
         # Append a number to distinguish names
         name = f'{similar_engagement_base_name}{i}'
-        similar_engagements.append(factory_engagement_model(name=name))
+        similar_engagements.append(factory_engagement_model(
+            {
+                **TestEngagementInfo.engagement1,
+                'slug': f"{TestEngagementInfo.engagement1['slug']}-search-{i}",
+            },
+            name=name,
+        ))
 
     # Create a dissimilar engagement
     name2 = fake.name()
-    eng2 = factory_engagement_model(name=name2)
+    eng2 = factory_engagement_model(
+        {
+            **TestEngagementInfo.engagement1,
+            'slug': f"{TestEngagementInfo.engagement1['slug']}-search-different",
+        },
+        name=name2,
+    )
 
     total_no_engagements = total_similar_engagements + 1
 
@@ -398,8 +419,8 @@ def test_search_engagements_not_logged_in(client, session):  # pylint:disable=un
 
 @pytest.mark.parametrize('engagement_info', [TestEngagementInfo.engagement1])
 @pytest.mark.parametrize('side_effect, expected_status', [
-    (KeyError('Test error'), HTTPStatus.INTERNAL_SERVER_ERROR),
-    (ValueError('Test error'), HTTPStatus.INTERNAL_SERVER_ERROR),
+    (KeyError('Test error'), HTTPStatus.NOT_FOUND),
+    (ValueError('Test error'), HTTPStatus.NOT_FOUND),
 ])
 def test_patch_engagement(client, jwt, session, engagement_info, side_effect, expected_status,
                           setup_admin_user_and_claims):  # pylint:disable=unused-argument
@@ -459,7 +480,8 @@ def test_patch_engagement_by_member(client, jwt, session):  # pylint:disable=unu
 
     staff_1 = dict(TestUserInfo.user_staff_1)
     user = factory_staff_user_model(user_info=staff_1)
-    factory_user_group_membership_model(str(user.external_id), group_id=CompositeRoleId.TEAM_MEMBER.value)
+    factory_user_group_membership_model(
+        str(user.external_id), group_id=CompositeRoleId.TEAM_MEMBER.value)
     claims = copy.deepcopy(TestJwtClaims.reviewer_role.value)
     claims['sub'] = str(user.external_id)
     headers = factory_auth_header(jwt=jwt, claims=claims)
@@ -615,8 +637,9 @@ def test_get_engagements_metadata_match_all(client, session):  # pylint:disable=
     """Assert that engagements can be looked up by metadata (match all)."""
     engagements = [factory_engagement_model({
         **TestEngagementInfo.engagement1,
-        'tenant_id': 1
-    }) for _ in range(0, 10)]
+        'tenant_id': 1,
+        'slug': f"{TestEngagementInfo.engagement1['slug']}-meta-all-{i}",
+    }) for i in range(0, 10)]
     taxon = factory_metadata_taxon_model(1, {
         'name': 'Category',
         'description': 'Category description',
@@ -689,8 +712,9 @@ def test_get_engagements_metadata_match_any(client, session):  # pylint:disable=
     """Assert that engagements can be looked up by metadata (match all)."""
     engagements = [factory_engagement_model({
         **TestEngagementInfo.engagement1,
-        'tenant_id': 1
-    }) for _ in range(0, 10)]
+        'tenant_id': 1,
+        'slug': f"{TestEngagementInfo.engagement1['slug']}-meta-any-{i}",
+    }) for i in range(0, 10)]
     taxon = factory_metadata_taxon_model(1, {
         'name': 'Category',
         'description': 'Category description',
@@ -768,7 +792,8 @@ def test_delete_engaement(client, jwt, session, mocker,
     engagement = factory_engagement_model()
     engagement_id = str(engagement.id)
 
-    mocker.patch('api.services.engagement_service.EngagementService.delete', return_value=None)
+    mocker.patch(
+        'api.services.engagement_service.EngagementService.delete', return_value=None)
     rv = client.delete(
         f'api/engagements/{engagement_id}/delete',
         headers=headers,
@@ -777,15 +802,17 @@ def test_delete_engaement(client, jwt, session, mocker,
     assert rv.status_code == HTTPStatus.OK
     assert rv.get_json() == {'id': engagement_id}
 
-    mocker.patch('api.services.engagement_service.EngagementService.delete', side_effect=KeyError('boom'))
+    mocker.patch('api.services.engagement_service.EngagementService.delete',
+                 side_effect=KeyError('boom'))
     rv = client.delete(
         f'api/engagements/{engagement_id}/delete',
         headers=headers,
         content_type=ContentType.JSON.value
     )
-    assert rv.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
+    assert rv.status_code == HTTPStatus.NOT_FOUND
 
-    mocker.patch('api.services.engagement_service.EngagementService.delete', side_effect=ValueError('bad'))
+    mocker.patch('api.services.engagement_service.EngagementService.delete',
+                 side_effect=ValueError('bad'))
     rv = client.delete(
         f'api/engagements/{engagement_id}/delete',
         headers=headers,

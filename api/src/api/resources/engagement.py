@@ -13,10 +13,10 @@
 # limitations under the License.
 """API endpoints for managing an engagement resource."""
 
+import json
 from http import HTTPStatus
 
-import json
-from flask import request
+from flask import current_app, request
 from flask_cors import cross_origin
 from flask_restx import Namespace, Resource
 from marshmallow import ValidationError
@@ -24,6 +24,7 @@ from marshmallow import ValidationError
 from api.auth import auth
 from api.auth import jwt as _jwt
 from api.models.pagination_options import PaginationOptions
+from api.models.tenant import Tenant as TenantModel
 from api.schemas.engagement import EngagementSchema
 from api.services.engagement_service import EngagementService
 from api.utils.roles import Role
@@ -31,10 +32,13 @@ from api.utils.tenant_validator import require_role
 from api.utils.token_info import TokenInfo
 from api.utils.util import allowedorigins, cors_preflight
 
+
 API = Namespace(
     'engagements', description='Endpoints for Engagements Management')
 """Custom exception messages
 """
+
+ENGAGEMENT_NOT_FOUND = 'Engagement was not found'
 
 
 @cors_preflight('GET,OPTIONS')
@@ -53,9 +57,36 @@ class Engagement(Resource):
             if engagement_record:
                 return engagement_record, HTTPStatus.OK
 
-            return 'Engagement was not found', HTTPStatus.INTERNAL_SERVER_ERROR
+            return ENGAGEMENT_NOT_FOUND, HTTPStatus.NOT_FOUND
         except KeyError:
-            return 'Engagement was not found', HTTPStatus.INTERNAL_SERVER_ERROR
+            return ENGAGEMENT_NOT_FOUND, HTTPStatus.NOT_FOUND
+        except ValueError as err:
+            return str(err), HTTPStatus.INTERNAL_SERVER_ERROR
+
+
+@cors_preflight('GET,OPTIONS')
+@API.route('/slug/<slug>')
+class EngagementBySlug(Resource):
+    """Resource for fetching a single engagement by slug."""
+
+    @staticmethod
+    @cross_origin(origins=allowedorigins())
+    @auth.optional
+    def get(slug):
+        """Fetch a single engagement matching the provided slug."""
+        default_tenant = current_app.config.get(
+            'DEFAULT_TENANT_SHORT_NAME', 'default')
+        tenant_short_name = request.headers.get('tenant-id', default_tenant)
+        tenant = TenantModel.find_by_short_name(tenant_short_name)
+        try:
+            engagement_record = EngagementService().get_engagement_by_slug(slug, tenant.id)
+
+            if engagement_record:
+                return engagement_record, HTTPStatus.OK
+
+            return ENGAGEMENT_NOT_FOUND, HTTPStatus.NOT_FOUND
+        except KeyError:
+            return ENGAGEMENT_NOT_FOUND, HTTPStatus.NOT_FOUND
         except ValueError as err:
             return str(err), HTTPStatus.INTERNAL_SERVER_ERROR
 
@@ -74,7 +105,7 @@ class EngagementDelete(Resource):
             EngagementService.delete(engagement_id)
             return {'id': engagement_id}, HTTPStatus.OK
         except KeyError as err:
-            return str(err), HTTPStatus.INTERNAL_SERVER_ERROR
+            return str(err), HTTPStatus.NOT_FOUND
         except ValueError as err:
             return str(err), HTTPStatus.BAD_REQUEST
 
@@ -159,11 +190,11 @@ class Engagements(Resource):
             engagement_model = EngagementService().create_engagement(requestjson)
             return engagement_schema.dump(engagement_model), HTTPStatus.OK
         except KeyError as err:
-            return str(err), HTTPStatus.INTERNAL_SERVER_ERROR
+            return str(err), HTTPStatus.NOT_FOUND
         except ValueError as err:
-            return str(err), HTTPStatus.INTERNAL_SERVER_ERROR
+            return str(err), HTTPStatus.NOT_FOUND
         except ValidationError as err:
-            return str(err.messages), HTTPStatus.INTERNAL_SERVER_ERROR
+            return str(err.messages), HTTPStatus.BAD_REQUEST
 
     @staticmethod
     @cross_origin(origins=allowedorigins())
@@ -177,12 +208,14 @@ class Engagements(Resource):
 
             engagement_schema = EngagementSchema()
             payload = engagement_schema.load(requestjson, partial=True)
+            if not isinstance(payload, dict):
+                return 'Invalid engagement payload', HTTPStatus.BAD_REQUEST
             engagement = EngagementService().edit_engagement(payload)
 
             return engagement_schema.dump(engagement), HTTPStatus.OK
         except KeyError as err:
-            return str(err), HTTPStatus.INTERNAL_SERVER_ERROR
+            return str(err), HTTPStatus.NOT_FOUND
         except ValueError as err:
-            return str(err), HTTPStatus.INTERNAL_SERVER_ERROR
+            return str(err), HTTPStatus.NOT_FOUND
         except ValidationError as err:
             return str(err.messages), HTTPStatus.BAD_REQUEST

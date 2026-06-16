@@ -5,7 +5,6 @@ import { getEngagement } from 'services/engagementService';
 import dayjs from 'dayjs';
 import { EngagementStatusChip } from 'components/common/Indicators/StatusChip';
 import { TileSkeleton } from './TileSkeleton';
-import { getSlugByEngagementId } from 'services/engagementSlugService';
 import { useAppTranslation } from 'hooks';
 import { BodyText, Heading2 } from 'components/common/Typography';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -23,7 +22,6 @@ const EngagementTile = ({ passedEngagement, engagementId }: EngagementTileProps)
     const { t: translate } = useAppTranslation();
     const [loadedEngagement, setLoadedEngagement] = useState<Engagement | null>(passedEngagement || null);
     const [isLoadingEngagement, setIsLoadingEngagement] = useState(true);
-    const [slug, setSlug] = useState('');
     const [isHovered, setIsHovered] = useState(false);
     const [isFocused, setIsFocused] = useState(false);
     const [isActive, setIsActive] = useState(false);
@@ -32,11 +30,15 @@ const EngagementTile = ({ passedEngagement, engagementId }: EngagementTileProps)
     const dateFormat = 'MMMM DD, YYYY';
     const semanticDateFormat = 'YYYY-MM-DD';
     const language = sessionStorage.getItem('languageId');
-    const engagementUrl = getPath(ROUTES.PUBLIC_ENGAGEMENT_BY_SLUG, { slug: slug, language: language ?? '' });
+    const engagementUrl = getPath(ROUTES.PUBLIC_ENGAGEMENT_BY_SLUG, {
+        slug: loadedEngagement?.slug ?? '',
+        language: language ?? '',
+    });
 
     const loadEngagement = async () => {
         if (passedEngagement) {
             setLoadedEngagement(passedEngagement);
+            setIsLoadingEngagement(false);
             return;
         }
 
@@ -46,6 +48,7 @@ const EngagementTile = ({ passedEngagement, engagementId }: EngagementTileProps)
         }
 
         try {
+            console.log('getting engagement with id', engagementId);
             const engagement = await getEngagement(engagementId);
             setLoadedEngagement(engagement);
         } catch {
@@ -56,24 +59,6 @@ const EngagementTile = ({ passedEngagement, engagementId }: EngagementTileProps)
     useEffect(() => {
         loadEngagement();
     }, [passedEngagement, engagementId]);
-
-    const loadSlug = async () => {
-        if (!loadedEngagement) {
-            return;
-        }
-        try {
-            const response = await getSlugByEngagementId(loadedEngagement.id);
-            setSlug(response.slug);
-        } catch {
-            setSlug('');
-        } finally {
-            setIsLoadingEngagement(false);
-        }
-    };
-
-    useEffect(() => {
-        loadSlug();
-    }, [loadedEngagement]);
 
     if (isLoadingEngagement) {
         return <TileSkeleton />;
