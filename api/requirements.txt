@@ -19,7 +19,7 @@ marshmallow==4.1.2
 marshmallow-sqlalchemy==1.0.0
 mistune==3.2.1
 psycopg2-binary==2.9.9
-PyJWT==2.12.1
+PyJWT==2.13.0
 pyrsistent==0.17.3
 python-dateutil==2.8.2
 python-dotenv==1.2.2
