@@ -122,16 +122,8 @@ const AuthenticatedRoutes = resolveLazyRouteTree(
                             };
                         },
                     }}
-                    shouldRevalidate={({
-                        currentUrl,
-                        nextUrl,
-                        currentParams,
-                        nextParams,
-                        formMethod,
-                        actionResult,
-                    }) => {
+                    shouldRevalidate={({ currentParams, nextParams, formMethod, actionResult }) => {
                         return (
-                            currentUrl.pathname !== nextUrl.pathname || // Engagement must rv on route change
                             currentParams.engagementId !== nextParams.engagementId ||
                             formMethod !== undefined ||
                             actionResult === 'success'

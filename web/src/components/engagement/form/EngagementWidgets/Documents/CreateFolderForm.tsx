@@ -30,7 +30,7 @@ const CreateFolderForm = () => {
     const validateForm = () => {
         const errors = { name: !folderName || folderName.length > 50 };
         setFormError(errors);
-        return !Object.values(errors).every((errorExists) => errorExists);
+        return !Object.values(errors).every(Boolean);
     };
 
     const getErrorMessage = () => {

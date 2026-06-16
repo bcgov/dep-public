@@ -1,6 +1,6 @@
 import { setEngagements } from './engagementSlice';
 import http from 'apiManager/httpRequestHandler';
-import { AnyAction, Dispatch } from 'redux';
+import { UnknownAction, Dispatch } from 'redux';
 import { Engagement } from 'models/engagement';
 import { Language } from 'models/language';
 import { PatchEngagementRequest, PostEngagementRequest, PutEngagementRequest } from './types';
@@ -10,7 +10,7 @@ import { Page } from 'services/type';
 import axios from 'axios';
 import { getLanguages } from 'services/languageService';
 
-export const fetchAll = async (dispatch: Dispatch<AnyAction>): Promise<Engagement[]> => {
+export const fetchAll = async (dispatch: Dispatch<UnknownAction>): Promise<Engagement[]> => {
     const responseData = await http.GetRequest<Engagement[]>(Endpoints.Engagement.GET_LIST);
     const engagements = responseData.data ?? [];
     dispatch(setEngagements(engagements));

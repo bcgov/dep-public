@@ -1,11 +1,12 @@
-import React, { createContext, useState, useEffect, useContext, PropsWithChildren } from 'react';
+import React, { createContext, useEffect, useMemo, useState, PropsWithChildren } from 'react';
 import { useAppDispatch } from 'hooks';
 import { Widget, WidgetLocation } from 'models/widget';
 import { openNotification } from 'services/notificationService/notificationSlice';
 import { getWidgets } from 'services/widgetService';
-import { ActionContext } from '../ActionContext';
 import { WidgetTabValues } from './type';
 import { useDeleteWidgetMutation } from 'apiManager/apiSlices/widgets';
+import { useRouteLoaderData } from 'react-router';
+import { EngagementLoaderAdminData } from 'engagements/admin/EngagementLoaderAdmin';
 
 export interface WidgetDrawerContextProps {
     widgets: Widget[];
@@ -63,7 +64,9 @@ export const WidgetDrawerProvider = ({
 }: PropsWithChildren<{
     location?: WidgetLocation;
 }>) => {
-    const { savedEngagement } = useContext(ActionContext);
+    const savedEngagement = React.use(
+        (useRouteLoaderData('single-engagement') as EngagementLoaderAdminData).engagement,
+    );
     const dispatch = useAppDispatch();
     const [widgets, setWidgets] = useState<Widget[]>([]);
     const [isWidgetsLoading, setIsWidgetsLoading] = useState(true);
@@ -121,26 +124,25 @@ export const WidgetDrawerProvider = ({
         loadWidgets();
     }, [savedEngagement]);
 
-    return (
-        <WidgetDrawerContext.Provider
-            value={{
-                widgets,
-                setWidgets,
-                deleteWidget,
-                widgetDrawerOpen,
-                setWidgetDrawerOpen,
-                widgetDrawerTabValue,
-                setWidgetDrawerTabValue,
-                isWidgetsLoading,
-                loadWidgets,
-                widgetLocation,
-                setWidgetLocation,
-                widgetDetailsTabId,
-                setWidgetDetailsTabId,
-                isWidgetInScope,
-            }}
-        >
-            {children}
-        </WidgetDrawerContext.Provider>
+    const contextValue = useMemo(
+        () => ({
+            widgets,
+            setWidgets,
+            deleteWidget,
+            widgetDrawerOpen,
+            setWidgetDrawerOpen,
+            widgetDrawerTabValue,
+            setWidgetDrawerTabValue,
+            isWidgetsLoading,
+            loadWidgets,
+            widgetLocation,
+            setWidgetLocation,
+            widgetDetailsTabId,
+            setWidgetDetailsTabId,
+            isWidgetInScope,
+        }),
+        [widgets, widgetDrawerOpen, widgetDrawerTabValue, isWidgetsLoading, widgetLocation, widgetDetailsTabId],
     );
+
+    return <WidgetDrawerContext.Provider value={contextValue}>{children}</WidgetDrawerContext.Provider>;
 };

@@ -3,7 +3,6 @@ import WidgetDrawer from 'components/engagement/form/EngagementWidgets/WidgetDra
 import { WidgetDrawerProvider } from 'components/engagement/form/EngagementWidgets/WidgetDrawerContext';
 import { WidgetPickerButton } from './WidgetPickerButton';
 import { WidgetLocation } from 'models/widget';
-import { ActionProvider } from 'components/engagement/form/ActionContext';
 
 /**
  * WidgetPicker component allows users to select and manage widgets for a specific location in an engagement.
@@ -28,12 +27,10 @@ export const WidgetPicker = ({
     tabIndex?: number;
 }) => {
     return (
-        <ActionProvider>
-            <WidgetDrawerProvider>
-                <WidgetPickerButton location={location} detailsTabId={detailsTabId} tabIndex={tabIndex} />
-                <WidgetDrawer />
-            </WidgetDrawerProvider>
-        </ActionProvider>
+        <WidgetDrawerProvider>
+            <WidgetPickerButton location={location} detailsTabId={detailsTabId} tabIndex={tabIndex} />
+            <WidgetDrawer />
+        </WidgetDrawerProvider>
     );
 };
 

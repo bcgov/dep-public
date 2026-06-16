@@ -13,17 +13,17 @@ import { patchPoll, postPoll } from 'services/widgetService/PollService';
 import { WidgetTitle } from '../WidgetTitle';
 import { PollAnswer } from 'models/pollWidget';
 import PollDisplay from './PollDisplay';
-import { ActionContext } from '../../ActionContext';
 import { PollStatus } from 'constants/engagementStatus';
 import Alert from '@mui/material/Alert';
 import usePollWidgetState from './PollWidget.hook';
 import PollAnswerForm from './PollAnswerForm';
 import { WidgetLocation } from 'models/widget';
-import { useParams } from 'react-router';
+import { useParams, useRouteLoaderData } from 'react-router';
 import {
     getEngagementContentTranslationsByCode,
     syncEngagementContentTranslationsByCode,
 } from 'services/engagementContentTranslationService';
+import { EngagementLoaderAdminData } from 'engagements/admin/EngagementLoaderAdmin';
 
 interface DetailsForm {
     title: string;
@@ -52,7 +52,9 @@ const Form = () => {
     const { widget, isLoadingPollWidget, pollWidget } = useContext(PollContext);
     const { setWidgetDrawerOpen } = useContext(WidgetDrawerContext);
     const [isCreating, setIsCreating] = React.useState(false);
-    const { savedEngagement } = useContext(ActionContext);
+    const savedEngagement = React.use(
+        (useRouteLoaderData('single-engagement') as EngagementLoaderAdminData)?.engagement,
+    );
     const { pollAnswers, setPollAnswers, pollWidgetState, setPollWidgetState, isEngagementPublished } =
         usePollWidgetState(pollWidget, savedEngagement, widget);
     const { languageCode } = useParams<{ languageCode?: string }>();

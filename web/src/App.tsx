@@ -54,6 +54,7 @@ const App = () => {
                 loaderLazy={() => import('routes/RootRouteLoader')}
                 ComponentLazy={() => import('routes/RootRoute')}
                 ErrorBoundaryLazy={() => import('routes/NotFound')}
+                shouldRevalidate={() => false}
             >
                 {UnauthenticatedRoutes}
                 <LazyRoute ComponentLazy={() => import('routes/AdminAuthGuard')}>{AuthenticatedRoutes}</LazyRoute>

@@ -124,7 +124,7 @@ const WhoIsListeningForm = () => {
                 });
             }
             await loadListeningWidget();
-            dispatch(openNotification({ severity: 'success', text: 'Widgets successfully added' }));
+            dispatch(openNotification({ severity: 'success', text: 'Widget successfully saved' }));
             setWidgetDrawerOpen(false);
             setSavingWidgetItems(false);
         } catch (error) {

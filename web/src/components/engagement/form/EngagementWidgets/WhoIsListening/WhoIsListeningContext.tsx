@@ -1,19 +1,19 @@
 import React, { createContext, useState, useEffect, useContext, JSX } from 'react';
 import { useAppDispatch } from 'hooks';
 import { openNotification } from 'services/notificationService/notificationSlice';
-import { ActionContext } from '../../ActionContext';
 import { Contact } from 'models/contact';
 import { useLazyGetContactsQuery } from 'apiManager/apiSlices/contacts';
 import { fetchListeningWidget } from 'services/widgetService/ListeningService';
 import { WidgetDrawerContext } from '../WidgetDrawerContext';
 import { WidgetType } from 'models/widget';
 import { ListeningWidget } from 'models/listeningWidget';
-import { useParams } from 'react-router';
+import { useParams, useRouteLoaderData } from 'react-router';
 import { getContactTranslation } from 'services/contactService';
 import {
     getEngagementContentTranslationsByCode,
     getLanguageIdByCode,
 } from 'services/engagementContentTranslationService';
+import { EngagementLoaderAdminData } from 'engagements/admin/EngagementLoaderAdmin';
 
 export interface WhoIsListeningContextProps {
     contactToEdit: Contact | null;
@@ -61,7 +61,9 @@ export const WhoIsListeningContext = createContext<WhoIsListeningContextProps>({
 });
 
 export const WhoIsListeningProvider = ({ children }: { children: JSX.Element | JSX.Element[] }) => {
-    const { savedEngagement } = useContext(ActionContext);
+    const savedEngagement = React.use(
+        (useRouteLoaderData('single-engagement') as EngagementLoaderAdminData)?.engagement,
+    );
     const [getContactsTrigger] = useLazyGetContactsQuery();
     const dispatch = useAppDispatch();
     const { widgets, isWidgetInScope } = useContext(WidgetDrawerContext);

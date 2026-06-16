@@ -86,10 +86,10 @@ export const TextInput: React.FC<TextInputProps> = ({
             error={error || undefined}
             inputProps={{
                 fontSize: '16px',
-                lineHeight: '24px',
                 border: 'none',
                 ...inputProps,
                 sx: {
+                    lineHeight: '24px',
                     padding: 0,
                     '&::placeholder': {
                         color: colors.type.regular.secondary,
