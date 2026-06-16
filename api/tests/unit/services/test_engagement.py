@@ -54,8 +54,7 @@ def test_create_engagement(session, monkeypatch):  # pylint:disable=unused-argum
     assert fetched_engagement.get('id') == saved_engagament.id
     assert fetched_engagement.get('name') == engagement_data.get('name')
     assert fetched_engagement.get('description') is None
-    # TODO address date format and assert
-    assert fetched_engagement.get('start_date')
+    assert fetched_engagement.get('start_date') # TODO address date format and assert
     assert fetched_engagement.get('end_date')
 
 
@@ -73,8 +72,7 @@ def test_create_engagement_with_survey_block(session, monkeypatch):  # pylint:di
     assert fetched_engagement.get('id') == saved_engagament.id
     assert fetched_engagement.get('name') == engagement_data.get('name')
     assert fetched_engagement.get('description') is None
-    # TODO address date format and assert
-    assert fetched_engagement.get('start_date')
+    assert fetched_engagement.get('start_date') # TODO address date format and assert
     assert fetched_engagement.get('end_date')
 
 

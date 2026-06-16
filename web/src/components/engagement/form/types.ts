@@ -29,6 +29,7 @@ export interface Widget {
 
 export interface EngagementForm {
     name: string;
+    slug: string;
     description: string;
     rich_description: string;
     description_title: string;

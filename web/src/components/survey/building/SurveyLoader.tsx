@@ -48,7 +48,7 @@ export const SurveyLoader = async ({ params }: { params: Params<string> }) => {
     let survey: Survey | null = null;
     try {
         const [engagement, verification] = await Promise.all([engPromise, verPromise]);
-        survey = !survey && surveyId ? await getSurvey(Number(surveyId)) : survey || engagement?.surveys?.[0] || null;
+        survey = !survey && surveyId ? await getSurvey(Number(surveyId)) : (survey ?? engagement?.surveys?.[0]) || null;
 
         const submissionPromise = verification?.verification_token
             ? getSubmissionByToken(verification.verification_token)

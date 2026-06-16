@@ -35,6 +35,7 @@ fake = Faker()
 
 CONFIG = get_named_config('testing')
 DATE_FORMAT = '%Y/%m/%d, %H:%M:%S'
+SLUG_TEMPLATE = 'engagement-????'
 
 
 class TestUserInfo(dict, Enum):
@@ -192,7 +193,7 @@ class TestEngagementInfo:
 
     engagement1 = {
         'name': fake.name(),
-        'slug': fake.lexify(text='engagement-????'),
+        'slug': fake.lexify(text=SLUG_TEMPLATE),
         'start_date': _get_offset_date(1, 'past'),
         'end_date': _get_offset_date(1, 'future'),
         'banner_url': '',
@@ -214,7 +215,7 @@ class TestEngagementInfo:
 
     engagement2 = {
         'name': fake.name(),
-        'slug': fake.lexify(text='engagement-????'),
+        'slug': fake.lexify(text=SLUG_TEMPLATE),
         'start_date': _get_offset_date(1, 'past'),
         'end_date': _get_offset_date(1, 'future'),
         'banner_url': '',
@@ -247,7 +248,7 @@ class TestEngagementInfo:
 
     engagement3 = {
         'name': fake.name(),
-        'slug': fake.lexify(text='engagement-????'),
+        'slug': fake.lexify(text=SLUG_TEMPLATE),
         'start_date': _get_offset_date(1, 'past'),
         'end_date': _get_offset_date(1, 'future'),
         'banner_url': '',
@@ -270,7 +271,7 @@ class TestEngagementInfo:
 
     engagement_draft = {
         'name': fake.name(),
-        'slug': fake.lexify(text='engagement-????'),
+        'slug': fake.lexify(text=SLUG_TEMPLATE),
         'start_date': _get_offset_date(1, 'past'),
         'end_date': _get_offset_date(1, 'future'),
         'banner_url': '',
