@@ -22,7 +22,7 @@ export const PublicLanguageSwitcher = () => {
             menuName="Public Language Menu"
             translationLanguages={translationLanguages}
             currentLanguageCode={language}
-            top={isAuthenticated ? { xs: '8px', md: '12px' } : 0}
+            top={isAuthenticated ? { xs: '8px', md: '16px' } : 0}
             onLanguageSelect={(languageCode) => {
                 navigate(
                     getPath(ROUTES.PUBLIC_ENGAGEMENT_BY_SLUG, {

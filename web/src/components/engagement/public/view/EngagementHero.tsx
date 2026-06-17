@@ -24,7 +24,7 @@ import { TextPlaceholder } from 'components/engagement/preview/placeholders/Text
 import { previewValue, PreviewRender, PreviewSwitch } from 'components/engagement/preview/PreviewSwitch';
 import { EngagementPreviewTag } from './EngagementPreviewTag';
 import { useEngagementLoaderData } from 'components/engagement/preview/PreviewLoaderDataContext';
-import { TranslationBundle } from './engagementTranslationResolution';
+import { TranslationBundle, resolveTranslationValue } from './engagementTranslationResolution';
 
 const getStatusMessageFromTranslation = (
     translation: TranslationBundle['currentTranslation'] | TranslationBundle['defaultTranslation'] | undefined,
@@ -65,20 +65,35 @@ const getResolvedHeroText = ({
     activeStatusBlockText?: string;
     activeStatusButtonText?: string;
 }) => {
-    const resolvedSponsorName = translationBundle?.defaultTranslation?.sponsor_name ?? engagement.sponsor_name;
+    const resolvedSponsorName = resolveTranslationValue<string>({
+        translatedValue: translationBundle?.currentTranslation?.sponsor_name,
+        defaultValue: translationBundle?.defaultTranslation?.sponsor_name,
+        baseValue: engagement.sponsor_name,
+    }).value;
 
-    const resolvedEngagementName =
-        translationBundle?.currentTranslation?.name ?? translationBundle?.defaultTranslation?.name ?? engagement.name;
+    const resolvedEngagementName = resolveTranslationValue<string>({
+        translatedValue: translationBundle?.currentTranslation?.name,
+        defaultValue: translationBundle?.defaultTranslation?.name,
+        baseValue: engagement.name,
+    }).value;
 
-    const resolvedStateMessage =
-        getStatusMessageFromTranslation(translationBundle?.currentTranslation, status) ??
-        getStatusMessageFromTranslation(translationBundle?.defaultTranslation, status) ??
-        activeStatusBlockText;
+    const currentStatusMessage = getStatusMessageFromTranslation(translationBundle?.currentTranslation, status);
+    const defaultStatusMessage = getStatusMessageFromTranslation(translationBundle?.defaultTranslation, status);
 
-    const resolvedButtonLabel =
-        getStatusButtonTextFromTranslation(translationBundle?.currentTranslation, status) ??
-        getStatusButtonTextFromTranslation(translationBundle?.defaultTranslation, status) ??
-        activeStatusButtonText;
+    const resolvedStateMessage = resolveTranslationValue<string>({
+        translatedValue: currentStatusMessage,
+        defaultValue: defaultStatusMessage,
+        baseValue: activeStatusBlockText,
+    }).value;
+
+    const currentStatusButtonText = getStatusButtonTextFromTranslation(translationBundle?.currentTranslation, status);
+    const defaultStatusButtonText = getStatusButtonTextFromTranslation(translationBundle?.defaultTranslation, status);
+
+    const resolvedButtonLabel = resolveTranslationValue<string>({
+        translatedValue: currentStatusButtonText,
+        defaultValue: defaultStatusButtonText,
+        baseValue: activeStatusButtonText,
+    }).value;
 
     return {
         resolvedSponsorName,

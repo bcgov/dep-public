@@ -16,9 +16,10 @@ import { previewValue } from 'engagements/preview/PreviewSwitch';
 import { usePreview } from 'engagements/preview/PreviewContext';
 import { EngagementPreviewTag } from './EngagementPreviewTag';
 import { getPath, ROUTES } from 'routes/routes';
+import { TranslationBundle, resolveTranslationValue } from './engagementTranslationResolution';
 
 export const SuggestedEngagements = () => {
-    const { suggestions, engagement } = useLoaderData() as EngagementLoaderPublicData;
+    const { suggestions, engagement, translationBundle } = useLoaderData() as EngagementLoaderPublicData;
     const engagementSlots = Array.from({ length: 3 });
     const { isPreviewMode } = usePreview();
 
@@ -96,12 +97,27 @@ export const SuggestedEngagements = () => {
                                         <Skeleton variant="text" width="40%" sx={{ mb: '42px', fontSize: '2rem' }} />
                                     }
                                 >
-                                    <Await resolve={engagement}>
-                                        {(eng: Engagement) => (
-                                            <Heading2 weight="thin" sx={{ mb: '42px' }} decorated>
-                                                {eng?.more_engagements_heading || 'You may also be interested in'}
-                                            </Heading2>
-                                        )}
+                                    <Await resolve={Promise.all([engagement, translationBundle])}>
+                                        {([eng, resolvedTranslationBundle]: [Engagement, TranslationBundle]) =>
+                                            (() => {
+                                                const resolvedHeading = resolveTranslationValue<string>({
+                                                    translatedValue:
+                                                        resolvedTranslationBundle.currentTranslation
+                                                            ?.more_engagements_heading,
+                                                    defaultValue:
+                                                        resolvedTranslationBundle.defaultTranslation
+                                                            ?.more_engagements_heading,
+                                                    baseValue: eng?.more_engagements_heading,
+                                                    literalFallback: 'You may also be interested in',
+                                                }).value;
+
+                                                return (
+                                                    <Heading2 weight="thin" sx={{ mb: '42px' }} decorated>
+                                                        {resolvedHeading}
+                                                    </Heading2>
+                                                );
+                                            })()
+                                        }
                                     </Await>
                                 </Suspense>
                                 <Grid

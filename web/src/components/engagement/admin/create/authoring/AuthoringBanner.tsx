@@ -90,10 +90,7 @@ const AuthoringBanner = () => {
                     (block) => block.survey_status === SUBMISSION_STATUS.VIEW_RESULTS,
                 );
 
-                const translation =
-                    activeLanguageCode == DEFAULT_LANGUAGE_CODE
-                        ? null
-                        : await getEngagementTranslationByCode(Number(eng.id), activeLanguageCode);
+                const translation = await getEngagementTranslationByCode(Number(eng.id), activeLanguageCode);
 
                 if (cancelled) return;
 

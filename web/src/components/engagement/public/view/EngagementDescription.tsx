@@ -19,7 +19,7 @@ import { EngagementWidgetDisplay } from './EngagementWidgetDisplay';
 import { useEngagementLoaderData } from 'components/engagement/preview/PreviewLoaderDataContext';
 import { RouterLinkRenderer } from 'components/common/Navigation/Link';
 import { getPath, ROUTES } from 'routes/routes';
-import { TranslationBundle } from './engagementTranslationResolution';
+import { TranslationBundle, resolveTranslationValue } from './engagementTranslationResolution';
 
 export const EngagementDescription = () => {
     const { engagement, translationBundle } = useEngagementLoaderData();
@@ -73,15 +73,17 @@ export const EngagementDescription = () => {
                     <Suspense fallback={<Skeleton variant="rectangular" height="288px" width="100%" />}>
                         <Await resolve={descriptionInfo}>
                             {([engagement, resolvedTranslationBundle]: [Engagement, TranslationBundle]) => {
-                                const resolvedSummaryTitle =
-                                    resolvedTranslationBundle.currentTranslation?.description_title ??
-                                    resolvedTranslationBundle.defaultTranslation?.description_title ??
-                                    engagement.description_title;
+                                const resolvedSummaryTitle = resolveTranslationValue<string>({
+                                    translatedValue: resolvedTranslationBundle.currentTranslation?.description_title,
+                                    defaultValue: resolvedTranslationBundle.defaultTranslation?.description_title,
+                                    baseValue: engagement.description_title,
+                                }).value;
 
-                                const resolvedSummaryBody =
-                                    resolvedTranslationBundle.currentTranslation?.rich_description ??
-                                    resolvedTranslationBundle.defaultTranslation?.rich_description ??
-                                    engagement.rich_description;
+                                const resolvedSummaryBody = resolveTranslationValue<string>({
+                                    translatedValue: resolvedTranslationBundle.currentTranslation?.rich_description,
+                                    defaultValue: resolvedTranslationBundle.defaultTranslation?.rich_description,
+                                    baseValue: engagement.rich_description,
+                                }).value;
 
                                 const summaryEditorState = getEditorStateFromRaw(resolvedSummaryBody || '');
                                 const hasSummaryBody = summaryEditorState?.getCurrentContent()?.hasText?.() ?? false;
