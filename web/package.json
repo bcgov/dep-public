@@ -3,7 +3,7 @@
   "version": "1.2.0",
   "private": true,
   "dependencies": {
-    "@babel/core": "^7.16.0",
+    "@babel/core": "^7.29.6",
     "@bcgov/bc-sans": "^2.1.0",
     "@bcgov/design-tokens": "^3.2.0",
     "@emotion/react": "^11.14.0",
