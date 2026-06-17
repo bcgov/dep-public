@@ -52,7 +52,7 @@ export const getEngagements = async (params: GetEngagementsParams = {}): Promise
 export const getEngagement = async (engagementId: number): Promise<Engagement> => {
     const url = replaceUrl(Endpoints.Engagement.GET, 'engagement_id', String(engagementId));
     if (!engagementId || Number.isNaN(Number(engagementId))) {
-        throw new Error('Invalid Engagement Id ' + engagementId);
+        throw new Error('Invalid Engagement ID: ' + engagementId);
     }
     const response = await http.GetRequest<Engagement>(url);
     if (response.data) {

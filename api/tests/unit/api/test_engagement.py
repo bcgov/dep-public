@@ -46,6 +46,7 @@ fake = Faker()
 @pytest.mark.parametrize('side_effect, expected_status', [
     (KeyError('Test error'), HTTPStatus.NOT_FOUND),
     (ValueError('Test error'), HTTPStatus.NOT_FOUND),
+    (ValidationError('Test error'), HTTPStatus.BAD_REQUEST),
 ])
 def test_add_engagements(client, jwt, session, engagement_info, side_effect, expected_status,
                          setup_admin_user_and_claims):  # pylint:disable=unused-argument
@@ -60,11 +61,6 @@ def test_add_engagements(client, jwt, session, engagement_info, side_effect, exp
         rv = client.post('/api/engagements/', data=json.dumps(engagement_info),
                          headers=headers, content_type=ContentType.JSON.value)
     assert rv.status_code == expected_status
-
-    with patch.object(EngagementService, 'create_engagement', side_effect=ValidationError('Test error')):
-        rv = client.post('/api/engagements/', data=json.dumps(engagement_info),
-                         headers=headers, content_type=ContentType.JSON.value)
-    assert rv.status_code == HTTPStatus.BAD_REQUEST
 
 
 def test_tenant_id_in_create_engagements(client, jwt, session,

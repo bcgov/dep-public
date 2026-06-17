@@ -87,7 +87,7 @@ export const CommentViewProvider = ({ children }: { children: JSX.Element | JSX.
         if (!engagementId && slug) {
             return;
         }
-        if (Number.isNaN(Number(engagementId))) {
+        if (Number.isNaN(Number(engagementId)) || Number(engagementId) <= 0) {
             navigate(getPath(ROUTES.PUBLIC_LANDING));
             return;
         }

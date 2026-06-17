@@ -26,11 +26,7 @@ export const ConfigSummary = () => {
     const siteUrl = getBaseUrl();
     const engagementId = useParams().engagementId;
     const language: LanguageState = useAppSelector((state) => state.language);
-    const {
-        engagement: $engagement,
-        teamMembers: $teamMembers,
-        languages: $languages,
-    } = useRouteLoaderData('single-engagement') as EngagementLoaderAdminData;
+    const loaderData = useRouteLoaderData('single-engagement') as EngagementLoaderAdminData;
     const [tooltipOpen, setTooltipOpen] = React.useState(false);
 
     useEffect(() => {
@@ -79,7 +75,7 @@ export const ConfigSummary = () => {
                                                     />
                                                 }
                                             >
-                                                <Await resolve={$engagement}>
+                                                <Await resolve={loaderData.engagement}>
                                                     {(engagement: Engagement) => (
                                                         <IconButton
                                                             size="small"
@@ -131,7 +127,7 @@ export const ConfigSummary = () => {
                                                 </Skeleton>
                                             }
                                         >
-                                            <Await resolve={$engagement}>
+                                            <Await resolve={loaderData.engagement}>
                                                 {(engagement: Engagement) => {
                                                     const path = getPath(ROUTES.PUBLIC_ENGAGEMENT_BY_SLUG, {
                                                         slug: engagement.slug,
@@ -175,7 +171,7 @@ export const ConfigSummary = () => {
                                                 />
                                             }
                                         >
-                                            <Await resolve={$engagement}>
+                                            <Await resolve={loaderData.engagement}>
                                                 {(engagement) => {
                                                     const { date, valid } = getEngagementDate(engagement, 'start');
                                                     return (
@@ -211,7 +207,7 @@ export const ConfigSummary = () => {
                                                 />
                                             }
                                         >
-                                            <Await resolve={$engagement}>
+                                            <Await resolve={loaderData.engagement}>
                                                 {(engagement) => {
                                                     const { date, valid } = getEngagementDate(engagement, 'end');
                                                     return (
@@ -244,7 +240,7 @@ export const ConfigSummary = () => {
                                     <Grid>
                                         <BodyText bold fontSize="72px" lineHeight="64px" color="inherit">
                                             <Suspense fallback={<Skeleton variant="text" width={85}></Skeleton>}>
-                                                <Await resolve={$engagement}>
+                                                <Await resolve={loaderData.engagement}>
                                                     {(engagement) =>
                                                         dayjs(engagement.end_date)
                                                             .clone()
@@ -276,7 +272,7 @@ export const ConfigSummary = () => {
                                         </BodyText>
                                     }
                                 >
-                                    <Await resolve={$languages}>
+                                    <Await resolve={loaderData.languages}>
                                         {(languages) => (
                                             <BodyText bold color="primary.main">
                                                 Language(s) Included ({languages.length})
@@ -294,7 +290,7 @@ export const ConfigSummary = () => {
                                     </Grid>
                                 }
                             >
-                                <Await resolve={$languages}>
+                                <Await resolve={loaderData.languages}>
                                     {(languages) => (
                                         <Grid container direction="column" spacing={0.5}>
                                             {languages.map((language) => (
@@ -321,7 +317,7 @@ export const ConfigSummary = () => {
                                 </BodyText>
                             </Grid>
                             <Suspense fallback={<TeamMemberListSkeleton />}>
-                                <Await resolve={$teamMembers}>
+                                <Await resolve={loaderData.teamMembers}>
                                     {(teamMembers) => <TeamMemberList teamMembers={teamMembers} />}
                                 </Await>
                             </Suspense>

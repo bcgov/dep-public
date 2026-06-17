@@ -23,16 +23,17 @@ export type SurveyLoaderData = {
 };
 
 export const SurveyLoader = async ({ params }: { params: Params<string> }) => {
-    const { surveyId, token, language, engagementId, slug: urlSlug } = params;
-    if (Number.isNaN(Number(surveyId)) && !Number.isNaN(Number(engagementId)) && !urlSlug)
+    const { surveyId, token, language, engagementId: engagementIdParam, slug: slugParam } = params;
+    const engagementId = Number(engagementIdParam);
+    if (Number.isNaN(Number(surveyId)) && !Number.isNaN(engagementId) && !slugParam)
         throw new Error('Invalid survey ID');
 
     const verPromise = token ? getEmailVerification(token) : null;
     const getEngPromise = () => {
-        if (urlSlug) {
-            return getEngagementBySlug(urlSlug);
-        } else if (engagementId && !Number.isNaN(Number(engagementId))) {
-            return getEngagement(Number(engagementId));
+        if (slugParam) {
+            return getEngagementBySlug(slugParam);
+        } else if (engagementId && !Number.isNaN(engagementId)) {
+            return getEngagement(engagementId);
         } else if (surveyId && !Number.isNaN(Number(surveyId))) {
             const surveyPromise = getSurvey(Number(surveyId));
             return surveyPromise.then((surveyData) => {
