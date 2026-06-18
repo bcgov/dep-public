@@ -206,6 +206,24 @@ def test_get_engagements(client, jwt, session, engagement_info, side_effect, exp
     assert rv.status_code == HTTPStatus.NOT_FOUND
 
 
+@pytest.mark.parametrize('engagement_info', [TestEngagementInfo.engagement1])
+def test_get_engagement_by_slug(client, jwt, session, engagement_info,
+                                setup_admin_user_and_claims):  # pylint:disable=unused-argument
+    """Assert that an engagement can be fetched by slug."""
+    _, claims = setup_admin_user_and_claims
+    headers = factory_auth_header(jwt=jwt, claims=claims)
+    rv = client.post('/api/engagements/', data=json.dumps(engagement_info),
+                     headers=headers, content_type=ContentType.JSON.value)
+    assert rv.status_code == HTTPStatus.OK
+    created_eng = rv.json
+
+    rv = client.get(f'/api/engagements/slug/{created_eng.get("slug")}',
+                    headers=headers, content_type=ContentType.JSON.value)
+
+    assert created_eng.get('name') == rv.json.get('name')
+    assert created_eng.get('content') == rv.json.get('content')
+
+
 @pytest.mark.parametrize('engagement_info', [TestEngagementInfo.engagement_draft])
 def test_get_engagements_reviewer(client, jwt, session, engagement_info,
                                   setup_admin_user_and_claims):  # pylint:disable=unused-argument

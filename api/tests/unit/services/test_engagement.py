@@ -32,8 +32,8 @@ from api.utils.enums import CompositeRoleId
 from api.utils.roles import Role
 from tests.utilities.factory_scenarios import TestEngagementInfo, TestJwtClaims
 from tests.utilities.factory_utils import (
-    factory_engagement_model, factory_membership_model, factory_staff_user_model, factory_user_group_membership_model,
-    patch_token_info, set_global_tenant)
+    factory_engagement_model, factory_membership_model, factory_staff_user_model, factory_tenant_model,
+    factory_user_group_membership_model, patch_token_info, set_global_tenant)
 
 
 fake = Faker()
@@ -73,6 +73,20 @@ def test_create_engagement_with_survey_block(session, monkeypatch):  # pylint:di
     assert fetched_engagement.get('name') == engagement_data.get('name')
     assert fetched_engagement.get('description') is None
     assert fetched_engagement.get('start_date')  # TODO address date format and assert
+    assert fetched_engagement.get('end_date')
+
+
+def test_get_engagement_by_slug(session):  # pylint:disable=unused-argument
+    """Assert that engagement can be fetched by slug."""
+    tenant = factory_tenant_model()
+    engagement = factory_engagement_model(
+        {**TestEngagementInfo.engagement1, 'tenant_id': tenant.id})
+    fetched_engagement = EngagementService().get_engagement_by_slug(
+        engagement.slug, engagement.tenant_id)
+    assert fetched_engagement.get('id') == engagement.id
+    assert fetched_engagement.get('name') == engagement.name
+    assert fetched_engagement.get('description') is None
+    assert fetched_engagement.get('start_date')
     assert fetched_engagement.get('end_date')
 
 

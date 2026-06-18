@@ -7,7 +7,7 @@ import { PatchEngagementRequest, PostEngagementRequest, PutEngagementRequest } f
 import Endpoints from 'apiManager/endpoints';
 import { replaceUrl } from 'helper';
 import { Page } from 'services/type';
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 import { getLanguages } from 'services/languageService';
 
 export const fetchAll = async (dispatch: Dispatch<UnknownAction>): Promise<Engagement[]> => {
@@ -39,6 +39,21 @@ export interface GetEngagementsParams {
     metadata?: string;
     tenant_id?: number;
 }
+
+const handleAxiosError = (e: AxiosError) => {
+    if (e?.response?.data && typeof e.response.data === 'string' && e.response.data.length < 200) {
+        throw new Error(e.response.data);
+    } else if ((e?.response?.data as ApiErrorBody)?.message) {
+        throw new Error((e.response?.data as ApiErrorBody).message);
+    } else if ((e?.response?.data as ApiErrorBody)?.error) {
+        throw new Error((e.response?.data as ApiErrorBody).error);
+    } else if (e?.response?.status === 404) {
+        throw new Error('Engagement not found');
+    } else {
+        throw new Error(`Request failed with status code ${e?.response?.status}`);
+    }
+};
+
 export const getEngagements = async (params: GetEngagementsParams = {}): Promise<Page<Engagement>> => {
     const responseData = await http.GetRequest<Page<Engagement>>(Endpoints.Engagement.GET_LIST, params);
     return (
@@ -54,19 +69,34 @@ export const getEngagement = async (engagementId: number): Promise<Engagement> =
     if (!engagementId || Number.isNaN(Number(engagementId))) {
         throw new Error('Invalid Engagement ID: ' + engagementId);
     }
-    const response = await http.GetRequest<Engagement>(url);
-    if (response.data) {
+    const response = await http.GetRequest<Engagement>(url).catch((e: unknown) => {
+        if (axios.isAxiosError(e)) {
+            handleAxiosError(e);
+        } else {
+            throw e;
+        }
+    });
+    if (response?.data) {
         return response.data;
     }
     throw new Error('Failed to fetch engagement');
 };
 
 export const getEngagementBySlug = async (slug: string): Promise<Engagement> => {
-    const url = replaceUrl(Endpoints.Engagement.GET_BY_SLUG, 'slug_id', slug);
-    const response = await http.GetRequest<Engagement>(url);
-    if (response.data) {
+    const url = replaceUrl(Endpoints.Engagement.GET_BY_SLUG, 'eng_slug', slug);
+
+    const response = await http.GetRequest<Engagement>(url).catch((e: unknown) => {
+        if (axios.isAxiosError(e)) {
+            handleAxiosError(e);
+        } else {
+            throw e;
+        }
+    });
+
+    if (response?.data) {
         return response.data;
     }
+
     throw new Error('Failed to fetch engagement by slug');
 };
 

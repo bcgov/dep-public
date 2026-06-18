@@ -69,7 +69,7 @@ class EngagementService:
         )
         return self.dump_engagement(engagement_model)
 
-    def get_engagement_by_slug(self, slug, tenant):
+    def get_engagement_by_slug(self, slug: str, tenant_id: int):
         """Get an Engagement by its slug."""
         engagement_model: EngagementModel = (
             EngagementModel.query
@@ -77,7 +77,7 @@ class EngagementService:
                 selectinload(EngagementModel.suggested_engagement_links)
                 .selectinload(SuggestedEngagementModel.suggested_engagement)
             )
-            .filter_by(slug=slug, tenant_id=tenant)
+            .filter_by(slug=slug, tenant_id=tenant_id)
             .one_or_none()
         )
 
