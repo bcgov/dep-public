@@ -7,7 +7,6 @@ import {
 } from 'services/engagementService';
 import { patchEngagementMetadata } from 'services/engagementMetadataService';
 import { patchEngagementSettings } from 'services/engagementSettingService';
-import { patchEngagementSlug } from 'services/engagementSlugService';
 import { EngagementStatusBlock } from 'models/engagementStatusBlock';
 import { getDetailsTabs, patchDetailsTabs } from 'services/engagementDetailsTabService';
 import { EngagementDetailsTab } from 'models/engagementDetailsTab';
@@ -369,20 +368,6 @@ export const authoringUpdateAction: ActionFunction = async ({ request }) => {
                 await patchEngagementSettings({
                     engagement_id: engagementId,
                     send_report: 'true' === formData.get('send_report'),
-                });
-            },
-        });
-    }
-
-    // Update engagement slug if necessary.
-    if (formData.get('slug')) {
-        await runStep({
-            label: 'Error updating engagement slug',
-            errors,
-            task: async () => {
-                await patchEngagementSlug({
-                    engagement_id: engagementId,
-                    slug: formData.get('slug') as string,
                 });
             },
         });

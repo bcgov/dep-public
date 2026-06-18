@@ -19,6 +19,18 @@ import { USER_ROLES } from 'services/userService/constants';
 import { EngagementSettings, createDefaultEngagementSettings } from 'models/engagement';
 import { createMemoryRouter, RouterProvider } from 'react-router';
 
+function fulfilledPromise<T>(value: T): Promise<T> {
+    const p = Promise.resolve(value);
+    Object.assign(p, { status: 'fulfilled', value });
+    return p;
+}
+
+const mockEngagementLoaderPromise = fulfilledPromise({ ...draftEngagement });
+const mockWidgetsLoaderPromise = fulfilledPromise<never[]>([]);
+const mockMetadataLoaderPromise = fulfilledPromise<never[]>([]);
+const mockContentLoaderPromise = fulfilledPromise<never[]>([]);
+const mockTaxaLoaderPromise = fulfilledPromise<never[]>([]);
+
 const survey: Survey = {
     ...createDefaultSurvey(),
     id: 1,
@@ -83,13 +95,11 @@ jest.mock('react-router', () => ({
     useRouteLoaderData: (routeId: string) => {
         if (routeId === 'single-engagement') {
             return {
-                engagement: Promise.resolve({
-                    ...draftEngagement,
-                }),
-                widgets: Promise.resolve([]),
-                metadata: Promise.resolve([]),
-                content: Promise.resolve([]),
-                taxa: Promise.resolve([]),
+                engagement: mockEngagementLoaderPromise,
+                widgets: mockWidgetsLoaderPromise,
+                metadata: mockMetadataLoaderPromise,
+                content: mockContentLoaderPromise,
+                taxa: mockTaxaLoaderPromise,
             };
         }
     },
@@ -180,6 +190,26 @@ jest.mock('apiManager/apiSlices/widgets', () => ({
 }));
 jest.spyOn(engagementMetadataService, 'getEngagementMetadata').mockReturnValue(Promise.resolve([engagementMetadata]));
 
+async function addWhosIsListeningWidget() {
+    await waitFor(() => {
+        expect(screen.getByText('Add Widget')).toBeEnabled();
+    });
+
+    const addWidgetButton = screen.getByText('Add Widget');
+    fireEvent.click(addWidgetButton);
+
+    await waitFor(() => {
+        expect(screen.getByText('Select Widget')).toBeVisible();
+    });
+
+    const whoIsListeningOption = screen.getByTestId(`widget-drawer-option/${WidgetType.WhoIsListening}`);
+    fireEvent.click(whoIsListeningOption);
+
+    await waitFor(() => {
+        expect(screen.getByText('Add This Contact')).toBeVisible();
+    });
+}
+
 describe('Who is Listening widget  tests', () => {
     jest.spyOn(engagementMetadataService, 'getEngagementMetadata').mockReturnValue(
         Promise.resolve([engagementMetadata]),
@@ -213,26 +243,6 @@ describe('Who is Listening widget  tests', () => {
         }));
     });
 
-    async function addWhosIsListeningWidget(container: HTMLElement) {
-        await waitFor(() => {
-            expect(screen.getByText('Add Widget')).toBeEnabled();
-        });
-
-        const addWidgetButton = screen.getByText('Add Widget');
-        fireEvent.click(addWidgetButton);
-
-        await waitFor(() => {
-            expect(screen.getByText('Select Widget')).toBeVisible();
-        });
-
-        const whoIsListeningOption = screen.getByTestId(`widget-drawer-option/${WidgetType.WhoIsListening}`);
-        fireEvent.click(whoIsListeningOption);
-
-        await waitFor(() => {
-            expect(screen.getByText('Add This Contact')).toBeVisible();
-        });
-    }
-
     test('Who is listening widget is created when option is clicked', async () => {
         useParamsMock.mockReturnValue({ engagementId: '1' });
         getEngagementMock.mockReturnValueOnce(
@@ -241,9 +251,9 @@ describe('Who is Listening widget  tests', () => {
                 surveys: surveys,
             }),
         );
-        const { container } = render(<RouterProvider router={router} />);
+        render(<RouterProvider router={router} />);
 
-        await addWhosIsListeningWidget(container);
+        await addWhosIsListeningWidget();
 
         expect(mockCreateWidget).toHaveBeenNthCalledWith(1, {
             widget_type_id: WidgetType.WhoIsListening,
@@ -264,9 +274,9 @@ describe('Who is Listening widget  tests', () => {
                 surveys: surveys,
             }),
         );
-        const { container } = render(<RouterProvider router={router} />);
+        render(<RouterProvider router={router} />);
 
-        await addWhosIsListeningWidget(container);
+        await addWhosIsListeningWidget();
 
         await waitFor(() => {
             expect(screen.getByText('Create New Contact')).toBeVisible();

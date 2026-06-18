@@ -1,3 +1,12 @@
+## June 16, 2026
+
+- **Feature** Merged engagement slug into engagement requests [🎟️ DEP-265](https://citz-gdx.atlassian.net/browse/DEP-265)
+  - Removed the EngagementSlug model, schema, and resource from the API, as they are no longer needed.
+  - Updated the Engagement model to include a `slug` field, which is now used to store the engagement slug directly in the engagement record.
+  - Engagements can now be fetched by slug, rather than fetching the slug then fetching the engagement by ID. This hastens the process of retrieving engagement data based on the slug.
+  - Engagements now return the slug in the engagement response, so that the front end can use it without needing to make a separate request to fetch the slug.
+  - Updated the front end to reflect these changes, including any API calls that previously referenced the EngagementSlug resource.
+
 ## June 10, 2026
 
 - **Feature** Added language switcher to public, preview engagement pages [🎟️ DEP-233](https://citz-gdx.atlassian.net/browse/DEP-233) and [🎟️ DEP-235](https://citz-gdx.atlassian.net/browse/DEP-235)

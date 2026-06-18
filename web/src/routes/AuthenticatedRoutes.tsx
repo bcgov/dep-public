@@ -111,8 +111,8 @@ const AuthenticatedRoutes = resolveLazyRouteTree(
                                 }),
                             })),
                         viewSwitcher: async (data: unknown, _params: unknown, languageId: string) => {
-                            const loaderData = data as { slug: Promise<string> };
-                            const slug = await loaderData.slug;
+                            const loaderData = data as { engagement: Promise<{ slug: string }> };
+                            const slug = (await loaderData.engagement).slug;
                             return {
                                 label: 'View Public Page',
                                 href: getPath(ROUTES.PUBLIC_ENGAGEMENT_BY_SLUG, {
@@ -122,16 +122,8 @@ const AuthenticatedRoutes = resolveLazyRouteTree(
                             };
                         },
                     }}
-                    shouldRevalidate={({
-                        currentUrl,
-                        nextUrl,
-                        currentParams,
-                        nextParams,
-                        formMethod,
-                        actionResult,
-                    }) => {
+                    shouldRevalidate={({ currentParams, nextParams, formMethod, actionResult }) => {
                         return (
-                            currentUrl.pathname !== nextUrl.pathname || // Engagement must rv on route change
                             currentParams.engagementId !== nextParams.engagementId ||
                             formMethod !== undefined ||
                             actionResult === 'success'

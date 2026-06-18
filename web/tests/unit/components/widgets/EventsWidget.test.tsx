@@ -16,6 +16,18 @@ import { USER_ROLES } from 'services/userService/constants';
 import { EngagementSettings, createDefaultEngagementSettings } from 'models/engagement';
 import { createMemoryRouter, RouterProvider } from 'react-router';
 
+function fulfilledPromise<T>(value: T): Promise<T> {
+    const p = Promise.resolve(value);
+    Object.assign(p, { status: 'fulfilled', value });
+    return p;
+}
+
+const mockEngagementLoaderPromise = fulfilledPromise({ ...draftEngagement });
+const mockWidgetsLoaderPromise = fulfilledPromise<never[]>([]);
+const mockMetadataLoaderPromise = fulfilledPromise<never[]>([]);
+const mockContentLoaderPromise = fulfilledPromise<never[]>([]);
+const mockTaxaLoaderPromise = fulfilledPromise<never[]>([]);
+
 jest.mock('components/map', () => () => {
     return <div></div>;
 });
@@ -93,13 +105,11 @@ jest.mock('react-router', () => ({
     useRouteLoaderData: (routeId: string) => {
         if (routeId === 'single-engagement') {
             return {
-                engagement: Promise.resolve({
-                    ...draftEngagement,
-                }),
-                widgets: Promise.resolve([]),
-                metadata: Promise.resolve([]),
-                content: Promise.resolve([]),
-                taxa: Promise.resolve([]),
+                engagement: mockEngagementLoaderPromise,
+                widgets: mockWidgetsLoaderPromise,
+                metadata: mockMetadataLoaderPromise,
+                content: mockContentLoaderPromise,
+                taxa: mockTaxaLoaderPromise,
             };
         }
     },

@@ -35,6 +35,7 @@ fake = Faker()
 
 CONFIG = get_named_config('testing')
 DATE_FORMAT = '%Y/%m/%d, %H:%M:%S'
+SLUG_TEMPLATE = 'engagement-????'
 
 
 class TestUserInfo(dict, Enum):
@@ -192,6 +193,7 @@ class TestEngagementInfo:
 
     engagement1 = {
         'name': fake.name(),
+        'slug': fake.lexify(text=SLUG_TEMPLATE),
         'start_date': _get_offset_date(1, 'past'),
         'end_date': _get_offset_date(1, 'future'),
         'banner_url': '',
@@ -211,28 +213,9 @@ class TestEngagementInfo:
         'surveys': [TestSurveyInfo.survey1],
     }
 
-    engagement_draft = {
-        'name': fake.name(),
-        'start_date': _get_offset_date(1, 'past'),
-        'end_date': _get_offset_date(1, 'future'),
-        'banner_url': '',
-        'created_by': '123',
-        'updated_by': '123',
-        'status': EngagementStatus.Draft.value,
-        'is_internal': False,
-        'description': 'My Test Engagement Description',
-        'rich_description': '"{\"blocks\":[{\"key\":\"2ku94\",\"text\":\"Rich Description Sample\",\
-            \"type\":\"unstyled\",\
-            \"depth\":0,\"inlineStyleRanges\":[],\"entityRanges\":[],\"data\":{}}],\"entityMap\":{}}"',
-        'description_title': 'My Test Description Title',
-        'content': 'Content Sample',
-        'rich_content': '"{\"blocks\":[{\"key\":\"fclgj\",\"text\":\"Rich Content Sample\",\
-            \"type\":\"unstyled\",\"depth\":0,\
-            \"inlineStyleRanges\":[],\"entityRanges\":[],\"data\":{}}],\"entityMap\":{}}"'
-    }
-
     engagement2 = {
         'name': fake.name(),
+        'slug': fake.lexify(text=SLUG_TEMPLATE),
         'start_date': _get_offset_date(1, 'past'),
         'end_date': _get_offset_date(1, 'future'),
         'banner_url': '',
@@ -265,6 +248,7 @@ class TestEngagementInfo:
 
     engagement3 = {
         'name': fake.name(),
+        'slug': fake.lexify(text=SLUG_TEMPLATE),
         'start_date': _get_offset_date(1, 'past'),
         'end_date': _get_offset_date(1, 'future'),
         'banner_url': '',
@@ -283,6 +267,27 @@ class TestEngagementInfo:
             \"type\":\"unstyled\",\
             \"depth\":0,\"inlineStyleRanges\":[],\"entityRanges\":[],\"data\":{}}],\"entityMap\":{}}"',
         'description_title': 'My Test Description Title',
+    }
+
+    engagement_draft = {
+        'name': fake.name(),
+        'slug': fake.lexify(text=SLUG_TEMPLATE),
+        'start_date': _get_offset_date(1, 'past'),
+        'end_date': _get_offset_date(1, 'future'),
+        'banner_url': '',
+        'created_by': '123',
+        'updated_by': '123',
+        'status': EngagementStatus.Draft.value,
+        'is_internal': False,
+        'description': 'My Test Engagement Description',
+        'rich_description': '"{\"blocks\":[{\"key\":\"2ku94\",\"text\":\"Rich Description Sample\",\
+            \"type\":\"unstyled\",\
+            \"depth\":0,\"inlineStyleRanges\":[],\"entityRanges\":[],\"data\":{}}],\"entityMap\":{}}"',
+        'description_title': 'My Test Description Title',
+        'content': 'Content Sample',
+        'rich_content': '"{\"blocks\":[{\"key\":\"fclgj\",\"text\":\"Rich Content Sample\",\
+            \"type\":\"unstyled\",\"depth\":0,\
+            \"inlineStyleRanges\":[],\"entityRanges\":[],\"data\":{}}],\"entityMap\":{}}"'
     }
 
 
@@ -744,16 +749,6 @@ class TestWidgetDocumentInfo(dict, Enum):
         'parent_document_id': None,
         'url': fake.image_url(),
         'sort_index': 1,
-    }
-
-
-class TestEngagementSlugInfo(dict, Enum):
-    """Test scenarios of feedback."""
-
-    slug1 = {
-        'engagement_id': 1,
-        'slug': fake.text(max_nb_chars=20),
-        'created_date': datetime.now().strftime('%Y-%m-%d'),
     }
 
 

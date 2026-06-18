@@ -48,6 +48,7 @@ class Engagement(BaseModel):
     __tablename__ = 'engagement'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.String(50))
+    slug = db.Column(db.String(256), nullable=False)
     start_date = db.Column(db.DateTime)
     end_date = db.Column(db.DateTime)
     status_id = db.Column(db.Integer, ForeignKey(
@@ -97,6 +98,10 @@ class Engagement(BaseModel):
         'suggested_engagement_links', 'suggested_engagement')
     suggested_engagement_ids = association_proxy(
         'suggested_engagement_links', 'suggested_engagement_id')
+
+    __table_args__ = (db.UniqueConstraint(
+        'slug', 'tenant_id', name='uq_slug_per_tenant'),
+    )
 
     @classmethod
     def get_engagements_paginated(

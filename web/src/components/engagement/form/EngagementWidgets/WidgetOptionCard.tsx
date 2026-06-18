@@ -4,7 +4,6 @@ import { Grid2 as Grid, CircularProgress, Paper } from '@mui/material';
 import { WidgetDrawerContext } from './WidgetDrawerContext';
 import { WidgetLocation, WidgetType } from 'models/widget';
 import { Else, If, Then } from 'react-if';
-import { ActionContext } from '../ActionContext';
 import { useAppDispatch } from 'hooks';
 import { openNotification } from 'services/notificationService/notificationSlice';
 import { optionCardStyle } from './constants';
@@ -12,6 +11,8 @@ import { WidgetTabValues } from './type';
 import { useCreateWidgetMutation } from 'apiManager/apiSlices/widgets';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { IconDefinition } from '@fortawesome/fontawesome-svg-core';
+import { EngagementLoaderAdminData } from 'engagements/admin/EngagementLoaderAdmin';
+import { useRouteLoaderData } from 'react-router';
 
 interface WidgetOptionCardProps {
     title: string;
@@ -41,7 +42,9 @@ const WidgetOptionCard: React.FC<WidgetOptionCardProps> = ({
         widgetDetailsTabId,
         isWidgetInScope,
     } = useContext(WidgetDrawerContext);
-    const { savedEngagement } = useContext(ActionContext);
+    const savedEngagement = React.use(
+        (useRouteLoaderData('single-engagement') as EngagementLoaderAdminData)?.engagement,
+    );
     const dispatch = useAppDispatch();
     const [createWidget] = useCreateWidgetMutation();
     const [isCreatingWidget, setIsCreatingWidget] = useState(false);

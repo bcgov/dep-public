@@ -70,6 +70,18 @@ const documentWidget: Widget = {
     location: WidgetLocation.Summary,
 };
 
+function fulfilledPromise<T>(value: T): Promise<T> {
+    const p = Promise.resolve(value);
+    Object.assign(p, { status: 'fulfilled', value });
+    return p;
+}
+
+const mockEngagementLoaderPromise = fulfilledPromise({ ...engagement });
+const mockWidgetsLoaderPromise = fulfilledPromise([documentWidget]);
+const mockMetadataLoaderPromise = fulfilledPromise<never[]>([]);
+const mockContentLoaderPromise = fulfilledPromise<never[]>([]);
+const mockTaxaLoaderPromise = fulfilledPromise<never[]>([]);
+
 jest.mock('axios');
 
 jest.mock('react-router', () => ({
@@ -82,13 +94,11 @@ jest.mock('react-router', () => ({
     useRouteLoaderData: (routeId: string) => {
         if (routeId === 'single-engagement') {
             return {
-                engagement: Promise.resolve({
-                    ...engagement,
-                }),
-                widgets: Promise.resolve([documentWidget]),
-                metadata: Promise.resolve([]),
-                content: Promise.resolve([]),
-                taxa: Promise.resolve([]),
+                engagement: mockEngagementLoaderPromise,
+                widgets: mockWidgetsLoaderPromise,
+                metadata: mockMetadataLoaderPromise,
+                content: mockContentLoaderPromise,
+                taxa: mockTaxaLoaderPromise,
             };
         }
     },

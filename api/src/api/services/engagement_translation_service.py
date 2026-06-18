@@ -7,7 +7,6 @@ from api.constants.engagement_status import SubmissionStatus
 from api.constants.membership_type import MembershipType
 from api.exceptions.business_exception import BusinessException
 from api.models.engagement import Engagement as EngagementModel
-from api.models.engagement_slug import EngagementSlug
 from api.models.engagement_status_block import EngagementStatusBlock as EngagementStatusBlockModel
 from api.models.engagement_translation import EngagementTranslation as EngagementTranslationModel
 from api.models.survey import Survey as SurveyModel
@@ -220,9 +219,8 @@ class EngagementTranslationService:
                 english_translation.view_results_status_block_button_text
             )
 
-        engagement_slug = EngagementSlug.find_by_engagement_id(engagement_id)
-        if engagement_slug:
-            translation_data['slug'] = engagement_slug.slug
+        if engagement.slug:
+            translation_data['slug'] = engagement.slug
 
         upcoming_status_block = EngagementStatusBlockModel.get_by_status(
             engagement_id,

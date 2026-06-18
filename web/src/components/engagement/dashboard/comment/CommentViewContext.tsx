@@ -3,13 +3,12 @@ import { AxiosError } from 'axios';
 import { useNavigate, useParams } from 'react-router';
 import { useAppDispatch } from 'hooks';
 import { openNotification } from 'services/notificationService/notificationSlice';
-import { getEngagement } from 'services/engagementService';
+import { getEngagement, getEngagementBySlug } from 'services/engagementService';
 import { Engagement } from 'models/engagement';
 import { getErrorMessage } from 'utils';
 import { getCommentsPage } from 'services/commentService';
 import { Comment } from 'models/comment';
 import { createDefaultPageInfo, PageInfo, PaginationOptions } from 'components/common/Table/types';
-import { getEngagementIdBySlug } from 'services/engagementSlugService';
 import { ROUTES, getPath } from 'routes/routes';
 
 export interface TransformedComment {
@@ -73,8 +72,8 @@ export const CommentViewProvider = ({ children }: { children: JSX.Element | JSX.
             return;
         }
         try {
-            const result = await getEngagementIdBySlug(slug);
-            setEngagementId(result.engagement_id);
+            const engagement = await getEngagementBySlug(slug);
+            setEngagementId(engagement.id);
         } catch {
             navigate(getPath(ROUTES.PUBLIC_NOT_FOUND));
         }
@@ -88,7 +87,7 @@ export const CommentViewProvider = ({ children }: { children: JSX.Element | JSX.
         if (!engagementId && slug) {
             return;
         }
-        if (isNaN(Number(engagementId))) {
+        if (Number.isNaN(Number(engagementId)) || Number(engagementId) <= 0) {
             navigate(getPath(ROUTES.PUBLIC_LANDING));
             return;
         }
@@ -119,8 +118,8 @@ export const CommentViewProvider = ({ children }: { children: JSX.Element | JSX.
     const loadComments = async () => {
         try {
             const surveyId = engagement?.surveys[0]?.id;
-            if (isNaN(Number(surveyId))) {
-                throw new Error('Invalid survey id');
+            if (Number.isNaN(Number(surveyId))) {
+                throw new TypeError('Invalid survey id');
             }
             setTableLoading(true);
             const response = await getCommentsPage({

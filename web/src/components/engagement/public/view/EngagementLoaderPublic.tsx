@@ -1,6 +1,5 @@
 import { Params } from 'react-router';
-import { getAvailableTranslationLanguages, getEngagement } from 'services/engagementService';
-import { getEngagementIdBySlug, getSlugByEngagementId } from 'services/engagementSlugService';
+import { getAvailableTranslationLanguages, getEngagement, getEngagementBySlug } from 'services/engagementService';
 import { getWidgets } from 'services/widgetService';
 import { getEngagementMetadata, getMetadataTaxa } from 'services/engagementMetadataService';
 import { Engagement, EngagementMetadata, MetadataTaxon } from 'models/engagement';
@@ -15,7 +14,6 @@ import { buildTranslationBundle, TranslationBundle } from './engagementTranslati
 
 export type EngagementLoaderPublicData = {
     engagement: Promise<Engagement>;
-    slug: Promise<string>;
     widgets: Promise<Widget[]>;
     details: Promise<EngagementDetailsTab[]>;
     metadata: Promise<EngagementMetadata[]>;
@@ -32,12 +30,7 @@ export const engagementLoaderPublic = async ({ params }: { params: Params<string
     const activeLanguageCode = (language ?? defaultLanguageCode).toLowerCase();
 
     const tenantId = globalThis?.sessionStorage?.getItem('tenantId') ?? null;
-    const slug = slugParam
-        ? Promise.resolve(slugParam)
-        : getSlugByEngagementId(Number(engagementId)).then((response) => response.slug);
-    const engagement = slugParam
-        ? getEngagementIdBySlug(slugParam).then((response) => getEngagement(response.engagement_id))
-        : getEngagement(Number(engagementId));
+    const engagement = slugParam ? getEngagementBySlug(slugParam) : getEngagement(Number(engagementId));
     const widgets = engagement.then((response) => getWidgets(Number(response.id)));
     const details = engagement.then((response) => getDetailsTabs(response.id));
     const translationLanguages = engagement.then((response) =>
@@ -71,7 +64,6 @@ export const engagementLoaderPublic = async ({ params }: { params: Params<string
 
     return {
         engagement,
-        slug,
         widgets,
         details,
         metadata,

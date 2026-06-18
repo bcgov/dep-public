@@ -15,24 +15,26 @@
 
 Test suite to ensure that the Engagement service routines are working as expected.
 """
-import pytest
 from unittest.mock import patch
+
+import pytest
+from faker import Faker
 from werkzeug.exceptions import Forbidden
 
 from api.constants.engagement_status import Status
-from faker import Faker
-
 from api.models import db
 from api.models.engagement import Engagement
 from api.models.engagement_translation import EngagementTranslation
 from api.models.language import Language
-from api.utils.roles import Role
 from api.services import authorization
 from api.services.engagement_service import EngagementService
+from api.utils.enums import CompositeRoleId
+from api.utils.roles import Role
 from tests.utilities.factory_scenarios import TestEngagementInfo, TestJwtClaims
 from tests.utilities.factory_utils import (
-    factory_engagement_model, factory_staff_user_model, factory_user_group_membership_model, patch_token_info,
-    set_global_tenant)
+    factory_engagement_model, factory_membership_model, factory_staff_user_model, factory_tenant_model,
+    factory_user_group_membership_model, patch_token_info, set_global_tenant)
+
 
 fake = Faker()
 date_format = '%Y-%m-%d'
@@ -42,7 +44,8 @@ def test_create_engagement(session, monkeypatch):  # pylint:disable=unused-argum
     """Assert that an Org can be created."""
     patch_token_info(TestJwtClaims.staff_admin_role, monkeypatch)
     set_global_tenant()
-    user = factory_staff_user_model(external_id=TestJwtClaims.staff_admin_role['sub'])
+    user = factory_staff_user_model(
+        external_id=TestJwtClaims.staff_admin_role['sub'])
     factory_user_group_membership_model(str(user.external_id))
     engagement_data = TestEngagementInfo.engagement1
     saved_engagament = EngagementService().create_engagement(engagement_data)
@@ -59,7 +62,8 @@ def test_create_engagement_with_survey_block(session, monkeypatch):  # pylint:di
     """Assert that an Org can be created."""
     patch_token_info(TestJwtClaims.staff_admin_role, monkeypatch)
     set_global_tenant()
-    user = factory_staff_user_model(external_id=TestJwtClaims.staff_admin_role['sub'])
+    user = factory_staff_user_model(
+        external_id=TestJwtClaims.staff_admin_role['sub'])
     factory_user_group_membership_model(str(user.external_id))
     engagement_data = TestEngagementInfo.engagement2
     saved_engagament = EngagementService().create_engagement(engagement_data)
@@ -72,11 +76,64 @@ def test_create_engagement_with_survey_block(session, monkeypatch):  # pylint:di
     assert fetched_engagement.get('end_date')
 
 
+def test_get_engagement_by_slug(session):  # pylint:disable=unused-argument
+    """Assert that engagement can be fetched by slug."""
+    tenant = factory_tenant_model()
+    engagement = factory_engagement_model(
+        {**TestEngagementInfo.engagement1, 'tenant_id': tenant.id})
+    fetched_engagement = EngagementService().get_engagement_by_slug(
+        engagement.slug, engagement.tenant_id)
+    assert fetched_engagement.get('id') == engagement.id
+    assert fetched_engagement.get('name') == engagement.name
+    assert fetched_engagement.get('description') is None
+    assert fetched_engagement.get('start_date')
+    assert fetched_engagement.get('end_date')
+
+
+def test_get_engagement_includes_authorization_for_team_member(session, monkeypatch):  # pylint:disable=unused-argument
+    """Assert engagement payload includes authoring access for team members."""
+    claims = dict(TestJwtClaims.team_member_role)
+    patch_token_info(claims, monkeypatch)
+    set_global_tenant()
+
+    user = factory_staff_user_model(external_id=claims['sub'])
+    factory_user_group_membership_model(
+        str(user.external_id),
+        group_id=CompositeRoleId.TEAM_MEMBER.value,
+    )
+
+    engagement = factory_engagement_model(status=Status.Published.value)
+    factory_membership_model(
+        user_id=user.id, engagement_id=engagement.id, member_type='TEAM_MEMBER')
+
+    fetched_engagement = EngagementService().get_engagement(engagement.id)
+
+    assert fetched_engagement is not None
+    assert fetched_engagement.get('authorization') == {
+        'can_edit': True,
+        'access_level': 'TEAM_MEMBER',
+    }
+
+
+def test_get_engagement_includes_public_authorization_for_anonymous_user(session):  # pylint:disable=unused-argument
+    """Assert anonymous users get engagement with no authoring access metadata."""
+    engagement = factory_engagement_model(status=Status.Published.value)
+
+    fetched_engagement = EngagementService().get_engagement(engagement.id)
+
+    assert fetched_engagement is not None
+    assert fetched_engagement.get('authorization') == {
+        'can_edit': False,
+        'access_level': None,
+    }
+
+
 def test_create_engagement_syncs_translation_languages(session, monkeypatch):  # pylint:disable=unused-argument
     """Assert selected languages create matching engagement translations."""
     patch_token_info(TestJwtClaims.staff_admin_role, monkeypatch)
     set_global_tenant()
-    user = factory_staff_user_model(external_id=TestJwtClaims.staff_admin_role['sub'])
+    user = factory_staff_user_model(
+        external_id=TestJwtClaims.staff_admin_role['sub'])
     factory_user_group_membership_model(str(user.external_id))
 
     engagement_data = dict(TestEngagementInfo.engagement1)
@@ -85,10 +142,12 @@ def test_create_engagement_syncs_translation_languages(session, monkeypatch):  #
     created_engagement = EngagementService().create_engagement(engagement_data)
     english = Language.query.filter_by(code='en').one()
     french = Language.query.filter_by(code='fr').one()
-    translations = EngagementTranslation.query.filter_by(engagement_id=created_engagement.id).all()
+    translations = EngagementTranslation.query.filter_by(
+        engagement_id=created_engagement.id).all()
 
     assert len(translations) == 2
-    assert {translation.language_id for translation in translations} == {english.id, french.id}
+    assert {translation.language_id for translation in translations} == {
+        english.id, french.id}
 
 
 def test_patch_engagement(session, monkeypatch):  # pylint:disable=unused-argument
@@ -116,11 +175,15 @@ def test_patch_engagement(session, monkeypatch):  # pylint:disable=unused-argume
         updated_engagement_record = EngagementService().edit_engagement(engagement_edits)
 
         # Assert that only edited fields have changed
-        assert updated_engagement_record.status_id == saved_engagement_dict.get('status_id')
+        assert updated_engagement_record.status_id == saved_engagement_dict.get(
+            'status_id')
         assert updated_engagement_record.name == engagement_edits.get('name')
-        assert updated_engagement_record.start_date.strftime(date_format) == engagement_edits.get('start_date')
-        assert updated_engagement_record.end_date.strftime(date_format) == engagement_edits.get('end_date')
-        assert updated_engagement_record.created_date.strftime(date_format) == engagement_edits.get('created_date')
+        assert updated_engagement_record.start_date.strftime(
+            date_format) == engagement_edits.get('start_date')
+        assert updated_engagement_record.end_date.strftime(
+            date_format) == engagement_edits.get('end_date')
+        assert updated_engagement_record.created_date.strftime(
+            date_format) == engagement_edits.get('created_date')
 
 
 def test_patch_engagement_syncs_translation_languages(session, monkeypatch):  # pylint:disable=unused-argument
@@ -130,8 +193,10 @@ def test_patch_engagement_syncs_translation_languages(session, monkeypatch):  # 
         french = Language.query.filter_by(code='fr').one()
         spanish = Language.query.filter_by(code='es').one()
 
-        db.session.add(EngagementTranslation(engagement_id=engagement.id, language_id=french.id))
-        db.session.add(EngagementTranslation(engagement_id=engagement.id, language_id=spanish.id))
+        db.session.add(EngagementTranslation(
+            engagement_id=engagement.id, language_id=french.id))
+        db.session.add(EngagementTranslation(
+            engagement_id=engagement.id, language_id=spanish.id))
         db.session.commit()
 
         EngagementService().edit_engagement(
@@ -141,10 +206,12 @@ def test_patch_engagement_syncs_translation_languages(session, monkeypatch):  # 
             }
         )
 
-        translations = EngagementTranslation.query.filter_by(engagement_id=engagement.id).all()
+        translations = EngagementTranslation.query.filter_by(
+            engagement_id=engagement.id).all()
         english = Language.query.filter_by(code='en').one()
         assert len(translations) == 2
-        assert {translation.language_id for translation in translations} == {english.id, french.id}
+        assert {translation.language_id for translation in translations} == {
+            english.id, french.id}
 
 
 def test_delete_success(session, mocker, monkeypatch):
@@ -192,7 +259,8 @@ def test_delete_failure_production_environment(db, monkeypatch, mocker):
 
 def test_get_scope_options_super_admin_unrestricted():
     """Assert that super admin can list all tenant engagements."""
-    scope_options = EngagementService._get_scope_options({Role.SUPER_ADMIN.value}, has_team_access=False)
+    scope_options = EngagementService._get_scope_options(
+        {Role.SUPER_ADMIN.value}, has_team_access=False)
 
     assert scope_options.restricted is False
     assert scope_options.include_assigned is False
@@ -200,6 +268,7 @@ def test_get_scope_options_super_admin_unrestricted():
 
 def test_get_scope_options_super_admin_overrides_team_access():
     """Assert super admin remains unrestricted even when team access filter is requested."""
-    scope_options = EngagementService._get_scope_options({Role.SUPER_ADMIN.value}, has_team_access=True)
+    scope_options = EngagementService._get_scope_options(
+        {Role.SUPER_ADMIN.value}, has_team_access=True)
 
     assert scope_options.restricted is False

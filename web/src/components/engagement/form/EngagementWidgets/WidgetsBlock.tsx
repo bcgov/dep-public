@@ -5,14 +5,17 @@ import { Button } from 'components/common/Input/Button';
 import { WidgetCardSwitch } from './WidgetCardSwitch';
 import { If, Then, Else } from 'react-if';
 import { WidgetDrawerContext } from './WidgetDrawerContext';
-import { ActionContext } from '../ActionContext';
 import { useAppDispatch } from 'hooks';
 import { Widget } from 'models/widget';
 import { openNotificationModal } from 'services/notificationModalService/notificationModalSlice';
+import { useRouteLoaderData } from 'react-router';
+import { EngagementLoaderAdminData } from 'engagements/admin/EngagementLoaderAdmin';
 
 const WidgetsBlock = () => {
     const { widgets, deleteWidget, setWidgetDrawerOpen, isWidgetsLoading } = useContext(WidgetDrawerContext);
-    const { savedEngagement } = useContext(ActionContext);
+    const savedEngagement = React.use(
+        (useRouteLoaderData('single-engagement') as EngagementLoaderAdminData)?.engagement,
+    );
     const dispatch = useAppDispatch();
 
     const handleAddWidgetClick = () => {
@@ -54,7 +57,7 @@ const WidgetsBlock = () => {
                     >
                         <Grid container alignItems={'flex-end'} justifyContent="flex-end">
                             <Tooltip
-                                title={!savedEngagement.id ? 'Please save the engagement before adding a widget.' : ''}
+                                title={savedEngagement.id ? '' : 'Please save the engagement before adding a widget.'}
                             >
                                 <span>
                                     <Button onClick={handleAddWidgetClick} disabled={!savedEngagement.id}>

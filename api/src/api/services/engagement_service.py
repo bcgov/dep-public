@@ -17,7 +17,6 @@ from api.exceptions.business_exception import BusinessException
 from api.models import Tenant as TenantModel
 from api.models.engagement import Engagement as EngagementModel
 from api.models.engagement_scope_options import EngagementScopeOptions
-from api.models.engagement_slug import EngagementSlug as EngagementSlugModel
 from api.models.engagement_status_block import EngagementStatusBlock as EngagementStatusBlockModel
 from api.models.engagement_translation import EngagementTranslation
 from api.models.language import Language as LanguageModel
@@ -30,7 +29,6 @@ from api.schemas.engagement import EngagementSchema
 from api.schemas.suggested_engagement import SuggestedEngagementSyncItemSchema
 from api.services import authorization
 from api.services.engagement_settings_service import EngagementSettingsService
-from api.services.engagement_slug_service import EngagementSlugService
 from api.services.object_storage_service import ObjectStorageService
 from api.services.project_service import ProjectService
 from api.utils import email_util, notification
@@ -59,7 +57,7 @@ class EngagementService:
         self.object_storage = ObjectStorageService()
 
     def get_engagement(self, engagement_id) -> Optional[engagement_dump]:
-        """Get Engagement by the id."""
+        """Get an Engagement by its id."""
         engagement_model: EngagementModel = (
             EngagementModel.query
             .options(
@@ -69,7 +67,26 @@ class EngagementService:
             .filter_by(id=engagement_id)
             .one_or_none()
         )
+        return self.dump_engagement(engagement_model)
 
+    def get_engagement_by_slug(self, slug: str, tenant_id: int):
+        """Get an Engagement by its slug."""
+        engagement_model: EngagementModel = (
+            EngagementModel.query
+            .options(
+                selectinload(EngagementModel.suggested_engagement_links)
+                .selectinload(SuggestedEngagementModel.suggested_engagement)
+            )
+            .filter_by(slug=slug, tenant_id=tenant_id)
+            .one_or_none()
+        )
+
+        if engagement_model:
+            return self.dump_engagement(engagement_model)
+        return None
+
+    def dump_engagement(self, engagement_model: EngagementModel) -> Optional[engagement_dump]:
+        """Dump engagement model to dict with additional processing."""
         if engagement_model:
             if TokenInfo.get_id() is None and engagement_model.status_id not in (
                 Status.Published.value,
@@ -87,12 +104,16 @@ class EngagementService:
                     Role.VIEW_ALL_ENGAGEMENTS.value,
                 )
                 authorization.check_auth(
-                    one_of_roles=one_of_roles, engagement_id=engagement_id
+                    one_of_roles=one_of_roles, engagement_id=engagement_model.id
                 )
 
             engagement = EngagementSchema().dump(engagement_model)
             engagement['banner_url'] = self.object_storage.get_url(
                 engagement['banner_filename']
+            )
+            # pylint: disable=missing-kwoa
+            engagement['authorization'] = authorization.get_authoring_engagement_access(  # type: ignore[call-arg]
+                engagement_id=engagement_model.id
             )
             return engagement
         return None
@@ -219,7 +240,6 @@ class EngagementService:
         email_util.publish_to_email_queue(
             SourceType.ENGAGEMENT.value, eng_model.id, SourceAction.CREATED.value, True
         )
-        EngagementSlugService.create_engagement_slug(eng_model.id)
         EngagementSettingsService.create_default_settings(eng_model.id)
         return eng_model.find_by_id(eng_model.id)
 
@@ -228,6 +248,7 @@ class EngagementService:
         """Save engagement."""
         new_engagement = EngagementModel(
             name=engagement_data.get('name', None),
+            slug=engagement_data.get('slug', None),
             start_date=engagement_data.get('start_date', None),
             end_date=engagement_data.get('end_date', None),
             status_id=Status.Draft.value,
@@ -248,7 +269,7 @@ class EngagementService:
     def _create_eng_status_block(eng_id, engagement_data: dict):
         """Save engagement."""
         status_blocks = []
-        for status in engagement_data.get('status_block'):
+        for status in engagement_data.get('status_block', []):
             new_status_block: EngagementStatusBlockModel = EngagementStatusBlockModel(
                 engagement_id=eng_id,
                 survey_status=status.get('survey_status'),
@@ -324,12 +345,12 @@ class EngagementService:
         draft_status_restricted_changes = (EngagementModel.is_internal.key,)
         valid_statuses = [Status.Draft.value, Status.Scheduled.value]
         engagement_has_been_opened = engagement.status_id not in valid_statuses
-        if engagement_has_been_opened and any(
-            field in data for field in draft_status_restricted_changes
-        ):
-            raise ValueError(
-                'Some fields cannot be updated after the engagement has been published'
-            )
+        if engagement_has_been_opened:
+            for field in draft_status_restricted_changes:
+                if field in data and getattr(engagement, field) != data[field]:
+                    raise ValueError(
+                        f'{field} cannot be changed after the engagement has been opened'
+                    )
 
     @staticmethod
     def _validate_and_assign_survey(survey_id: int, engagement_id: int):
@@ -634,16 +655,17 @@ class EngagementService:
     @staticmethod
     def _get_tenant_name(tenant_id):
         tenant = TenantModel.find_by_id(tenant_id)
+        if not tenant:
+            raise ValueError('Tenant not found')
         return tenant.name
 
     @staticmethod
     def _get_dashboard_path(engagement: EngagementModel, lang_code):
-        engagement_slug = EngagementSlugModel.find_by_engagement_id(
-            engagement.id)
+        engagement_slug = engagement.slug
         paths = current_app.config['PATH_CONFIG']
         if engagement_slug:
             return paths['ENGAGEMENT']['DASHBOARD_SLUG'].format(
-                slug=engagement_slug.slug, lang=lang_code
+                slug=engagement_slug, lang=lang_code
             )
         return paths['ENGAGEMENT']['DASHBOARD'].format(
             engagement_id=engagement.id, lang=lang_code

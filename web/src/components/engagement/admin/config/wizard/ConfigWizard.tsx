@@ -17,7 +17,7 @@ const EngagementConfigurationWizard = () => {
     const loaderData = useRouteLoaderData('single-engagement') as EngagementLoaderAdminData;
     const engagement = React.use(loaderData.engagement);
     const teamMembers = React.use(loaderData.teamMembers);
-    const slug = React.use(loaderData.slug);
+    const slug = engagement.slug;
     const languages = React.use(loaderData.languages);
     return (
         <ResponsiveContainer>

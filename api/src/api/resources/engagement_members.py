@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""API endpoints for managing an engagement resource."""
+"""API endpoints for managing engagements' memberships."""
 
 from http import HTTPStatus
 
@@ -26,7 +26,8 @@ from api.schemas.memberships import MembershipSchema
 from api.services.membership_service import MembershipService
 from api.utils.util import allowedorigins, cors_preflight
 
-API = Namespace('engagements', description='Endpoints for Engagements Management')
+API = Namespace('engagement_members',
+                description='Endpoints for Engagement Membership Management')
 """Custom exception messages
 """
 
@@ -34,7 +35,7 @@ API = Namespace('engagements', description='Endpoints for Engagements Management
 @cors_preflight('GET,OPTIONS')
 @API.route('')
 class EngagementMembership(Resource):
-    """Resource for managing engagement's membership."""
+    """Resource for managing engagements' memberships."""
 
     @staticmethod
     @cross_origin(origins=allowedorigins())
@@ -55,7 +56,8 @@ class EngagementMembership(Resource):
         """Create a new membership."""
         # TODO validate against a schema.
         try:
-            member = MembershipService.create_membership(engagement_id, request.get_json())
+            member = MembershipService.create_membership(
+                engagement_id, request.get_json())
             return MembershipSchema().dump(member), HTTPStatus.OK
         except BusinessException as err:
             return {'message': err.error}, err.status_code
@@ -92,7 +94,8 @@ class EngagementMembershipUser(Resource):
                 include_revoked
             )
 
-            membership_schema = MembershipEngagementSchema() if include_engagement_details else MembershipSchema()
+            membership_schema = MembershipEngagementSchema(
+            ) if include_engagement_details else MembershipSchema()
 
             return jsonify(membership_schema.dump(members, many=True)), HTTPStatus.OK
         except BusinessException as err:
@@ -113,7 +116,8 @@ class RevokeMembership(Resource):
         """Update membership status."""
         try:
             action = request.get_json().get('action', str)
-            membership = MembershipService.update_membership_status(engagement_id, user_id, action)
+            membership = MembershipService.update_membership_status(
+                engagement_id, user_id, action)
             return MembershipSchema().dump(membership), HTTPStatus.OK
         except ValueError as err:
             return str(err), HTTPStatus.BAD_REQUEST

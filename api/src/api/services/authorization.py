@@ -13,24 +13,27 @@ from api.models.membership import Membership as MembershipModel
 from api.models.staff_user import StaffUser as StaffUserModel
 from api.utils.enums import MembershipStatus
 from api.utils.roles import Role
-from api.utils.user_context import UserContext, user_context
+from api.utils.user_context import UserContext
+from api.utils.user_context import user_context as add_user_context
 
 
 UNAUTHORIZED_MSG = 'You are not authorized to perform this action!'
 
 
 # pylint: disable=unused-argument
-@user_context
+@add_user_context
 def check_auth(**kwargs):
     """Check if user is authorized to perform action on the service."""
     skip_tenant_check = current_app.config.get('IS_SINGLE_TENANT_ENVIRONMENT')
     user_from_context: UserContext = kwargs['user_context']
-    user_from_db = StaffUserModel.get_user_by_external_id(user_from_context.sub)
+    user_from_db = StaffUserModel.get_user_by_external_id(
+        user_from_context.sub)
     if not user_from_db:
         abort(HTTPStatus.FORBIDDEN, 'User not found')
 
     # Retrieve tenant specific user roles from OIDC token info
-    user_roles = current_app.config['JWT_ROLE_CALLBACK'](user_from_context.token_info)
+    user_roles = current_app.config['JWT_ROLE_CALLBACK'](
+        user_from_context.token_info)
 
     if not user_roles:
         abort(HTTPStatus.FORBIDDEN, UNAUTHORIZED_MSG)
@@ -44,7 +47,8 @@ def check_auth(**kwargs):
         if skip_tenant_check:
             return
         if 'engagement_id' in kwargs:
-            _check_engagement_has_tenant(kwargs.get('engagement_id'), g.tenant_id)
+            _check_engagement_has_tenant(
+                kwargs.get('engagement_id'), g.tenant_id)
         return
     membership_eligible_roles = {MembershipType.TEAM_MEMBER.name, MembershipType.REVIEWER.name
                                  } & required_roles
@@ -54,6 +58,51 @@ def check_auth(**kwargs):
         return
 
     abort(HTTPStatus.FORBIDDEN, UNAUTHORIZED_MSG)
+
+
+@add_user_context
+def can_edit_authoring_engagement(*, engagement_id, user_context: UserContext) -> bool:
+    """Return whether the current user can access the authoring UI for an engagement."""
+    return get_authoring_engagement_access(engagement_id=engagement_id, user_context=user_context)['can_edit']
+
+
+@add_user_context
+def get_authoring_engagement_access(*, engagement_id, user_context: UserContext) -> dict:
+    """Return authoring access details for the current user and engagement."""
+    token_info = user_context.token_info or {}
+    subject = user_context.sub or token_info.get('sub')
+    user_from_db = StaffUserModel.get_user_by_external_id(subject)
+    user_roles = []
+    try:
+        user_roles = current_app.config['JWT_ROLE_CALLBACK'](token_info)
+    except KeyError:
+        current_app.logger.warning(
+            'JWT_ROLE_CALLBACK is not configured. No roles will be found for the user.')
+    if not subject \
+            or not (user_from_db := StaffUserModel.get_user_by_external_id(subject)) \
+            or not user_roles:
+        return {'can_edit': False, 'access_level': None}
+
+    if Role.SUPER_ADMIN.value in user_roles or Role.VIEW_PRIVATE_ENGAGEMENTS.value in user_roles:
+        return {'can_edit': True, 'access_level': 'ADMIN'}
+
+    membership = MembershipModel.find_by_engagement_and_user_id(
+        engagement_id,
+        user_from_db.id,
+        status=MembershipStatus.ACTIVE.value,
+    )
+
+    if not membership:
+        return {'can_edit': False, 'access_level': None}
+
+    skip_tenant_check = current_app.config.get('IS_SINGLE_TENANT_ENVIRONMENT')
+    if not skip_tenant_check and membership.tenant_id and str(membership.tenant_id) != str(g.tenant_id):
+        return {'can_edit': False, 'access_level': None}
+
+    if membership.type == MembershipType.TEAM_MEMBER:
+        return {'can_edit': True, 'access_level': MembershipType.TEAM_MEMBER.name}
+
+    return {'can_edit': False, 'access_level': membership.type.name}
 
 
 def _check_engagement_has_tenant(eng_id, tenant_id):
@@ -82,7 +131,8 @@ def _has_team_membership(kwargs, user_from_context, team_permitted_roles) -> boo
 
         return False
 
-    membership = MembershipModel.find_by_engagement_and_user_id(eng_id, user.id, status=MembershipStatus.ACTIVE.value)
+    membership = MembershipModel.find_by_engagement_and_user_id(
+        eng_id, user.id, status=MembershipStatus.ACTIVE.value)
 
     if not membership:
 

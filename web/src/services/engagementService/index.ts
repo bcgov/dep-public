@@ -1,16 +1,16 @@
 import { setEngagements } from './engagementSlice';
 import http from 'apiManager/httpRequestHandler';
-import { AnyAction, Dispatch } from 'redux';
+import { UnknownAction, Dispatch } from 'redux';
 import { Engagement } from 'models/engagement';
 import { Language } from 'models/language';
 import { PatchEngagementRequest, PostEngagementRequest, PutEngagementRequest } from './types';
 import Endpoints from 'apiManager/endpoints';
 import { replaceUrl } from 'helper';
 import { Page } from 'services/type';
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 import { getLanguages } from 'services/languageService';
 
-export const fetchAll = async (dispatch: Dispatch<AnyAction>): Promise<Engagement[]> => {
+export const fetchAll = async (dispatch: Dispatch<UnknownAction>): Promise<Engagement[]> => {
     const responseData = await http.GetRequest<Engagement[]>(Endpoints.Engagement.GET_LIST);
     const engagements = responseData.data ?? [];
     dispatch(setEngagements(engagements));
@@ -39,6 +39,21 @@ export interface GetEngagementsParams {
     metadata?: string;
     tenant_id?: number;
 }
+
+const handleAxiosError = (e: AxiosError) => {
+    if (e?.response?.data && typeof e.response.data === 'string' && e.response.data.length < 200) {
+        throw new Error(e.response.data);
+    } else if ((e?.response?.data as ApiErrorBody)?.message) {
+        throw new Error((e.response?.data as ApiErrorBody).message);
+    } else if ((e?.response?.data as ApiErrorBody)?.error) {
+        throw new Error((e.response?.data as ApiErrorBody).error);
+    } else if (e?.response?.status === 404) {
+        throw new Error('Engagement not found');
+    } else {
+        throw new Error(`Request failed with status code ${e?.response?.status}`);
+    }
+};
+
 export const getEngagements = async (params: GetEngagementsParams = {}): Promise<Page<Engagement>> => {
     const responseData = await http.GetRequest<Page<Engagement>>(Endpoints.Engagement.GET_LIST, params);
     return (
@@ -51,14 +66,38 @@ export const getEngagements = async (params: GetEngagementsParams = {}): Promise
 
 export const getEngagement = async (engagementId: number): Promise<Engagement> => {
     const url = replaceUrl(Endpoints.Engagement.GET, 'engagement_id', String(engagementId));
-    if (!engagementId || isNaN(Number(engagementId))) {
-        return Promise.reject('Invalid Engagement Id ' + engagementId);
+    if (!engagementId || Number.isNaN(Number(engagementId))) {
+        throw new Error('Invalid Engagement ID: ' + engagementId);
     }
-    const response = await http.GetRequest<Engagement>(url);
-    if (response.data) {
+    const response = await http.GetRequest<Engagement>(url).catch((e: unknown) => {
+        if (axios.isAxiosError(e)) {
+            handleAxiosError(e);
+        } else {
+            throw e;
+        }
+    });
+    if (response?.data) {
         return response.data;
     }
-    return Promise.reject('Failed to fetch engagement');
+    throw new Error('Failed to fetch engagement');
+};
+
+export const getEngagementBySlug = async (slug: string): Promise<Engagement> => {
+    const url = replaceUrl(Endpoints.Engagement.GET_BY_SLUG, 'eng_slug', slug);
+
+    const response = await http.GetRequest<Engagement>(url).catch((e: unknown) => {
+        if (axios.isAxiosError(e)) {
+            handleAxiosError(e);
+        } else {
+            throw e;
+        }
+    });
+
+    if (response?.data) {
+        return response.data;
+    }
+
+    throw new Error('Failed to fetch engagement by slug');
 };
 
 export const getAvailableTranslationLanguages = async (engagementId: number): Promise<Language[]> => {
@@ -67,7 +106,7 @@ export const getAvailableTranslationLanguages = async (engagementId: number): Pr
         'engagement_id',
         String(engagementId),
     );
-    if (!engagementId || isNaN(Number(engagementId))) {
+    if (!engagementId || Number.isNaN(Number(engagementId))) {
         throw new Error('Invalid Engagement Id ' + engagementId);
     }
     const response = await http.GetRequest<Language[]>(url);
@@ -170,7 +209,7 @@ export const postEngagement = async (data: PostEngagementRequest): Promise<Engag
     if (response.data) {
         return response.data;
     }
-    return Promise.reject('Failed to create engagement');
+    throw new Error('Failed to create engagement');
 };
 
 export const putEngagement = async (data: PutEngagementRequest): Promise<Engagement> => {
@@ -178,7 +217,7 @@ export const putEngagement = async (data: PutEngagementRequest): Promise<Engagem
     if (response.data) {
         return response.data;
     }
-    return Promise.reject('Failed to update engagement');
+    throw new Error('Failed to update engagement');
 };
 
 export const patchEngagement = async (data: PatchEngagementRequest): Promise<Engagement> => {
@@ -186,7 +225,7 @@ export const patchEngagement = async (data: PatchEngagementRequest): Promise<Eng
     if (response.data) {
         return response.data;
     }
-    return Promise.reject('Failed to update engagement');
+    throw new Error('Failed to update engagement');
 };
 
 export const deleteEngagement = async (engagementId: number): Promise<{ id: number }> => {

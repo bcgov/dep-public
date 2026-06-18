@@ -2,7 +2,6 @@ import axios from 'axios';
 import { ENGAGEMENT_MEMBERSHIP_STATUS } from 'models/engagementTeamMember';
 import { ActionFunction, redirect } from 'react-router';
 import { ApiErrorBody, patchEngagement } from 'services/engagementService';
-import { patchEngagementSlug } from 'services/engagementSlugService';
 import { openNotification } from 'services/notificationService/notificationSlice';
 import {
     addTeamMemberToEngagement,
@@ -39,6 +38,7 @@ export const engagementUpdateAction: ActionFunction = async ({ request, params }
     try {
         await patchEngagement({
             id: engagementId,
+            slug: formData.get('slug') as string,
             name: formData.get('name') as string,
             start_date: formData.get('start_date') as string,
             end_date: formData.get('end_date') as string,
@@ -50,14 +50,6 @@ export const engagementUpdateAction: ActionFunction = async ({ request, params }
         console.error('Error updating engagement:', e);
         store.dispatch(openNotification({ severity: 'error', text: message }));
         return { status: 'failure' };
-    }
-    try {
-        await patchEngagementSlug({
-            engagement_id: engagementId,
-            slug: formData.get('slug') as string,
-        });
-    } catch (e) {
-        console.error('Error updating engagement slug', e);
     }
 
     const currentTeamMembers = await getTeamMembers({ engagement_id: engagementId });

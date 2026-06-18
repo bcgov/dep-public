@@ -25,8 +25,7 @@ from api.exceptions.business_exception import BusinessException
 from api.services.email_verification_service import EmailVerificationService
 from api.constants.email_verification import EmailVerificationType
 from api.utils import notification
-from tests.utilities.factory_scenarios import TestEngagementSlugInfo
-from tests.utilities.factory_utils import factory_engagement_slug_model, factory_survey_and_eng_model, set_global_tenant
+from tests.utilities.factory_utils import factory_survey_and_eng_model, set_global_tenant
 
 
 fake = Faker()
@@ -36,11 +35,6 @@ def test_create_email_verification(client, jwt, session, ):  # pylint:disable=un
     """Assert that an email verification can be Created."""
     set_global_tenant()
     survey, eng = factory_survey_and_eng_model()
-    slug_info = {
-        **TestEngagementSlugInfo.slug1,
-        'engagement_id': eng.id
-    }
-    factory_engagement_slug_model(slug_info)
     email = fake.email()
     to_dict = {
         'email_address': email,
@@ -59,12 +53,7 @@ def test_create_email_verification(client, jwt, session, ):  # pylint:disable=un
 def test_create_email_verification_exception(client, jwt, session, ):  # pylint:disable=unused-argument
     """Assert that an email verification can be Created."""
     set_global_tenant()
-    survey, eng = factory_survey_and_eng_model()
-    slug_info = {
-        **TestEngagementSlugInfo.slug1,
-        'engagement_id': eng.id
-    }
-    factory_engagement_slug_model(slug_info)
+    survey, _ = factory_survey_and_eng_model()
     email = fake.email()
     to_dict = {
         'email_address': email,

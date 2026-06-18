@@ -46,7 +46,6 @@ from .widget_events import API as WIDGET_EVENTS_API
 from .widget_map import API as WIDGET_MAPS_API
 from .shape_file import API as SHAPEFILE_API
 from .tenant import API as TENANT_API
-from .engagement_slug import API as ENGAGEMENT_SLUG_API
 from .report_setting import API as REPORT_SETTING_API
 from .widget_video import API as WIDGET_VIDEO_API
 from .engagement_settings import API as ENGAGEMENT_SETTINGS_API
@@ -85,7 +84,8 @@ API.add_namespace(SUBMISSION_API)
 API.add_namespace(SUBSCRIPTION_API)
 API.add_namespace(COMMENT_API)
 API.add_namespace(EMAIL_VERIFICATION_API)
-API.add_namespace(ENGAGEMENT_DETAILS_TAB_API, path='/engagement/<int:engagement_id>/details')
+API.add_namespace(ENGAGEMENT_DETAILS_TAB_API,
+                  path='/engagement/<int:engagement_id>/details')
 API.add_namespace(FEEDBACK_API)
 API.add_namespace(WIDGET_API)
 API.add_namespace(CONTACT_API)
@@ -93,27 +93,40 @@ API.add_namespace(VALUE_COMPONENTS_API)
 API.add_namespace(SHAPEFILE_API)
 API.add_namespace(TENANT_API)
 API.add_namespace(METADATA_TAXON_API, path='/engagement_metadata')
-API.add_namespace(ENGAGEMENT_METADATA_API, path='/engagements/<int:engagement_id>/metadata')
-API.add_namespace(ENGAGEMENT_MEMBERS_API, path='/engagements/<string:engagement_id>/members')
-API.add_namespace(WIDGET_DOCUMENTS_API, path='/widgets/<string:widget_id>/documents')
+API.add_namespace(ENGAGEMENT_METADATA_API,
+                  path='/engagements/<int:engagement_id>/metadata')
+API.add_namespace(ENGAGEMENT_MEMBERS_API,
+                  path='/engagements/<string:engagement_id>/members')
+API.add_namespace(WIDGET_DOCUMENTS_API,
+                  path='/widgets/<string:widget_id>/documents')
 API.add_namespace(WIDGET_EVENTS_API, path='/widgets/<int:widget_id>/events')
 API.add_namespace(WIDGET_MAPS_API, path='/widgets/<int:widget_id>/maps')
-API.add_namespace(ENGAGEMENT_SLUG_API, path='/slugs')
-API.add_namespace(REPORT_SETTING_API, path='/surveys/<int:survey_id>/reportsettings')
+API.add_namespace(REPORT_SETTING_API,
+                  path='/surveys/<int:survey_id>/reportsettings')
 API.add_namespace(WIDGET_VIDEO_API, path='/widgets/<int:widget_id>/videos')
-API.add_namespace(WIDGET_LISTENING_API, path='/widgets/<int:widget_id>/listening_widgets')
+API.add_namespace(WIDGET_LISTENING_API,
+                  path='/widgets/<int:widget_id>/listening_widgets')
 API.add_namespace(ENGAGEMENT_SETTINGS_API)
-API.add_namespace(WIDGET_TIMELINE_API, path='/widgets/<int:widget_id>/timelines')
+API.add_namespace(WIDGET_TIMELINE_API,
+                  path='/widgets/<int:widget_id>/timelines')
 API.add_namespace(WIDGET_POLL_API, path='/widgets/<int:widget_id>/polls')
 API.add_namespace(WIDGET_IMAGE_API, path='/widgets/<int:widget_id>/images')
 API.add_namespace(LANGUAGE_API, path='/languages')
-API.add_namespace(SURVEY_TRANSLATION_API, path='/surveys/<int:survey_id>/translations')
-API.add_namespace(POLL_ANSWER_TRANSLATION_API, path='/polls/<int:poll_id>/translations')
+API.add_namespace(SURVEY_TRANSLATION_API,
+                  path='/surveys/<int:survey_id>/translations')
+API.add_namespace(POLL_ANSWER_TRANSLATION_API,
+                  path='/polls/<int:poll_id>/translations')
 API.add_namespace(CONTACT_TRANSLATION_API, path='/contact_translations')
-API.add_namespace(EVENT_ITEM_TRANSLATION_API, path='/events/<int:event_id>/translations')
-API.add_namespace(TIMELINE_EVENT_TRANSLATION_API, path='/timelines/<int:timeline_id>/translations')
-API.add_namespace(ENGAGEMENT_TRANSLATION_API, path='/engagement/<int:engagement_id>/translations')
-API.add_namespace(ENGAGEMENT_DETAILS_TAB_TRANSLATION_API, path='/engagement/<int:engagement_id>/details/translations')
-API.add_namespace(ENGAGEMENT_CONTENT_TRANSLATION_API, path='/engagement/<int:engagement_id>/content/translations')
+API.add_namespace(EVENT_ITEM_TRANSLATION_API,
+                  path='/events/<int:event_id>/translations')
+API.add_namespace(TIMELINE_EVENT_TRANSLATION_API,
+                  path='/timelines/<int:timeline_id>/translations')
+API.add_namespace(ENGAGEMENT_TRANSLATION_API,
+                  path='/engagement/<int:engagement_id>/translations')
+API.add_namespace(ENGAGEMENT_DETAILS_TAB_TRANSLATION_API,
+                  path='/engagement/<int:engagement_id>/details/translations')
+API.add_namespace(ENGAGEMENT_CONTENT_TRANSLATION_API,
+                  path='/engagement/<int:engagement_id>/content/translations')
 API.add_namespace(VERSION_API, path='/version')
-API.add_namespace(widget_image_translation_api, path='/widget-image-translation')
+API.add_namespace(widget_image_translation_api,
+                  path='/widget-image-translation')

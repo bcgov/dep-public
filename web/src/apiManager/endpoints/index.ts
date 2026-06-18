@@ -6,6 +6,7 @@ const Endpoints = {
         CREATE: `${AppConfig.apiUrl}/engagements/`,
         UPDATE: `${AppConfig.apiUrl}/engagements/`,
         GET: `${AppConfig.apiUrl}/engagements/engagement_id`,
+        GET_BY_SLUG: `${AppConfig.apiUrl}/engagements/slug/eng_slug`,
         DELETE: `${AppConfig.apiUrl}/engagements/engagement_id/delete`,
     },
     EngagementTranslations: {
@@ -40,11 +41,6 @@ const Endpoints = {
         CREATE: `${AppConfig.apiUrl}/engagementsettings/`,
         UPDATE: `${AppConfig.apiUrl}/engagementsettings/`,
         GET: `${AppConfig.apiUrl}/engagementsettings/engagement_id`,
-    },
-    EngagementSlug: {
-        UPDATE: `${AppConfig.apiUrl}/slugs/slug_id`,
-        GET: `${AppConfig.apiUrl}/slugs/slug_id`,
-        GET_ENG_ID: `${AppConfig.apiUrl}/slugs/engagements/engagement_id`,
     },
     EngagementDetailsTab: {
         GET_LIST: `${AppConfig.apiUrl}/engagement/engagement_id/details`,

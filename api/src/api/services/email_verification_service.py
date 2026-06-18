@@ -9,7 +9,6 @@ from api.constants.email_verification import INTERNAL_EMAIL_DOMAIN, EmailVerific
 from api.constants.subscription_type import SubscriptionTypes
 from api.exceptions.business_exception import BusinessException
 from api.models import Engagement as EngagementModel
-from api.models import EngagementSlug as EngagementSlugModel
 from api.models import Survey as SurveyModel
 from api.models import Tenant as TenantModel
 from api.models.email_verification import EmailVerification
@@ -47,7 +46,8 @@ class EmailVerificationService:
         """Create an email verification."""
         cls.validate_fields(email_verification)
         if email_verification.get('type', None) == EmailVerificationType.Subscribe:
-            subscription_type = cls._normalize_subscription_type(subscription_type)
+            subscription_type = cls._normalize_subscription_type(
+                subscription_type)
         email_address: str = email_verification.get('email_address')
         survey = SurveyModel.find_by_id(email_verification.get('survey_id'))
         engagement: EngagementModel = EngagementModel.find_by_id(
@@ -112,7 +112,8 @@ class EmailVerificationService:
         subject, body, args, template_id = EmailVerificationService._render_email_template(
             survey,
             email_verification.get('verification_token'),
-            email_verification.get('language_code', current_app.config['DEFAULT_LANGUAGE']),
+            email_verification.get(
+                'language_code', current_app.config['DEFAULT_LANGUAGE']),
             email_verification.get('type'),
             subscription_type,
             participant_id
@@ -150,8 +151,10 @@ class EmailVerificationService:
     # pylint: disable-msg=too-many-locals
     def _render_subscribe_email_template(survey: SurveyModel, token, subscription_type, participant_id, lang_code):
         # url is origin url excluding context path
-        engagement: EngagementModel = EngagementModel.find_by_id(survey.engagement_id)
-        tenant_name = EmailVerificationService._get_tenant_name(engagement.tenant_id)
+        engagement: EngagementModel = EngagementModel.find_by_id(
+            survey.engagement_id)
+        tenant_name = EmailVerificationService._get_tenant_name(
+            engagement.tenant_id)
         project_name = EmailVerificationService._get_project_name(
             subscription_type, tenant_name, engagement)
         is_subscribing_to_tenant = subscription_type == SubscriptionTypes.TENANT.value
@@ -167,7 +170,8 @@ class EmailVerificationService:
         unsubscribe_path = paths.get('UNSUBSCRIBE').format(
             engagement_id=engagement.id, participant_id=participant_id, lang=lang_code
         )
-        confirm_url = notification.get_tenant_site_url(engagement.tenant_id, confirm_path)
+        confirm_url = notification.get_tenant_site_url(
+            engagement.tenant_id, confirm_path)
         unsubscribe_url = notification.get_tenant_site_url(
             engagement.tenant_id, unsubscribe_path)
         email_environment = templates['ENVIRONMENT']
@@ -196,7 +200,8 @@ class EmailVerificationService:
     def _normalize_subscription_type(subscription_type):
         """Validate and normalize subscription type to enum values."""
         normalized_type = (subscription_type or '').strip().upper()
-        valid_types = {subscription_type.value for subscription_type in SubscriptionTypes}
+        valid_types = {
+            subscription_type.value for subscription_type in SubscriptionTypes}
         if normalized_type not in valid_types:
             raise BusinessException(
                 error='Invalid subscription type.',
@@ -207,15 +212,19 @@ class EmailVerificationService:
     @staticmethod
     def _render_survey_email_template(survey: SurveyModel, token, lang_code):
         # url is origin url excluding context path
-        engagement: EngagementModel = EngagementModel.find_by_id(survey.engagement_id)
+        engagement: EngagementModel = EngagementModel.find_by_id(
+            survey.engagement_id)
         paths = current_app.config['PATH_CONFIG']
         templates = current_app.config['EMAIL_TEMPLATES']
         subject_template = templates['VERIFICATION']['SUBJECT']
         template = Template.get_template('email_verification.html')
-        survey_path = paths['SURVEY'].format(survey_id=survey.id, token=token, lang=lang_code)
-        engagement_path = EmailVerificationService.get_engagement_path(engagement, lang_code=lang_code)
+        survey_path = paths['SURVEY'].format(
+            survey_id=survey.id, token=token, lang=lang_code)
+        engagement_path = EmailVerificationService.get_engagement_path(
+            engagement, lang_code=lang_code)
         site_url = notification.get_tenant_site_url(engagement.tenant_id)
-        tenant_name = EmailVerificationService._get_tenant_name(engagement.tenant_id)
+        tenant_name = EmailVerificationService._get_tenant_name(
+            engagement.tenant_id)
         args = {
             'engagement_name': engagement.name,
             'survey_url': f'{site_url}{survey_path}',
@@ -240,15 +249,15 @@ class EmailVerificationService:
         """Get an engagement path."""
         lang_code = lang_code or current_app.config['DEFAULT_LANGUAGE']
         paths = current_app.config['PATH_CONFIG']
-        if is_public_url:
-            engagement_slug = EngagementSlugModel.find_by_engagement_id(engagement.id)
-            if engagement_slug:
-                return paths['ENGAGEMENT']['SLUG'].format(slug=engagement_slug.slug, lang=lang_code)
+        if is_public_url and engagement.slug:
+            return paths['ENGAGEMENT']['SLUG'].format(slug=engagement.slug, lang=lang_code)
         return paths['ENGAGEMENT']['VIEW'].format(engagement_id=engagement.id, lang=lang_code)
 
     @staticmethod
     def _get_tenant_name(tenant_id):
         tenant = TenantModel.find_by_id(tenant_id)
+        if not tenant:
+            raise ValueError('Tenant not found')
         return tenant.name
 
     @staticmethod

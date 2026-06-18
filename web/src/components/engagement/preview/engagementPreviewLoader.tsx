@@ -1,6 +1,5 @@
 import { Params } from 'react-router';
 import { getAvailableTranslationLanguages, getEngagement } from 'services/engagementService';
-import { getSlugByEngagementId } from 'services/engagementSlugService';
 import { getWidgets } from 'services/widgetService';
 import { getEngagementMetadata, getMetadataTaxa } from 'services/engagementMetadataService';
 import { Engagement, EngagementMetadata, MetadataTaxon } from 'models/engagement';
@@ -23,7 +22,6 @@ import {
 
 export type EngagementPreviewLoaderData = {
     engagement: Promise<Engagement>;
-    slug: Promise<string>;
     widgets: Promise<Widget[]>;
     details: Promise<EngagementDetailsTab[]>;
     metadata: Promise<EngagementMetadata[]>;
@@ -58,9 +56,6 @@ export const engagementPreviewLoader = async ({ params }: { params: Params<strin
     ).toLowerCase();
 
     const languages = tenantId ? getTenantLanguages(tenantId) : Promise.resolve([]);
-    const slug = getSlugByEngagementId(Number(engagementId))
-        .then((response) => response.slug)
-        .catch(() => '');
     const engagement = getEngagement(Number(engagementId));
     const widgets = engagement.then((response) => getWidgets(Number(response.id)));
     const details = engagement.then((response) => getDetailsTabs(response.id));
@@ -98,7 +93,6 @@ export const engagementPreviewLoader = async ({ params }: { params: Params<strin
 
     return {
         engagement,
-        slug,
         widgets,
         details,
         metadata,

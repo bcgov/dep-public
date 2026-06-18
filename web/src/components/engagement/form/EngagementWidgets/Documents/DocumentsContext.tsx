@@ -1,13 +1,13 @@
 import React, { createContext, useState, useEffect, useContext, JSX, useMemo } from 'react';
 import { useAppDispatch } from 'hooks';
 import { openNotification } from 'services/notificationService/notificationSlice';
-import { ActionContext } from '../../ActionContext';
 import { DocumentItem } from 'models/document';
 import { WidgetDrawerContext } from '../WidgetDrawerContext';
 import { Widget, WidgetType } from 'models/widget';
 import { fetchDocuments } from 'services/widgetService/DocumentService';
-import { useParams } from 'react-router';
+import { useParams, useRouteLoaderData } from 'react-router';
 import { getEngagementContentTranslationsByCode } from 'services/engagementContentTranslationService';
+import { EngagementLoaderAdminData } from 'engagements/admin/EngagementLoaderAdmin';
 
 export interface DocumentsContextProps {
     documentToEdit: DocumentItem | null;
@@ -54,7 +54,9 @@ export const DocumentsProvider = ({ children }: { children: JSX.Element | JSX.El
     const { languageCode } = useParams<{ languageCode?: string }>();
     const activeLanguageCode = (languageCode ?? 'en').toLowerCase();
     const { widgets, isWidgetInScope } = useContext(WidgetDrawerContext);
-    const { savedEngagement } = useContext(ActionContext);
+    const savedEngagement = React.use(
+        (useRouteLoaderData('single-engagement') as EngagementLoaderAdminData)?.engagement,
+    );
     const [documentToEdit, setDocumentToEdit] = useState<DocumentItem | null>(null);
     const [documents, setDocuments] = useState<DocumentItem[]>([]);
     const [loadingDocuments, setLoadingDocuments] = useState(true);
