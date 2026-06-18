@@ -1,12 +1,9 @@
-import React from 'react';
-// import react-testing methods
-import { render, fireEvent, waitFor, screen } from '@testing-library/react';
 // add custom jest matchers from jest-dom
 import '@testing-library/jest-dom';
 // the component to test
 import { getEngagementBySlug, getEngagement } from 'services/engagementService';
 import http from 'apiManager/httpRequestHandler';
-import axios, { Axios, AxiosError, AxiosRequestConfig } from 'axios';
+import axios, { AxiosError, AxiosRequestConfig } from 'axios';
 import { Engagement } from 'models/engagement';
 import { AppConfig } from 'config';
 import endpoints from 'apiManager/endpoints';
@@ -62,6 +59,21 @@ const mockEngagementData = {
             }),
         );
     }
+    if (url.includes(endpoints.Engagement.GET.replace('engagement_id', '1'))) {
+        return Promise.resolve({ data: mockEngagementData });
+    }
+    if (url.includes(endpoints.Engagement.GET.replace('engagement_id', ''))) {
+        return Promise.reject(
+            createAxiosLikeError({
+                message: 'Request failed with status code 404',
+                code: 'ERR_BAD_REQUEST',
+                response: {
+                    status: 404,
+                    data: 'Request failed with status code 404',
+                },
+            }),
+        );
+    }
     return Promise.reject(networkError);
 });
 
@@ -85,6 +97,16 @@ describe('Fetching Engagements with EngagementService', () => {
         sessionStorage.setItem('tenantId', '1');
 
         const engagement = await getEngagementBySlug('test-engagement-slug');
+        expect(engagement.id).toBe(mockEngagementData.id);
+        expect(engagement.name).toBe(mockEngagementData.name);
+        expect(engagement.description).toBe(mockEngagementData.description);
+        expect(engagement.start_date).toBe(mockEngagementData.start_date);
+        expect(engagement.end_date).toBe(mockEngagementData.end_date);
+    });
+
+    test('fetches engagement by ID successfully', async () => {
+        const engagementId = 1;
+        const engagement = await getEngagement(engagementId);
         expect(engagement.id).toBe(mockEngagementData.id);
         expect(engagement.name).toBe(mockEngagementData.name);
         expect(engagement.description).toBe(mockEngagementData.description);
