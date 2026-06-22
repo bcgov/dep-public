@@ -16,35 +16,35 @@ const UnauthenticatedRoutes = resolveLazyRouteTree(
             <LazyRoute
                 path=":language"
                 id="public-single-engagement"
-                ComponentLazy={() =>
-                    import('engagements/public/view').then((module) => withLanguageParam(module.default))
-                }
                 loaderLazy={() => import('engagements/public/view/EngagementLoaderPublic')}
-                handleLazy={() =>
-                    import('routes/UnauthenticatedViewSwitcherHandles').then((m) => m.publicEngagementHandle)
-                }
-            />
-            <LazyRoute
-                path="dashboard/:dashboardType/:language"
-                ComponentLazy={() => import('components/publicDashboard').then((m) => withLanguageParam(m.default))}
-                handleLazy={() =>
-                    import('routes/UnauthenticatedViewSwitcherHandles').then((m) => m.publicDashboardHandle)
-                }
-            />
-            <LazyRoute
-                path="comments/:dashboardType/:language"
-                ComponentLazy={() => import('engagements/dashboard/comment').then((m) => withLanguageParam(m.default))}
-                handleLazy={() =>
-                    import('routes/UnauthenticatedViewSwitcherHandles').then((m) => m.publicCommentsHandle)
-                }
-            />
-            <LazyRoute
-                path="edit/:token/:language"
-                ComponentLazy={() =>
-                    import('components/survey/edit').then((module) => withLanguageParam(module.default))
-                }
-                loaderLazy={() => import('components/survey/building/SurveyLoader')}
-            />
+                handleLazy={() => import('routes/UnauthenticatedRouteHandles').then((m) => m.publicEngagementHandle)}
+            >
+                <LazyRoute
+                    index
+                    ComponentLazy={() =>
+                        import('engagements/public/view').then((module) => withLanguageParam(module.default))
+                    }
+                />
+                <LazyRoute
+                    path="dashboard/:dashboardType"
+                    ComponentLazy={() => import('components/publicDashboard').then((m) => withLanguageParam(m.default))}
+                    handleLazy={() => import('routes/UnauthenticatedRouteHandles').then((m) => m.publicDashboardHandle)}
+                />
+                <LazyRoute
+                    path="comments/:dashboardType"
+                    ComponentLazy={() =>
+                        import('engagements/dashboard/comment').then((m) => withLanguageParam(m.default))
+                    }
+                    handleLazy={() => import('routes/UnauthenticatedRouteHandles').then((m) => m.publicCommentsHandle)}
+                />
+                <LazyRoute
+                    path="edit/:token/:language"
+                    ComponentLazy={() =>
+                        import('components/survey/edit').then((module) => withLanguageParam(module.default))
+                    }
+                    loaderLazy={() => import('components/survey/building/SurveyLoader')}
+                />
+            </LazyRoute>
             <LazyRoute
                 path=":scriptionAction/:scriptionKey/:language"
                 ComponentLazy={() =>

@@ -31,6 +31,26 @@ const publicCommentsViewSwitcher: ViewSwitcherHandle = async (_data, params) => 
     };
 };
 
-export const publicEngagementHandle = { viewSwitcher: publicEngagementViewSwitcher };
-export const publicDashboardHandle = { viewSwitcher: publicDashboardViewSwitcher };
-export const publicCommentsHandle = { viewSwitcher: publicCommentsViewSwitcher };
+export const publicEngagementHandle = {
+    viewSwitcher: publicEngagementViewSwitcher,
+    crumb: async (data: EngagementLoaderPublicData) => {
+        console.log('publicEngagementHandle received data:', data);
+        const translationBundle = await data.translationBundle;
+        const engagement = await data.engagement;
+        return {
+            name:
+                translationBundle.currentTranslation?.name ??
+                translationBundle.defaultTranslation?.name ??
+                engagement.name ??
+                'Engagement',
+        };
+    },
+};
+export const publicDashboardHandle = {
+    viewSwitcher: publicDashboardViewSwitcher,
+    crumb: () => ({ name: 'Dashboard' }),
+};
+export const publicCommentsHandle = {
+    viewSwitcher: publicCommentsViewSwitcher,
+    crumb: () => ({ name: 'Comments' }),
+};

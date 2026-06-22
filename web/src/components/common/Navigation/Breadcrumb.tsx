@@ -6,9 +6,13 @@ import { UIMatch, useMatches } from 'react-router';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faHome } from '@fortawesome/pro-regular-svg-icons';
 
-type BreadcrumbProps = {
+export type BreadcrumbProps = {
     name: string;
     link?: string;
+    // If true, this crumb will be considered an index page for its parent and will not be used
+    // when generating the page title, though the breadcrumb will still render unaffected.
+    title?: string; // Optional custom title for document title generation, if different from the breadcrumb name
+    isIndex?: boolean;
 };
 
 /**
@@ -58,14 +62,15 @@ export const BreadcrumbTrail: React.FC<{ crumbs: BreadcrumbProps[]; smallScreenO
     );
 };
 
-type UICrumbFunction = (data: unknown) => Promise<BreadcrumbProps> | BreadcrumbProps;
+export type UICrumbFunction = (data: unknown) => Promise<BreadcrumbProps> | BreadcrumbProps;
 
-interface UIRouteHandle {
+export interface UIRouteHandle {
     crumb?: UICrumbFunction;
+    excludeFromTitle?: boolean; // If true, this route's crumb will be excluded from the document title generation
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-interface UIMatchWithCrumb extends UIMatch<unknown, UIRouteHandle> {}
+export interface UIMatchWithCrumb extends UIMatch<unknown, UIRouteHandle> {}
 
 /**
  * Automatically generates breadcrumbs based on the `handle.crumb` function of the current route and its parents.

@@ -31,14 +31,22 @@ const AuthenticatedRoutes = resolveLazyRouteTree(
             ComponentLazy={() => import('components/appLayouts/AuthenticatedLayout')}
             ErrorBoundaryLazy={() => import('./NotFound')}
             loaderLazy={() => import('routes/AuthenticatedRootRouteLoader')}
-            handle={{ crumb: () => ({ name: 'Home', link: getPath(ROUTES.HOME) }) }}
+            // Don't show "Home" at the end of every page title - treat as an index page for the app
+            handle={{ crumb: () => ({ name: 'Home', isIndex: true, link: getPath(ROUTES.HOME) }) }}
             shouldRevalidate={() => false} // Cache the root loader data for the authenticated area
         >
             <LazyRoute index ComponentLazy={() => import('components/dashboard')} />
             <LazyRoute path="no-access" ComponentLazy={() => import('routes/NoAccess')} />
-            <Route path="surveys" handle={{ crumb: () => ({ name: 'Surveys', link: getPath(ROUTES.SURVEYS) }) }}>
+            <Route
+                path="surveys"
+                handle={{ crumb: () => ({ name: 'Surveys', isIndex: true, link: getPath(ROUTES.SURVEYS) }) }}
+            >
                 <LazyRoute index ComponentLazy={() => import('components/survey/listing')} />
-                <LazyRoute path="create" ComponentLazy={() => import('components/survey/create')} />
+                <LazyRoute
+                    path="create"
+                    ComponentLazy={() => import('components/survey/create')}
+                    handle={{ crumb: () => ({ name: 'New Survey' }) }}
+                />
                 <LazyRoute
                     path=":surveyId"
                     id="survey"
@@ -76,7 +84,8 @@ const AuthenticatedRoutes = resolveLazyRouteTree(
                 path="engagements"
                 id="engagement-listing"
                 ErrorBoundaryLazy={() => import('routes/NotFound')}
-                handle={{ crumb: () => ({ name: 'Engagements' }) }}
+                // Exclude extraneous "Engagements" when viewing an individual engagement by marking as index page
+                handle={{ crumb: () => ({ name: 'Engagements', isIndex: true }) }}
             >
                 <LazyRoute index ComponentLazy={() => import('engagements/listing')} />
                 <LazyRoute
@@ -131,36 +140,49 @@ const AuthenticatedRoutes = resolveLazyRouteTree(
                     }}
                 >
                     <LazyRoute index element={<Navigate to="authoring" />} />
-                    <LazyRoute>
+                    <LazyRoute
+                        path="config/edit"
+                        handle={{ crumb: () => ({ name: 'Configuration', link: '../config' }) }}
+                    >
                         <LazyRoute
-                            path="config/edit"
+                            index
+                            handle={{ crumb: () => ({ name: 'Edit' }) }}
                             ComponentLazy={() => import('engagements/admin/config/wizard/ConfigWizard')}
                             actionLazy={() => import('engagements/admin/config/EngagementUpdateAction')}
-                            handle={{ crumb: () => ({ name: 'Configure' }) }}
                         />
-                        <LazyRoute index element={<Navigate to="config" />} />
-                        {/* Wraps the tabs with the engagement title and TabContext */}
-                        <LazyRoute ComponentLazy={() => import('engagements/admin/view')}>
-                            <LazyRoute
-                                path="config"
-                                ComponentLazy={() => import('engagements/admin/view/ConfigSummary')}
-                            />
-                            <LazyRoute
-                                path="authoring"
-                                ComponentLazy={() => import('engagements/admin/view/AuthoringTab')}
-                            />
-                            <LazyRoute path="activity" ComponentLazy={() => import('routes/UnderConstruction')} />
-                            <LazyRoute path="results" ComponentLazy={() => import('routes/UnderConstruction')} />
-                            <LazyRoute
-                                path="publish"
-                                ComponentLazy={() => import('engagements/admin/view/PublishingTab')}
-                                actionLazy={() => import('engagements/admin/view/publishingAction')}
-                            />
-                            <LazyRoute
-                                path="*"
-                                lazy={() => import('routes/NotFound').then((module) => ({ Component: module.default }))}
-                            />
-                        </LazyRoute>
+                    </LazyRoute>
+                    {/* Wraps the tabs with the engagement title and TabContext */}
+                    <LazyRoute ComponentLazy={() => import('engagements/admin/view')}>
+                        <LazyRoute
+                            path="config"
+                            handle={{ crumb: () => ({ name: 'Configuration' }) }}
+                            ComponentLazy={() => import('engagements/admin/view/ConfigSummary')}
+                        />
+                        <LazyRoute
+                            path="authoring"
+                            handle={{ crumb: () => ({ name: 'Authoring' }) }}
+                            ComponentLazy={() => import('engagements/admin/view/AuthoringTab')}
+                        />
+                        <LazyRoute
+                            path="activity"
+                            handle={{ crumb: () => ({ name: 'Activity' }) }}
+                            ComponentLazy={() => import('routes/UnderConstruction')}
+                        />
+                        <LazyRoute
+                            path="results"
+                            handle={{ crumb: () => ({ name: 'Results' }) }}
+                            ComponentLazy={() => import('routes/UnderConstruction')}
+                        />
+                        <LazyRoute
+                            path="publish"
+                            handle={{ crumb: () => ({ name: 'Publish' }) }}
+                            ComponentLazy={() => import('engagements/admin/view/PublishingTab')}
+                            actionLazy={() => import('engagements/admin/view/publishingAction')}
+                        />
+                        <LazyRoute
+                            path="*"
+                            lazy={() => import('routes/NotFound').then((module) => ({ Component: module.default }))}
+                        />
                     </LazyRoute>
                     {/* Authoring editing pages — /manage/engagements/:engagementId/authoring/:languageCode/:page */}
                     <LazyRoute
@@ -331,14 +353,14 @@ const AuthenticatedRoutes = resolveLazyRouteTree(
                     <LazyRoute
                         path="edit"
                         ComponentLazy={() => import('components/tenantManagement/Edit')}
-                        handle={{ crumb: () => ({ name: 'Edit Instance' }) }}
+                        handle={{ crumb: () => ({ name: 'Edit' }) }}
                     />
                 </LazyRoute>
             </LazyRoute>
             <LazyRoute
                 path="feedback"
                 ComponentLazy={() => import('components/feedback/listing')}
-                handle={{ crumb: () => ({ name: 'Feedback' }) }}
+                handle={{ crumb: () => ({ name: 'Site Feedback' }) }}
             />
             <LazyRoute path="calendar" ComponentLazy={() => import('routes/UnderConstruction')} />
             <LazyRoute path="reporting" ComponentLazy={() => import('routes/UnderConstruction')} />

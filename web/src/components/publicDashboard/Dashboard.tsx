@@ -2,7 +2,7 @@ import React, { useContext, useEffect } from 'react';
 import { Grid2 as Grid, useMediaQuery, Stack, Theme, Box, Backdrop, Paper, CircularProgress } from '@mui/material';
 import { Link } from 'components/common/Navigation';
 import { Button } from 'components/common/Input/Button';
-import { useNavigate, useParams } from 'react-router';
+import { useLocation, useParams } from 'react-router';
 import { BodyText, Heading1 } from 'components/common/Typography';
 import { ReportBanner } from './ReportBanner';
 import SurveysCompleted from './KPI/SurveysCompleted';
@@ -15,7 +15,7 @@ import SurveyBarPrintable from './SurveyBarPrintable';
 import { generateDashboardPdf } from './util';
 import { Map } from 'models/analytics/map';
 import { When } from 'react-if';
-import { useAppSelector, useAppTranslation } from 'hooks';
+import { useAppTranslation } from 'hooks';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faComments, faFileArrowDown } from '@fortawesome/pro-regular-svg-icons';
 import { ROUTES, getPath } from 'routes/routes';
@@ -23,14 +23,14 @@ import { AppConfig } from 'config';
 
 const Dashboard = () => {
     const { language, slug } = useParams();
+    const location = useLocation();
     const { t: translate } = useAppTranslation();
     const isTablet = useMediaQuery((theme: Theme) => theme.breakpoints.down('md'));
-    const navigate = useNavigate();
     const { engagement, isEngagementLoading, dashboardType } = useContext(DashboardContext);
     const [isPrinting, setIsPrinting] = React.useState(false);
     const [projectMapData, setProjectMapData] = React.useState<Map | null>(null);
     const [pdfExportProgress, setPdfExportProgress] = React.useState(0);
-    const isLoggedIn = useAppSelector((state) => state.user.authentication.authenticated);
+    const isAdminPath = location.pathname === '/manage' || location.pathname.startsWith('/manage/');
     const engagementId = engagement?.id;
     const engagementAuthoringLink = getPath(ROUTES.ENGAGEMENT_DETAILS_AUTHORING, { engagementId: engagementId ?? '' });
     const languageID = language ?? sessionStorage.getItem('languageId') ?? AppConfig.language.defaultLanguageId;
@@ -53,14 +53,7 @@ const Dashboard = () => {
         setProjectMapData(data);
     };
 
-    const handleReadComments = () => {
-        if (isLoggedIn) {
-            if (!engagementId) return;
-            navigate(commentViewPath);
-        } else {
-            navigate(commentViewPublicPath);
-        }
-    };
+    const commentsUrl = isAdminPath ? commentViewPath : commentViewPublicPath;
 
     const handlePdfExportProgress = (progress: number) => {
         setPdfExportProgress(progress);
@@ -101,7 +94,7 @@ const Dashboard = () => {
                     <Grid container size={12} flexDirection="column">
                         <Grid size={12} container justifyContent="flex-end" paddingBottom={'8px'}>
                             <Link
-                                to={isLoggedIn ? engagementAuthoringLink : publicEngagementLink}
+                                to={isAdminPath ? engagementAuthoringLink : publicEngagementLink}
                                 data-testid="link-container"
                             >
                                 {translate('dashboard.engagementLink')}
@@ -133,7 +126,7 @@ const Dashboard = () => {
                                                 variant="primary"
                                                 size="small"
                                                 data-testid="SurveyBlock/take-me-to-survey-button"
-                                                onClick={handleReadComments}
+                                                href={commentsUrl}
                                                 sx={{ minWidth: 'max-content' }}
                                             >
                                                 {translate('dashboard.buttonText.readComments')}
@@ -232,7 +225,7 @@ const Dashboard = () => {
                                             />
                                         </Box>
                                         <SurveyBar
-                                            readComments={handleReadComments}
+                                            commentsUrl={commentsUrl}
                                             engagement={engagement}
                                             engagementIsLoading={isEngagementLoading}
                                             dashboardType={dashboardType}

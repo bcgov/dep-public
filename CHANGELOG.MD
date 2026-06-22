@@ -1,6 +1,13 @@
+## June 22, 2026
+
+- **Feature** Added dynamic tab titles based on the current chain of route matches [🎟️ DEP-263](https://citz-gdx.atlassian.net/browse/DEP-263)
+  - Updated the DocumentTitle component to dynamically generate the browser tab title based on the current route matches and their associated handles, similar to the automatic breadcrumb system. This ensures that the page title reflects the current context of the application, including engagement titles, page names, or other relevant data.
+    - Minor reorganization to some routes to ensure they display correctly in all situations
+  - Added documentation for hooking into the `handle` / `useMatches` ecosystem as it is used in DEP.
+
 ## June 16, 2026
 
-- **Feature** Merged engagement slug into engagement requests [🎟️ DEP-265](https://citz-gdx.atlassian.net/browse/DEP-265)
+- **Feature** Merged engagement slug into engagement requests [ DEP-265](https://citz-gdx.atlassian.net/browse/DEP-265)
   - Removed the EngagementSlug model, schema, and resource from the API, as they are no longer needed.
   - Updated the Engagement model to include a `slug` field, which is now used to store the engagement slug directly in the engagement record.
   - Engagements can now be fetched by slug, rather than fetching the slug then fetching the engagement by ID. This hastens the process of retrieving engagement data based on the slug.

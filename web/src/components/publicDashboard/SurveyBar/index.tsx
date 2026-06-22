@@ -23,11 +23,11 @@ const HEIGHT = 400;
 interface SurveyQuestionProps {
     engagement: Engagement;
     engagementIsLoading: boolean;
-    readComments?: () => void;
+    commentsUrl?: string;
     dashboardType: string;
 }
 
-export const SurveyBar = ({ readComments, engagement, engagementIsLoading, dashboardType }: SurveyQuestionProps) => {
+export const SurveyBar = ({ commentsUrl, engagement, engagementIsLoading, dashboardType }: SurveyQuestionProps) => {
     const { t: translate } = useAppTranslation();
     const isTablet = useMediaQuery((theme) => theme.breakpoints.down('md'));
     const [data, setData] = useState<SurveyResultData | null>(null);
@@ -177,7 +177,7 @@ export const SurveyBar = ({ readComments, engagement, engagementIsLoading, dashb
                                 variant="primary"
                                 sx={{ mt: 3, width: '80%' }}
                                 data-testid="SurveyBlock/take-me-to-survey-button-mobile"
-                                onClick={readComments}
+                                href={commentsUrl}
                             >
                                 {translate('dashboard.barBlock.button')}
                             </Button>

@@ -5,7 +5,6 @@ import Dashboard from 'components/publicDashboard/Dashboard';
 import { setupEnv } from '../setEnvVars';
 import { DashboardContext } from 'components/publicDashboard/DashboardContext';
 import { closedEngagement } from '../factory';
-import userEvent from '@testing-library/user-event';
 import { BrowserRouter } from 'react-router';
 import { ROUTES, getPath } from 'routes/routes';
 
@@ -17,7 +16,7 @@ jest.mock('jspdf', () => ({
 
 jest.mock('react-router', () => ({
     ...jest.requireActual('react-router'),
-    useLocation: jest.fn(() => ({ search: '' })),
+    useLocation: jest.fn(() => ({ pathname: '/manage/', search: '' })),
     useParams: jest.fn(() => {
         return { slug: '' };
     }),
@@ -118,13 +117,9 @@ describe('Public Dashboard page tests', () => {
     test('Navigation links work correctly', async () => {
         const returnLink = screen.getByText('dashboard.engagementLink');
         expect(returnLink).toBeInTheDocument();
-        const user = userEvent.setup();
-        await user.click(returnLink);
-        await waitFor(() => {
-            expect(globalThis.location.pathname).toBe(
-                getPath(ROUTES.ENGAGEMENT_DETAILS_AUTHORING, { engagementId: closedEngagement.id }),
-            );
-        });
+        expect(returnLink.getAttribute('href')).toBe(
+            getPath(ROUTES.ENGAGEMENT_DETAILS_AUTHORING, { engagementId: closedEngagement.id ?? '' }),
+        );
     });
 
     test('Public Dashboard has sub components', async () => {
