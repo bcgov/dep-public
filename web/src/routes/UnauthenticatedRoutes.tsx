@@ -10,7 +10,11 @@ const UnauthenticatedRoutes = resolveLazyRouteTree(
         ErrorBoundaryLazy={() => import('routes/NotFound')}
         id="public-root"
     >
-        <LazyRoute index ComponentLazy={() => import('components/landing')} />
+        <LazyRoute
+            index
+            ComponentLazy={() => import('components/landing')}
+            handle={{ crumb: () => ({ title: 'Home' }) }}
+        />
         <Route path=":slug">
             <LazyRoute index ComponentLazy={() => import('routes/SlugLanguageRedirect')} />
             <LazyRoute

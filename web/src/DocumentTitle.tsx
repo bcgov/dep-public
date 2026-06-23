@@ -44,12 +44,16 @@ const DocumentTitle = () => {
                 // Exclude crumbs that are marked as index pages UNLESS they are the current page
                 .filter((crumb, index) => (crumb?.title ?? crumb?.name) && (index == 0 || !crumb?.isIndex))
                 .map((crumb) => truncate(crumb.title ?? crumb.name, 40)); // Limit individual crumb length to prevent excessively long titles
-            const title = filteredCrumbs.length > 0 ? filteredCrumbs.join(' | ') : tenant.title;
+            if (filteredCrumbs.length < 1) {
+                setPageTitle(tenant.title);
+                return;
+            }
+            const title = filteredCrumbs.join(' | ');
             const truncatedTitle = truncate(title, 65); // Limit total title length to prevent browser truncation
             if (truncatedTitle == title) {
-                setPageTitle(title + ' | ' + 'Digital Engagement Platform');
+                setPageTitle(title + ' | ' + tenant.title);
             } else {
-                setPageTitle(truncatedTitle + ' | ' + 'DEP');
+                setPageTitle(truncatedTitle + ' | ' + tenant.short_name.toUpperCase());
             }
         };
 
@@ -58,7 +62,7 @@ const DocumentTitle = () => {
         return () => {
             cancelled = true;
         };
-    }, [matches, tenant.title]);
+    }, [matches, tenant.title, tenant.short_name]);
 
     return (
         <Helmet>
