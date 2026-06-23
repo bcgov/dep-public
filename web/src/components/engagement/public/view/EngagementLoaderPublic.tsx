@@ -24,6 +24,18 @@ export type EngagementLoaderPublicData = {
     translationBundle: Promise<TranslationBundle>;
 };
 
+export type AwaitedEngagementLoaderPublicData = {
+    engagement: Engagement;
+    widgets: Widget[];
+    details: EngagementDetailsTab[];
+    metadata: EngagementMetadata[];
+    taxa: MetadataTaxon[];
+    languages: Language[];
+    translationLanguages?: Language[];
+    suggestions: SuggestedEngagementWithAttachment[];
+    translationBundle: TranslationBundle;
+};
+
 export const engagementLoaderPublic = async ({ params }: { params: Params<string> }) => {
     const { slug: slugParam, engagementId, language } = params;
     const defaultLanguageCode = AppConfig.language.defaultLanguageId.toLowerCase();

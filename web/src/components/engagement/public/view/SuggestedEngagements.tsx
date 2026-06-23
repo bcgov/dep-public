@@ -6,7 +6,7 @@ import { Heading2 } from 'components/common/Typography';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowLeftLong } from '@fortawesome/pro-regular-svg-icons';
 import { Link } from 'components/common/Navigation';
-import { Await, useLoaderData } from 'react-router';
+import { Await, useRouteLoaderData } from 'react-router';
 
 import { EngagementLoaderPublicData } from './EngagementLoaderPublic';
 import { EngagementViewSections } from '.';
@@ -19,7 +19,9 @@ import { getPath, ROUTES } from 'routes/routes';
 import { TranslationBundle, resolveTranslationValue } from './engagementTranslationResolution';
 
 export const SuggestedEngagements = () => {
-    const { suggestions, engagement, translationBundle } = useLoaderData() as EngagementLoaderPublicData;
+    const { suggestions, engagement, translationBundle } = useRouteLoaderData(
+        'public-single-engagement',
+    ) as EngagementLoaderPublicData;
     const engagementSlots = Array.from({ length: 3 });
     const { isPreviewMode } = usePreview();
 

@@ -1,14 +1,11 @@
 import React, { useContext } from 'react';
 import { Grid2 as Grid, Paper, Skeleton } from '@mui/material';
-import { useNavigate, useParams } from 'react-router';
+import { useLocation, useParams } from 'react-router';
 import { Link } from 'components/common/Navigation';
 import { Button } from 'components/common/Input/Button';
 import { CommentViewContext } from './CommentViewContext';
 import { Heading4 } from 'components/common/Typography/Headings';
 import CommentTable from './CommentTable';
-import { useAppSelector, useAppDispatch } from 'hooks';
-import { SubmissionStatus } from 'constants/engagementStatus';
-import { openNotificationModal } from 'services/notificationModalService/notificationModalSlice';
 import { useAppTranslation } from 'hooks';
 import { faFileChartPie } from '@fortawesome/pro-regular-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -22,11 +19,9 @@ interface CommentsBlockProps {
 export const CommentsBlock: React.FC<CommentsBlockProps> = ({ dashboardType }) => {
     const { t: translate } = useAppTranslation();
     const { slug, language } = useParams();
+    const location = useLocation();
     const { engagement, isEngagementLoading } = useContext(CommentViewContext);
-    const navigate = useNavigate();
-    const dispatch = useAppDispatch();
-    const canAccessDashboard = useAppSelector((state) => state.user.roles.includes('access_dashboard'));
-    const isLoggedIn = useAppSelector((state) => state.user.authentication.authenticated);
+    const isAdminPath = location.pathname === '/manage' || location.pathname.startsWith('/manage/');
     const publicEngagementLink = getPath(R.PUBLIC_ENGAGEMENT_BY_SLUG, {
         slug: slug ?? '',
         language: language ?? sessionStorage.getItem('languageId') ?? AppConfig.language.defaultLanguageId,
@@ -42,36 +37,7 @@ export const CommentsBlock: React.FC<CommentsBlockProps> = ({ dashboardType }) =
         engagementId: engagementId ?? '',
         dashboardType,
     });
-
-    const handleViewDashboard = () => {
-        /* check to ensure that users with role access_dashboard can access the dashboard while engagement not closed*/
-        if (canAccessDashboard) {
-            if (!engagementId && isLoggedIn) return;
-            navigate(isLoggedIn ? engagementDashboardLink : publicEngagementDashboardLink);
-            return;
-        }
-
-        /* check to ensure that all other users can access the dashboard only after the engagement is closed*/
-        if (engagement?.submission_status !== SubmissionStatus.Closed) {
-            dispatch(
-                openNotificationModal({
-                    open: true,
-                    data: {
-                        header: translate('commentDashboard.block.notification.header'),
-                        subText: [{ text: translate('commentDashboard.block.notification.text') }],
-                    },
-                    type: 'update',
-                }),
-            );
-            return;
-        }
-
-        if (isLoggedIn) {
-            if (!engagementId) return;
-            navigate(engagementDashboardLink);
-        }
-        navigate(publicEngagementDashboardLink);
-    };
+    const dashboardURL = isAdminPath ? engagementDashboardLink : publicEngagementDashboardLink;
 
     if (isEngagementLoading || !engagement) {
         return <Skeleton width="100%" height="40em" />;
@@ -80,7 +46,7 @@ export const CommentsBlock: React.FC<CommentsBlockProps> = ({ dashboardType }) =
     return (
         <>
             <Grid size={12} container direction="row" justifyContent="flex-end" paddingBottom={'8px'}>
-                <Link to={isLoggedIn ? adminEngagementViewLink : publicEngagementLink} style={{ color: '#1A5A96' }}>
+                <Link to={isAdminPath ? adminEngagementViewLink : publicEngagementLink} sx={{ color: 'text.link' }}>
                     {translate('commentDashboard.block.engagementLink')}
                 </Link>
             </Grid>
@@ -100,7 +66,7 @@ export const CommentsBlock: React.FC<CommentsBlockProps> = ({ dashboardType }) =
                                 icon={<FontAwesomeIcon icon={faFileChartPie} />}
                                 variant="primary"
                                 size="small"
-                                onClick={handleViewDashboard}
+                                href={dashboardURL}
                             >
                                 {translate('commentDashboard.block.buttonText')}
                             </Button>

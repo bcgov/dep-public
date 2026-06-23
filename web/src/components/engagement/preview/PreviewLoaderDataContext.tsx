@@ -1,5 +1,5 @@
 import React, { createContext, useContext } from 'react';
-import { useLoaderData } from 'react-router';
+import { useRouteLoaderData } from 'react-router';
 import { EngagementLoaderPublicData } from 'components/engagement/public/view/EngagementLoaderPublic';
 
 const PreviewLoaderDataContext = createContext<EngagementLoaderPublicData | null>(null);
@@ -15,7 +15,7 @@ export const PreviewLoaderDataProvider: React.FC<PreviewLoaderDataProviderProps>
 
 export const useEngagementLoaderData = (): EngagementLoaderPublicData => {
     const previewLoaderData = useContext(PreviewLoaderDataContext);
-    const routeLoaderData = useLoaderData() as EngagementLoaderPublicData;
+    const routeLoaderData = useRouteLoaderData('public-single-engagement') as EngagementLoaderPublicData;
     return previewLoaderData ?? routeLoaderData;
 };
 
