@@ -1,6 +1,6 @@
 ## June 23, 2026
 
-- **Feature** Imported CHEFS components into DEP [🎟️ DEP-273](https://citz-gdx.atlassian.net/browse/DEP-273)
+- **Feature** Imported CHEFS components into DEP [🎟️ DEP-275](https://citz-gdx.atlassian.net/browse/DEP-275)
   - Imported `@bcgov/common-hosted-form-service` package as a Git submodule
   - Imported the CHEFS components from the package into the DEP codebase, allowing for the use of these components in the application.
   - Updated the FormBuilderOptions to enable the CHEFS components, including `simpleradios` and `simpleselect`, while disabling any corresponding legacy MET-Formio components to avoid conflicts.
