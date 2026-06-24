@@ -74,6 +74,7 @@ jobs:
         run: |
           export TZ='America/Vancouver' && 
             docker build . --file Dockerfile \
+            --build-context common_hosted_form_service=../common-hosted-form-service \
             --secret id=artifactory_username,src=/tmp/artifactory_username \
             --secret id=artifactory_password,src=/tmp/artifactory_password \
             --build-arg REACT_APP_BUILD_COMMIT_HASH=${{ github.sha }} \

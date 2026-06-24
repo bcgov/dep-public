@@ -14,16 +14,17 @@ ENV REACT_APP_BUILD_DATE=${REACT_APP_BUILD_DATE}
 ENV REACT_APP_BUILD_BRANCH=${REACT_APP_BUILD_BRANCH}
 ENV REACT_APP_GITHUB_REPO=${REACT_APP_GITHUB_REPO}
 
-# set working directory
-WORKDIR /app
+# set working directory to preserve the repo-relative local dependency path
+WORKDIR /app/web
 
-# add `/app/node_modules/.bin` to $PATH
-ENV PATH=/app/node_modules/.bin:$PATH
+# add the web app binaries to $PATH
+ENV PATH=/app/web/node_modules/.bin:$PATH
 
 # install app dependencies using BuildKit secrets for Artifactory credentials
 COPY package.json ./
 COPY package-lock.json ./
 COPY .npmrc ./
+COPY --from=common_hosted_form_service /components /app/common-hosted-form-service/components
 
 RUN --mount=type=secret,id=artifactory_password \
     --mount=type=secret,id=artifactory_username \
@@ -51,7 +52,7 @@ RUN mkdir /app
 ARG user=nginx
 RUN usermod -a -G root $user
 
-COPY --from=build-stage /app/build /usr/share/nginx/html
+COPY --from=build-stage /app/web/build /usr/share/nginx/html
 COPY /nginx/*.conf /etc/nginx/
 COPY /nginx/docker-entrypoint.sh /
 COPY /nginx/config.js.template /usr/share/nginx/html/config.js.template
