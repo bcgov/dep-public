@@ -1,3 +1,11 @@
+## June 23, 2026
+
+- **Feature** Imported CHEFS components into DEP [🎟️ DEP-273](https://citz-gdx.atlassian.net/browse/DEP-273)
+  - Imported `@bcgov/common-hosted-form-service` package as a Git submodule
+  - Imported the CHEFS components from the package into the DEP codebase, allowing for the use of these components in the application.
+  - Updated the FormBuilderOptions to enable the CHEFS components, including `simpleradios` and `simpleselect`, while disabling any corresponding legacy MET-Formio components to avoid conflicts.
+  - Updated build, start, and test scripts to include the CHEFS components in the build process, ensuring that they are available for use in the application.
+
 ## June 22, 2026
 
 - **Feature** Added dynamic tab titles based on the current chain of route matches [🎟️ DEP-263](https://citz-gdx.atlassian.net/browse/DEP-263)
