@@ -1,10 +1,7 @@
 import React from 'react';
-import { FormBuilder as FormioFormBuilder } from '@formio/react';
+import { FormBuilder as FormioFormBuilder } from './formio/setup';
 import { formioOptions } from './FormBuilderOptions';
 import { FormBuilderData, FormBuilderProps } from './types';
-import setupFormio from './formio/setup';
-
-setupFormio();
 
 const FormBuilder = ({ handleFormChange, savedForm }: FormBuilderProps) => {
     return (

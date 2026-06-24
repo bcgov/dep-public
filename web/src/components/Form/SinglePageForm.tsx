@@ -1,9 +1,6 @@
 import React from 'react';
-import { Form } from '@formio/react';
+import { Form } from './formio/setup';
 import { FormSubmissionData, FormSubmitterProps } from './types';
-import setupFormio from './formio/setup';
-
-setupFormio();
 
 const SinglePageForm = ({ handleFormChange, savedForm, handleFormSubmit }: FormSubmitterProps) => {
     return (
