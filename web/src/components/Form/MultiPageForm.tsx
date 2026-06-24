@@ -1,14 +1,12 @@
 import React, { useState } from 'react';
-import { Form } from '@formio/react';
+import { Form } from './formio/setup';
 import { FormSubmissionData, FormSubmitterProps } from './types';
 import FormStepper from 'components/survey/submit/Stepper';
-import setupFormio from './formio/setup';
 
 interface PageData {
     page: number;
     submission: unknown;
 }
-setupFormio();
 
 const MultiPageForm = ({ handleFormChange, savedForm, handleFormSubmit }: FormSubmitterProps) => {
     const [currentPage, setCurrentPage] = useState(0);

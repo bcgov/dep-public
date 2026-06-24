@@ -6,6 +6,7 @@
     "@babel/core": "^7.29.6",
     "@bcgov/bc-sans": "^2.1.0",
     "@bcgov/design-tokens": "^3.2.0",
+    "@bcgov/formio": "file:../common-hosted-form-service/components",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
     "@formio/react": "^5.3.0",
@@ -123,9 +124,13 @@
     "yup": "^0.32.11"
   },
   "scripts": {
+    "ensure:bcgov-formio": "node scripts/ensure-bcgov-formio.js",
     "analyze": "source-map-explorer 'build/static/js/*.js' --no-border-checks",
+    "prestart": "npm run ensure:bcgov-formio",
     "start": "node scripts/start.js",
+    "prebuild": "npm run ensure:bcgov-formio",
     "build": "node scripts/build.js",
+    "pretest": "npm run ensure:bcgov-formio",
     "test": "jest",
     "lint": "eslint \"src/**/*.{ts,tsx}\"",
     "lintfix": "eslint \"src/**/*.{ts,tsx}\" --fix"

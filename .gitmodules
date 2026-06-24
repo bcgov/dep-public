@@ -1,0 +1,3 @@
+[submodule "common-hosted-form-service"]
+	path = common-hosted-form-service
+	url = https://github.com/bcgov/common-hosted-form-service.git
