@@ -1,13 +1,13 @@
 ## Jul 7, 2026
 
 - **Feature** Integrated new landing hero section and introduction [🎟️ DEP-315](https://citz-gdx.atlassian.net/browse/DEP-315)
-    - Refactored existing landing code for structural simplicity
-    - Created a reusable container/section block that can be reused anywhere
-    - Added params to URL for future filter updating (can be decoupled easily if not desired)
-    - Implemented UX designs (mobile and desktop)
-    - Removed app's square box that appears at bigger viewports
-    - Ensured that other layouts were not negatively affected by change (admin, admin landing preview, admin engagement preview)
-        - Added constrained option for internal header component as an optional boolean prop
+  - Refactored existing landing code for structural simplicity
+  - Created a reusable container/section block that can be reused anywhere
+  - Added params to URL for future filter updating (can be decoupled easily if not desired)
+  - Implemented UX designs (mobile and desktop)
+  - Removed app's square box that appears at bigger viewports
+  - Ensured that other layouts were not negatively affected by change (admin, admin landing preview, admin engagement preview)
+    - Added constrained option for internal header component as an optional boolean prop
 - Fixed: Engagement preview was looking for route loader address that didn't exist
 - Fixed: Slug was not being populated with SuggestedEngagementAttachment, so Suggested Engagement links were not working
 - Fixed: Small typo in security response headers of API
