@@ -30,8 +30,6 @@ export const PublicLayout = () => {
         >
             <Box
                 sx={{
-                    maxWidth: '1926px',
-                    margin: '0 auto',
                     background: colors.surface.white,
                 }}
             >
@@ -39,9 +37,9 @@ export const PublicLayout = () => {
                 <PageViewTracker />
                 <Notification />
                 <NotificationModal />
-                {isAuthenticated ? <InternalHeader showSideNav={false} /> : <PublicHeader />}
+                {isAuthenticated ? <InternalHeader constrained showSideNav={false} /> : <PublicHeader />}
                 <ScrollToTop />
-                <Box component="main" sx={isAuthenticated ? { marginTop: { xs: '3.5em', md: '6.5em' } } : undefined}>
+                <Box component="main" sx={{ marginTop: isAuthenticated ? '3.375em' : 0 }}>
                     <Outlet />
                 </Box>
                 <FeedbackModal />

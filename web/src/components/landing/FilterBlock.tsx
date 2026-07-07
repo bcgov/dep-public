@@ -1,5 +1,4 @@
-import React, { useEffect, useRef, useState, useContext } from 'react';
-import { LandingContext } from './LandingContext';
+import React, { useEffect, useRef, useState } from 'react';
 import { IconButton, Stack, useTheme } from '@mui/material';
 import Grid from '@mui/material/Grid2';
 import { DeletableFilterChip } from './DeletableFilterChip';
@@ -17,11 +16,11 @@ import { colors } from '../common';
 import { CustomTextField, Select } from 'components/common/Input';
 import { When } from 'react-if';
 import { BodyText } from 'components/common/Typography/Body';
+import { FilterBlockProps } from './types';
 
-const FilterBlock = () => {
-    const { searchFilters, setSearchFilters, setPage, clearFilters, page, setDrawerOpened } =
-        useContext(LandingContext);
-    const selectedValue = searchFilters.status.length === 0 ? -1 : searchFilters.status[0];
+const FilterBlock = (props: FilterBlockProps) => {
+    const { searchFilters, setSearchFilters, clearFilters, setFiltersOpen } = props;
+    const selectedValue = searchFilters.engagement_status.length === 0 ? -1 : searchFilters.engagement_status[0];
 
     const tileBlockRef = useRef<HTMLDivElement>(null);
     const [didMount, setDidMount] = useState(false);
@@ -40,7 +39,7 @@ const FilterBlock = () => {
         debounce((searchText: string) => {
             setSearchFilters({
                 ...searchFilters,
-                name: searchText,
+                search_text: searchText,
             });
         }, 300),
     ).current;
@@ -55,7 +54,7 @@ const FilterBlock = () => {
             const yOffset = tileBlockRef?.current?.offsetTop;
             globalThis.scrollTo({ top: yOffset || 0, behavior: 'smooth' });
         }
-    }, [page]);
+    }, [searchFilters.page]);
 
     const [searchText, setSearchText] = useState('');
 
@@ -69,14 +68,13 @@ const FilterBlock = () => {
                 }
                 return filter;
             })
-            .filter((filter) => filter.values.length > 0); // Remove any filters with no values left
+            .filter((filter: MetadataFilter) => filter.values.length > 0); // Remove any filters with no values left
 
-        setSearchFilters({ ...searchFilters, metadata: newMetadataFilters });
-        setPage(1);
+        setSearchFilters({ ...searchFilters, metadata: newMetadataFilters, page: 1 });
     };
 
     return (
-        <Grid container size={12} justifyContent="flex-start" alignItems="flex-start" rowSpacing={3}>
+        <Grid container size={12} justifyContent="flex-start" alignItems="flex-start" rowSpacing={3} pb="2rem">
             <Grid
                 container
                 size={12}
@@ -85,9 +83,10 @@ const FilterBlock = () => {
                 columnSpacing={2}
                 rowSpacing={4}
                 marginTop="2em"
+                sx={{ padding: 0, flexWrap: 'nowrap', flexDirection: 'row' }}
                 ref={tileBlockRef}
             >
-                <Grid size={{ xs: 12, sm: 8, md: 10, lg: 8, xl: 6 }}>
+                <Grid width="100%">
                     <BodyText bold pb="0.25em">
                         {translate('landing.filters.search')}
                     </BodyText>
@@ -97,13 +96,14 @@ const FilterBlock = () => {
                         fullWidth
                         placeholder={translate('landing.filters.searchPlaceholder')}
                         value={searchText}
+                        sx={{ width: '100%' }}
                         onChange={(event) => {
                             setSearchText(event.target.value);
                             debounceSetSearchFilters(event.target.value);
                         }}
                         slotProps={{
                             input: {
-                                sx: { height: 48 },
+                                sx: { height: 48, width: '100%' },
                                 startAdornment: (
                                     <FontAwesomeIcon
                                         icon={faMagnifyingGlass}
@@ -122,7 +122,7 @@ const FilterBlock = () => {
                                         onClick={() => {
                                             setSearchFilters({
                                                 ...searchFilters,
-                                                name: '',
+                                                search_text: '',
                                             });
                                             setSearchText('');
                                         }}
@@ -145,7 +145,7 @@ const FilterBlock = () => {
                         aria-label={translate('landing.filters.aria.openDrawer')}
                         variant="primary"
                         icon={<FontAwesomeIcon icon={faSliders} style={{ fontSize: '18px' }} />}
-                        onClick={() => setDrawerOpened(true)}
+                        onClick={() => setFiltersOpen(true)}
                     >
                         {translate('landing.filters.drawer.openButton')}
                     </Button>
@@ -160,6 +160,7 @@ const FilterBlock = () => {
                     alignItems="flex-start"
                     gap={2}
                     rowGap={1}
+                    width="100%"
                 >
                     <Select
                         style={{ margin: 0 }}
@@ -170,18 +171,11 @@ const FilterBlock = () => {
                         )}. Change this filter value by expanding to view all options.`}
                         onChange={(event) => {
                             const selectedValue = Number(event.target.value);
-                            if (selectedValue === -1) {
-                                setSearchFilters({
-                                    ...searchFilters,
-                                    status: [],
-                                });
-                            } else {
-                                setSearchFilters({
-                                    ...searchFilters,
-                                    status: [selectedValue],
-                                });
-                            }
-                            setPage(1);
+                            setSearchFilters({
+                                ...searchFilters,
+                                engagement_status: selectedValue === -1 ? [] : [selectedValue],
+                                page: 1,
+                            });
                         }}
                         renderValue={(value) => selectableStatuses.get(value as number) ?? ''}
                         displayEmpty
@@ -193,7 +187,7 @@ const FilterBlock = () => {
                             label: label,
                         }))}
                     />
-                    {searchFilters.metadata.map((filter) =>
+                    {searchFilters.metadata.map((filter: MetadataFilter) =>
                         filter.values.map((value) => (
                             <DeletableFilterChip
                                 key={`${filter.taxon_id}-${value}`}
@@ -202,7 +196,7 @@ const FilterBlock = () => {
                             />
                         )),
                     )}
-                    <When condition={searchFilters.status.length || searchFilters.metadata.length}>
+                    <When condition={searchFilters.engagement_status.length || searchFilters.metadata.length}>
                         <Button
                             variant="tertiary"
                             onClick={clearFilters}

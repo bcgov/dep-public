@@ -186,7 +186,8 @@ const MeasurementBar: React.FC = () => {
  * modifying the actual engagement.
  */
 export const EngagementPreview: React.FC = () => {
-    const loaderData = useRouteLoaderData('public-single-engagement') as EngagementLoaderPublicData;
+    const loaderData = useRouteLoaderData('engagement-preview') as EngagementLoaderPublicData;
+    const { engagement, widgets, details, metadata, suggestions } = loaderData ?? {};
     const { engagementId, languageCode } = useParams();
     const revalidator = useRevalidator();
     const [previewState, setPreviewState] = useState<SubmissionStatusTypes>('Upcoming');
@@ -243,12 +244,12 @@ export const EngagementPreview: React.FC = () => {
 
     useEffect(() => {
         setContentVersion((previous) => previous + 1);
-    }, [loaderData.engagement, loaderData.widgets, loaderData.details, loaderData.metadata, loaderData.suggestions]);
+    }, [engagement, widgets, details, metadata, suggestions]);
 
     useEffect(() => {
         let isMounted = true;
 
-        loaderData.engagement
+        engagement
             .then((engagement) => {
                 if (!isMounted) return;
                 setResolvedEngagement(engagement);
@@ -261,19 +262,13 @@ export const EngagementPreview: React.FC = () => {
         return () => {
             isMounted = false;
         };
-    }, [loaderData.engagement]);
+    }, [engagement]);
 
     useEffect(() => {
         if (!isReloading) return;
 
         let isMounted = true;
-        Promise.allSettled([
-            loaderData.engagement,
-            loaderData.widgets,
-            loaderData.details,
-            loaderData.metadata,
-            loaderData.suggestions,
-        ]).finally(() => {
+        Promise.allSettled([engagement, widgets, details, metadata, suggestions]).finally(() => {
             if (isMounted) {
                 setIsReloading(false);
             }
@@ -282,14 +277,7 @@ export const EngagementPreview: React.FC = () => {
         return () => {
             isMounted = false;
         };
-    }, [
-        isReloading,
-        loaderData.engagement,
-        loaderData.widgets,
-        loaderData.details,
-        loaderData.metadata,
-        loaderData.suggestions,
-    ]);
+    }, [isReloading, engagement, widgets, details, metadata, suggestions]);
 
     useEffect(() => {
         const animateScrollToElement = (targetId: string) => {
@@ -377,7 +365,7 @@ export const EngagementPreview: React.FC = () => {
                       ...resolvedEngagement,
                       submission_status: getSubmissionStatusId(previewState),
                   })
-                : loaderData.engagement,
+                : engagement,
         }),
         [loaderData, resolvedEngagement, previewState],
     );

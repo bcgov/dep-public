@@ -566,7 +566,7 @@ const AuthoringDetails = () => {
             </AuthoringFormContainer>
 
             {/* Tab instructions */}
-            {currentTab && (
+            {currentTab && authoringDetailsTabs?.length > 0 && (
                 <TabContext value={currentTab}>
                     <AuthoringFormContainer rowSpacing="2rem" pt="0.5rem" isHydrating={isHydrating}>
                         {tabsEnabled && (

@@ -1,5 +1,4 @@
-import React, { useContext, useMemo } from 'react';
-import { LandingContext } from './LandingContext';
+import React, { useMemo } from 'react';
 import { SwipeableDrawer, IconButton, Stack, Grid2 as Grid, ThemeProvider } from '@mui/material';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faXmark } from '@fortawesome/pro-regular-svg-icons/faXmark';
@@ -9,19 +8,16 @@ import { useAppTranslation } from 'hooks';
 import { Button } from 'components/common/Input/Button';
 import { DarkTheme } from 'styles/Theme';
 import { Heading2, Heading4 } from 'components/common/Typography';
+import { FilterDrawerProps } from './types';
 
-const FilterDrawer = () => {
-    const { searchFilters, setSearchFilters, setPage, metadataFilters, clearFilters, drawerOpened, setDrawerOpened } =
-        useContext(LandingContext);
+const FilterDrawer = (props: FilterDrawerProps) => {
+    const { searchFilters, setSearchFilters, metadataFilters, clearFilters, filtersOpen, setFiltersOpen } = props;
 
     const { t: translate } = useAppTranslation();
 
     const selectedValue = useMemo(() => {
-        if (searchFilters.status.length === 0) {
-            return -1;
-        }
-        return searchFilters.status[0];
-    }, [searchFilters.status]);
+        return searchFilters.engagement_status.length > 0 ? searchFilters.engagement_status[0] : -1;
+    }, [searchFilters.engagement_status]);
 
     const handleMetadataFilterClick = (taxonId: number, value: string) => {
         const existingFilter = searchFilters.metadata.find((filter) => filter.taxon_id === taxonId);
@@ -45,15 +41,14 @@ const FilterDrawer = () => {
             });
         }
 
-        setSearchFilters({ ...searchFilters, metadata: newMetadataFilters });
-        setPage(1);
+        setSearchFilters({ ...searchFilters, metadata: newMetadataFilters, page: 1 });
     };
 
     return (
         <ThemeProvider theme={DarkTheme}>
             <SwipeableDrawer
                 aria-label="Filter Engagements"
-                aria-expanded={drawerOpened}
+                aria-expanded={filtersOpen}
                 anchor="left"
                 ModalProps={{
                     keepMounted: true, // Better open performance on mobile
@@ -69,13 +64,13 @@ const FilterDrawer = () => {
                         },
                     },
                 }}
-                open={drawerOpened}
-                onClose={() => setDrawerOpened(false)}
-                onOpen={() => setDrawerOpened(true)}
+                open={filtersOpen}
+                onClose={() => setFiltersOpen(false)}
+                onOpen={() => setFiltersOpen(true)}
             >
                 <ThemeProvider theme={DarkTheme}>
                     <IconButton
-                        onClick={() => setDrawerOpened(false)}
+                        onClick={() => setFiltersOpen(false)}
                         title={translate('landing.filters.aria.closeDrawer')}
                         sx={{
                             color: 'white',
@@ -108,9 +103,9 @@ const FilterDrawer = () => {
                                 onClick={() => {
                                     setSearchFilters({
                                         ...searchFilters,
-                                        status: status == -1 ? [] : [status],
+                                        engagement_status: status === -1 ? [] : [status],
+                                        page: 1,
                                     });
-                                    setPage(1);
                                 }}
                             />
                         ))}
@@ -154,7 +149,7 @@ const FilterDrawer = () => {
                                     outlineOffset: '2px',
                                 },
                             }}
-                            onClick={() => setDrawerOpened(false)}
+                            onClick={() => setFiltersOpen(false)}
                         >
                             {translate('landing.filters.drawer.apply')}
                         </Button>

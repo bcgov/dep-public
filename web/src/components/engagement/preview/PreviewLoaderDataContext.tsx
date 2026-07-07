@@ -14,9 +14,9 @@ export const PreviewLoaderDataProvider: React.FC<PreviewLoaderDataProviderProps>
 };
 
 export const useEngagementLoaderData = (): EngagementLoaderPublicData => {
-    const previewLoaderData = useContext(PreviewLoaderDataContext);
-    const routeLoaderData = useRouteLoaderData('public-single-engagement') as EngagementLoaderPublicData;
-    return previewLoaderData ?? routeLoaderData;
+    const adminData = useContext(PreviewLoaderDataContext);
+    const publicData = useRouteLoaderData('public-single-engagement');
+    return adminData ?? publicData;
 };
 
 export default PreviewLoaderDataContext;

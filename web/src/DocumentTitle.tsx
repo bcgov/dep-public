@@ -39,7 +39,6 @@ const DocumentTitle = () => {
         const resolveTitle = async () => {
             const crumbs = await getResolvedCrumbs(matches);
             if (cancelled) return;
-            console.log('Resolved crumbs for title:', crumbs);
             const filteredCrumbs = crumbs
                 // Exclude crumbs that are marked as index pages UNLESS they are the current page
                 .filter((crumb, index) => (crumb?.title ?? crumb?.name) && (index == 0 || !crumb?.isIndex))

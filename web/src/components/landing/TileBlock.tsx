@@ -1,16 +1,15 @@
-import React, { useContext, useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import Grid from '@mui/material/Grid2';
 import { RepeatedGrid } from 'components/common';
 import { TileSkeleton } from './TileSkeleton';
 import EngagementTile from './EngagementTile';
-import { LandingContext } from './LandingContext';
 import NoResult from 'routes/NoResults';
 import { LiveAnnouncer, LiveMessage } from 'react-aria-live';
 import { Pagination } from 'components/common/Input';
-import { PAGE_SIZE } from './constants';
+import { TileBlockProps } from './types';
 
-const TileBlock = () => {
-    const { engagements, loadingEngagements, page, setPage, totalEngagements } = useContext(LandingContext);
+const TileBlock = (props: TileBlockProps) => {
+    const { engagements, loadingEngagements, totalEngagements, searchFilters, setSearchFilters } = props;
     const [ariaStatusMessage, setAriaStatusMessage] = useState(`Results updated. ${totalEngagements} results`);
 
     useEffect(() => {
@@ -45,7 +44,7 @@ const TileBlock = () => {
             </Grid>
         );
     }
-    if (engagements.length == 0) {
+    if (!engagements || engagements.length === 0) {
         return (
             <Grid
                 container
@@ -123,12 +122,12 @@ const TileBlock = () => {
                     <Grid>
                         <Pagination
                             defaultPage={1}
-                            page={page}
-                            count={Math.ceil(totalEngagements / PAGE_SIZE)}
+                            page={searchFilters.page}
+                            count={Math.ceil(totalEngagements / searchFilters.size)}
                             color="primary"
                             showFirstButton
                             showLastButton
-                            onChange={(_, pageNumber) => setPage(pageNumber)}
+                            onChange={(_, pageNumber) => setSearchFilters({ ...searchFilters, page: pageNumber })}
                         />
                     </Grid>
                 </Grid>

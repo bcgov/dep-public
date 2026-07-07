@@ -19,6 +19,7 @@ const AuthenticatedRoutes = resolveLazyRouteTree(
                 <LazyRoute index element={<Navigate to="en" replace />} />
                 <LazyRoute
                     path=":languageCode"
+                    id="engagement-preview"
                     ComponentLazy={() => import('components/engagement/preview/EngagementPreview')}
                     loaderLazy={() => import('components/engagement/preview/engagementPreviewLoader')}
                 />
