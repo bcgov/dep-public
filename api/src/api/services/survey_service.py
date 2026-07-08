@@ -206,9 +206,8 @@ class SurveyService:
     @staticmethod
     def validate_update_fields(data):
         """Validate all fields."""
-        empty_fields = [not data[field] for field in ['id']]
 
-        if any(empty_fields):
+        if any(not data[field] for field in ['id']):
             raise ValueError('Some required fields are empty')
 
     @staticmethod
@@ -221,9 +220,7 @@ class SurveyService:
     @staticmethod
     def validate_create_fields(data):
         """Validate all fields."""
-        empty_fields = [not data[field] for field in ['name', 'display']]
-
-        if any(empty_fields):
+        if any(not data[field] for field in ['name', 'display']):
             raise ValueError('Some required fields are empty')
 
     @classmethod
@@ -237,15 +234,14 @@ class SurveyService:
     @classmethod
     def validate_link_fields(cls, survey_id, engagement_id):
         """Validate all fields."""
-        empty_fields = [not value for value in [survey_id, engagement_id]]
-        if any(empty_fields):
+        if any(not value for value in [survey_id, engagement_id]):
             raise ValueError(
                 'Necessary fields for linking survey to an engagement were missing')
 
         survey = cls.get(survey_id)
 
         if not survey:
-            raise ValueError('Could not find survey ' + survey_id)
+            raise ValueError('Could not find survey ' + str(survey_id))
 
         if survey.get('engagement', None):
             raise ValueError('Survey is already linked to an engagement')
@@ -261,20 +257,19 @@ class SurveyService:
     @classmethod
     def validate_unlink_fields(cls, survey_id, engagement_id):
         """Validate all fields for unlinking survey."""
-        empty_fields = [not value for value in [survey_id, engagement_id]]
-        if any(empty_fields):
+        if any(not value for value in [survey_id, engagement_id]):
             raise ValueError(
                 'Necessary fields for unlinking survey to an engagement were missing')
 
         survey = cls.get(survey_id)
 
         if not survey:
-            raise ValueError('Could not find survey ' + survey_id)
+            raise ValueError('Could not find survey ' + str(survey_id))
 
         linked_engagement = survey.get('engagement', None)
         if not linked_engagement or linked_engagement.get('id') != int(engagement_id):
             raise ValueError(
-                'Survey is not linked to engagement ' + engagement_id)
+                'Survey is not linked to engagement ' + str(engagement_id))
 
         engagement_status = linked_engagement.get('engagement_status')
         if engagement_status.get('id') != Status.Draft.value:
