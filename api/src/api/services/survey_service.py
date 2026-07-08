@@ -1,7 +1,7 @@
 """Service for survey management."""
-from http.client import HTTPException
-from sqlalchemy.exc import SQLAlchemyError
 from typing import List
+
+from sqlalchemy.exc import SQLAlchemyError
 
 from api.constants.engagement_status import Status
 from api.constants.membership_type import MembershipType
@@ -78,7 +78,6 @@ class SurveyService:
         """Get a paginated list of surveys."""
         # check if user has view all surveys access to view hidden surveys as well
         can_view_all_surveys = SurveyService._can_view_all_surveys()
-        print("Can view all surveys?", can_view_all_surveys)
 
         if not can_view_all_surveys:
             search_options.exclude_hidden = True
@@ -206,7 +205,6 @@ class SurveyService:
     @staticmethod
     def validate_update_fields(data):
         """Validate all fields."""
-
         if any(not data[field] for field in ['id']):
             raise ValueError('Some required fields are empty')
 
