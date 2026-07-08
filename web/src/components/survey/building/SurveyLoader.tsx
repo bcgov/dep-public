@@ -3,7 +3,7 @@ import { Engagement } from 'models/engagement';
 import { Survey } from 'models/survey';
 import { SurveyReportSetting } from 'models/surveyReportSetting';
 import { SurveySubmission } from 'models/surveySubmission';
-import { Params } from 'react-router';
+import { LoaderFunctionArgs } from 'react-router';
 import { getEmailVerification } from 'services/emailVerificationService';
 import { getEngagement, getEngagementBySlug } from 'services/engagementService';
 import { getSubmissionByToken } from 'services/submissionService';
@@ -11,56 +11,63 @@ import { getSurvey } from 'services/surveyService';
 import { fetchSurveyReportSettings } from 'services/surveyService/reportSettingsService';
 
 export type SurveyLoaderData = {
-    engagement: Engagement | null;
-    language: string | undefined;
-    reportSettings: SurveyReportSetting[] | null;
-    slug: { slug: string } | null;
-    submission: SurveySubmission | null;
-    survey: Survey;
-    surveyId: string | undefined;
-    token: string | undefined;
-    verification: EmailVerification | null;
+    engagement: Promise<Engagement>;
+    reportSettings: Promise<SurveyReportSetting[] | null>;
+    submission: Promise<SurveySubmission | null>;
+    survey: Promise<Survey>;
+    verification: Promise<EmailVerification> | Promise<null>;
 };
 
-export const SurveyLoader = async ({ params }: { params: Params<string> }) => {
-    const { surveyId, token, language, engagementId: engagementIdParam, slug: slugParam } = params;
+export const SurveyLoader = async ({ params, pattern }: LoaderFunctionArgs) => {
+    const { surveyId, token, engagementId: engagementIdParam, slug: slugParam } = params;
     const engagementId = Number(engagementIdParam);
     if (Number.isNaN(Number(surveyId)) && !Number.isNaN(engagementId) && !slugParam)
         throw new Error('Invalid survey ID');
-
-    const verPromise = token ? getEmailVerification(token) : null;
-    const getEngPromise = () => {
-        if (slugParam) {
-            return getEngagementBySlug(slugParam);
-        } else if (engagementId && !Number.isNaN(engagementId)) {
-            return getEngagement(engagementId);
+    const shouldHaveToken = !pattern.startsWith('/manage'); //non-admin users should have a token
+    if (shouldHaveToken && !token) {
+        throw new Error('Missing verification token');
+    }
+    const verification = token ? getEmailVerification(token) : Promise.resolve(null);
+    const getPromises = () => {
+        if (slugParam || (engagementId && !Number.isNaN(engagementId))) {
+            // If we are accessing the survey via the engagement
+            const engagement = slugParam ? getEngagementBySlug(slugParam) : getEngagement(engagementId);
+            const survey = engagement.then((eng) => {
+                if (!eng) throw new Error('Engagement not found for slug: ' + slugParam);
+                if (surveyId && !Number.isNaN(Number(surveyId))) {
+                    return getSurvey(Number(surveyId));
+                }
+                if (eng.surveys && eng.surveys.length > 0) {
+                    return eng.surveys[0];
+                }
+                throw new Error('No survey found for engagement with slug: ' + slugParam);
+            });
+            return { engagement, survey };
         } else if (surveyId && !Number.isNaN(Number(surveyId))) {
-            const surveyPromise = getSurvey(Number(surveyId));
-            return surveyPromise.then((surveyData) => {
+            // If we are accessing the survey directly via the survey ID
+            const survey = getSurvey(Number(surveyId));
+            const engagement = survey.then((surveyData) => {
                 if (!surveyData.engagement_id) {
                     throw new Error('Survey is missing engagement ID');
                 }
                 return getEngagement(Number(surveyData.engagement_id));
             });
+            return { engagement, survey };
         }
-        return null;
+        throw new Error('Invalid parameters: surveyId or engagementId or slug must be provided');
     };
-    const engPromise = getEngPromise();
-    let survey: Survey | null = null;
-    try {
-        const [engagement, verification] = await Promise.all([engPromise, verPromise]);
-        survey = !survey && surveyId ? await getSurvey(Number(surveyId)) : (survey ?? engagement?.surveys?.[0]) || null;
 
-        const submissionPromise = verification?.verification_token
-            ? getSubmissionByToken(verification.verification_token)
-            : null;
-        const reportSettingsPromise = survey?.id ? fetchSurveyReportSettings(String(survey.id)) : null;
-        const results = await Promise.all([submissionPromise, reportSettingsPromise]);
-        const [submission, reportSettings] = results;
-        return { engagement, language, reportSettings, submission, survey, surveyId, token, verification };
-    } catch (e) {
-        console.error('Failed to get survey data', e);
-    }
+    const { engagement, survey } = getPromises();
+    const reportSettings = survey?.then((s) => {
+        if (!s) return null;
+        return fetchSurveyReportSettings(String(s.id));
+    });
+    const submission = verification?.then((verif) => {
+        if (!verif?.verification_token) return null;
+        return getSubmissionByToken(verif.verification_token);
+    });
+
+    return { engagement, reportSettings, submission, survey, verification };
 };
 
 export default SurveyLoader;

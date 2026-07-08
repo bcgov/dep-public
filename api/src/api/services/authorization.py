@@ -2,10 +2,10 @@
 
 This module is to handle authorization related queries.
 """
-from http import HTTPStatus
+from flask_restx._http import HTTPStatus
 
 from flask import current_app, g
-from flask_restx import abort
+from flask_restx import abort as _abort
 
 from api.constants.membership_type import MembershipType
 from api.models.engagement import Engagement as EngagementModel
@@ -22,8 +22,21 @@ UNAUTHORIZED_MSG = 'You are not authorized to perform this action!'
 
 # pylint: disable=unused-argument
 @add_user_context
-def check_auth(**kwargs):
+def check_auth(**kwargs) -> bool:
     """Check if user is authorized to perform action on the service."""
+
+    def abort(
+        status_code: HTTPStatus = HTTPStatus.FORBIDDEN,
+        message: str = UNAUTHORIZED_MSG,
+    ):
+        """
+        Abort with a given status code and message.
+        Return false instead of aborting if 'abort' is set to False in kwargs.
+        """
+        if kwargs.get('abort', True):
+            _abort(status_code, message)
+        return False
+
     skip_tenant_check = current_app.config.get('IS_SINGLE_TENANT_ENVIRONMENT')
     user_from_context: UserContext = kwargs['user_context']
     user_from_db = StaffUserModel.get_user_by_external_id(
@@ -36,28 +49,29 @@ def check_auth(**kwargs):
         user_from_context.token_info)
 
     if not user_roles:
-        abort(HTTPStatus.FORBIDDEN, UNAUTHORIZED_MSG)
+        abort()
 
     if Role.SUPER_ADMIN.value in user_roles:
-        return  # Let Super Admins do anything they want :3
+        return True  # Let Super Admins do anything they want :3
 
     required_roles = set(kwargs.get('one_of_roles', []))
     has_valid_roles = set(user_roles) & required_roles
     if has_valid_roles:
         if skip_tenant_check:
-            return
+            return True
         if 'engagement_id' in kwargs:
             _check_engagement_has_tenant(
                 kwargs.get('engagement_id'), g.tenant_id)
-        return
+        return True
     membership_eligible_roles = {MembershipType.TEAM_MEMBER.name, MembershipType.REVIEWER.name
                                  } & required_roles
     # check if the user is a member of a passed engagement
     if membership_eligible_roles and _has_team_membership(kwargs, user_from_context,
                                                           membership_eligible_roles):
-        return
+        return True
 
-    abort(HTTPStatus.FORBIDDEN, UNAUTHORIZED_MSG)
+    abort()
+    return False
 
 
 @add_user_context

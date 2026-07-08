@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState, Suspense } from 'react';
-import { useNavigate, useRouteLoaderData, Await, useRevalidator } from 'react-router';
+import { useNavigate, Await, useRevalidator } from 'react-router';
 import FormBuilderSkeleton from './FormBuilderSkeleton';
 import {
     Grid2 as Grid,
@@ -41,9 +41,9 @@ import {
 } from '@fortawesome/pro-regular-svg-icons';
 import { Else, If, Then } from 'react-if';
 import UnsavedWorkConfirmation from 'components/common/Navigation/UnsavedWorkConfirmation';
-import { SurveyLoaderData } from './SurveyLoader';
 import { fetchSurveyReportSettings } from 'services/surveyService/reportSettingsService';
 import { ROUTES, getPath } from 'routes/routes';
+import { useSurveyLoaderData } from '../useSurveyLoaderData';
 
 interface SurveyForm {
     id: string;
@@ -58,7 +58,11 @@ export const FormBuilderPage = () => {
     const dispatch = useAppDispatch();
     const revalidator = useRevalidator();
 
-    const { survey, engagement, reportSettings } = useRouteLoaderData('survey');
+    const surveyLoaderData = useSurveyLoaderData();
+    const survey = React.use(surveyLoaderData.survey);
+    const engagement = React.use(surveyLoaderData.engagement);
+    const reportSettings = React.use(surveyLoaderData.reportSettings);
+
     const [settings, setSettings] = useState(reportSettings);
     const [formDefinition, setFormDefinition] = useState(survey.form_json);
     const [isMultiPage, setIsMultiPage] = useState(formDefinition?.display === 'wizard');
@@ -74,7 +78,7 @@ export const FormBuilderPage = () => {
         watch,
     } = useForm<Omit<SurveyForm, 'form_json'>>({
         defaultValues: {
-            id: survey.id.toString(),
+            id: survey.id?.toString(),
             name: survey.name,
             is_hidden: survey.is_hidden,
             is_template: survey.is_template,
@@ -219,13 +223,7 @@ export const FormBuilderPage = () => {
                                 name="name"
                                 control={control}
                                 render={({ field }) => (
-                                    <TextField
-                                        {...field}
-                                        autoFocus
-                                        onBlur={() => {
-                                            setIsEditingName(false);
-                                        }}
-                                    />
+                                    <TextField {...field} autoFocus onBlur={() => setIsEditingName(false)} />
                                 )}
                             />
                             <IconButton
@@ -450,7 +448,7 @@ const SaveStatusIndicator = ({ hasUnsavedWork, saveError }: { hasUnsavedWork: bo
 };
 
 const SurveyFormBuilder = () => {
-    const { survey, engagement } = useRouteLoaderData('survey') as SurveyLoaderData;
+    const { survey, engagement } = useSurveyLoaderData();
 
     return (
         <Suspense fallback={<FormBuilderSkeleton />}>

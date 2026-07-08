@@ -1,17 +1,27 @@
 import React from 'react';
 import { Form } from './formio/setup';
 import { FormSubmissionData, FormSubmitterProps } from './types';
+import { createSimpleFileOptions } from './formio/simpleFileOptions';
 
-const SinglePageForm = ({ handleFormChange, savedForm, handleFormSubmit }: FormSubmitterProps) => {
+const SinglePageForm = ({
+    handleFormChange,
+    handleFormCancel,
+    savedForm,
+    handleFormSubmit,
+    verificationToken,
+}: FormSubmitterProps) => {
+    const simpleFileOptions = createSimpleFileOptions({ verificationToken });
+
     return (
         <div className="formio">
             <Form
                 form={savedForm || { display: 'form' }}
-                onChange={(form: unknown) => handleFormChange(form as FormSubmissionData)}
-                onSubmit={(form: unknown) => {
-                    const formSubmissionData = form as FormSubmissionData;
-                    handleFormSubmit(formSubmissionData.data);
+                options={{
+                    ...simpleFileOptions,
                 }}
+                onCancel={() => handleFormCancel?.()}
+                onChange={(form: unknown) => handleFormChange(form as FormSubmissionData)}
+                onSubmit={(form: unknown) => handleFormSubmit?.((form as FormSubmissionData).data)}
             />
         </div>
     );

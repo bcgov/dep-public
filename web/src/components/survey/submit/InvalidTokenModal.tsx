@@ -8,18 +8,20 @@ import { BodyText } from 'components/common/Typography/Body';
 import { AppConfig } from 'config';
 import { getPath, ROUTES } from 'routes/routes';
 import { RouterLinkRenderer } from 'components/common/Navigation/Link';
-import { useSurveyLoaderData } from './useSurveyLoaderData';
+import { useSurveyLoaderData } from '../useSurveyLoaderData';
 
 export const InvalidTokenModal = () => {
     const { t: translate } = useAppTranslation();
     const isLoggedIn = useAppSelector((state) => state.user.authentication.authenticated);
     const navigate = useNavigate();
-    const { verification, slug } = useSurveyLoaderData();
+    const surveyLoaderData = useSurveyLoaderData();
+    const engagement = React.use(surveyLoaderData.engagement);
+    const verification = React.use(surveyLoaderData.verification);
     const language = sessionStorage.getItem('languageId') ?? AppConfig.language.defaultLanguageId;
     const engagementPath =
-        slug === null
+        engagement === null
             ? getPath(ROUTES.PUBLIC_LANDING)
-            : getPath(ROUTES.PUBLIC_ENGAGEMENT_BY_SLUG, { slug: slug.slug, language });
+            : getPath(ROUTES.PUBLIC_ENGAGEMENT_BY_SLUG, { slug: engagement.slug, language });
 
     const navigateToEngagement = () => navigate(engagementPath);
 

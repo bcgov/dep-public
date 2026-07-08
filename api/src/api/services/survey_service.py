@@ -1,6 +1,7 @@
 """Service for survey management."""
-from http import HTTPStatus
+from http.client import HTTPException
 from sqlalchemy.exc import SQLAlchemyError
+from typing import List
 
 from api.constants.engagement_status import Status
 from api.constants.membership_type import MembershipType
@@ -18,8 +19,6 @@ from api.services.membership_service import MembershipService
 from api.services.object_storage_service import ObjectStorageService
 from api.services.report_setting_service import ReportSettingService
 from api.utils.roles import Role
-from api.utils.token_info import TokenInfo
-from ..exceptions.business_exception import BusinessException
 
 
 class SurveyService:
@@ -30,7 +29,7 @@ class SurveyService:
 
     @classmethod
     def get(cls, survey_id):
-        """Get survey by the ID."""
+        """Get a survey by its ID."""
         survey_model = SurveyModel.find_by_id(survey_id)
         eng_id = None
         one_of_roles = (Role.VIEW_SURVEYS.value,)
@@ -40,7 +39,8 @@ class SurveyService:
             # Only Admins can view hidden surveys.
             one_of_roles = (Role.VIEW_ALL_SURVEYS.value,)
         elif survey_model.engagement_id:
-            engagement_model = EngagementModel.find_by_id(survey_model.engagement_id)
+            engagement_model = EngagementModel.find_by_id(
+                survey_model.engagement_id)
             if engagement_model:
                 eng_id = engagement_model.id
                 if engagement_model.status_id == Status.Published.value:
@@ -54,36 +54,40 @@ class SurveyService:
                     )
 
         if not skip_auth:
-            authorization.check_auth(one_of_roles=one_of_roles, engagement_id=eng_id)
+            authorization.check_auth(
+                one_of_roles=one_of_roles, engagement_id=eng_id)
 
         survey = SurveySchema().dump(survey_model)
         return survey
 
     @classmethod
     def get_open(cls, survey_id):
-        """Get survey by the id."""
+        """Get a survey by its ID and ensure it is open for public access."""
         survey_model = SurveyModel.get_open(survey_id)
-        engagement_model: EngagementModel = EngagementModel.find_by_id(survey_model.engagement_id)
+        engagement_model: EngagementModel = EngagementModel.find_by_id(
+            survey_model.engagement_id)
         survey = SurveySchema().dump(survey_model)
         eng = EngagementSchema().dump(engagement_model)
-        eng['banner_url'] = ObjectStorageService().get_url(engagement_model.banner_filename)
+        eng['banner_url'] = ObjectStorageService().get_url(
+            engagement_model.banner_filename)
         survey['engagement'] = eng
         return survey
 
     @staticmethod
     def get_surveys_paginated(user_id, pagination_options: PaginationOptions, search_options: SurveySearchOptions):
-        """Get engagements paginated."""
+        """Get a paginated list of surveys."""
         # check if user has view all surveys access to view hidden surveys as well
-        user_roles = TokenInfo.get_user_roles()
-        can_view_all_surveys = SurveyService._can_view_all_surveys(user_roles)
+        can_view_all_surveys = SurveyService._can_view_all_surveys()
+        print("Can view all surveys?", can_view_all_surveys)
 
         if not can_view_all_surveys:
             search_options.exclude_hidden = True
 
-        search_options.assigned_engagements = SurveyService._get_assigned_engagements(user_id, user_roles)
+        search_options.assigned_engagements = SurveyService._get_assigned_engagements(
+            user_id)
 
         # check if user can view surveys linked to unassigned engagement
-        search_options.can_view_all_engagements = SurveyService._can_view_all_engagements(user_roles)
+        search_options.can_view_all_engagements = SurveyService._can_view_all_engagements()
 
         items, total = SurveyModel.get_surveys_paginated(
             pagination_options,
@@ -97,24 +101,27 @@ class SurveyService:
         }
 
     @staticmethod
-    def _get_assigned_engagements(user_id, user_roles):
-        if Role.VIEW_PRIVATE_ENGAGEMENTS.value in user_roles:
-            return None
+    def _get_assigned_engagements(user_id):
+        if not authorization.check_auth(one_of_roles=[
+            Role.VIEW_PRIVATE_ENGAGEMENTS.value
+        ], abort=False):
+            empty_list: List[int] = []
+            return empty_list
         memberships = MembershipService.get_assigned_engagements(user_id)
-        return [membership.engagement_id for membership in memberships]
+        return [int(membership.engagement_id) for membership in memberships]
 
     @staticmethod
-    def _can_view_all_engagements(user_roles):
-        if Role.VIEW_ENGAGEMENT.value in user_roles:
-            return True
-        return False
+    def _can_view_all_engagements():
+        return authorization.check_auth(one_of_roles=[
+            Role.VIEW_ENGAGEMENT.value
+        ], abort=False)
 
     @staticmethod
-    def _can_view_all_surveys(user_roles):
+    def _can_view_all_surveys():
         """Return false if user does not have access to view all hidden surveys."""
-        if Role.VIEW_ALL_SURVEYS.value in user_roles:
-            return True
-        return False
+        return authorization.check_auth(one_of_roles=[
+            Role.VIEW_ALL_SURVEYS.value
+        ], abort=False)
 
     @classmethod
     def create(cls, survey_data: dict):
@@ -176,9 +183,9 @@ class SurveyService:
                                                Role.EDIT_SURVEY.value), engagement_id=engagement_id)
 
         # check if user has edit all surveys access to edit template surveys as well
-        user_roles = TokenInfo.get_user_roles()
+
         is_template = survey.get('is_template', None)
-        cls.validate_template_surveys_edit_access(is_template, user_roles)
+        cls.validate_template_surveys_edit_access(is_template)
 
         if engagement and engagement.get('status_id', None) not in [
             Status.Draft.value,
@@ -205,12 +212,11 @@ class SurveyService:
             raise ValueError('Some required fields are empty')
 
     @staticmethod
-    def validate_template_surveys_edit_access(is_template, user_roles):
-        """Validatef user has edit access on a template survey."""
-        if is_template and Role.EDIT_ALL_SURVEYS.value not in user_roles:
-            raise BusinessException(
-                error='Changes could not be saved due to restricted access on a template survey',
-                status_code=HTTPStatus.FORBIDDEN)
+    def validate_template_surveys_edit_access(is_template):
+        """Validate user has edit access on a template survey."""
+        if is_template:
+            authorization.check_auth(
+                one_of_roles=[Role.EDIT_ALL_SURVEYS.value])
 
     @staticmethod
     def validate_create_fields(data):
@@ -233,7 +239,8 @@ class SurveyService:
         """Validate all fields."""
         empty_fields = [not value for value in [survey_id, engagement_id]]
         if any(empty_fields):
-            raise ValueError('Necessary fields for linking survey to an engagement were missing')
+            raise ValueError(
+                'Necessary fields for linking survey to an engagement were missing')
 
         survey = cls.get(survey_id)
 
@@ -256,7 +263,8 @@ class SurveyService:
         """Validate all fields for unlinking survey."""
         empty_fields = [not value for value in [survey_id, engagement_id]]
         if any(empty_fields):
-            raise ValueError('Necessary fields for unlinking survey to an engagement were missing')
+            raise ValueError(
+                'Necessary fields for unlinking survey to an engagement were missing')
 
         survey = cls.get(survey_id)
 
@@ -265,11 +273,13 @@ class SurveyService:
 
         linked_engagement = survey.get('engagement', None)
         if not linked_engagement or linked_engagement.get('id') != int(engagement_id):
-            raise ValueError('Survey is not linked to engagement ' + engagement_id)
+            raise ValueError(
+                'Survey is not linked to engagement ' + engagement_id)
 
         engagement_status = linked_engagement.get('engagement_status')
         if engagement_status.get('id') != Status.Draft.value:
-            raise ValueError('Cannot unlink survey from engagement with status ' + engagement_status.get('status_name'))
+            raise ValueError(
+                'Cannot unlink survey from engagement with status ' + engagement_status.get('status_name'))
 
     @classmethod
     def delete(cls, survey_id: int):
@@ -282,7 +292,8 @@ class SurveyService:
             raise ValueError('Survey not found')
 
         try:
-            SurveyService._verify_linked_engagement_status(survey.engagement_id)
+            SurveyService._verify_linked_engagement_status(
+                survey.engagement_id)
             for tx in (SurveyTranslation.get_survey_translation_list_by_survey_id(survey_id) or []):
                 SurveyTranslation.delete_survey_translation(tx.id)
 
@@ -302,4 +313,5 @@ class SurveyService:
             if not engagement:
                 raise ValueError('Linked engagement not found')
             if engagement.status_id == Status.Published.value:
-                raise ValueError('Cannot delete a survey that is linked to a published engagement')
+                raise ValueError(
+                    'Cannot delete a survey that is linked to a published engagement')

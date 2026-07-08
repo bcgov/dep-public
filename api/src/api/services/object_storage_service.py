@@ -1,14 +1,13 @@
 """Service for object storage management."""
 import os
 import uuid
-from typing import List
+from typing import Any, List, Union
 from urllib.parse import urlparse
 
 import requests
 from aws_requests_auth.aws_auth import AWSRequestsAuth
 
 from api.config import Config
-from api.schemas.document import Document
 
 
 class ObjectStorageService:
@@ -52,14 +51,76 @@ class ObjectStorageService:
 
         return filename.lstrip('/')
 
-    def get_auth_headers(self, documents: List[Document]):
+    def delete_file(self, file_path: str):
+        """Delete a file from the object storage service."""
+        if not file_path:
+            return
+        object_key = self.get_object_key(file_path)
+        if not object_key:
+            return
+        s3uri = f'https://{self.s3_auth.aws_host}/{self.s3_bucket}/{object_key}'
+        requests.delete(s3uri, auth=self.s3_auth, timeout=None)
+
+    def is_configured(self):
+        """Return whether object storage configuration is present."""
+        return (
+            self.s3_auth.aws_access_key is not None and
+            self.s3_auth.aws_secret_access_key is not None and
+            self.s3_auth.aws_host is not None and
+            self.s3_bucket is not None
+        )
+
+    def generate_unique_filename(self, filename: str):
+        """Return a unique filename preserving the original extension."""
+        filenamesplittext = os.path.splitext(filename)
+        return f'{uuid.uuid4()}{filenamesplittext[1]}'
+
+    def build_public_upload_key(self, tenant_id: int, survey_id: int, verification_id: int, filename: str):
+        """Build an object key for a public survey upload."""
+        unique_filename = self.generate_unique_filename(filename)
+        object_key = (
+            f'tenant_{tenant_id}/survey_{survey_id}/'
+            f'verification_{verification_id}/{unique_filename}'
+        )
+        return object_key, unique_filename
+
+    @staticmethod
+    def build_public_upload_prefix(tenant_id: int, survey_id: int, verification_id: int):
+        """Build the expected object key prefix for a public survey upload."""
+        return f'tenant_{tenant_id}/survey_{survey_id}/verification_{verification_id}/'
+
+    def get_signed_request_details(self, method: str, object_key: str, content_type: Union[str, None] = None):
+        """Return signed request headers for a single object request without executing it."""
+        if not self.is_configured():
+            raise ValueError(
+                'accesskey is None or secretkey is None or S3 host is None or formsbucket is None'
+            )
+
+        s3uri = self.get_url(object_key)
+        if not s3uri:
+            raise ValueError('Invalid object key for object storage upload.')
+
+        headers = {}
+        if content_type:
+            headers['Content-Type'] = content_type
+
+        prepared_request = requests.Request(
+            method, s3uri, headers=headers).prepare()
+        signed_request = self.s3_auth(prepared_request)
+
+        return {
+            'filepath': s3uri,
+            'authheader': signed_request.headers['Authorization'],
+            'amzdate': signed_request.headers['x-amz-date'],
+        }
+
+    def get_signed_upload_details(self, object_key: str, content_type: Union[str, None] = None):
+        """Return signed request headers for a single object PUT without uploading it."""
+        return self.get_signed_request_details('PUT', object_key, content_type)
+
+    def get_auth_headers(self, documents: List[dict[str, Any]]):
         """Get the S3 auth headers for the provided documents."""
-        if (
-            self.s3_auth.aws_access_key is None or
-            self.s3_auth.aws_secret_access_key is None or
-            self.s3_auth.aws_host is None or
-            self.s3_bucket is None
-        ):
+        if not self.is_configured():
             return {
                 'status': 'Configuration Issue',
                 'message': 'accesskey is None or secretkey is None or S3 host is None or formsbucket is None'
@@ -67,13 +128,17 @@ class ObjectStorageService:
 
         for file in documents:
             s3sourceuri = file.get('s3sourceuri', None)
-            filenamesplittext = os.path.splitext(file.get('filename'))
-            uniquefilename = f'{uuid.uuid4()}{filenamesplittext[1]}'
+            filename = file.get('filename')
+            if not filename:
+                raise ValueError('filename is required')
+            uniquefilename = self.generate_unique_filename(filename)
 
-            s3uri = s3sourceuri if s3sourceuri is not None else self.get_url(uniquefilename)
+            s3uri = s3sourceuri if s3sourceuri is not None else self.get_url(
+                uniquefilename)
 
             if s3sourceuri is None:
-                response = requests.put(s3uri, data=None, auth=self.s3_auth, timeout=None)
+                response = requests.put(
+                    s3uri, data=None, auth=self.s3_auth, timeout=None)
             else:
                 response = requests.get(s3uri, auth=self.s3_auth, timeout=None)
 

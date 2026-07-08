@@ -59,6 +59,7 @@ const Endpoints = {
     },
     Document: {
         OSS_HEADER: `${AppConfig.apiUrl}/document/`,
+        PUBLIC: `${AppConfig.apiUrl}/document/public`,
     },
     Survey: {
         GET_LIST: `${AppConfig.apiUrl}/surveys/`,

@@ -3,13 +3,23 @@ import { FormSubmitterProps } from './types';
 import SinglePageForm from './SinglePageForm';
 import MultiPageForm from './MultiPageForm';
 
-const FormSubmit = ({ handleFormChange, savedForm, handleFormSubmit }: FormSubmitterProps) => {
-    const isMultiPage = savedForm && savedForm.display === 'wizard';
+const FormSubmit = ({
+    handleFormChange,
+    handleFormCancel,
+    savedForm,
+    handleFormSubmit,
+    verificationToken,
+}: FormSubmitterProps) => {
+    const FormComponent = savedForm?.display === 'wizard' ? MultiPageForm : SinglePageForm;
 
-    return isMultiPage ? (
-        <MultiPageForm handleFormChange={handleFormChange} savedForm={savedForm} handleFormSubmit={handleFormSubmit} />
-    ) : (
-        <SinglePageForm handleFormChange={handleFormChange} savedForm={savedForm} handleFormSubmit={handleFormSubmit} />
+    return (
+        <FormComponent
+            handleFormChange={handleFormChange}
+            handleFormCancel={handleFormCancel}
+            savedForm={savedForm}
+            handleFormSubmit={handleFormSubmit}
+            verificationToken={verificationToken}
+        />
     );
 };
 
