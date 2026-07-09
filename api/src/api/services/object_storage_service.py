@@ -93,7 +93,7 @@ class ObjectStorageService:
         """Return signed request headers for a single object request without executing it."""
         if not self.is_configured():
             raise ValueError(
-                'accesskey is None or secretkey is None or S3 host is None or formsbucket is None'
+                '(get_signed_request_details) S3 Object service is not configured properly.'
             )
 
         s3uri = self.get_url(object_key)
@@ -123,7 +123,7 @@ class ObjectStorageService:
         if not self.is_configured():
             return {
                 'status': 'Configuration Issue',
-                'message': 'accesskey is None or secretkey is None or S3 host is None or formsbucket is None'
+                'message': '(get_auth_headers) S3 Object service is not configured properly.',
             }, 500
 
         for file in documents:
