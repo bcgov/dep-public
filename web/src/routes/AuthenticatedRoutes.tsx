@@ -143,12 +143,12 @@ const AuthenticatedRoutes = resolveLazyRouteTree(
                     <LazyRoute
                         path="config/edit"
                         handle={{ crumb: () => ({ name: 'Configuration', link: '../config' }) }}
+                        actionLazy={() => import('engagements/admin/config/EngagementUpdateAction')}
                     >
                         <LazyRoute
                             index
                             handle={{ crumb: () => ({ name: 'Edit' }) }}
                             ComponentLazy={() => import('engagements/admin/config/wizard/ConfigWizard')}
-                            actionLazy={() => import('engagements/admin/config/EngagementUpdateAction')}
                         />
                     </LazyRoute>
                     {/* Wraps the tabs with the engagement title and TabContext */}

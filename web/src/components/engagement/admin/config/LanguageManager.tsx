@@ -16,11 +16,8 @@ import { ROUTES, getPath } from 'routes/routes';
 
 export const LanguageManager = () => {
     const SINGLE_LANGUAGE = [{ code: 'en', name: 'English' }] as Language[];
-    const REQUIRED_LANGUAGES = [
-        { code: 'en', name: 'English' },
-        { code: 'fr', name: 'French' },
-    ] as Language[];
-    const requiredLanguageCodes = REQUIRED_LANGUAGES.map((l) => l.code);
+    const REQUIRED_LANGUAGES = [{ code: 'en', name: 'English' }] as Language[];
+    const requiredLanguageCodes = new Set(REQUIRED_LANGUAGES.map((l) => l.code));
 
     const engagementForm = useFormContext();
     const { setValue, watch } = engagementForm;
@@ -30,10 +27,11 @@ export const LanguageManager = () => {
     const { languages: availableLanguages } = fetcherData ?? { languages: [] };
 
     const [searchTerm, setSearchTerm] = React.useState('');
+    const [wantsMultiLanguage, setWantsMultiLanguage] = React.useState<boolean>(false);
 
     const determineSingleLanguage = (languages: Language[]) => {
         if (languages.length === 0) return null;
-        if (languages.length === 1) return true;
+        if (languages.length === 1 && !wantsMultiLanguage) return true;
         return false;
     };
     const isSingleLanguage = determineSingleLanguage(selectedLanguages);
@@ -49,12 +47,12 @@ export const LanguageManager = () => {
             <RadioGroup
                 onChange={(e) => {
                     if (e.target.value === 'single') {
+                        setWantsMultiLanguage(false);
                         setValue('languages', SINGLE_LANGUAGE, { shouldDirty: true });
                     }
                     if (e.target.value === 'multi') {
-                        const optionalLanguages = selectedLanguages.filter(
-                            (l) => !requiredLanguageCodes.includes(l.code),
-                        );
+                        setWantsMultiLanguage(true);
+                        const optionalLanguages = selectedLanguages.filter((l) => !requiredLanguageCodes.has(l.code));
                         setValue('languages', [...REQUIRED_LANGUAGES, ...optionalLanguages], {
                             shouldDirty: true,
                             shouldValidate: true,
@@ -72,12 +70,12 @@ export const LanguageManager = () => {
                 <MultiSelect<Language>
                     containerProps={{ sx: { mt: 2 } }}
                     onChange={(_, language, reason) => {
+                        setWantsMultiLanguage(false);
                         if (reason === 'removeOption' && language) {
                             setValue(
                                 'languages',
-                                selectedLanguages.filter((l) => l.code !== language.code, {
-                                    shouldDirty: true,
-                                }),
+                                selectedLanguages.filter((l) => l.code !== language.code),
+                                { shouldDirty: true },
                             );
                         }
                         if (reason === 'selectOption' && language) {
@@ -109,9 +107,9 @@ export const LanguageManager = () => {
                         return (
                             <Grid container direction="row" spacing={1} alignItems="center">
                                 <Grid>
-                                    <BodyText bold={requiredLanguageCodes.includes(option.code)}>
+                                    <BodyText bold={requiredLanguageCodes.has(option.code)}>
                                         {`${option.name}`}
-                                        {requiredLanguageCodes.includes(option.code) && ' (Default)'}
+                                        {requiredLanguageCodes.has(option.code) && ' (Default)'}
                                     </BodyText>
                                 </Grid>
                             </Grid>
@@ -153,7 +151,7 @@ export const LanguageManager = () => {
                     selectedLabel={{ singular: 'Language Added', plural: 'Languages Added' }}
                     searchPlaceholder="Select Language"
                     getOptionDisabled={(option) => selectedLanguages.filter((l) => l.code === option.code).length > 0}
-                    getOptionRequired={(option) => requiredLanguageCodes.includes(option.code)}
+                    getOptionRequired={(option) => requiredLanguageCodes.has(option.code)}
                 />
             </When>
         </Box>
