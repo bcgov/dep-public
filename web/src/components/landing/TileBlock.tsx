@@ -1,21 +1,45 @@
-import React, { useContext, useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import Grid from '@mui/material/Grid2';
 import { RepeatedGrid } from 'components/common';
 import { TileSkeleton } from './TileSkeleton';
 import EngagementTile from './EngagementTile';
-import { LandingContext } from './LandingContext';
 import NoResult from 'routes/NoResults';
 import { LiveAnnouncer, LiveMessage } from 'react-aria-live';
 import { Pagination } from 'components/common/Input';
-import { PAGE_SIZE } from './constants';
+import { LandingDataContext } from '.';
+import { Engagement } from 'models/engagement';
+import { updateSearchParams } from './utils';
 
 const TileBlock = () => {
-    const { engagements, loadingEngagements, page, setPage, totalEngagements } = useContext(LandingContext);
-    const [ariaStatusMessage, setAriaStatusMessage] = useState(`Results updated. ${totalEngagements} results`);
+    const {
+        engagements: engs,
+        loadingEngagements,
+        setLoadingEngagements,
+        searchParams,
+        setSearchParams,
+    } = useContext(LandingDataContext);
+    const [engagements, setEngagements] = useState<Engagement[]>([]);
+    const [count, setCount] = useState(0);
+    const [ariaStatusMessage, setAriaStatusMessage] = useState(
+        `Results updated. ${count || engagements.length || 0} results`,
+    );
 
     useEffect(() => {
-        setAriaStatusMessage(`${totalEngagements} results`);
-    }, [totalEngagements]);
+        setLoadingEngagements(true);
+        const collectEngagementInfo = async () => {
+            try {
+                const es = await engs;
+                if (es) {
+                    setEngagements(es.items);
+                    setCount(es.total);
+                    setAriaStatusMessage(`${es?.total} results`);
+                }
+            } finally {
+                setLoadingEngagements(false);
+            }
+        };
+        collectEngagementInfo();
+    }, [engs]);
 
     if (loadingEngagements) {
         return (
@@ -45,7 +69,7 @@ const TileBlock = () => {
             </Grid>
         );
     }
-    if (engagements.length == 0) {
+    if (!engagements || engagements.length === 0) {
         return (
             <Grid
                 container
@@ -69,14 +93,14 @@ const TileBlock = () => {
                 paddingLeft={0}
                 component="ul"
                 my={0}
-                aria-label={`Engagements list. ${totalEngagements} results.`}
+                aria-label={`Engagements list. ${count} results.`}
                 direction="row"
                 columnSpacing={5}
                 justifyContent={'space-between'}
                 rowSpacing={4}
                 size={12}
             >
-                {engagements.map((engagement) => (
+                {engagements?.map((engagement) => (
                     <Grid
                         component="li"
                         container
@@ -123,12 +147,14 @@ const TileBlock = () => {
                     <Grid>
                         <Pagination
                             defaultPage={1}
-                            page={page}
-                            count={Math.ceil(totalEngagements / PAGE_SIZE)}
+                            page={Number(searchParams.get('page'))}
+                            count={Math.ceil(count / Number(searchParams.get('size')))}
                             color="primary"
                             showFirstButton
                             showLastButton
-                            onChange={(_, pageNumber) => setPage(pageNumber)}
+                            onChange={(_, pageNumber) =>
+                                setSearchParams(updateSearchParams({ page: pageNumber }, searchParams))
+                            }
                         />
                     </Grid>
                 </Grid>

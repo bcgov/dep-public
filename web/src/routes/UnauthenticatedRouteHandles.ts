@@ -34,7 +34,6 @@ const publicCommentsViewSwitcher: ViewSwitcherHandle = async (_data, params) => 
 export const publicEngagementHandle = {
     viewSwitcher: publicEngagementViewSwitcher,
     crumb: async (data: EngagementLoaderPublicData) => {
-        console.log('publicEngagementHandle received data:', data);
         const translationBundle = await data.translationBundle;
         const engagement = await data.engagement;
         return {

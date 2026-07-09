@@ -1,5 +1,4 @@
-import React, { useContext, useMemo } from 'react';
-import { LandingContext } from './LandingContext';
+import React, { useContext, useEffect, useMemo, useState } from 'react';
 import { SwipeableDrawer, IconButton, Stack, Grid2 as Grid, ThemeProvider } from '@mui/material';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faXmark } from '@fortawesome/pro-regular-svg-icons/faXmark';
@@ -9,33 +8,46 @@ import { useAppTranslation } from 'hooks';
 import { Button } from 'components/common/Input/Button';
 import { DarkTheme } from 'styles/Theme';
 import { Heading2, Heading4 } from 'components/common/Typography';
+import { LandingDataContext } from '.';
+import { getSearchParamObject, updateSearchParams } from './utils';
+import { MetadataFilter } from 'components/metadataManagement/types';
 
 const FilterDrawer = () => {
-    const { searchFilters, setSearchFilters, setPage, metadataFilters, clearFilters, drawerOpened, setDrawerOpened } =
-        useContext(LandingContext);
+    const [filters, setFilters] = useState<MetadataFilter[]>([]);
+    const { searchParams, setSearchParams, allMetaFilters, clearFilters, filtersOpen, setFiltersOpen } =
+        useContext(LandingDataContext);
 
     const { t: translate } = useAppTranslation();
 
     const selectedValue = useMemo(() => {
-        if (searchFilters.status.length === 0) {
-            return -1;
-        }
-        return searchFilters.status[0];
-    }, [searchFilters.status]);
+        const engagementStatus = getSearchParamObject('engagement_status', searchParams);
+        return engagementStatus?.length > 0 ? Number(engagementStatus?.[0]) : -1;
+    }, [searchParams?.get('engagement_status')]);
+
+    useEffect(() => {
+        allMetaFilters.then((f) => {
+            if (f) {
+                setFilters(f);
+            }
+        });
+    }, [allMetaFilters]);
 
     const handleMetadataFilterClick = (taxonId: number, value: string) => {
-        const existingFilter = searchFilters.metadata.find((filter) => filter.taxon_id === taxonId);
+        const metaFilters = getSearchParamObject('meta_filters', searchParams);
+        const existingFilter = metaFilters?.find((filter: MetadataFilter) => filter.taxon_id === taxonId);
         let newValues;
         if (existingFilter) {
             // Toggle value in or out
             newValues = existingFilter.values.includes(value)
-                ? existingFilter.values.filter((v) => v !== value)
+                ? existingFilter.values.filter((v: string) => v !== value)
                 : [...existingFilter.values, value];
         } else {
             newValues = [value];
         }
-        const metadataFilter = metadataFilters.find((f) => f.taxon_id === taxonId);
-        const newMetadataFilters = searchFilters.metadata.filter((filter) => filter.taxon_id !== taxonId);
+        const metadataFilter = filters?.find((f: MetadataFilter) => f.taxon_id === taxonId);
+        const newMetadataFilters = getSearchParamObject('meta_filters', searchParams)?.filter(
+            (filter: MetadataFilter) => filter.taxon_id !== taxonId,
+        );
         if (newValues.length > 0 && metadataFilter) {
             newMetadataFilters.push({
                 name: metadataFilter.name,
@@ -44,16 +56,15 @@ const FilterDrawer = () => {
                 taxon_id: taxonId,
             });
         }
-
-        setSearchFilters({ ...searchFilters, metadata: newMetadataFilters });
-        setPage(1);
+        const newParams = updateSearchParams({ meta_filters: newMetadataFilters, page: 1 }, searchParams);
+        setSearchParams(newParams);
     };
 
     return (
         <ThemeProvider theme={DarkTheme}>
             <SwipeableDrawer
                 aria-label="Filter Engagements"
-                aria-expanded={drawerOpened}
+                aria-expanded={filtersOpen}
                 anchor="left"
                 ModalProps={{
                     keepMounted: true, // Better open performance on mobile
@@ -69,13 +80,13 @@ const FilterDrawer = () => {
                         },
                     },
                 }}
-                open={drawerOpened}
-                onClose={() => setDrawerOpened(false)}
-                onOpen={() => setDrawerOpened(true)}
+                open={filtersOpen}
+                onClose={() => setFiltersOpen(false)}
+                onOpen={() => setFiltersOpen(true)}
             >
                 <ThemeProvider theme={DarkTheme}>
                     <IconButton
-                        onClick={() => setDrawerOpened(false)}
+                        onClick={() => setFiltersOpen(false)}
                         title={translate('landing.filters.aria.closeDrawer')}
                         sx={{
                             color: 'white',
@@ -106,17 +117,20 @@ const FilterDrawer = () => {
                                 name={(EngagementDisplayStatus[status] || 'All') + ' Engagements'}
                                 selected={selectedValue == status}
                                 onClick={() => {
-                                    setSearchFilters({
-                                        ...searchFilters,
-                                        status: status == -1 ? [] : [status],
-                                    });
-                                    setPage(1);
+                                    const newParams = updateSearchParams(
+                                        {
+                                            engagement_status: status === -1 ? [] : [status],
+                                            page: 1,
+                                        },
+                                        searchParams,
+                                    );
+                                    setSearchParams(newParams);
                                 }}
                             />
                         ))}
                     </Stack>
 
-                    {metadataFilters.map((metadataFilter) => (
+                    {filters?.map((metadataFilter) => (
                         <React.Fragment key={metadataFilter.taxon_id}>
                             <Heading4 mt={3}>
                                 {translate('landing.filters.drawer.filterHeader').replace(
@@ -129,8 +143,8 @@ const FilterDrawer = () => {
                                     <MetadataFilterChip
                                         key={`${metadataFilter.taxon_id}-${value}`}
                                         name={value}
-                                        selected={searchFilters.metadata.some(
-                                            (filter) =>
+                                        selected={getSearchParamObject('meta_filters', searchParams)?.some(
+                                            (filter: MetadataFilter) =>
                                                 filter.taxon_id === metadataFilter.taxon_id &&
                                                 filter.values.includes(value),
                                         )}
@@ -154,7 +168,7 @@ const FilterDrawer = () => {
                                     outlineOffset: '2px',
                                 },
                             }}
-                            onClick={() => setDrawerOpened(false)}
+                            onClick={() => setFiltersOpen(false)}
                         >
                             {translate('landing.filters.drawer.apply')}
                         </Button>

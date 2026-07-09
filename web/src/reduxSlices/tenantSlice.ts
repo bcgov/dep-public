@@ -15,7 +15,7 @@ export interface TenantState {
     hero_image_description: string;
     hero_image_credit: string;
 }
-const initialState: TenantState = {
+export const initialTenantState: TenantState = {
     id: '',
     name: '',
     heroImageUrl: '',
@@ -33,7 +33,7 @@ const initialState: TenantState = {
 
 export const userSlice = createSlice({
     name: 'tenant',
-    initialState,
+    initialState: initialTenantState,
     reducers: {
         loadingTenant: (state, action) => {
             state.loading = action.payload;
