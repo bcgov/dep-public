@@ -275,7 +275,7 @@ class Engagement(BaseModel):
                     for status in search_options.get('engagement_status', [])]
         if not statuses:
             return query
-        
+
         allowed_statuses = [
             Status.Draft.value,
             Status.Published.value,
@@ -307,7 +307,7 @@ class Engagement(BaseModel):
                     Engagement.end_date < datetime.now()
                 )
             )
-        
+
         if EngagementDisplayStatus.Unpublished.value in statuses:
             status_filter.append(Engagement.status_id ==
                                  Status.Unpublished.value)

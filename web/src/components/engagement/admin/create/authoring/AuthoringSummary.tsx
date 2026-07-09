@@ -13,10 +13,10 @@ import WidgetPicker from '../widgets';
 import { WidgetLocation } from 'models/widget';
 import { getEditorStateFromRaw } from 'components/common/RichTextEditor/utils';
 import { AuthoringFormContainer, AuthoringFormSection } from './AuthoringFormLayout';
-import { tryParse } from './utils';
 import { getEngagementTranslationByCode } from 'services/engagementService';
 import { useAuthoringPageHydration } from './useAuthoringPageHydration';
 import { AppConfig } from 'config';
+import { tryParse } from 'helper';
 
 const AuthoringSummary = () => {
     const { setDefaultValues, fetcher, pageName }: AuthoringTemplateOutletContext = useOutletContext(); // Access the form functions and values from the authoring template.

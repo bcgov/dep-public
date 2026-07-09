@@ -27,6 +27,10 @@ jest.mock('react-router', () => ({
     ...jest.requireActual('react-router'),
     useLoaderData: jest.fn(),
     useSearchParams: () => [new URLSearchParams(), jest.fn()],
+    useRevalidator: () => ({
+        revalidate: jest.fn(),
+        state: 'idle',
+    }),
 }));
 
 jest.mock('hooks', () => ({
@@ -87,7 +91,7 @@ const populateLoaderData = () => {
             items: [openEngagement, closedEngagement],
             total: 2,
         }),
-        filters: Promise.resolve([]),
+        allMetaFilters: Promise.resolve([]),
     });
 };
 
@@ -170,7 +174,7 @@ describe('Landing page tests', () => {
                 items: [],
                 total: 0,
             }),
-            filters: Promise.resolve([]),
+            allMetaFilters: Promise.resolve([]),
         });
 
         renderLanding();
