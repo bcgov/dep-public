@@ -1,4 +1,12 @@
-## Jul 7, 2026
+## July 07, 2026
+
+- **Feature** Added ability to upload files to Object Storage during survey submission [🎟️ DEP-277](https://citz-gdx.atlassian.net/browse/DEP-277)
+  - Added a new public document endpoint to the API that generates pre-signed URLs for uploading files to Object Storage. This endpoint takes the file name and content type as input and returns a pre-signed URL that can be used to upload the file directly to Object Storage.
+    - The new API can also be used to generate pre-signed URLs for downloading files from Object Storage, as well as deleting files from Object Storage.
+  - Updated the Formio options to include callbacks for handling file uploads, downloads, and deletions. These callbacks use the new API to generate URLs and perform privileged operations on Object Storage, allowing users to upload files during survey submission without needing high-level access to the storage service.
+  - Cleaned up survey-related component code
+  - Updated the survey pages to use React Router loaders to fetch the survey data instead of using useState and useEffect, as well as making sure the loader returns promises (as opposed to awaiting the data) so that the survey page can be rendered while the data is being fetched. This improves the user experience by allowing the page to render faster and show a loading state while the survey data is being retrieved.
+  - Fixed authorization bug that did not allow Super Admins to view surveys
 
 - **Feature** Integrated new landing hero section and introduction [🎟️ DEP-315](https://citz-gdx.atlassian.net/browse/DEP-315)
   - Refactored existing landing code for structural simplicity

@@ -1,10 +1,13 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 import { Grid2 as Grid, Paper } from '@mui/material';
 import { SurveyBanner } from './SurveyBanner';
 import { SurveyForm } from './SurveyForm';
 import { InvalidTokenModal } from './InvalidTokenModal';
-import { EngagementLink } from './EngagementLink';
 import { PreviewBanner } from './PreviewBanner';
+import { Link } from 'components/common/Navigation';
+import { getPath, ROUTES, useIsManagementRoute } from 'routes/routes';
+import { faArrowLeftLong } from '@fortawesome/pro-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 const SurveySubmit = () => {
     return (
@@ -24,12 +27,20 @@ const SurveySubmit = () => {
                 m={{ lg: '2em 8em 1em 3em', md: '2em', xs: '1em' }}
             >
                 <Grid container size={12} direction="row" justifyContent="flex-end">
-                    <EngagementLink />
+                    {useIsManagementRoute() && (
+                        <Link to={getPath(ROUTES.SURVEYS)}>
+                            <FontAwesomeIcon icon={faArrowLeftLong} /> Back to Surveys
+                        </Link>
+                    )}
                 </Grid>
                 <Grid size={12}>
                     <Paper elevation={2}>
-                        <SurveyForm />
-                        <InvalidTokenModal />
+                        <Suspense>
+                            <SurveyForm />
+                        </Suspense>
+                        <Suspense>
+                            <InvalidTokenModal />
+                        </Suspense>
                     </Paper>
                 </Grid>
             </Grid>

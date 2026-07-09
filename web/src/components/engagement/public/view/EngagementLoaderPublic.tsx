@@ -1,4 +1,4 @@
-import { Params } from 'react-router';
+import { LoaderFunctionArgs } from 'react-router';
 import { getAvailableTranslationLanguages, getEngagement, getEngagementBySlug } from 'services/engagementService';
 import { getWidgets } from 'services/widgetService';
 import { getEngagementMetadata, getMetadataTaxa } from 'services/engagementMetadataService';
@@ -36,7 +36,7 @@ export type AwaitedEngagementLoaderPublicData = {
     translationBundle: TranslationBundle;
 };
 
-export const engagementLoaderPublic = async ({ params }: { params: Params<string> }) => {
+export const engagementLoaderPublic = async ({ params }: LoaderFunctionArgs) => {
     const { slug: slugParam, engagementId, language } = params;
     const defaultLanguageCode = AppConfig.language.defaultLanguageId.toLowerCase();
     const activeLanguageCode = (language ?? defaultLanguageCode).toLowerCase();

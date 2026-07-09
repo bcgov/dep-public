@@ -1,4 +1,4 @@
-import { Params } from 'react-router';
+import { LoaderFunctionArgs } from 'react-router';
 import { getUser } from 'services/userService/api';
 import { User } from 'models/user';
 
@@ -6,7 +6,7 @@ export interface UserDetailsLoaderData {
     user: Promise<User>;
 }
 
-export const userDetailsLoader = ({ params }: { params: Params<string> }): UserDetailsLoaderData => {
+export const userDetailsLoader = ({ params }: LoaderFunctionArgs): UserDetailsLoaderData => {
     const { userId } = params;
 
     if (!userId || Number.isNaN(Number(userId))) {

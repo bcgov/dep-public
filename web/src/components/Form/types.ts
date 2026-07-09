@@ -1,7 +1,9 @@
 export interface FormSubmitterProps {
     handleFormChange: (form: FormSubmissionData) => void;
-    handleFormSubmit: (data: unknown) => void;
+    handleFormSubmit?: (data: unknown) => void;
+    handleFormCancel?: () => void;
     savedForm?: FormBuilderData;
+    verificationToken?: string;
 }
 
 export interface FormBuilderProps {

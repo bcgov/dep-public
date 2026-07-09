@@ -38,6 +38,7 @@ class TokenInfo:
         """Get the user roles from token."""
         if not hasattr(g, 'jwt_oidc_token_info') or not g.jwt_oidc_token_info:
             return []
-        valid_roles = set(item.value for item in Role)
-        token_roles = current_app.config['JWT_ROLE_CALLBACK'](g.jwt_oidc_token_info)
+        valid_roles = {item.value for item in Role}
+        token_roles = current_app.config['JWT_ROLE_CALLBACK'](
+            g.jwt_oidc_token_info)
         return valid_roles.intersection(token_roles)

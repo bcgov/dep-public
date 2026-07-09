@@ -1,5 +1,5 @@
 import React, { Suspense, useState } from 'react';
-import { Await, useNavigate, useRouteLoaderData, useRevalidator } from 'react-router';
+import { Await, useNavigate, useRevalidator, useAsyncValue } from 'react-router';
 import { ClickAwayListener, Grid2 as Grid, Stack, InputAdornment, Tooltip, Skeleton, Paper } from '@mui/material';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCopy } from '@fortawesome/pro-regular-svg-icons/faCopy';
@@ -16,8 +16,11 @@ import { BodyText, Heading3 } from 'components/common/Typography';
 import { ROUTES, getPath } from 'routes/routes';
 import { RouterLinkRenderer } from 'components/common/Navigation/Link';
 import { AppConfig } from 'config';
+import { useSurveyLoaderData } from '../useSurveyLoaderData';
+import { Awaited } from 'utils';
 
 const SettingsFormPage = () => {
+    const { survey, engagement, reportSettings } = useSurveyLoaderData();
     return (
         <Grid
             container
@@ -26,16 +29,23 @@ const SettingsFormPage = () => {
         >
             <Paper elevation={0} sx={{ padding: '3rem', mr: '1rem' }}>
                 <Heading3 style={{ fontWeight: 'bold', marginBottom: '3rem' }}>Report Settings</Heading3>
-                <SettingsForm />
+                <Suspense fallback={<Skeleton variant="rectangular" height="10em" width="100%" />}>
+                    <Await
+                        resolve={{ survey, engagement, reportSettings }}
+                        errorElement={<div>Error loading report settings</div>}
+                    >
+                        <SettingsForm />
+                    </Await>
+                </Suspense>
             </Paper>
         </Grid>
     );
 };
 
 const SettingsForm = () => {
-    const { survey, slug, reportSettings } = useRouteLoaderData('survey') as SurveyLoaderData;
+    const { survey, engagement, reportSettings } = useAsyncValue() as Awaited<SurveyLoaderData>;
     const [searchTerm, setSearchTerm] = useState<string>('');
-    const engagementSlug = slug?.slug;
+    const engagementSlug = engagement?.slug;
     const [displayedSettings, setDisplayedSettings] = useState<{ [key: number]: boolean }>({});
     const [copyTooltip, setCopyTooltip] = useState(false);
     const navigate = useNavigate();

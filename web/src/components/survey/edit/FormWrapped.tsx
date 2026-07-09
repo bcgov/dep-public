@@ -5,7 +5,7 @@ import { EditForm } from './EditForm';
 import { InvalidTokenModal } from '../submit/InvalidTokenModal';
 import { When } from 'react-if';
 import EngagementInfoSection from 'components/publicDashboard/EngagementInfoSection';
-import { Await, useAsyncValue, useNavigate } from 'react-router';
+import { useAsyncValue, useNavigate } from 'react-router';
 import { EmailVerification } from 'models/emailVerification';
 import { Engagement } from 'models/engagement';
 import { SurveySubmission } from 'models/surveySubmission';
@@ -14,16 +14,15 @@ import { AppConfig } from 'config';
 
 const FormWrapped = () => {
     const navigate = useNavigate();
-    const [verification, slug, engagement, submission] = useAsyncValue() as [
+    const [verification, engagement, submission] = useAsyncValue() as [
         EmailVerification | null,
-        { slug: string },
         Engagement,
         SurveySubmission,
     ];
     const isTokenValid = !!verification;
     const language = sessionStorage.getItem('languageId') ?? AppConfig.language.defaultLanguageId;
     const engagementPath = getPath(ROUTES.PUBLIC_ENGAGEMENT_BY_SLUG, {
-        slug: slug.slug,
+        slug: engagement.slug,
         language,
     });
 
@@ -42,7 +41,7 @@ const FormWrapped = () => {
                 alignItems="flex-start"
                 m={{ lg: '0 8em 1em 3em', md: '2em', xs: '1em' }}
             >
-                <When condition={isTokenValid && !!submission}>
+                <When condition={isTokenValid && Object.keys(submission).length}>
                     <Grid size={12}>
                         <Paper elevation={2}>
                             <EditForm
@@ -53,11 +52,8 @@ const FormWrapped = () => {
                         </Paper>
                     </Grid>
                 </When>
-
                 <Suspense>
-                    <Await resolve={Promise.allSettled([verification, slug])}>
-                        <InvalidTokenModal />
-                    </Await>
+                    <InvalidTokenModal />
                 </Suspense>
             </Grid>
         </Grid>

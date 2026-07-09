@@ -1,4 +1,4 @@
-import { Params } from 'react-router';
+import { LoaderFunctionArgs } from 'react-router';
 import { getAvailableTranslationLanguages, getEngagement } from 'services/engagementService';
 import { getWidgets } from 'services/widgetService';
 import { getEngagementMetadata, getMetadataTaxa } from 'services/engagementMetadataService';
@@ -40,7 +40,7 @@ export type EngagementPreviewLoaderData = {
  * Loads all necessary data for previewing an engagement.
  * Similar to the public engagement loader but uses engagement ID instead of slug.
  */
-export const engagementPreviewLoader = async ({ params }: { params: Params<string> }) => {
+export const engagementPreviewLoader = async ({ params }: LoaderFunctionArgs) => {
     const { engagementId, languageCode } = params;
 
     if (!engagementId) {

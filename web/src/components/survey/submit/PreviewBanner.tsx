@@ -1,19 +1,20 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 import { Box, Grid2 as Grid, Stack } from '@mui/material';
-import { useAppSelector } from 'hooks';
 import { PermissionsGate } from 'components/permissionsGate';
 import { USER_ROLES } from 'services/userService/constants';
 import { Heading1 } from 'components/common/Typography';
 import { Button } from 'components/common/Input';
-import { ROUTES, getPath } from 'routes/routes';
+import { ROUTES, getPath, useIsManagementRoute } from 'routes/routes';
 import { RouterLinkRenderer } from 'components/common/Navigation/Link';
-import { useSurveyLoaderData } from './useSurveyLoaderData';
+import { useSurveyLoaderData } from '../useSurveyLoaderData';
+import { Await } from 'react-router';
 
 export const PreviewBanner = () => {
-    const { survey } = useSurveyLoaderData();
-    const isLoggedIn = useAppSelector((state) => state.user.authentication.authenticated);
+    const surveyLoaderData = useSurveyLoaderData();
+    const isManagementPath = useIsManagementRoute();
 
-    if (!isLoggedIn || !survey) {
+    if (!isManagementPath) {
+        // Only show the "preview" banner if we are an admin user previewing the survey on the management side.
         return null;
     }
 
@@ -26,12 +27,24 @@ export const PreviewBanner = () => {
                 <Grid sx={{ pt: 2 }} size={12} container direction="row">
                     <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} width="100%" justifyContent="flex-start">
                         <PermissionsGate scopes={[USER_ROLES.EDIT_ENGAGEMENT]} errorProps={{ disabled: true }}>
-                            <Button
-                                LinkComponent={RouterLinkRenderer}
-                                href={getPath(ROUTES.SURVEY_BUILD, { surveyId: survey.id })}
+                            <Suspense
+                                fallback={
+                                    <Button loading disabled>
+                                        Edit Survey
+                                    </Button>
+                                }
                             >
-                                Edit Survey
-                            </Button>
+                                <Await resolve={surveyLoaderData.survey}>
+                                    {(survey) => (
+                                        <Button
+                                            LinkComponent={RouterLinkRenderer}
+                                            href={getPath(ROUTES.SURVEY_BUILD, { surveyId: survey.id })}
+                                        >
+                                            Edit Survey
+                                        </Button>
+                                    )}
+                                </Await>
+                            </Suspense>
                         </PermissionsGate>
                     </Stack>
                 </Grid>
