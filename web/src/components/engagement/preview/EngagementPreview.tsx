@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef, useMemo } from 'react';
-import { useBlocker, useRouteLoaderData, useParams, useRevalidator } from 'react-router';
+import { useBlocker, useParams, useRevalidator, useLoaderData } from 'react-router';
 import { Box, Modal } from '@mui/material';
 import PreviewControlBar from './PreviewControlBar';
 import PreviewContent from './PreviewContent';
@@ -186,7 +186,7 @@ const MeasurementBar: React.FC = () => {
  * modifying the actual engagement.
  */
 export const EngagementPreview: React.FC = () => {
-    const loaderData = useRouteLoaderData('engagement-preview') as EngagementLoaderPublicData;
+    const loaderData = useLoaderData() as EngagementLoaderPublicData;
     const { engagement, widgets, details, metadata, suggestions } = loaderData ?? {};
     const { engagementId, languageCode } = useParams();
     const revalidator = useRevalidator();

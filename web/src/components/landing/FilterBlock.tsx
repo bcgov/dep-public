@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import { IconButton, Stack, useTheme } from '@mui/material';
 import Grid from '@mui/material/Grid2';
 import { DeletableFilterChip } from './DeletableFilterChip';
@@ -9,21 +9,28 @@ import { faXmark } from '@fortawesome/pro-regular-svg-icons/faXmark';
 import { faSliders } from '@fortawesome/pro-regular-svg-icons/faSliders';
 import { MetadataFilter } from 'components/metadataManagement/types';
 import { debounce } from 'lodash';
-import { EngagementDisplayStatus } from 'constants/engagementStatus';
 import { useAppTranslation } from 'hooks';
 import { Button } from 'components/common/Input/Button';
 import { colors } from '../common';
 import { CustomTextField, Select } from 'components/common/Input';
 import { When } from 'react-if';
 import { BodyText } from 'components/common/Typography/Body';
-import { FilterBlockProps } from './types';
+import { LandingDataContext } from '.';
+import { tryParse } from 'engagements/admin/create/authoring/utils';
+import { getSearchParamObject, updateSearchParams } from './utils';
+import { EngagementDisplayStatus } from 'constants/engagementStatus';
 
-const FilterBlock = (props: FilterBlockProps) => {
-    const { searchFilters, setSearchFilters, clearFilters, setFiltersOpen } = props;
-    const selectedValue = searchFilters.engagement_status.length === 0 ? -1 : searchFilters.engagement_status[0];
+const FilterBlock = () => {
+    const { searchParams, setSearchParams, clearFilters, setFiltersOpen } = useContext(LandingDataContext);
+
+    const selectedValue =
+        getSearchParamObject('engagement_status', searchParams)?.length === 0
+            ? -1
+            : Number(getSearchParamObject('engagement_status', searchParams)?.[0]);
 
     const tileBlockRef = useRef<HTMLDivElement>(null);
     const [didMount, setDidMount] = useState(false);
+    const [searchText, setSearchText] = useState('');
 
     const theme = useTheme();
     const { t: translate } = useAppTranslation();
@@ -37,10 +44,11 @@ const FilterBlock = (props: FilterBlockProps) => {
 
     const debounceSetSearchFilters = useRef(
         debounce((searchText: string) => {
-            setSearchFilters({
-                ...searchFilters,
+            const newSearchParams = new URLSearchParams({
+                ...searchParams,
                 search_text: searchText,
             });
+            setSearchParams(newSearchParams);
         }, 300),
     ).current;
 
@@ -54,12 +62,13 @@ const FilterBlock = (props: FilterBlockProps) => {
             const yOffset = tileBlockRef?.current?.offsetTop;
             globalThis.scrollTo({ top: yOffset || 0, behavior: 'smooth' });
         }
-    }, [searchFilters.page]);
-
-    const [searchText, setSearchText] = useState('');
+    }, [searchParams.get('page')]);
 
     const handleDeleteFilterChip = (taxonId: number, value: string) => {
-        const newMetadataFilters = searchFilters.metadata
+        const metaParams = searchParams.get('meta_filters');
+        const metaFilters = metaParams && tryParse(metaParams) ? JSON.parse(metaParams) : {};
+        if (!metaFilters) return;
+        const newMetaFilters = metaFilters
             .map((filter: MetadataFilter) => {
                 if (filter.taxon_id === taxonId) {
                     // Remove the value
@@ -69,8 +78,12 @@ const FilterBlock = (props: FilterBlockProps) => {
                 return filter;
             })
             .filter((filter: MetadataFilter) => filter.values.length > 0); // Remove any filters with no values left
-
-        setSearchFilters({ ...searchFilters, metadata: newMetadataFilters, page: 1 });
+        const newMetaFilterParams = new URLSearchParams({
+            ...searchParams,
+            meta_filters: JSON.stringify(newMetaFilters),
+            page: '1',
+        });
+        setSearchParams(newMetaFilterParams);
     };
 
     return (
@@ -120,10 +133,7 @@ const FilterBlock = (props: FilterBlockProps) => {
                                         title="Clear search"
                                         sx={{ color: '#9F9D9C' }}
                                         onClick={() => {
-                                            setSearchFilters({
-                                                ...searchFilters,
-                                                search_text: '',
-                                            });
+                                            setSearchParams(updateSearchParams({ search_text: '' }, searchParams));
                                             setSearchText('');
                                         }}
                                     >
@@ -162,41 +172,55 @@ const FilterBlock = (props: FilterBlockProps) => {
                     rowGap={1}
                     width="100%"
                 >
-                    <Select
-                        style={{ margin: 0 }}
-                        value={selectedValue}
-                        id="status-filter"
-                        aria-label={`Filtering by ${selectableStatuses.get(
-                            selectedValue,
-                        )}. Change this filter value by expanding to view all options.`}
-                        onChange={(event) => {
-                            const selectedValue = Number(event.target.value);
-                            setSearchFilters({
-                                ...searchFilters,
-                                engagement_status: selectedValue === -1 ? [] : [selectedValue],
-                                page: 1,
-                            });
-                        }}
-                        renderValue={(value) => selectableStatuses.get(value as number) ?? ''}
-                        displayEmpty
-                        inputProps={{
-                            'aria-label': `Status Filter - ${selectableStatuses.get(selectedValue) ?? ''}`,
-                        }}
-                        options={Array.from(selectableStatuses).map(([status, label]) => ({
-                            value: status,
-                            label: label,
-                        }))}
-                    />
-                    {searchFilters.metadata.map((filter: MetadataFilter) =>
-                        filter.values.map((value) => (
-                            <DeletableFilterChip
-                                key={`${filter.taxon_id}-${value}`}
-                                name={value}
-                                onDelete={() => handleDeleteFilterChip(filter.taxon_id, value)}
+                    {selectedValue !== undefined && selectableStatuses && (
+                        <>
+                            <Select
+                                style={{ margin: 0 }}
+                                value={selectedValue}
+                                id="status-filter"
+                                aria-label={`Filtering by ${selectableStatuses.get(
+                                    selectedValue,
+                                )}. Change this filter value by expanding to view all options.`}
+                                onChange={(event) => {
+                                    const selectedValue = Number(event.target.value);
+                                    const newParams = updateSearchParams(
+                                        {
+                                            engagement_status: selectedValue === -1 ? [] : [selectedValue],
+                                            page: 1,
+                                        },
+                                        searchParams,
+                                    );
+                                    setSearchParams(newParams);
+                                }}
+                                renderValue={(value) => {
+                                    return selectableStatuses.get(value as number) ?? '';
+                                }}
+                                displayEmpty
+                                inputProps={{
+                                    'aria-label': `Status Filter - ${selectableStatuses.get(selectedValue) ?? ''}`,
+                                }}
+                                options={Array.from(selectableStatuses).map(([status, label]) => ({
+                                    value: status,
+                                    label: label,
+                                }))}
                             />
-                        )),
+                            {getSearchParamObject('meta_filters', searchParams)?.map((filter: MetadataFilter) =>
+                                filter.values.map((value) => (
+                                    <DeletableFilterChip
+                                        key={`${filter.taxon_id}-${value}`}
+                                        name={value}
+                                        onDelete={() => handleDeleteFilterChip(filter.taxon_id, value)}
+                                    />
+                                )),
+                            )}
+                        </>
                     )}
-                    <When condition={searchFilters.engagement_status.length || searchFilters.metadata.length}>
+                    <When
+                        condition={
+                            getSearchParamObject('engagement_status', searchParams)?.length ||
+                            getSearchParamObject('meta_filters', searchParams)?.length
+                        }
+                    >
                         <Button
                             variant="tertiary"
                             onClick={clearFilters}

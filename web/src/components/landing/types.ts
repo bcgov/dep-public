@@ -10,52 +10,30 @@ import { Page } from 'services/type';
 export type SortOrder = 'desc' | 'asc' | undefined;
 
 export interface SearchFilters {
-    page: number;
-    size: number;
-    sort_key: string;
-    sort_order: SortOrder;
-    include_banner_url: boolean;
-    metadata: MetadataFilter[];
-    engagement_status: EngagementDisplayStatus[];
-    search_text: string;
+    page?: number;
+    size?: number;
+    sort_key?: string;
+    sort_order?: SortOrder;
+    include_banner_url?: boolean;
+    meta_filters?: MetadataFilter[];
+    engagement_status?: EngagementDisplayStatus[];
+    search_text?: string;
 }
 
-export interface LandingData {
-    engagements: Page<Engagement> | undefined;
-    filters: MetadataFilter[] | undefined;
+export interface SearchParams {
+    page?: string;
+    size?: string;
+    sort_key?: string;
+    sort_order?: string;
+    include_banner_url?: string;
+    meta_filters?: string;
+    engagement_status?: string;
+    search_text?: string;
 }
 
 export interface LandingLoaderData {
     engagements: Promise<Page<Engagement> | undefined>;
-    filters: Promise<MetadataFilter[] | undefined>;
-}
-
-export interface FilterDrawerProps {
-    searchFilters: SearchFilters;
-    metadataFilters: MetadataFilter[];
-    filtersOpen: boolean;
-    setSearchFilters: (filters: SearchFilters) => void;
-    clearFilters: () => void;
-    setFiltersOpen: (open: boolean) => void;
-}
-
-export interface LandingBannerProps {
-    tenant: TenantState;
-}
-
-export interface FilterBlockProps {
-    searchFilters: SearchFilters;
-    setSearchFilters: (filters: SearchFilters) => void;
-    clearFilters: () => void;
-    setFiltersOpen: (open: boolean) => void;
-}
-
-export interface TileBlockProps {
-    engagements: Engagement[];
-    loadingEngagements: boolean;
-    totalEngagements: number;
-    searchFilters: SearchFilters;
-    setSearchFilters: (filters: SearchFilters) => void;
+    allMetaFilters: Promise<MetadataFilter[] | undefined>;
 }
 
 export interface LandingSectionProps {
@@ -66,16 +44,21 @@ export interface LandingSectionProps {
     innerStyles?: SxProps;
 }
 
-export interface EngagementSearchProps extends FilterBlockProps {
-    engagements: Engagement[];
-    loadingEngagements: boolean;
-    totalEngagements: number;
-    searchFilters: SearchFilters;
-    setSearchFilters: (filters: SearchFilters) => void;
-}
-
 export interface EngagementTallyRowProps {
     icon: IconProp;
     count: number;
     text: string;
+}
+
+export interface LandingData {
+    tenant: TenantState;
+    engagements: Promise<Page<Engagement> | undefined>;
+    allMetaFilters: Promise<MetadataFilter[] | undefined>;
+    searchParams: URLSearchParams;
+    setSearchParams: (params: URLSearchParams) => void;
+    filtersOpen: boolean;
+    setFiltersOpen: (open: boolean) => void;
+    loadingEngagements: boolean;
+    setLoadingEngagements: (loading: boolean) => void;
+    clearFilters: () => void;
 }

@@ -18,7 +18,7 @@ const EnvironmentBanner = () => {
             container
             direction="row"
             gap={2}
-            padding={`1rem ${Layout.padding.default}`}
+            padding={`11px ${Layout.padding.default}`}
             width="100%"
             color={(theme) => theme.palette.warning.contrastText}
             minHeight="50px"

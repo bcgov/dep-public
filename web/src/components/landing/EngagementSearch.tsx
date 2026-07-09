@@ -2,13 +2,12 @@ import LandingSection from './LandingSection';
 import React from 'react';
 import FilterBlock from './FilterBlock';
 import TileBlock from './TileBlock';
-import { EngagementSearchProps } from './types';
 
-const EngagementSearch = (props: EngagementSearchProps) => {
+const EngagementSearch = () => {
     return (
         <LandingSection>
-            <FilterBlock {...props} />
-            <TileBlock {...props} />
+            <FilterBlock />
+            <TileBlock />
         </LandingSection>
     );
 };
