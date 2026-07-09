@@ -24,4 +24,5 @@ interface SuggestedEngagementAttachment {
     is_internal: boolean;
     consent_message: string;
     sponsor_name: string;
+    slug: string;
 }

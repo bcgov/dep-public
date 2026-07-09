@@ -54,8 +54,9 @@ class CommentService:
             return False
 
         user_roles = TokenInfo.get_user_roles()
-        if Role.REVIEW_COMMENTS.value in user_roles:
-            return True
+        for approved_role in [Role.REVIEW_ALL_COMMENTS.value, Role.SUPER_ADMIN.value]:
+            if approved_role in user_roles:
+                return True
 
         engagement = SurveyModel.find_by_id(survey_id)
         if not engagement:
@@ -267,7 +268,8 @@ class CommentService:
         grouped_comments = []
         for comment in comments:
             submission_id = comment['submission_id']
-            text = comment.get('text', '')  # Get the text, or an empty string if it's missing
+            # Get the text, or an empty string if it's missing
+            text = comment.get('text', '')
             label = comment['label']
 
             # Check if a group with the same submission ID already exists

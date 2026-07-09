@@ -1,5 +1,5 @@
 import { Breadcrumbs } from '@mui/material';
-import React, { useEffect, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { BodyText } from '../Typography';
 import { Link } from '.';
 import { UIMatch, useMatches } from 'react-router';
@@ -81,7 +81,6 @@ export interface UIMatchWithCrumb extends UIMatch<unknown, UIRouteHandle> {}
 export const AutoBreadcrumbs: React.FC<{ smallScreenOnly?: boolean }> = ({ smallScreenOnly }) => {
     const matches = (useMatches() as UIMatchWithCrumb[]).filter((match) => match.handle?.crumb);
     const matchKey = matches.map((m) => m.pathname).join('|');
-    const [resolvedCrumbs, setResolvedCrumbs] = React.useState<Record<string, BreadcrumbProps>>({});
 
     const crumbs = useMemo(() => {
         return matches.map((match) => {
@@ -96,40 +95,20 @@ export const AutoBreadcrumbs: React.FC<{ smallScreenOnly?: boolean }> = ({ small
         });
     }, [matchKey]); // Recompute only when matches change
 
-    useEffect(() => {
-        let cancelled = false;
+    const resolvedCrumbs = crumbs.map((unresolvedCrumb) => {
+        if (unresolvedCrumb instanceof Promise) {
+            return React.use(unresolvedCrumb);
+        }
+        return unresolvedCrumb;
+    });
 
-        const setNewCrumbs = (
-            resolvedCrumb: BreadcrumbProps,
-            previousCrumbs: Record<string, BreadcrumbProps>,
-            pathname: string,
-        ) => {
-            const previousCrumb = previousCrumbs[pathname];
-
-            // Avoid unnecessary re-renders if the crumb did not actually change.
-            if (previousCrumb?.name === resolvedCrumb?.name && previousCrumb?.link === resolvedCrumb?.link) {
-                return previousCrumbs;
-            }
-
-            return {
-                ...previousCrumbs,
-                [pathname]: resolvedCrumb,
-            };
-        };
-
-        crumbs.forEach(async (unresolvedCrumb, index) => {
-            const pathname = matches[index]?.pathname;
-            if (!pathname) return;
-
-            const resolvedCrumb = await unresolvedCrumb;
-            if (cancelled) return;
-            setResolvedCrumbs((previousCrumbs) => setNewCrumbs(resolvedCrumb, previousCrumbs, pathname));
-        });
-
-        return () => {
-            cancelled = true;
-        };
-    }, [crumbs, matches]);
+    const crumbMap = Object.create(null);
+    resolvedCrumbs.forEach((crumb, index) => {
+        const pathname = matches[index]?.pathname;
+        if (pathname) {
+            crumbMap[pathname] = crumb;
+        }
+    });
 
     return (
         <Breadcrumbs
@@ -140,7 +119,7 @@ export const AutoBreadcrumbs: React.FC<{ smallScreenOnly?: boolean }> = ({ small
             }}
         >
             {matches.map((match, index) => {
-                const resolvedCrumb = resolvedCrumbs[match.pathname];
+                const resolvedCrumb = crumbMap[match.pathname];
                 if (!resolvedCrumb) return null;
                 const name = resolvedCrumb?.name;
                 const link = index < matches.length - 1 ? (resolvedCrumb?.link ?? match.pathname) : undefined;

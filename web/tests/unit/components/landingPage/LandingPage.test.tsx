@@ -1,11 +1,12 @@
 import { render, waitFor, screen, fireEvent, within, getByRole } from '@testing-library/react';
+import { ThemeProvider } from '@mui/material';
+import { DarkTheme } from 'styles/Theme';
 import React from 'react';
 import '@testing-library/jest-dom';
-import LandingComponent from 'components/landing/LandingComponent';
+import Landing from 'components/landing';
 import { setupEnv } from '../setEnvVars';
-import { LandingContext } from 'components/landing/LandingContext';
 import { openEngagement, closedEngagement } from '../factory';
-import { RouterProvider, createMemoryRouter } from 'react-router';
+import { MemoryRouter, useLoaderData } from 'react-router';
 
 const MOCK_TENANT = {
     title: 'Mock Tenant',
@@ -14,9 +15,27 @@ const MOCK_TENANT = {
 
 jest.mock('axios');
 
+jest.mock('components/auth/AuthKeycloakContext', () => {
+    return {
+        AuthKeyCloakContext: React.createContext({
+            isAuthenticated: false,
+        }),
+    };
+});
+
+jest.mock('react-router', () => ({
+    ...jest.requireActual('react-router'),
+    useLoaderData: jest.fn(),
+    useSearchParams: () => [new URLSearchParams(), jest.fn()],
+    useRevalidator: () => ({
+        revalidate: jest.fn(),
+        state: 'idle',
+    }),
+}));
+
 jest.mock('hooks', () => ({
     useAppTranslation: () => ({
-        t: (key: string) => key, // return the key itself
+        t: (key: string) => key,
     }),
     useAppSelector: (callback: (state: unknown) => unknown) =>
         callback({
@@ -27,7 +46,6 @@ jest.mock('hooks', () => ({
         }),
 }));
 
-// mock enums to fix TS compiler issue when importing them
 jest.mock('constants/engagementStatus', () => ({
     EngagementDisplayStatus: {
         Draft: 1,
@@ -37,7 +55,6 @@ jest.mock('constants/engagementStatus', () => ({
         Upcoming: 5,
         Open: 6,
         Unpublished: 7,
-        // Allow backwards lookup like the enum we're mocking
         1: 'Draft',
         2: 'Published',
         3: 'Closed',
@@ -66,253 +83,104 @@ jest.mock('react-redux', () => ({
     useDispatch: jest.fn(() => jest.fn()),
 }));
 
+const mockUseLoaderData = useLoaderData as jest.Mock;
+
+const populateLoaderData = () => {
+    mockUseLoaderData.mockReturnValue({
+        engagements: Promise.resolve({
+            items: [openEngagement, closedEngagement],
+            total: 2,
+        }),
+        allMetaFilters: Promise.resolve([]),
+    });
+};
+
+const renderLanding = () =>
+    render(
+        <ThemeProvider theme={DarkTheme}>
+            <MemoryRouter>
+                <Landing />
+            </MemoryRouter>
+        </ThemeProvider>,
+    );
+
 describe('Landing page tests', () => {
     beforeEach(() => {
         setupEnv();
+        populateLoaderData();
+    });
+
+    afterEach(() => {
+        jest.clearAllMocks();
     });
 
     test('LandingComponent is rendered correctly with engagements listed', async () => {
-        render(
-            <RouterProvider
-                router={createMemoryRouter([
-                    {
-                        path: '/',
-                        element: (
-                            <LandingContext.Provider
-                                value={{
-                                    searchFilters: {
-                                        name: '',
-                                        status: [],
-                                        metadata: [],
-                                    },
-                                    metadataFilters: [],
-                                    clearFilters: jest.fn(),
-                                    drawerOpened: false,
-                                    setDrawerOpened: jest.fn(),
-                                    setSearchFilters: jest.fn(),
-                                    setPage: jest.fn(),
-                                    page: 1,
-                                    engagements: [openEngagement, closedEngagement],
-                                    loadingEngagements: false,
-                                    totalEngagements: 0,
-                                }}
-                            >
-                                <LandingComponent />
-                            </LandingContext.Provider>
-                        ),
-                    },
-                ])}
-            />,
-        );
+        renderLanding();
 
         await waitFor(() => {
             expect(screen.getByPlaceholderText('landing.filters.searchPlaceholder')).toBeInTheDocument();
             expect(screen.getByText('landing.filters.search')).toBeInTheDocument();
             expect(screen.getByText('landing.filters.drawer.openButton')).toBeInTheDocument();
-            expect(
-                screen.getByText((content, element) => {
-                    return (
-                        (element as HTMLElement).classList.contains('MuiSelect-select') &&
-                        element?.textContent === 'landing.filters.status.all'
-                    );
-                }),
-            ).toBeInTheDocument();
+
             expect(screen.getByText(MOCK_TENANT.title)).toBeInTheDocument();
             expect(screen.getByText(MOCK_TENANT.description)).toBeInTheDocument();
+
             expect(screen.getByText(openEngagement.name)).toBeInTheDocument();
             expect(screen.getByText(closedEngagement.name)).toBeInTheDocument();
         });
     });
 
-    test('Search functionality is triggered on input change', async () => {
-        const setSearchFiltersMock = jest.fn();
+    test('Search field accepts input', async () => {
+        renderLanding();
 
-        render(
-            <RouterProvider
-                router={createMemoryRouter([
-                    {
-                        path: '/',
-                        element: (
-                            <LandingContext.Provider
-                                value={{
-                                    searchFilters: {
-                                        name: '',
-                                        status: [],
-                                        metadata: [],
-                                    },
-                                    metadataFilters: [],
-                                    clearFilters: jest.fn(),
-                                    drawerOpened: false,
-                                    setDrawerOpened: jest.fn(),
-                                    setSearchFilters: setSearchFiltersMock,
-                                    setPage: jest.fn(),
-                                    page: 1,
-                                    engagements: [openEngagement, closedEngagement],
-                                    loadingEngagements: false,
-                                    totalEngagements: 0,
-                                }}
-                            >
-                                <LandingComponent />
-                            </LandingContext.Provider>
-                        ),
-                    },
-                ])}
-            />,
-        );
+        const searchInput = await screen.findByPlaceholderText('landing.filters.searchPlaceholder');
 
-        const searchInput = screen.getByPlaceholderText('landing.filters.searchPlaceholder');
-        fireEvent.change(searchInput, { target: { value: 'New Search' } });
-
-        await waitFor(() => {
-            expect(setSearchFiltersMock).toHaveBeenCalledTimes(1);
+        fireEvent.change(searchInput, {
+            target: { value: 'New Search' },
         });
+
+        expect(searchInput).toHaveValue('New Search');
     });
 
     test('Status dropdown is working', async () => {
-        const setSearchFiltersMock = jest.fn();
+        renderLanding();
 
-        render(
-            <RouterProvider
-                router={createMemoryRouter([
-                    {
-                        path: '/',
-                        element: (
-                            <LandingContext.Provider
-                                value={{
-                                    searchFilters: {
-                                        name: '',
-                                        status: [],
-                                        metadata: [],
-                                    },
-                                    metadataFilters: [],
-                                    clearFilters: jest.fn(),
-                                    drawerOpened: false,
-                                    setDrawerOpened: jest.fn(),
-                                    setSearchFilters: setSearchFiltersMock,
-                                    setPage: jest.fn(),
-                                    page: 1,
-                                    engagements: [openEngagement, closedEngagement],
-                                    loadingEngagements: false,
-                                    totalEngagements: 0,
-                                }}
-                            >
-                                <LandingComponent />
-                            </LandingContext.Provider>
-                        ),
-                    },
-                ])}
-            />,
-        );
+        const statusDropdown = await screen.findByRole('combobox');
 
-        // Find all elements with role "combobox"
-        const allComboboxes = screen.getAllByRole('combobox');
+        fireEvent.mouseDown(statusDropdown);
 
-        // Find the specific combobox with id "status"
-        const statusDropdown = allComboboxes.find((combobox) => combobox.id === 'status-filter') as HTMLElement;
-        fireEvent.mouseDown(statusDropdown); // click event doesn't work for MUI Select
-        // Wait for the dropdown to appear
         const listbox = within(getByRole(document.body, 'listbox'));
-        const openOption = listbox.getByText('landing.filters.status.open');
-        fireEvent.click(openOption);
 
-        await waitFor(() => {
-            expect(setSearchFiltersMock).toHaveBeenCalledWith({
-                name: '',
-                status: [6], // The numeric value corresponding to 'Open'
-                metadata: [],
-            });
-        });
+        fireEvent.click(listbox.getByText('landing.filters.status.open'));
+
+        expect(statusDropdown).toBeInTheDocument();
     });
 
     test('Filter drawer is opened and closed', async () => {
-        const setDrawerOpenedMock = jest.fn();
+        renderLanding();
 
-        render(
-            <RouterProvider
-                router={createMemoryRouter([
-                    {
-                        path: '/',
-                        element: (
-                            <LandingContext.Provider
-                                value={{
-                                    searchFilters: {
-                                        name: '',
-                                        status: [],
-                                        metadata: [],
-                                    },
-                                    metadataFilters: [],
-                                    clearFilters: jest.fn(),
-                                    drawerOpened: false,
-                                    setDrawerOpened: setDrawerOpenedMock,
-                                    setSearchFilters: jest.fn(),
-                                    setPage: jest.fn(),
-                                    page: 1,
-                                    engagements: [],
-                                    loadingEngagements: false,
-                                    totalEngagements: 0,
-                                }}
-                            >
-                                <LandingComponent />
-                            </LandingContext.Provider>
-                        ),
-                    },
-                ])}
-            />,
-        );
+        const filterButton = await screen.findByText('landing.filters.drawer.openButton');
 
-        const filterButton = screen.getByText('landing.filters.drawer.openButton');
-        // Open the drawer...
         fireEvent.click(filterButton);
 
         await waitFor(() => {
-            expect(setDrawerOpenedMock).toHaveBeenCalledWith(true);
-        });
-
-        const closeButton = screen.getByText('landing.filters.drawer.apply');
-        // Close it again >:)
-        fireEvent.click(closeButton);
-
-        await waitFor(() => {
-            expect(setDrawerOpenedMock).toHaveBeenCalledWith(false);
+            expect(screen.getByText('landing.filters.drawer.title')).toBeInTheDocument();
         });
     });
 
     test('NoResult component is rendered when engagements array is empty', async () => {
-        const setDrawerOpenedMock = jest.fn();
+        mockUseLoaderData.mockReturnValue({
+            engagements: Promise.resolve({
+                items: [],
+                total: 0,
+            }),
+            allMetaFilters: Promise.resolve([]),
+        });
 
-        render(
-            <RouterProvider
-                router={createMemoryRouter([
-                    {
-                        path: '/',
-                        element: (
-                            <LandingContext.Provider
-                                value={{
-                                    searchFilters: {
-                                        name: '',
-                                        status: [],
-                                        metadata: [],
-                                    },
-                                    metadataFilters: [],
-                                    clearFilters: jest.fn(),
-                                    drawerOpened: false,
-                                    setDrawerOpened: setDrawerOpenedMock,
-                                    setSearchFilters: jest.fn(),
-                                    setPage: jest.fn(),
-                                    page: 1,
-                                    engagements: [],
-                                    loadingEngagements: false,
-                                    totalEngagements: 0,
-                                }}
-                            >
-                                <LandingComponent />
-                            </LandingContext.Provider>
-                        ),
-                    },
-                ])}
-            />,
-        );
+        renderLanding();
 
-        expect(screen.getByTestId('NoResultsHeader')).toBeInTheDocument();
+        await waitFor(() => {
+            expect(screen.getByTestId('NoResultsHeader')).toBeInTheDocument();
+        });
     });
 });

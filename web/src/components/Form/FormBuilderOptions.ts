@@ -16,8 +16,8 @@ export const formioOptions = {
                 // simpletextarea: true, // overridden
                 // simpleradios: true, // overridden
                 simplecheckboxes: true,
-                header: true,
-                paragraph: true,
+                header: false, // redundant
+                paragraph: false, // redundant
                 simplepostalcode: true,
                 // hiding category checkboxes
                 categorycheckboxes: false,

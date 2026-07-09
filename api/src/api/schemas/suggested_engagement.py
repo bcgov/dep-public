@@ -70,6 +70,7 @@ class SuggestedEngagementAttachment(Schema):
     is_internal = fields.Bool(data_key='is_internal')
     consent_message = fields.Str(data_key='consent_message')
     sponsor_name = fields.Str(data_key='sponsor_name')
+    slug = fields.Str(data_key='slug')
 
     def get_banner_url(self, obj):
         """Return the object storage URL for the banner image."""

@@ -1,6 +1,6 @@
 import React from 'react';
 import { AppBar, Box, Toolbar } from '@mui/material';
-import { colors, Palette } from 'styles/Theme';
+import { colors, Layout, Palette } from 'styles/Theme';
 import { ReactComponent as BCLogo } from 'assets/images/BritishColumbiaLogoDark.svg';
 import { BodyText } from 'components/common/Typography';
 import { Link } from 'components/common/Navigation';
@@ -9,8 +9,6 @@ import EnvironmentBanner from './EnvironmentBanner';
 import { getPath, ROUTES } from 'routes/routes';
 
 const PublicHeader = () => {
-    const sidePadding = { xs: '0px 16px 0px 16px', md: '0px 5vw 0px 5vw', lg: '0px 10em 0px 10em' };
-
     return (
         <AppBar
             position="static"
@@ -32,7 +30,9 @@ const PublicHeader = () => {
             <Toolbar
                 sx={{
                     height: '4em',
-                    padding: sidePadding,
+                    width: Layout.width.default,
+                    margin: '0 auto !important',
+                    padding: `0 ${Layout.padding.default} !important`,
                     backgroundColor: Palette.internalHeader.backgroundColor,
                 }}
             >

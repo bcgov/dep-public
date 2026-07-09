@@ -1,4 +1,4 @@
-import { Params } from 'react-router';
+import { LoaderFunctionArgs } from 'react-router';
 import { getAllTenants, getTenant } from 'services/tenantService';
 
 export const allTenantsLoader = () => {
@@ -6,7 +6,7 @@ export const allTenantsLoader = () => {
     return tenants;
 };
 
-export const tenantLoader = ({ params }: { params: Params<string> }) => {
+export const tenantLoader = ({ params }: LoaderFunctionArgs) => {
     const { tenantShortName } = params;
     if (!tenantShortName) throw new Error('Tenant ID is required');
 

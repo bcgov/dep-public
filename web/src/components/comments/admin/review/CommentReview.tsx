@@ -54,7 +54,7 @@ const CommentReview = () => {
     const [notifyEmail, setNotifyEmail] = useState(true);
     const [staffNote, setStaffNote] = useState<StaffNote[]>([]);
     const [updatedStaffNote, setUpdatedStaffNote] = useState<StaffNote[]>([]);
-    const [openEmailPreview, setEmailPreview] = useState(false);
+    const [emailPreviewOpen, setEmailPreviewOpen] = useState(false);
     const [survey, setSurvey] = useState<Survey>(createDefaultSurvey());
     const dispatch = useAppDispatch();
     const navigate = useNavigate();
@@ -86,8 +86,8 @@ const CommentReview = () => {
 
     const fetchSubmission = async () => {
         try {
-            if (isNaN(Number(submissionId))) {
-                throw new Error();
+            if (Number.isNaN(Number(submissionId))) {
+                throw new Error('Invalid submission ID');
             }
             const fetchedSubmission = await getSubmission(Number(submissionId));
             const fetchedSurvey = await getSurvey(Number(surveyId));
@@ -178,7 +178,7 @@ const CommentReview = () => {
     };
 
     const previewEmail = () => {
-        setEmailPreview(true);
+        setEmailPreviewOpen(true);
     };
 
     // The comment display information below is fetched from the first comment from the list
@@ -206,8 +206,8 @@ const CommentReview = () => {
     return (
         <ResponsiveContainer>
             <EmailPreviewModal
-                open={openEmailPreview}
-                handleClose={() => setEmailPreview(false)}
+                open={emailPreviewOpen}
+                handleClose={() => setEmailPreviewOpen(false)}
                 header={'Your comment on (Engagement name) needs to be edited'}
                 renderEmail={getEmailPreview()}
             />

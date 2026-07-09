@@ -4,6 +4,30 @@
   - Removed French from list of required languages in front-end validation (no back-end changes were needed, as the API does not enforce any required languages).
   - Started tracking whether the user _wants_ multiple languages (rather than just if there _are_ multiple languages), allowing us to temporarily show the language picker so that the user has time to select an additional language.
 
+## July 07, 2026
+
+- **Feature** Added ability to upload files to Object Storage during survey submission [🎟️ DEP-277](https://citz-gdx.atlassian.net/browse/DEP-277)
+  - Added a new public document endpoint to the API that generates pre-signed URLs for uploading files to Object Storage. This endpoint takes the file name and content type as input and returns a pre-signed URL that can be used to upload the file directly to Object Storage.
+    - The new API can also be used to generate pre-signed URLs for downloading files from Object Storage, as well as deleting files from Object Storage.
+  - Updated the Formio options to include callbacks for handling file uploads, downloads, and deletions. These callbacks use the new API to generate URLs and perform privileged operations on Object Storage, allowing users to upload files during survey submission without needing high-level access to the storage service.
+  - Cleaned up survey-related component code
+  - Updated the survey pages to use React Router loaders to fetch the survey data instead of using useState and useEffect, as well as making sure the loader returns promises (as opposed to awaiting the data) so that the survey page can be rendered while the data is being fetched. This improves the user experience by allowing the page to render faster and show a loading state while the survey data is being retrieved.
+  - Fixed authorization bug that did not allow Super Admins to view surveys
+
+- **Feature** Integrated new landing hero section and introduction [🎟️ DEP-315](https://citz-gdx.atlassian.net/browse/DEP-315)
+  - Refactored existing landing code for structural simplicity
+  - Created a reusable container/section block that can be reused anywhere
+  - Added params to URL for future filter updating (can be decoupled easily if not desired)
+  - Implemented UX designs (mobile and desktop)
+  - Removed app's square box that appears at bigger viewports
+  - Ensured that other layouts were not negatively affected by change (admin, admin landing preview, admin engagement preview)
+    - Added constrained option for internal header component as an optional boolean prop
+- Fixed: Engagement preview was looking for route loader address that didn't exist
+- Fixed: Slug was not being populated with SuggestedEngagementAttachment, so Suggested Engagement links were not working
+- Fixed: Small typo in security response headers of API
+- Fixed: Console error for authoring section details tabs, selection/list mismatch
+- Enhanced: Notification banner now supports multiple lines for mobile (or long messages, if needed in the future)
+
 ## June 23, 2026
 
 - **Feature** Imported CHEFS components into DEP [🎟️ DEP-275](https://citz-gdx.atlassian.net/browse/DEP-275)

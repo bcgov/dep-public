@@ -4,6 +4,7 @@ import { faExclamationTriangle } from '@fortawesome/free-solid-svg-icons';
 import { BodyText } from 'components/common/Typography';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { AppConfig } from 'config';
+import { Layout } from 'styles/Theme';
 
 const EnvironmentBanner = () => {
     const test_environments = ['test', 'testing', 'dev', 'development'];
@@ -17,9 +18,10 @@ const EnvironmentBanner = () => {
             container
             direction="row"
             gap={2}
-            padding={{ xs: '0 1em 0', md: '0 5vw 0', lg: '0 10em 0' }}
+            padding={`11px ${Layout.padding.default}`}
+            width="100%"
             color={(theme) => theme.palette.warning.contrastText}
-            height="50px"
+            minHeight="50px"
             bgcolor="gold.10"
             borderBottom="4px solid"
             borderColor="warning.main"
@@ -28,10 +30,16 @@ const EnvironmentBanner = () => {
             flexWrap="nowrap"
             lineHeight="28px"
         >
-            <BodyText component="span" fontSize="22px" color="warning.dark">
-                <FontAwesomeIcon icon={faExclamationTriangle} />
-            </BodyText>
-            <BodyText component="span">You are using a test environment.</BodyText>
+            <Grid
+                container
+                flexWrap="nowrap"
+                sx={{ padding: 0, margin: '0 auto', maxWidth: Layout.width.default, width: '100%', gap: '0.5em' }}
+            >
+                <BodyText component="span" fontSize="22px" color="warning.dark">
+                    <FontAwesomeIcon icon={faExclamationTriangle} />
+                </BodyText>
+                <BodyText component="span">You are using a test environment.</BodyText>
+            </Grid>
         </Grid>
     );
 };

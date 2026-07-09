@@ -296,9 +296,18 @@ class Engagement(BaseModel):
             status_filter.append(
                 and_(
                     Engagement.status_id == Status.Published.value,
-                    Engagement.start_date <= datetime.now()
+                    Engagement.start_date <= datetime.now(),
+                    Engagement.end_date > datetime.now()
                 )
             )
+        if EngagementDisplayStatus.Closed.value in statuses:
+            status_filter.append(
+                and_(
+                    Engagement.status_id == Status.Closed.value,
+                    Engagement.end_date < datetime.now()
+                )
+            )
+
         if EngagementDisplayStatus.Unpublished.value in statuses:
             status_filter.append(Engagement.status_id ==
                                  Status.Unpublished.value)

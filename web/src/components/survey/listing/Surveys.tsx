@@ -454,7 +454,7 @@ const Surveys = () => {
                                     }}
                                 />
                             }
-                            fullWidth={isMediumScreen ? true : false}
+                            fullWidth={isMediumScreen}
                         >
                             Advanced Search
                         </Button>

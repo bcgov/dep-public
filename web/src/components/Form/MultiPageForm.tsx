@@ -2,15 +2,22 @@ import React, { useState } from 'react';
 import { Form } from './formio/setup';
 import { FormSubmissionData, FormSubmitterProps } from './types';
 import FormStepper from 'components/survey/submit/Stepper';
+import { createSimpleFileOptions } from './formio/simpleFileOptions';
 
 interface PageData {
     page: number;
     submission: unknown;
 }
 
-const MultiPageForm = ({ handleFormChange, savedForm, handleFormSubmit }: FormSubmitterProps) => {
+const MultiPageForm = ({
+    handleFormChange,
+    handleFormCancel,
+    savedForm,
+    handleFormSubmit,
+    verificationToken,
+}: FormSubmitterProps) => {
     const [currentPage, setCurrentPage] = useState(0);
-
+    const simpleFileOptions = createSimpleFileOptions({ verificationToken });
     const handleScrollUp = () => {
         globalThis.scrollTo({
             top: 100,
@@ -23,7 +30,10 @@ const MultiPageForm = ({ handleFormChange, savedForm, handleFormSubmit }: FormSu
             <FormStepper currentPage={currentPage} pages={savedForm?.components ?? []} />
             <Form
                 form={savedForm || { display: 'wizard' }}
-                options={{ noAlerts: true }}
+                options={{
+                    noAlerts: true,
+                    ...simpleFileOptions,
+                }}
                 onChange={(form: unknown) => handleFormChange(form as FormSubmissionData)}
                 onNextPage={(pageData: PageData) => {
                     setCurrentPage(pageData.page);
@@ -33,10 +43,8 @@ const MultiPageForm = ({ handleFormChange, savedForm, handleFormSubmit }: FormSu
                     setCurrentPage(pageData.page);
                     handleScrollUp();
                 }}
-                onSubmit={(form: unknown) => {
-                    const formSubmissionData = form as FormSubmissionData;
-                    handleFormSubmit(formSubmissionData.data);
-                }}
+                onCancel={() => handleFormCancel?.()}
+                onSubmit={(form: unknown) => handleFormSubmit?.((form as FormSubmissionData).data)}
             />
         </div>
     );

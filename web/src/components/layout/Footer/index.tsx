@@ -2,7 +2,7 @@ import { Divider, Grid2 as Grid, Stack, Box } from '@mui/material';
 import { BodyText } from 'components/common/Typography/Body';
 import React, { Suspense, useState } from 'react';
 import { ReactComponent as BCLogo } from 'assets/images/BritishColumbiaLogoDarkCropped.svg';
-import { LayoutWidth, Palette } from 'styles/Theme';
+import { Layout, Palette } from 'styles/Theme';
 import { faCodePullRequest, faCodeFork } from '@fortawesome/pro-solid-svg-icons';
 import UserService from 'services/userService';
 import { useAppSelector, useAppTranslation } from 'hooks';
@@ -127,7 +127,7 @@ const Footer = () => {
                         color: Palette.background.default,
                         padding: 0,
                         margin: '0 auto',
-                        maxWidth: LayoutWidth.footer,
+                        maxWidth: Layout.width.default,
                         width: '100%',
                         fontSize: '14px',
                     }}
@@ -139,6 +139,7 @@ const Footer = () => {
             {/* Footer main container */}
             <Grid
                 size={12}
+                direction="column"
                 sx={{
                     padding: '3.5rem 2rem 3rem',
                     gap: '0',
@@ -149,7 +150,7 @@ const Footer = () => {
                 <Stack
                     direction={{ xs: 'column', md: 'row' }}
                     sx={{
-                        maxWidth: LayoutWidth.footer,
+                        maxWidth: Layout.width.default,
                         width: '100%',
                         ml: 'auto',
                         mr: 'auto',
@@ -227,21 +228,21 @@ const Footer = () => {
                         pb: '2rem',
                         borderColor: 'rgb(1, 51, 102)',
                         width: '100%',
-                        maxWidth: LayoutWidth.footer,
+                        maxWidth: Layout.width.default,
                         ml: 'auto',
                         mr: 'auto',
                     }}
                 />
 
                 {/* Footer copyright date */}
-                <Grid container sx={{ width: '100%', maxWidth: LayoutWidth.footer, margin: '0 auto 1.5rem' }}>
+                <Grid container sx={{ width: '100%', maxWidth: Layout.width.default, margin: '0 auto 1.5rem' }}>
                     <p style={{ margin: '0', fontSize: '14px' }}>
                         © {new Date().getFullYear()} {translate('footer.copyrightNotice')}
                     </p>
                 </Grid>
 
                 {/* Footer admin area */}
-                <Grid container sx={{ width: '100%', maxWidth: LayoutWidth.footer, margin: '0 auto' }}>
+                <Grid container sx={{ width: '100%', maxWidth: Layout.width.default, margin: '0 auto' }}>
                     {/* Footer login link */}
                     <Unless condition={isLoggedIn}>
                         <Link

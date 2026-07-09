@@ -1,4 +1,10 @@
-import { generatePath } from 'react-router';
+import { generatePath, useMatches } from 'react-router';
+
+export const ROOT_MANAGEMENT_ROUTE_ID = 'authenticated-root';
+
+export const useIsManagementRoute = () => {
+    return useMatches().some((match) => match.id === ROOT_MANAGEMENT_ROUTE_ID);
+};
 
 export const ROUTES = {
     // Public routes

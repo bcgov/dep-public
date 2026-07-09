@@ -13,6 +13,7 @@ const UnauthenticatedRoutes = resolveLazyRouteTree(
         <LazyRoute
             index
             ComponentLazy={() => import('components/landing')}
+            loaderLazy={() => import('components/landing/landingLoader')}
             handle={{ crumb: () => ({ title: 'Home' }) }}
         />
         <Route path=":slug">
@@ -42,7 +43,7 @@ const UnauthenticatedRoutes = resolveLazyRouteTree(
                     handleLazy={() => import('routes/UnauthenticatedRouteHandles').then((m) => m.publicCommentsHandle)}
                 />
                 <LazyRoute
-                    path="edit/:token/:language"
+                    path="edit/:token/"
                     ComponentLazy={() =>
                         import('components/survey/edit').then((module) => withLanguageParam(module.default))
                     }

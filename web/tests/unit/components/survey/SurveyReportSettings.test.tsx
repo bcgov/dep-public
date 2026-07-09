@@ -5,9 +5,24 @@ import { setupEnv } from '../setEnvVars';
 import * as reportSettingsService from 'services/surveyService/reportSettingsService';
 import { createDefaultSurvey, Survey } from 'models/survey';
 import ReportSettings from 'components/survey/report';
-import { MemoryRouter } from 'react-router';
+import { createMemoryRouter, RouterProvider } from 'react-router';
 import { SurveyReportSetting } from 'models/surveyReportSetting';
 import { createDefaultEngagement } from 'models/engagement';
+
+global['Request'] = jest.fn().mockImplementation((input: string = '', init: RequestInit = {}) => ({
+    // React Router data APIs call toUpperCase on request.method; default to GET
+    method: (init.method || 'GET').toUpperCase(),
+    url: input,
+    headers: {
+        get: jest.fn(),
+        has: jest.fn(),
+    },
+    signal: {
+        removeEventListener: jest.fn(),
+        addEventListener: jest.fn(),
+    },
+    clone: jest.fn(),
+}));
 
 const survey: Survey = {
     ...createDefaultSurvey(),
@@ -164,12 +179,22 @@ describe('Survey report settings tests', () => {
         __TESTING__.submitImplRef.impl = undefined;
     });
 
-    function renderWithRouter(ui: React.ReactElement) {
-        return render(<MemoryRouter initialEntries={['/surveys/1/report']}>{ui}</MemoryRouter>);
+    function renderPage() {
+        const router = createMemoryRouter(
+            [
+                {
+                    element: <ReportSettings />,
+                    path: '/surveys/1/report',
+                },
+            ],
+            { initialEntries: ['/surveys/1/report'] },
+        );
+
+        return render(<RouterProvider router={router} />);
     }
 
     test('View survey report settings page', async () => {
-        renderWithRouter(<ReportSettings />);
+        renderPage();
 
         await waitFor(() => {
             expect(screen.getByText(surveyReportSettingOne.question_type)).toBeVisible();
@@ -183,7 +208,7 @@ describe('Survey report settings tests', () => {
     });
 
     test('Search question by question text', async () => {
-        const { container } = renderWithRouter(<ReportSettings />);
+        const { container } = renderPage();
 
         await waitFor(() => {
             expect(screen.getByText(surveyReportSettingOne.question)).toBeVisible();
@@ -207,7 +232,7 @@ describe('Survey report settings tests', () => {
     });
 
     test('Survey report settings can be updated', async () => {
-        renderWithRouter(<ReportSettings />);
+        renderPage();
 
         await waitFor(() => {
             expect(screen.getByText(surveyReportSettingOne.question)).toBeVisible();

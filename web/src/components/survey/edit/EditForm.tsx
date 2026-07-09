@@ -75,7 +75,7 @@ export const EditForm = ({ handleClose }: SurveyFormProps) => {
             <UnsavedWorkConfirmation blockNavigationWhen={isChanged} />
             {submission.comments?.map((comment, index) => {
                 return (
-                    <Grid size={12} key={index}>
+                    <Grid size={12} key={`comment-${comment.id}`}>
                         <BodyText size="small">{comment.label}</BodyText>
                         <TextField
                             defaultValue={comment.text}
