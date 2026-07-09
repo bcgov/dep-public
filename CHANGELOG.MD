@@ -1,3 +1,9 @@
+## July 09, 2026
+
+- **Chore** Removed French as a required language for multi-language engagements [🎟️ DEP-321](https://citz-gdx.atlassian.net/browse/DEP-321)
+  - Removed French from list of required languages in front-end validation (no back-end changes were needed, as the API does not enforce any required languages).
+  - Started tracking whether the user _wants_ multiple languages (rather than just if there _are_ multiple languages), allowing us to temporarily show the language picker so that the user has time to select an additional language.
+
 ## June 23, 2026
 
 - **Feature** Imported CHEFS components into DEP [🎟️ DEP-275](https://citz-gdx.atlassian.net/browse/DEP-275)

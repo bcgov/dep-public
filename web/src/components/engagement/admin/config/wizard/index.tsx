@@ -134,7 +134,7 @@ const EngagementForm = ({
                     step={4}
                     completed={isEnglishOnly || hasAdditionalLanguage}
                     question="Will your engagement be offered in multiple languages?"
-                    details="All engagements must be offered in English, but you may also add content in additional languages. If you select multi-language, you must include French."
+                    details="All engagements must be offered in English, but you may also add content in additional languages."
                     isGroup
                 >
                     <LanguageManager />
