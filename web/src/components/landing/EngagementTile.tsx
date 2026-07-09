@@ -48,7 +48,6 @@ const EngagementTile = ({ passedEngagement, engagementId }: EngagementTileProps)
         }
 
         try {
-            console.log('getting engagement with id', engagementId);
             const engagement = await getEngagement(engagementId);
             setLoadedEngagement(engagement);
         } catch {

@@ -17,7 +17,7 @@ import {
     Toolbar,
     useMediaQuery,
 } from '@mui/material';
-import { colors, AdminDarkTheme, Palette } from 'styles/Theme';
+import { colors, AdminDarkTheme, Palette, Layout } from 'styles/Theme';
 import { ReactComponent as BCLogo } from 'assets/images/BritishColumbiaLogoDark.svg';
 import { useAppSelector } from '../../../hooks';
 import { BodyText } from 'components/common/Typography/Body';
@@ -52,7 +52,13 @@ const getFallbackMyTenants = (): Promise<Tenant[]> => {
     return fallbackMyTenantsPromise;
 };
 
-const InternalHeader = ({ showSideNav = true }: { showSideNav?: boolean }) => {
+const InternalHeader = ({
+    showSideNav = true,
+    constrained = false,
+}: {
+    showSideNav?: boolean;
+    constrained?: boolean;
+}) => {
     const isMediumScreenOrLarger = useMediaQuery((theme: Theme) => theme.breakpoints.up('md'));
     const isMobileScreen = !useMediaQuery((theme: Theme) => theme.breakpoints.up('sm'));
     const [sideNavOpen, setSideNavOpen] = useState(false);
@@ -93,8 +99,6 @@ const InternalHeader = ({ showSideNav = true }: { showSideNav?: boolean }) => {
         | AuthenticatedRootLoaderData
         | undefined;
     const myTenants = authenticatedRootLoaderData?.myTenants ?? getFallbackMyTenants();
-
-    const sidePadding = { xs: '0 1em', md: '0 1.5em 0 2em', lg: '0 3em 0 2em' };
     const navigation = useNavigation();
     const isPending = navigation.state === 'loading' || navigation.state === 'submitting';
     const leftPositionSign = sideNavOpen ? -6 : 6;
@@ -188,9 +192,7 @@ const InternalHeader = ({ showSideNav = true }: { showSideNav?: boolean }) => {
                         overflow: 'hidden',
                         left: 0,
                         boxShadow: tenantDrawerOpen ? 'none' : elevations.default,
-                        borderRadius: 0,
-                        borderBottomLeftRadius: '1em',
-                        borderBottomRightRadius: '1em',
+                        borderRadius: isMobileScreen ? 0 : '0 0 1em 1em',
                         transition: 'box-shadow 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
                         paddingRight: '0 !important',
                     }}
@@ -198,36 +200,46 @@ const InternalHeader = ({ showSideNav = true }: { showSideNav?: boolean }) => {
                 >
                     <Toolbar
                         sx={{
-                            height: '4em',
-                            padding: sidePadding,
+                            padding: `0 ${Layout.padding.default} !important`,
                             backgroundColor: Palette.internalHeader.backgroundColor,
-                            transition: 'padding 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
                         }}
                     >
-                        <Link underline="none" to={getPath(ROUTES.HOME)} sx={{ height: '100%', mr: '2px' }}>
-                            <Box
-                                component={BCLogo}
-                                sx={{
-                                    height: '100%',
-                                    width: 'auto',
-                                    padding: '0 0',
-                                    ml: '-13px',
-                                }}
-                                alt="British Columbia Logo"
-                            />
-                        </Link>
                         <Box
                             sx={{
-                                borderLeft: `1px solid ${colors.surface.gray[80]}`,
-                                height: '1.5em',
-                                width: '1px',
-                                marginRight: '1em',
+                                width: '100%',
+                                maxWidth: constrained ? Layout.width.default : '100%',
+                                height: '4em',
+                                margin: '0 auto',
+                                display: 'flex',
+                                alignItems: 'center',
+                                transition: 'height 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
                             }}
-                        />
-                        <BodyText thin sx={{ color: colors.surface.blue[80], userSelect: 'none' }}>
-                            engage{/*no space*/}
-                            <span style={{ color: colors.surface.blue[90], fontWeight: 'normal' }}>BC</span>
-                        </BodyText>
+                        >
+                            <Link underline="none" to={getPath(ROUTES.HOME)} sx={{ height: '100%', mr: '2px' }}>
+                                <Box
+                                    component={BCLogo}
+                                    sx={{
+                                        height: '100%',
+                                        width: 'auto',
+                                        padding: '0 0',
+                                        ml: '-13px',
+                                    }}
+                                    alt="British Columbia Logo"
+                                />
+                            </Link>
+                            <Box
+                                sx={{
+                                    borderLeft: `1px solid ${colors.surface.gray[80]}`,
+                                    height: '1.5em',
+                                    width: '1px',
+                                    marginRight: '1em',
+                                }}
+                            />
+                            <BodyText thin sx={{ color: colors.surface.blue[80], userSelect: 'none' }}>
+                                engage{/*no space*/}
+                                <span style={{ color: colors.surface.blue[90], fontWeight: 'normal' }}>BC</span>
+                            </BodyText>
+                        </Box>
                     </Toolbar>
                     <If condition={isPending}>
                         <Then>
@@ -253,28 +265,39 @@ const InternalHeader = ({ showSideNav = true }: { showSideNav?: boolean }) => {
                                 height: '3.5em',
                                 minHeight: 0,
                                 justifyContent: 'space-between',
-                                padding: sidePadding,
-                                display: 'flex',
-                                alignItems: 'center',
+                                padding: `0 ${Layout.padding.default}`,
                                 transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+                                borderRadius: '0 0 1em 1em',
                             }}
                         >
-                            <ThemeProvider theme={AdminDarkTheme}>
-                                <Suspense>
-                                    <Await resolve={myTenants}>
-                                        {(tenants: Tenant[]) => (
-                                            <TenantSelector
-                                                isVisible={isMediumScreenOrLarger || sideNavOpen}
-                                                onStateChange={handleTenantDrawerOpen}
-                                                tenants={tenants}
-                                            />
-                                        )}
-                                    </Await>
-                                </Suspense>
-                                <When condition={showUserMenu}>
-                                    <UserMenu />
-                                </When>
-                            </ThemeProvider>
+                            <Box
+                                sx={{
+                                    width: '100%',
+                                    maxWidth: constrained ? Layout.width.default : '100%',
+                                    height: '100%',
+                                    margin: '0 auto',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    borderRadius: '0 0 1em 1em',
+                                }}
+                            >
+                                <ThemeProvider theme={AdminDarkTheme}>
+                                    <Suspense>
+                                        <Await resolve={myTenants}>
+                                            {(tenants: Tenant[]) => (
+                                                <TenantSelector
+                                                    isVisible={isMediumScreenOrLarger || sideNavOpen}
+                                                    onStateChange={handleTenantDrawerOpen}
+                                                    tenants={tenants}
+                                                />
+                                            )}
+                                        </Await>
+                                    </Suspense>
+                                    <When condition={showUserMenu}>
+                                        <UserMenu />
+                                    </When>
+                                </ThemeProvider>
+                            </Box>
                         </Box>
                     </Collapse>
                 </AppBar>

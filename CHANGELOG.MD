@@ -8,6 +8,20 @@
   - Updated the survey pages to use React Router loaders to fetch the survey data instead of using useState and useEffect, as well as making sure the loader returns promises (as opposed to awaiting the data) so that the survey page can be rendered while the data is being fetched. This improves the user experience by allowing the page to render faster and show a loading state while the survey data is being retrieved.
   - Fixed authorization bug that did not allow Super Admins to view surveys
 
+- **Feature** Integrated new landing hero section and introduction [🎟️ DEP-315](https://citz-gdx.atlassian.net/browse/DEP-315)
+  - Refactored existing landing code for structural simplicity
+  - Created a reusable container/section block that can be reused anywhere
+  - Added params to URL for future filter updating (can be decoupled easily if not desired)
+  - Implemented UX designs (mobile and desktop)
+  - Removed app's square box that appears at bigger viewports
+  - Ensured that other layouts were not negatively affected by change (admin, admin landing preview, admin engagement preview)
+    - Added constrained option for internal header component as an optional boolean prop
+- Fixed: Engagement preview was looking for route loader address that didn't exist
+- Fixed: Slug was not being populated with SuggestedEngagementAttachment, so Suggested Engagement links were not working
+- Fixed: Small typo in security response headers of API
+- Fixed: Console error for authoring section details tabs, selection/list mismatch
+- Enhanced: Notification banner now supports multiple lines for mobile (or long messages, if needed in the future)
+
 ## June 23, 2026
 
 - **Feature** Imported CHEFS components into DEP [🎟️ DEP-275](https://citz-gdx.atlassian.net/browse/DEP-275)

@@ -594,7 +594,11 @@ export const ZIndex = {
     footer: '1000',
 };
 
-export const LayoutWidth = {
-    default: '100%',
-    footer: '100%',
+export const Layout = {
+    width: {
+        default: '1120px',
+    },
+    padding: {
+        default: '2rem',
+    },
 };

@@ -13,6 +13,7 @@ const UnauthenticatedRoutes = resolveLazyRouteTree(
         <LazyRoute
             index
             ComponentLazy={() => import('components/landing')}
+            loaderLazy={() => import('components/landing/landingLoader')}
             handle={{ crumb: () => ({ title: 'Home' }) }}
         />
         <Route path=":slug">

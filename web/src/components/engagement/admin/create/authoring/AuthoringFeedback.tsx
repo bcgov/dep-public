@@ -14,10 +14,10 @@ import { getEditorStateFromRaw } from 'components/common/RichTextEditor/utils';
 import ConfirmModal from 'components/common/Modals/ConfirmModal';
 import { EngagementStatus } from 'constants/engagementStatus';
 import { AuthoringFormContainer, AuthoringFormSection } from './AuthoringFormLayout';
-import { tryParse } from './utils';
 import { getEngagementTranslationByCode } from 'services/engagementService';
 import { useAuthoringPageHydration } from './useAuthoringPageHydration';
 import { AppConfig } from 'config';
+import { tryParse } from 'helper';
 
 type SelectOption = { label: string; value: number };
 
@@ -56,7 +56,7 @@ const AuthoringFeedback = () => {
             ...defaultValuesObject,
             form_source: pageName,
             id: Number(loadedEngagement.id),
-            status_id: Number(loadedEngagement.id),
+            status_id: Number(loadedEngagement.status_id),
             feedback_heading: feedbackHeading || '',
             feedback_body: tryParse(feedbackBody) ? getEditorStateFromRaw(feedbackBody) || '' : '',
             selected_survey_id: loadedEngagement.surveys?.find(
