@@ -18,7 +18,6 @@ const MultiPageForm = ({
 }: FormSubmitterProps) => {
     const [currentPage, setCurrentPage] = useState(0);
     const simpleFileOptions = createSimpleFileOptions({ verificationToken });
-    console.log(savedForm);
     const handleScrollUp = () => {
         globalThis.scrollTo({
             top: 100,

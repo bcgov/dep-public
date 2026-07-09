@@ -87,14 +87,21 @@ class Surveys(Resource):
                 exclude_hidden=args.get('exclude_hidden', False, bool),
                 exclude_template=args.get('exclude_template', False, bool),
                 search_text=args.get('search_text', '', str),
-                is_unlinked=args.get('is_unlinked', default=False, type=lambda v: v.lower() == 'true'),
-                is_linked=args.get('is_linked', default=False, type=lambda v: v.lower() == 'true'),
-                is_hidden=args.get('is_hidden', default=False, type=lambda v: v.lower() == 'true'),
-                is_template=args.get('is_template', default=False, type=lambda v: v.lower() == 'true'),
-                created_date_from=args.get('created_date_from', None, type=str),
+                is_unlinked=args.get(
+                    'is_unlinked', default=False, type=lambda v: v.lower() == 'true'),
+                is_linked=args.get('is_linked', default=False,
+                                   type=lambda v: v.lower() == 'true'),
+                is_hidden=args.get('is_hidden', default=False,
+                                   type=lambda v: v.lower() == 'true'),
+                is_template=args.get(
+                    'is_template', default=False, type=lambda v: v.lower() == 'true'),
+                created_date_from=args.get(
+                    'created_date_from', None, type=str),
                 created_date_to=args.get('created_date_to', None, type=str),
-                published_date_from=args.get('published_date_from', None, type=str),
-                published_date_to=args.get('published_date_to', None, type=str),
+                published_date_from=args.get(
+                    'published_date_from', None, type=str),
+                published_date_to=args.get(
+                    'published_date_to', None, type=str),
             )
 
             survey_records = SurveyService()\

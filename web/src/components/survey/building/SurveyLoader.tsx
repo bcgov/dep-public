@@ -19,10 +19,10 @@ export type SurveyLoaderData = {
 };
 
 export const SurveyLoader = async ({ params, pattern }: LoaderFunctionArgs) => {
-    const { surveyId, token, engagementId: engagementIdParam, slug: slugParam } = params;
+    const { surveyId: surveyIdParam, token, engagementId: engagementIdParam, slug: slugParam } = params;
+    const surveyId = Number(surveyIdParam);
     const engagementId = Number(engagementIdParam);
-    if (Number.isNaN(Number(surveyId)) && !Number.isNaN(engagementId) && !slugParam)
-        throw new Error('Invalid survey ID');
+    if (Number.isNaN(surveyId) && !Number.isNaN(engagementId) && !slugParam) throw new Error('Invalid survey ID');
     const shouldHaveToken = !pattern.startsWith('/manage'); //non-admin users should have a token
     if (shouldHaveToken && !token) {
         throw new Error('Missing verification token');
@@ -34,8 +34,8 @@ export const SurveyLoader = async ({ params, pattern }: LoaderFunctionArgs) => {
             const engagement = slugParam ? getEngagementBySlug(slugParam) : getEngagement(engagementId);
             const survey = engagement.then((eng) => {
                 if (!eng) throw new Error('Engagement not found for slug: ' + slugParam);
-                if (surveyId && !Number.isNaN(Number(surveyId))) {
-                    return getSurvey(Number(surveyId));
+                if (surveyId && !Number.isNaN(surveyId)) {
+                    return getSurvey(surveyId);
                 }
                 if (eng.surveys && eng.surveys.length > 0) {
                     return eng.surveys[0];
@@ -43,9 +43,9 @@ export const SurveyLoader = async ({ params, pattern }: LoaderFunctionArgs) => {
                 throw new Error('No survey found for engagement with slug: ' + slugParam);
             });
             return { engagement, survey };
-        } else if (surveyId && !Number.isNaN(Number(surveyId))) {
+        } else if (surveyId && !Number.isNaN(surveyId)) {
             // If we are accessing the survey directly via the survey ID
-            const survey = getSurvey(Number(surveyId));
+            const survey = getSurvey(surveyId);
             const engagement = survey.then((surveyData) => {
                 if (!surveyData.engagement_id) {
                     throw new Error('Survey is missing engagement ID');

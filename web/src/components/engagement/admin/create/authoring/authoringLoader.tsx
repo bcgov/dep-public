@@ -2,7 +2,7 @@ import { Engagement } from 'models/engagement';
 import { EngagementDetailsTab } from 'models/engagementDetailsTab';
 import { SuggestedEngagement } from 'models/suggestedEngagement';
 import { Survey } from 'models/survey';
-import { Params } from 'react-router';
+import { LoaderFunctionArgs } from 'react-router';
 import { getDetailsTabs } from 'services/engagementDetailsTabService';
 import { getEngagement, getEngagements } from 'services/engagementService';
 import { getSurveysPage } from 'services/surveyService';
@@ -23,7 +23,7 @@ export type AuthoringLoaderData = {
     suggestions: Promise<SuggestedEngagement[]>;
 };
 
-const authoringLoader = async ({ params }: { params: Params<string> }) => {
+const authoringLoader = async ({ params }: LoaderFunctionArgs) => {
     const { engagementId, tenantId, languageCode } = params;
     const id = Number(engagementId);
     const tId = Number(tenantId);
