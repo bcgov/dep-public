@@ -7,7 +7,7 @@ import { ReactNode } from 'react';
 import { TenantState } from 'reduxSlices/tenantSlice';
 import { Page } from 'services/type';
 
-export type SortOrder = 'desc' | 'asc' | undefined;
+export type SortOrder = 'desc' | 'asc';
 
 export interface SearchFilters {
     page?: number;

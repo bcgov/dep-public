@@ -32,26 +32,12 @@ const landingLoader = ({ request }: LoaderFunctionArgs): LandingLoaderData => {
         include_banner_url: defaultSearchFilters.include_banner_url,
     });
 
-    console.log({
-        search_text: searchText ?? defaultSearchFilters.search_text,
-        page: Number(page ?? defaultSearchFilters.page),
-        metadata: metaFilters && tryParse(metaFilters) ? JSON.parse(metaFilters) : defaultSearchFilters.meta_filters,
-        engagement_status: translateEngagementStatus(engagementStatus),
-        sort_key: sortKey ?? defaultSearchFilters.sort_key,
-        sort_order: (sortOrder && validSortOrders.includes(sortOrder)
-            ? sortOrder
-            : defaultSearchFilters.sort_order) as SortOrder,
-        size: defaultSearchFilters.size,
-        include_banner_url: defaultSearchFilters.include_banner_url,
-    });
-
     return { engagements: engagementsPromise, allMetaFilters: metaFiltersPromise };
 };
 
 const translateEngagementStatus = (es: string): EngagementStatus[] => {
     if (es && tryParse(es)) {
         const parsed = JSON.parse(es);
-        console.log(parsed);
         if (Object.keys(defaultLandingStatuses) === Object.keys(parsed) || parsed?.includes(-1)) {
             return [];
         }

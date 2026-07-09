@@ -30,7 +30,6 @@ const TileBlock = () => {
             try {
                 const es = await engs;
                 if (es) {
-                    console.log(es);
                     setEngagements(es.items);
                     setCount(es.total);
                     setAriaStatusMessage(`${es?.total} results`);

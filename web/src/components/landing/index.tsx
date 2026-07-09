@@ -1,4 +1,4 @@
-import React, { createContext, useEffect, useState } from 'react';
+import React, { createContext, useEffect, useMemo, useState } from 'react';
 import { LandingData } from './types';
 import { defaultLandingData, defaultSearchFilters } from './constants';
 import { useLoaderData, useRevalidator, useSearchParams } from 'react-router';
@@ -32,28 +32,40 @@ export const Landing = () => {
         setSearchParams(newSearchParams);
     };
 
-    const landingData = {
-        tenant,
-        engagements,
-        allMetaFilters,
-        searchParams,
-        setSearchParams,
-        filtersOpen,
-        setFiltersOpen,
-        loadingEngagements,
-        setLoadingEngagements,
-        clearFilters,
-    };
+    const landingData = useMemo(
+        () => ({
+            tenant,
+            engagements,
+            allMetaFilters,
+            searchParams,
+            setSearchParams,
+            filtersOpen,
+            setFiltersOpen,
+            loadingEngagements,
+            setLoadingEngagements,
+            clearFilters,
+        }),
+        [
+            tenant,
+            engagements,
+            allMetaFilters,
+            searchParams,
+            setSearchParams,
+            filtersOpen,
+            loadingEngagements,
+            clearFilters,
+        ],
+    );
 
     return (
-        <LandingDataContext value={landingData}>
+        <LandingDataContext.Provider value={landingData}>
             <ThemeProvider theme={DarkTheme}>
                 <FilterDrawer />
             </ThemeProvider>
             <LandingHero />
             <LandingIntro />
             <EngagementSearch />
-        </LandingDataContext>
+        </LandingDataContext.Provider>
     );
 };
 

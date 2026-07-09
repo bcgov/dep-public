@@ -130,31 +130,30 @@ const FilterDrawer = () => {
                         ))}
                     </Stack>
 
-                    {filters &&
-                        filters.map((metadataFilter) => (
-                            <React.Fragment key={metadataFilter.taxon_id}>
-                                <Heading4 mt={3}>
-                                    {translate('landing.filters.drawer.filterHeader').replace(
-                                        '{0}',
-                                        metadataFilter.name ?? 'metadata',
-                                    )}
-                                </Heading4>
-                                <Stack direction="row" sx={{ mb: 2, mt: 2.5 }} flexWrap="wrap">
-                                    {metadataFilter.values.map((value) => (
-                                        <MetadataFilterChip
-                                            key={`${metadataFilter.taxon_id}-${value}`}
-                                            name={value}
-                                            selected={getSearchParamObject('meta_filters', searchParams)?.some(
-                                                (filter: MetadataFilter) =>
-                                                    filter.taxon_id === metadataFilter.taxon_id &&
-                                                    filter.values.includes(value),
-                                            )}
-                                            onClick={() => handleMetadataFilterClick(metadataFilter.taxon_id, value)}
-                                        />
-                                    ))}
-                                </Stack>
-                            </React.Fragment>
-                        ))}
+                    {filters?.map((metadataFilter) => (
+                        <React.Fragment key={metadataFilter.taxon_id}>
+                            <Heading4 mt={3}>
+                                {translate('landing.filters.drawer.filterHeader').replace(
+                                    '{0}',
+                                    metadataFilter.name ?? 'metadata',
+                                )}
+                            </Heading4>
+                            <Stack direction="row" sx={{ mb: 2, mt: 2.5 }} flexWrap="wrap">
+                                {metadataFilter.values.map((value) => (
+                                    <MetadataFilterChip
+                                        key={`${metadataFilter.taxon_id}-${value}`}
+                                        name={value}
+                                        selected={getSearchParamObject('meta_filters', searchParams)?.some(
+                                            (filter: MetadataFilter) =>
+                                                filter.taxon_id === metadataFilter.taxon_id &&
+                                                filter.values.includes(value),
+                                        )}
+                                        onClick={() => handleMetadataFilterClick(metadataFilter.taxon_id, value)}
+                                    />
+                                ))}
+                            </Stack>
+                        </React.Fragment>
+                    ))}
 
                     <Grid size={12} container justifyContent="flex-start" alignItems="flex-end">
                         <Button
