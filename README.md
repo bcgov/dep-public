@@ -12,10 +12,19 @@ The purpose of this project is to develop engagement tools that address shortfal
 
 **The goal of this project is** to transform B.C.’s public engagement processes and enable the public to provide more value and influence decision-making while generating useful data insights, an enhanced post commenting experience for the user, and minimize rejected comments. The product will be cost effective, leverage investments and successes to date, explore best in class strategies, and be maintainable and continuously improved by government staff. It will be privacy enhancing, and support DRIPA/ GBA+ implementation and analysis, and continuously delivered and tested with users.
 
+## Recursively Cloning the Repository
+
+Due to the inclusion of submodules, the repository must be cloned using the `--recurse-submodules` flag:
+
+```bash
+git clone --recurse-submodules https://github.com/bcgov/dep-public.git
+```
+
 ## Directory Structure
 
     .github/                   - PR, CI action workflows and Issue templates
     /docs                      - Miscellaneous documentations
+    common-hosted-form-service - (Submodule) Common Form Service for all DEP applications
     web/                       - DEP Web application root
     ├── src/                   - React.js application
     └── tests/                 - Application tests
