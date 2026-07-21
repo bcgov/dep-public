@@ -118,7 +118,7 @@
     "universal-cookie": "^8.0.1",
     "web-vitals": "^5.1.0",
     "webpack": "^5.105.0",
-    "webpack-dev-server": "^5.2.5",
+    "webpack-dev-server": "^5.2.6",
     "webpack-manifest-plugin": "^6.0.1",
     "workbox-webpack-plugin": "^7.4.1",
     "yup": "^0.32.11"
