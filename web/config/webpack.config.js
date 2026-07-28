@@ -179,10 +179,11 @@ module.exports = function exports (webpackEnv) {
           loader: require.resolve(preProcessor),
           options: {
             sourceMap: true,
-            ...(preProcessor === 'sass-loader' && { 
+            ...(preProcessor === 'sass-loader' && {
               api: 'modern',
               sassOptions: {
                 // Suppress Sass deprecation warnings emitted when importing bootstrap
+                quietDeps: true,
                 silenceDeprecations: ['import'],
               },
             }),
