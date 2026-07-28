@@ -53,9 +53,9 @@ const AuthenticatedRoutes = resolveLazyRouteTree(
                     loaderLazy={() => import('components/survey/building/SurveyLoader')}
                     ErrorBoundaryLazy={() => import('routes/NotFound')}
                 >
+                    <LazyRoute index ComponentLazy={() => import('components/survey/submit')} />
                     <LazyRoute path="build" ComponentLazy={() => import('components/survey/building')} />
                     <LazyRoute path="report" ComponentLazy={() => import('components/survey/report')} />
-                    <LazyRoute path="submit" ComponentLazy={() => import('components/survey/submit')} />
                     <LazyRoute
                         ComponentLazy={() => import('routes/AuthGateRoute')}
                         handle={{ allowedRoles: [USER_ROLES.VIEW_APPROVED_COMMENTS] }}

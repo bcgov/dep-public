@@ -25,7 +25,7 @@ export const ROUTES = {
     SURVEY_CREATE: '/manage/surveys/create',
     SURVEY_BUILD: '/manage/surveys/:surveyId/build',
     SURVEY_REPORT: '/manage/surveys/:surveyId/report',
-    SURVEY_ADMIN_SUBMIT: '/manage/surveys/:surveyId/submit',
+    SURVEY_ADMIN_PREVIEW: '/manage/surveys/:surveyId',
     SURVEY_COMMENTS: '/manage/surveys/:surveyId/comments',
     SURVEY_COMMENTS_ALL: '/manage/surveys/:surveyId/comments/all',
     SURVEY_SUBMISSION_REVIEW: '/manage/surveys/:surveyId/submissions/:submissionId/review',

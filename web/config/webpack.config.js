@@ -179,7 +179,13 @@ module.exports = function exports (webpackEnv) {
           loader: require.resolve(preProcessor),
           options: {
             sourceMap: true,
-            ...(preProcessor === 'sass-loader' && { api: 'modern' }),
+            ...(preProcessor === 'sass-loader' && { 
+              api: 'modern',
+              sassOptions: {
+                // Suppress Sass deprecation warnings emitted when importing bootstrap
+                silenceDeprecations: ['import'],
+              },
+            }),
           },
         }
       );
@@ -394,6 +400,8 @@ module.exports = function exports (webpackEnv) {
         // Alias lodash to lodash-es for better tree-shaking
         lodash: 'lodash-es',
         keycloak: 'keycloak-js',
+        // Force all Formio imports (including subpaths) to use one runtime instance.
+        formiojs: path.resolve(__dirname, '../node_modules/formiojs'),
         // Alias engagements folder for easier imports
         engagements: path.resolve(__dirname, '../src/components/engagement'),
         // Support React Native Web

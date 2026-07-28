@@ -1,3 +1,4 @@
+import { Options } from '@formio/react/lib/components/Form';
 import { AxiosRequestConfig } from 'axios';
 import { deletePublicObject, downloadPublicObject, savePublicObject } from 'services/objectStorageService';
 
@@ -5,7 +6,7 @@ type UploadConfig = AxiosRequestConfig & {
     onUploadProgress?: (event: ProgressEvent) => void;
 };
 
-interface SimpleFileOptionsConfig {
+interface SimpleFileOptionsConfig extends Options {
     verificationToken?: string;
 }
 
@@ -25,7 +26,8 @@ const createPublicUploadResponse = (
     },
 });
 
-export const createSimpleFileOptions = ({ verificationToken }: SimpleFileOptionsConfig = {}) => ({
+export const createSimpleFileOptions = ({ verificationToken, ...rest }: SimpleFileOptionsConfig = {}) => ({
+    ...rest,
     componentOptions: {
         simplefile: {
             fileService: 'objectStorage',

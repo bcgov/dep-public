@@ -1,3 +1,14 @@
+## July 27, 2026
+
+- **Feature** Re-style Formio components; ensure BC Gov components work properly [🎟️ DEP-276](https://citz-gdx.atlassian.net/browse/DEP-276)
+  - Ensured all Formio imports come from the same package, which means all components are brought into the same runtime when using Formio.use(). This fixes an issue where some components were unable to render certain other components as children.
+  - Updated Formio component styles to match BC Gov design system, including button sizes, focus states, and other visual elements. This ensures a consistent look and feel across the application. Also imported some style overrides from the CHEFS frontend.
+  - Created custom overrides to ensure focus states and buttons feel at home within DEP.
+  - Added focusability for buttons that lacked tabindex and aria roles, improving accessibility for keyboard and screen reader users.
+  - Removed kludged Bootstrap styles and imported Bootstrap SCSS directly into the Formio SCSS file, allowing for better control over styling and ensuring Bootstrap does not overwrite outer components.
+  - Removed buggy Typescript declarations for Formio.Utils; import directly from Formio instead
+  - Moved admin survey preview page; adjusted link name
+
 ## July 09, 2026
 
 - **Chore** Removed French as a required language for multi-language engagements [🎟️ DEP-321](https://citz-gdx.atlassian.net/browse/DEP-321)
