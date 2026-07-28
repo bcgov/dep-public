@@ -113,10 +113,6 @@ a.nav-link:not(.active):not(.disabled),
   }
 }
 
-.v-tooltip > .v-overlay__content {
-  background: rgba(97, 97, 97, 0.9) !important;
-}
-
 // Customized expand/collapse section
 .nrmc-expand-collapse {
   width: 100%;
@@ -191,7 +187,7 @@ a.nav-link:not(.active):not(.disabled),
 
   // Undo "break-all". Breaking in the middle of all words affects readability.
   .formio-component .table {
-    word-break: break-word;
+    word-break: normal;
   }
 
   .formio-error-wrapper {
@@ -483,6 +479,7 @@ a.nav-link:not(.active):not(.disabled),
 
 .v-tooltip > .v-overlay__content {
   pointer-events: auto !important; //Have to replace Tooltips default behaviour pointer-events: none as we have some tooltips with External Links.
+  background: #7A7876E6 !important;
 }
 
 .preview_info_link_field_white {
