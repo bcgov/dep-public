@@ -151,13 +151,14 @@ a.nav-link:not(.active):not(.disabled),
 /////////////////////////////////
 
 // override formio form designer
+:is(.gu-mirror,
 .form-designer,
 .formbuilder,
 // override form viewer
 .form-wrapper,
 // override preview panel in form builder component editor modal
 .component-preview,
-.component-edit-tabs {
+.component-edit-tabs) {
     // layout
     div[class^='col-']:nth-child(n + 1) {
         padding-top: 0; // make nested columns line up vertically alongside components in non-nested adjacent columns

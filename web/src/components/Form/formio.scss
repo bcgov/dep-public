@@ -1,16 +1,25 @@
 @charset "UTF-8";
 
 // Import non-styling Bootstrap SCSS files (variables, functions, etc) so properties are properly defined at the root scope
-@import "~bootstrap/scss/functions", '~bootstrap/scss/variables', '~bootstrap/scss/maps', '~bootstrap/scss/mixins', '~bootstrap/scss/root', "~bootstrap/scss/utilities";
+@import '~bootstrap/scss/functions', '~bootstrap/scss/variables', '~bootstrap/scss/maps', '~bootstrap/scss/mixins',
+    '~bootstrap/scss/root', '~bootstrap/scss/utilities';
 
 :root {
     --bs-border-radius: 0.5rem;
+    --bs-border-color: #d2d0ce;
 }
 
 :where([class*='formio'], .gu-mirror) {
     // Import styling Bootstrap SCSS files so they apply their styles to the formio components.
     // Overriding Sonarcloud linting because it thinks @import statements can't go inside selectors, but in SCSS they can
-    @import "~bootstrap/scss/reboot", "~bootstrap/scss/type", "~bootstrap/scss/containers", "~bootstrap/scss/grid", "~bootstrap/scss/tables", "~bootstrap/scss/forms", "~bootstrap/scss/buttons", "~bootstrap/scss/transitions", "~bootstrap/scss/dropdown", "~bootstrap/scss/button-group", "~bootstrap/scss/nav", "~bootstrap/scss/navbar", "~bootstrap/scss/card", "~bootstrap/scss/accordion", "~bootstrap/scss/breadcrumb", "~bootstrap/scss/pagination", "~bootstrap/scss/badge", "~bootstrap/scss/alert", "~bootstrap/scss/progress", "~bootstrap/scss/list-group", "~bootstrap/scss/close", "~bootstrap/scss/toasts", "~bootstrap/scss/modal", "~bootstrap/scss/tooltip", "~bootstrap/scss/popover", "~bootstrap/scss/carousel", "~bootstrap/scss/spinners", "~bootstrap/scss/offcanvas", "~bootstrap/scss/placeholders", "~bootstrap/scss/helpers", "~bootstrap/scss/utilities/api"; // NOSONAR
+    @import '~bootstrap/scss/reboot', '~bootstrap/scss/type', '~bootstrap/scss/containers', '~bootstrap/scss/grid',
+        '~bootstrap/scss/tables', '~bootstrap/scss/forms', '~bootstrap/scss/buttons', '~bootstrap/scss/transitions',
+        '~bootstrap/scss/dropdown', '~bootstrap/scss/button-group', '~bootstrap/scss/nav', '~bootstrap/scss/navbar',
+        '~bootstrap/scss/card', '~bootstrap/scss/accordion', '~bootstrap/scss/breadcrumb', '~bootstrap/scss/pagination',
+        '~bootstrap/scss/badge', '~bootstrap/scss/alert', '~bootstrap/scss/progress', '~bootstrap/scss/list-group',
+        '~bootstrap/scss/close', '~bootstrap/scss/toasts', '~bootstrap/scss/modal', '~bootstrap/scss/tooltip',
+        '~bootstrap/scss/popover', '~bootstrap/scss/carousel', '~bootstrap/scss/spinners', '~bootstrap/scss/offcanvas',
+        '~bootstrap/scss/placeholders', '~bootstrap/scss/helpers', '~bootstrap/scss/utilities/api'; // NOSONAR
     @import '~met-formio/dist/met-formio-components'; // NOSONAR
     @import '@bcgov/formio/dist/bcgov-formio-components'; //NOSONAR
 }
@@ -19,7 +28,7 @@
 @import '~formiojs/dist/formio.full.min'; //NOSONAR
 @import 'CHEFS-style.scss'; //NOSONAR
 
-// Styling for multi-page form page selectors + drag & drop functionality 
+// Styling for multi-page form page selectors + drag & drop functionality
 ol.breadcrumb.wizard-pages li,
 li.gu-mirror {
     & .badge {
@@ -35,20 +44,20 @@ li.gu-mirror {
             cursor: grab;
             background-color: white;
             color: #292929;
-            border: 1px solid #7A7876;
+            border: 1px solid #7a7876;
 
             &:focus-visible {
-                outline: 2px solid #2E5DD7;
+                outline: 2px solid #2e5dd7;
                 outline-offset: 2px;
                 z-index: 1;
                 position: relative;
             }
 
             &:hover {
-                background-color: color-mix(in srgb, #C8C6C4, white 50%);
+                background-color: color-mix(in srgb, #c8c6c4, white 50%);
                 box-shadow: inset 0px 0px 3px 0px color-mix(in srgb, black, white 50%);
                 color: color-mix(in srgb, #292929, black 50%);
-                border: 1px solid color-mix(in srgb, #7A7876, white 50%);
+                border: 1px solid color-mix(in srgb, #7a7876, white 50%);
             }
         }
 
@@ -60,20 +69,20 @@ li.gu-mirror {
                 cursor: grabbing;
             }
 
-            background-color: #C8C6C4;
+            background-color: #c8c6c4;
             box-shadow: inset 0px 0px 3px 0px black;
             color: black;
-            border: 1px solid #7A7876;
+            border: 1px solid #7a7876;
         }
 
         &.badge-success {
-            background-color: #12508F;
+            background-color: #12508f;
             color: white;
             padding: 0.5rem 0.75rem;
-            border: 1px solid #12508F;
+            border: 1px solid #12508f;
 
             &:focus-visible {
-                outline: 2px solid #2E5DD7;
+                outline: 2px solid #2e5dd7;
                 z-index: 1;
                 position: relative;
             }
@@ -92,7 +101,7 @@ li.gu-mirror {
 }
 
 li.gu-mirror .badge {
-    cursor: grabbing!important;
+    cursor: grabbing !important;
 }
 
 .choices {
@@ -100,17 +109,17 @@ li.gu-mirror .badge {
     .choices__inner,
     .choices__list.choices__list--dropdown {
         &:has(:focus) {
-            border: 1px solid #7A7876;
-            outline: 4px solid #2E5DD7;
+            border: 1px solid #7a7876;
+            outline: 4px solid #2e5dd7;
         }
         border-radius: var(--bs-border-radius);
     }
-    &[data-type*="select-one"] .choices__button:focus {
+    &[data-type*='select-one'] .choices__button:focus {
         box-shadow: none;
-        outline: 4px solid #2E5DD7;
+        outline: 4px solid #2e5dd7;
         outline-offset: 2px;
     }
-    .choices__list.choices__list--multiple{
+    .choices__list.choices__list--multiple {
         .choices__item {
             border-radius: var(--bs-border-radius);
         }
@@ -120,15 +129,15 @@ li.gu-mirror .badge {
 .form-control {
     transition: box-shadow 0s;
     border: none !important;
-    box-shadow: 0 0 0 1px #7A7876 inset;
+    box-shadow: 0 0 0 1px #7a7876 inset;
     &:hover {
-        box-shadow: 0 0 0 2px #3B3A39 inset;
+        box-shadow: 0 0 0 2px #3b3a39 inset;
     }
-    &:has(:focus), &:focus {
-        box-shadow: 0 0 0 4px #2E5DD7 !important;
+    &:has(:focus),
+    &:focus {
+        box-shadow: 0 0 0 4px #2e5dd7 !important;
     }
 }
-
 
 .singlepageform,
 .multipageform {
@@ -137,7 +146,7 @@ li.gu-mirror .badge {
 }
 
 .text-muted {
-    color: #868e96;
+    color: #868e96 !important;
 }
 i.fa.fa-question-circle.text-muted {
     width: 14px;
@@ -145,17 +154,30 @@ i.fa.fa-question-circle.text-muted {
     border-radius: 999px;
     text-align: center;
     vertical-align: middle;
+    color: #12508f !important;
+    opacity: 0.8;
 }
 
-.form-check-input{
+label {
+    vertical-align: middle !important;
+}
+
+label i {
+    display: inline-block;
+    position: relative;
+    bottom: 2px;
+}
+
+input.form-check-input {
+    --bs-border-color: #7a7876;
     box-sizing: border-box;
     &:checked {
-        background-color: #12508F;
-        border-color: #12508F;
+        background-color: #12508f;
+        border-color: #12508f;
     }
     &:focus {
-        border-color: #8EC6FF;
-        box-shadow: 0 0 0 0.25rem color-mix(in srgb, #12508F, transparent 75%);
+        border-color: #8ec6ff;
+        box-shadow: 0 0 0 0.25rem color-mix(in srgb, #12508f, transparent 75%);
     }
 }
 
@@ -164,6 +186,10 @@ i.fa.fa-question-circle.text-muted {
     .formio-component-content {
         border: none;
     }
+}
+
+.builder-component {
+    max-width: 1056px;
 }
 
 // By default, join panels together
@@ -177,12 +203,12 @@ i.fa.fa-question-circle.text-muted {
         border-radius: 0 !important;
     }
     &:has(.builder-group-button:focus-visible) {
-        background-color: #D8EBFF;
-        .card-body{
+        background-color: #d8ebff;
+        .card-body {
             background: white;
         }
         .card-header {
-            box-shadow: inset 0px 0px 0px 2px #2E5DD7;
+            box-shadow: inset 0px 0px 0px 2px #2e5dd7;
             border-radius: 0;
         }
     }
@@ -204,8 +230,11 @@ i.fa.fa-question-circle.text-muted {
         border-bottom-left-radius: 0.5rem;
         border-bottom-right-radius: 0.5rem;
     }
-    &:has([style*='display: inherit']){
-        box-shadow: 0px 2px 3px 0px rgba(0, 0, 0, 0.10), 0px 6px 9px 0px rgba(0, 0, 0, 0.07), 0px 3px 15px 0px rgba(0, 0, 0, 0.06);
+    &:has([style*='display: inherit']) {
+        box-shadow:
+            0px 2px 3px 0px rgba(0, 0, 0, 0.1),
+            0px 6px 9px 0px rgba(0, 0, 0, 0.07),
+            0px 3px 15px 0px rgba(0, 0, 0, 0.06);
         border-top-style: solid;
         border-radius: 0.5rem;
         &:not(:first-child) {
@@ -213,7 +242,7 @@ i.fa.fa-question-circle.text-muted {
         }
         margin-bottom: 0.5rem;
         // If the panel has a previous panel that is visible (it is the first child to not have a following visible panel), round the top of the panel
-        & +.form-builder-panel {
+        & + .form-builder-panel {
             border-top-style: solid;
             border-top-left-radius: 0.5rem;
             border-top-right-radius: 0.5rem;
@@ -236,11 +265,10 @@ i.fa.fa-question-circle.text-muted {
     min-width: fit-content;
 }
 
-.btn.builder-group-button{
+.btn.builder-group-button {
     text-align: left;
     width: 100%;
     border: none;
-
 }
 
 .formcomponent.btn i {
@@ -250,21 +278,24 @@ i.fa.fa-question-circle.text-muted {
 .formcomponent.btn-primary {
     margin-top: 0.25rem;
     margin-bottom: 0.25rem;
-    background-color: #D8EBFF;
-    border-color: #D8EBFF;
+    background-color: #d8ebff;
+    border-color: #d8ebff;
     color: #292929;
     font-size: 0.8rem;
     padding: 5px 5px 5px 8px;
     transition: all 0.1s ease-in-out;
-    &:not(:disabled):not(.disabled){
+    &:not(:disabled):not(.disabled) {
         cursor: grab;
     }
     &.gu-mirror:not(:disabled):not(.disabled) {
-        cursor:grabbing;
+        cursor: grabbing;
     }
     &:hover {
-        transform: translateX(4px)scale(1.04);
-        box-shadow: 0px 2px 3px 0px rgba(0, 0, 0, 0.10), 0px 6px 9px 0px rgba(0, 0, 0, 0.07), 0px 3px 15px 0px rgba(0, 0, 0, 0.06);
+        transform: translateX(4px) scale(1.04);
+        box-shadow:
+            0px 2px 3px 0px rgba(0, 0, 0, 0.1),
+            0px 6px 9px 0px rgba(0, 0, 0, 0.07),
+            0px 3px 15px 0px rgba(0, 0, 0, 0.06);
     }
 }
 
@@ -411,13 +442,22 @@ div[disabled] {
     border: 0;
     opacity: 1;
     text-decoration-line: none;
-    box-shadow: 0px 3px 1px -2px rgba(0, 0, 0, 0.2), 0px 2px 2px 0px rgba(0, 0, 0, 0.14), 0px 1px 5px 0px rgba(0, 0, 0, 0.12);
-    --background-color: #12508F;
-    -webkit-transition: background-color 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms, box-shadow 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms, border-color 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
-    transition: background-color 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms, box-shadow 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms, border-color 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
+    box-shadow:
+        0px 3px 1px -2px rgba(0, 0, 0, 0.2),
+        0px 2px 2px 0px rgba(0, 0, 0, 0.14),
+        0px 1px 5px 0px rgba(0, 0, 0, 0.12);
+    --background-color: #12508f;
+    -webkit-transition:
+        background-color 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms,
+        box-shadow 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms,
+        border-color 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
+    transition:
+        background-color 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms,
+        box-shadow 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms,
+        border-color 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
     border-radius: 0.5rem;
     background-color: var(--background-color) !important;
-    --color: #FFFFFF;
+    --color: #ffffff;
     color: var(--color);
     height: 40px;
     padding: 0 1.5rem;
@@ -425,28 +465,47 @@ div[disabled] {
     font-size: 16px;
 }
 
-.BC-Gov-PrimaryButton:hover, .BC-Gov-PrimaryButton:focus, .BC-Gov-PrimaryButton.focus {
+.BC-Gov-PrimaryButton:hover,
+.BC-Gov-PrimaryButton:focus,
+.BC-Gov-PrimaryButton.focus {
     background-color: color-mix(in srgb, var(--background-color), black 20%);
-    box-shadow: 0px 5px 6px 0px rgba(0, 0, 0, 0.20), 0px 9px 12px 0px rgba(0, 0, 0, 0.14), 0px 3px 16px 0px rgba(0, 0, 0, 0.12);
+    box-shadow:
+        0px 5px 6px 0px rgba(0, 0, 0, 0.2),
+        0px 9px 12px 0px rgba(0, 0, 0, 0.14),
+        0px 3px 16px 0px rgba(0, 0, 0, 0.12);
 }
 
 .BC-Gov-PrimaryButton:active {
     background-color: color-mix(in srgb, var(--background-color), black 20%);
-    box-shadow: 0px 0px 1px 0px rgba(0, 0, 0, 0.14), 0px 0px 1px 0px rgba(0, 0, 0, 0.60) inset, 0px 1px 6px 0px rgba(0, 0, 0, 0.60) inset;
+    box-shadow:
+        0px 0px 1px 0px rgba(0, 0, 0, 0.14),
+        0px 0px 1px 0px rgba(0, 0, 0, 0.6) inset,
+        0px 1px 6px 0px rgba(0, 0, 0, 0.6) inset;
 }
 
 .BC-Gov-PrimaryButton:focus-visible {
     background-color: color-mix(in srgb, var(--background-color), black 20%);
-        outline: 2px solid #2E5DD7;
-        box-shadow: inset 0px 0px 0px 2px #FFFFFF, 0px 5px 6px 0px rgba(0, 0, 0, 0.20), 0px 9px 12px 0px rgba(0, 0, 0, 0.14), 0px 3px 16px 0px rgba(0, 0, 0, 0.12);
+    outline: 2px solid #2e5dd7;
+    box-shadow:
+        inset 0px 0px 0px 2px #ffffff,
+        0px 5px 6px 0px rgba(0, 0, 0, 0.2),
+        0px 9px 12px 0px rgba(0, 0, 0, 0.14),
+        0px 3px 16px 0px rgba(0, 0, 0, 0.12);
 }
 
 .BC-Gov-PrimaryButton:active:focus-visible {
-    box-shadow: inset 0px 0px 0px 2px #FFFFFF, 0px 0px 1px 0px rgba(0, 0, 0, 0.14), 0px 0px 1px 0px rgba(0, 0, 0, 0.60) inset, 0px 1px 6px 0px rgba(0, 0, 0, 0.60) inset;
+    box-shadow:
+        inset 0px 0px 0px 2px #ffffff,
+        0px 0px 1px 0px rgba(0, 0, 0, 0.14),
+        0px 0px 1px 0px rgba(0, 0, 0, 0.6) inset,
+        0px 1px 6px 0px rgba(0, 0, 0, 0.6) inset;
 }
 
 .BC-Gov-SecondaryButton {
-    transition: background-color 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms, box-shadow 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms, border-color 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
+    transition:
+        background-color 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms,
+        box-shadow 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms,
+        border-color 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
     border-radius: 0.5rem;
     padding: 0 1.5rem;
     font-weight: 500;
@@ -454,42 +513,59 @@ div[disabled] {
     height: 40px;
     background: white;
     color: #292929;
-    box-shadow: 0px 12px 10px 0px rgba(0, 0, 0, 0.01), 0px 7px 9px 0px rgba(0, 0, 0, 0.05), 0px 3px 6px 0px rgba(0, 0, 0, 0.09), 0px 1px 3px 0px rgba(0, 0, 0, 0.10);
-    border: 1px solid #7A7876;
+    box-shadow:
+        0px 12px 10px 0px rgba(0, 0, 0, 0.01),
+        0px 7px 9px 0px rgba(0, 0, 0, 0.05),
+        0px 3px 6px 0px rgba(0, 0, 0, 0.09),
+        0px 1px 3px 0px rgba(0, 0, 0, 0.1);
+    border: 1px solid #7a7876;
 }
 
 .BC-Gov-SecondaryButton:hover,
 .BC-Gov-SecondaryButton:focus {
     background-color: color-mix(in srgb, white, black 3%);
-    box-shadow: 0px 5px 6px 0px rgba(0, 0, 0, 0.20), 0px 9px 12px 0px rgba(0, 0, 0, 0.14), 0px 3px 16px 0px rgba(0, 0, 0, 0.12);
+    box-shadow:
+        0px 5px 6px 0px rgba(0, 0, 0, 0.2),
+        0px 9px 12px 0px rgba(0, 0, 0, 0.14),
+        0px 3px 16px 0px rgba(0, 0, 0, 0.12);
     color: #292929;
     border: 1px solid #323130;
 }
 
 .BC-Gov-SecondaryButton:active {
     background-color: color-mix(in srgb, white, black 3%);
-    box-shadow: 0px 0px 1px 0px rgba(0, 0, 0, 0.14), 0px 0px 1px 0px rgba(0, 0, 0, 0.60) inset, 0px 1px 6px 0px rgba(0, 0, 0, 0.60) inset;
+    box-shadow:
+        0px 0px 1px 0px rgba(0, 0, 0, 0.14),
+        0px 0px 1px 0px rgba(0, 0, 0, 0.6) inset,
+        0px 1px 6px 0px rgba(0, 0, 0, 0.6) inset;
     color: #292929;
-    border: 1px solid #323130
+    border: 1px solid #323130;
 }
 
 .BC-Gov-SecondaryButton:focus-visible {
     border: 1px solid #323130;
     background-color: color-mix(in srgb, white, black 3%);
-    outline: 2px solid #2E5DD7;
+    outline: 2px solid #2e5dd7;
     outline-offset: 0px;
-    box-shadow: 0px 5px 6px 0px rgba(0, 0, 0, 0.20), 0px 9px 12px 0px rgba(0, 0, 0, 0.14), 0px 3px 16px 0px rgba(0, 0, 0, 0.12), 0px 0px 0px 2px white, ;
+    box-shadow:
+        0px 5px 6px 0px rgba(0, 0, 0, 0.2),
+        0px 9px 12px 0px rgba(0, 0, 0, 0.14),
+        0px 3px 16px 0px rgba(0, 0, 0, 0.12),
+        0px 0px 0px 2px white;
     color: #292929;
 }
 
 .BC-Gov-SecondaryButton:active:focus-visible {
-    box-shadow: 0px 0px 1px 0px rgba(0, 0, 0, 0.14), 0px 0px 1px 0px rgba(0, 0, 0, 0.60) inset, 0px 1px 6px 0px rgba(0, 0, 0, 0.60) inset;
+    box-shadow:
+        0px 0px 1px 0px rgba(0, 0, 0, 0.14),
+        0px 0px 1px 0px rgba(0, 0, 0, 0.6) inset,
+        0px 1px 6px 0px rgba(0, 0, 0, 0.6) inset;
 }
 
 .BC-Gov-TertiaryButton {
     background-color: transparent;
-    color: #201F1E;
-    box-shadow: 0 8px 35px -12px rgba(181, 181, 181, 0.30);
+    color: #201f1e;
+    box-shadow: 0 8px 35px -12px rgba(181, 181, 181, 0.3);
     height: 40px;
     font-size: 16px;
     border-radius: 2em;
@@ -498,36 +574,42 @@ div[disabled] {
     border: none;
 }
 
-.BC-Gov-TertiaryButton:hover, .BC-Gov-TertiaryButton:focus, .BC-Gov-TertiaryButton:active {
-    background-color: color-mix(in srgb, transparent, #F1F8FF 50%);
-    color: #201F1E;
-    box-shadow: 0 8px 35px -12px rgba(181, 181, 181, 0.30);
+.BC-Gov-TertiaryButton:hover,
+.BC-Gov-TertiaryButton:focus,
+.BC-Gov-TertiaryButton:active {
+    background-color: color-mix(in srgb, transparent, #f1f8ff 50%);
+    color: #201f1e;
+    box-shadow: 0 8px 35px -12px rgba(181, 181, 181, 0.3);
 }
 
-.BC-Gov-TertiaryButton:focus-visible{
-    background-color: #FFFFFF;
-    box-shadow: 0 0 0 2px white, 0 0 0 4px #2E5DD7;
+.BC-Gov-TertiaryButton:focus-visible {
+    background-color: #ffffff;
+    box-shadow:
+        0 0 0 2px white,
+        0 0 0 4px #2e5dd7;
 }
 
 .BC-Gov-DangerButton {
     @extend .BC-Gov-PrimaryButton;
-    --background-color: #CE3E39;
-    --color: #FFFFFF;
+    --background-color: #ce3e39;
+    --color: #ffffff;
 }
 
 .BC-Gov-WarningButton {
     @extend .BC-Gov-PrimaryButton;
-    --background-color: #FCBA19;
+    --background-color: #fcba19;
     --color: #292929;
 }
 
 .BC-Gov-SuccessButton {
     @extend .BC-Gov-PrimaryButton;
-    --background-color: #42814A;
-    --color: #FFFFFF;
+    --background-color: #42814a;
+    --color: #ffffff;
 }
 
-.btn.btn-xxs, .btn.btn-xss.btn-secondary, .btn.btn-xxs.btn-primary {
+.btn.btn-xxs,
+.btn.btn-xss.btn-secondary,
+.btn.btn-xxs.btn-primary {
     height: 18px;
     padding: 2px;
     min-width: unset;
@@ -540,16 +622,22 @@ div[disabled] {
     margin-right: 2px;
 }
 
-.builder-component:not(:hover):not(.btn-wizard-nav-submit:hover):not(.btn-wizard-nav-previous:hover):not(.btn-wizard-nav-cancel:hover):not(.btn-wizard-nav-next:hover) .component-btn-group {
+.builder-component:not(:hover):not(.btn-wizard-nav-submit:hover):not(.btn-wizard-nav-previous:hover):not(
+        .btn-wizard-nav-cancel:hover
+    ):not(.btn-wizard-nav-next:hover)
+    .component-btn-group {
     display: flex;
     opacity: 0;
 }
 
-.builder-component .component-btn-group:has(>:focus-visible), .builder-component .component-btn-group:has(>:focus) {
+.builder-component .component-btn-group:has(> :focus-visible),
+.builder-component .component-btn-group:has(> :focus) {
     opacity: 1 !important;
 }
 
-.btn.btn-md, .btn.btn-primary.btn-md, .btn.btn-secondary.btn-md {
+.btn.btn-md,
+.btn.btn-primary.btn-md,
+.btn.btn-secondary.btn-md {
     height: 48px;
 }
 
@@ -565,15 +653,15 @@ div[disabled] {
     @extend .BC-Gov-TertiaryButton;
 }
 
-.btn.btn-danger{
+.btn.btn-danger {
     @extend .BC-Gov-DangerButton;
 }
 
-.btn.btn-warning{
+.btn.btn-warning {
     @extend .BC-Gov-WarningButton;
 }
 
-.btn.btn-success{
+.btn.btn-success {
     @extend .BC-Gov-SuccessButton;
 }
 
@@ -583,10 +671,12 @@ div[disabled] {
 
 .btn-wizard-nav-next:hover {
     @extend .BC-Gov-PrimaryButton;
-    @extend .BC-Gov-PrimaryButton, :hover
+    @extend .BC-Gov-PrimaryButton, :hover;
 }
 
-.btn-wizard-nav-cancel, .btn.btn-secondary, .btn.btn-default {
+.btn-wizard-nav-cancel,
+.btn.btn-secondary,
+.btn.btn-default {
     @extend .BC-Gov-SecondaryButton;
 }
 
@@ -604,7 +694,8 @@ div[disabled] {
     @extend .BC-Gov-SecondaryButton, :hover;
 }
 
-.btn-wizard-nav-submit, .btn.btn-primary.btn-md {
+.btn-wizard-nav-submit,
+.btn.btn-primary.btn-md {
     @extend .BC-Gov-PrimaryButton;
 }
 
@@ -624,8 +715,8 @@ div[disabled] {
     }
 }
 
-.btn.signature-pad-refresh i{
-        margin-inline-end: 0;
+.btn.signature-pad-refresh i {
+    margin-inline-end: 0;
 }
 
 .pagination {
@@ -649,7 +740,8 @@ ol.breadcrumb.wizard-pages {
     }
 }
 
-.formio-component-simpledatetime, .formio-component-simpledatetimeadvanced {
+.formio-component-simpledatetime,
+.formio-component-simpledatetimeadvanced {
     align-items: stretch;
     * {
         display: flex;
@@ -679,7 +771,8 @@ ol.breadcrumb.wizard-pages {
 
 // Add a small amount of padding to each form component of
 // forms in display mode so that adjacent components don't touch
-.form-wrapper .formio-component, .component-preview .formio-component {
+.form-wrapper .formio-component,
+.component-preview .formio-component {
     padding-top: 4px;
     padding-bottom: 4px;
 }
@@ -693,15 +786,65 @@ ol.breadcrumb.wizard-pages {
         .flatpickr-prev-month:hover,
         .flatpickr-next-month:hover {
             svg {
-                fill: #12508F;
+                fill: #12508f;
             }
-            background: #D8EBFF;
+            background: #d8ebff;
         }
     }
     .flatpickr-days {
         .flatpickr-day.selected {
-            background: #12508F;
-            border-color: #12508F;
+            background: #12508f;
+            border-color: #12508f;
         }
+    }
+}
+
+.formio-component-simplecontent {
+    blockquote {
+        overflow: hidden;
+        padding-right: 1.5em;
+        padding-left: 1.5em;
+        margin-left: 0;
+        margin-right: 0;
+        font-style: italic;
+        border-left: 5px solid #ccc;
+    }
+
+    .table {
+        margin: 1em auto;
+        display: table;
+    }
+    .table table {
+        border-collapse: collapse;
+        border-spacing: 0;
+        width: 100%;
+        height: 100%;
+        border: 1px double #b3b3b3;
+    }
+    .table table td,
+    .table table th {
+        min-width: 2em;
+        padding: 0.4em;
+        border: 1px solid #bfbfbf;
+    }
+    .table table th {
+        font-weight: 700;
+        background: hsla(0, 0%, 0%, 5%);
+    }
+
+    span.text-tiny {
+        font-size: 0.75rem;
+    }
+
+    span.text-small {
+        font-size: 0.875rem;
+    }
+
+    span.text-big {
+        font-size: 1.5rem;
+    }
+
+    span.text-huge {
+        font-size: 2rem;
     }
 }

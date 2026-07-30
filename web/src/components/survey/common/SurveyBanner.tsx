@@ -170,7 +170,6 @@ const SurveyBannerSkeleton: React.FC<{
                 bgcolor: 'surface.gray.10',
                 overflow: 'clip',
                 height: '24rem',
-                mb: '32px',
                 ml: { xs: '0', md: alignContentToPublicPageBounds ? '0' : '-2rem' },
                 pr: { xs: '0', md: alignContentToPublicPageBounds ? '0' : '2rem' },
                 background: 'linear-gradient(140deg, #A9C5DD 0%, #D6E3EE 55%, #EDF3F9 100%)',
