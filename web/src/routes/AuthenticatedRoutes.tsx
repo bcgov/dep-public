@@ -52,9 +52,30 @@ const AuthenticatedRoutes = resolveLazyRouteTree(
                     id="survey"
                     loaderLazy={() => import('components/survey/building/SurveyLoader')}
                     ErrorBoundaryLazy={() => import('routes/NotFound')}
+                    handle={{
+                        crumb: async (data: { survey: Promise<{ name: string; id: number }> }) => {
+                            const survey = await data.survey;
+                            return {
+                                name: survey.name,
+                                link: getPath(ROUTES.SURVEY_PREVIEW, { surveyId: survey.id }),
+                            };
+                        },
+                    }}
+                    shouldRevalidate={({ currentParams, nextParams, formMethod, actionResult }) => {
+                        return (
+                            currentParams.surveyId !== nextParams.surveyId ||
+                            formMethod !== undefined ||
+                            actionResult === 'success'
+                        );
+                    }}
                 >
-                    <LazyRoute index ComponentLazy={() => import('components/survey/submit')} />
-                    <LazyRoute path="build" ComponentLazy={() => import('components/survey/building')} />
+                    <LazyRoute index element={<Navigate to="preview" replace />} />
+                    <LazyRoute path="preview" ComponentLazy={() => import('components/survey/preview')} />
+                    <LazyRoute
+                        path="build"
+                        ComponentLazy={() => import('components/survey/building')}
+                        handle={{ crumb: () => ({ name: 'Form Designer' }) }}
+                    />
                     <LazyRoute path="report" ComponentLazy={() => import('components/survey/report')} />
                     <LazyRoute
                         ComponentLazy={() => import('routes/AuthGateRoute')}

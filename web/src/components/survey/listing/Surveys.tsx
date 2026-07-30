@@ -88,7 +88,7 @@ const Surveys = () => {
             renderCell: (row: Survey) => (
                 <Link
                     component={RouterLinkRenderer}
-                    href={getPath(ROUTES.SURVEY_ADMIN_PREVIEW, { surveyId: Number(row.id) })}
+                    href={getPath(ROUTES.SURVEY_PREVIEW, { surveyId: Number(row.id) })}
                 >
                     {row.name}
                 </Link>

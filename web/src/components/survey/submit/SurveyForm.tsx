@@ -1,5 +1,5 @@
 import React, { Suspense, useRef, useState } from 'react';
-import { Grid2 as Grid, Skeleton, Stack } from '@mui/material';
+import { Grid2 as Grid, Skeleton } from '@mui/material';
 import FormSubmit from 'components/Form/FormSubmit';
 import { FormSubmissionData } from 'components/Form/types';
 import { useAppDispatch, useAppTranslation } from 'hooks';
@@ -122,7 +122,8 @@ export const SurveyForm = () => {
                                     spacing={1}
                                     sx={{ mt: '1em' }}
                                 >
-                                    <Stack
+                                    <Grid
+                                        container
                                         direction={{ md: 'column-reverse', lg: 'row' }}
                                         spacing={1}
                                         width="100%"
@@ -138,10 +139,14 @@ export const SurveyForm = () => {
                                             <Await resolve={loaderData.engagement}>
                                                 {(engagement) => (
                                                     <Button
-                                                        href={getPath(ROUTES.PUBLIC_ENGAGEMENT_BY_SLUG, {
-                                                            slug: engagement?.slug || '',
-                                                            language,
-                                                        })}
+                                                        href={
+                                                            isManagementRoute
+                                                                ? getPath(ROUTES.SURVEYS)
+                                                                : getPath(ROUTES.PUBLIC_ENGAGEMENT_BY_SLUG, {
+                                                                      slug: engagement?.slug || '',
+                                                                      language,
+                                                                  })
+                                                        }
                                                         variant="secondary"
                                                     >
                                                         {translate('surveySubmit.surveyForm.button.cancel')}
@@ -156,7 +161,7 @@ export const SurveyForm = () => {
                                         >
                                             {translate('surveySubmit.surveyForm.button.submit')}
                                         </Button>
-                                    </Stack>
+                                    </Grid>
                                 </Grid>
                             </When>
                         </>

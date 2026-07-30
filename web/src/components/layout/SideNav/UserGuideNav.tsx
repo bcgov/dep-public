@@ -29,7 +29,7 @@ const UserGuideNav = () => {
         [getPath(ROUTES.SURVEYS)]: `${HELP_URL}/posts/survey-listing/`,
         [getPath(ROUTES.SURVEY_CREATE)]: `${HELP_URL}/posts/create-survey/`,
         [getPath(ROUTES.SURVEY_BUILD, { surveyId: SAMPLE_IDS.surveyId })]: `${HELP_URL}/posts/survey-builder/`,
-        [getPath(ROUTES.SURVEY_ADMIN_PREVIEW, { surveyId: SAMPLE_IDS.surveyId })]: `${HELP_URL}/posts/survey-builder/`,
+        [getPath(ROUTES.SURVEY_PREVIEW, { surveyId: SAMPLE_IDS.surveyId })]: `${HELP_URL}/posts/survey-builder/`,
         [getPath(ROUTES.SURVEY_COMMENTS, { surveyId: SAMPLE_IDS.surveyId })]: `${HELP_URL}/posts/comments-listing/`,
         [getPath(ROUTES.SURVEY_COMMENTS_ALL, { surveyId: SAMPLE_IDS.surveyId })]:
             `${HELP_URL}/posts/read-all-comments/`,

@@ -1,40 +1,65 @@
 import React, { Suspense } from 'react';
-import { Grid2 as Grid, Paper } from '@mui/material';
-import { SurveyBanner } from './SurveyBanner';
+import { useAppTranslation, useAppSelector } from 'hooks';
+import { Grid2 as Grid, Paper, Skeleton } from '@mui/material';
 import { SurveyForm } from './SurveyForm';
 import { InvalidTokenModal } from './InvalidTokenModal';
-import { PreviewBanner } from './PreviewBanner';
+import { useSurveyLoaderData } from 'components/survey/useSurveyLoaderData';
+import { SurveyBanner } from 'components/survey/common/SurveyBanner';
 import { Link } from 'components/common/Navigation';
-import { getPath, ROUTES, useIsManagementRoute } from 'routes/routes';
-import { faArrowLeftLong } from '@fortawesome/pro-solid-svg-icons';
+import { getPath, ROUTES } from 'routes/routes';
+import { faArrowLeft } from '@fortawesome/pro-regular-svg-icons';
+import { LanguageState } from 'reduxSlices/languageSlice';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { Await } from 'react-router';
 
 const SurveySubmit = () => {
+    const isLoggedIn = useAppSelector((state) => state.user.authentication.authenticated);
+    const loaderData = useSurveyLoaderData();
+    const language: LanguageState = useAppSelector((state) => state.language);
+    const { t: translate } = useAppTranslation();
+
     return (
-        <Grid container direction="row" justifyContent="flex-start" alignItems="flex-start">
-            <Grid size={12}>
-                <PreviewBanner />
-            </Grid>
-            <Grid size={12}>
-                <SurveyBanner />
-            </Grid>
+        <Grid container direction="row" justifyContent="flex-start" alignItems="flex-start" mt={isLoggedIn ? 13.5 : 0}>
+            <SurveyBanner
+                loaderData={loaderData}
+                eyebrowText="Survey"
+                errorText="Error loading survey details."
+                alignContentToPublicPageBounds
+                actions={
+                    <Suspense
+                        fallback={
+                            <Skeleton variant="text">
+                                <Link>Back to Engagement</Link>
+                            </Skeleton>
+                        }
+                    >
+                        <Await resolve={loaderData.engagement}>
+                            {(engagement) => (
+                                <Link
+                                    to={getPath(ROUTES.PUBLIC_ENGAGEMENT_BY_SLUG, {
+                                        slug: engagement?.slug || '',
+                                        language: language.id,
+                                    })}
+                                >
+                                    <FontAwesomeIcon icon={faArrowLeft} style={{ marginRight: '0.5em' }} />
+                                    {translate('surveySubmit.backToEngagement')}
+                                </Link>
+                            )}
+                        </Await>
+                    </Suspense>
+                }
+            />
             <Grid
                 container
                 size={12}
                 direction="row"
-                justifyContent={'flex-start'}
+                justifyContent="center"
                 alignItems="flex-start"
-                m={{ lg: '2em 8em 1em 3em', md: '2em', xs: '1em' }}
+                m={{ md: '0 2em', xs: '1em' }}
+                mt={0}
             >
-                <Grid container size={12} direction="row" justifyContent="flex-end">
-                    {useIsManagementRoute() && (
-                        <Link to={getPath(ROUTES.SURVEYS)}>
-                            <FontAwesomeIcon icon={faArrowLeftLong} /> Back to Surveys
-                        </Link>
-                    )}
-                </Grid>
-                <Grid size={12}>
-                    <Paper elevation={2}>
+                <Grid container size={12} direction="row" justifyContent="center" alignItems="flex-start">
+                    <Paper elevation={2} sx={{ maxWidth: '1120px' }}>
                         <Suspense>
                             <SurveyForm />
                         </Suspense>

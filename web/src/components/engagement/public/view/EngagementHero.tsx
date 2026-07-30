@@ -1,21 +1,15 @@
-import { BodyText, EyebrowText, Heading1 } from 'components/common/Typography';
+import { EyebrowText, Heading1 } from 'components/common/Typography';
 import React, { Suspense } from 'react';
 import { Button } from 'components/common/Input/Button';
 import { RichTextArea } from 'components/common/Input/RichTextArea';
 import { getEditorStateFromRaw } from 'components/common/RichTextEditor/utils';
 import { Engagement } from 'models/engagement';
-import { Box, Grid2 as Grid, Skeleton } from '@mui/material';
+import { Box, Skeleton } from '@mui/material';
 import { colors } from 'components/common';
-import {
-    EngagementStatusChip,
-    getStatusFromStatusId,
-    getSubmissionStatusFromPreviewState,
-} from 'components/common/Indicators';
-import { convertToPacific } from 'components/common/dateHelper';
+import { getStatusFromStatusId, getSubmissionStatusFromPreviewState } from 'components/common/Indicators';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faChevronRight } from '@fortawesome/pro-regular-svg-icons';
 import { Await } from 'react-router';
-import { StatusChipSkeleton } from 'components/common/Indicators/StatusChip';
 import { EngagementViewSections } from '.';
 import { usePreview } from 'components/engagement/preview/PreviewContext';
 import { SubmissionStatus } from 'constants/engagementStatus';
@@ -25,6 +19,7 @@ import { previewValue, PreviewRender, PreviewSwitch } from 'components/engagemen
 import { EngagementPreviewTag } from './EngagementPreviewTag';
 import { useEngagementLoaderData } from 'components/engagement/preview/PreviewLoaderDataContext';
 import { TranslationBundle, resolveTranslationValue } from './engagementTranslationResolution';
+import { EngagementStatusDateRow, EngagementStatusDateRowSkeleton } from './EngagementStatusDateRow';
 
 const getStatusMessageFromTranslation = (
     translation: TranslationBundle['currentTranslation'] | TranslationBundle['defaultTranslation'] | undefined,
@@ -104,8 +99,6 @@ const getResolvedHeroText = ({
 };
 
 export const EngagementHero = () => {
-    const dateFormat = 'MMM DD, YYYY';
-    const semanticDateFormat = 'YYYY-MM-DD';
     const { engagement, translationBundle } = useEngagementLoaderData();
     const { isPreviewMode, previewStateType } = usePreview();
     const engagementInfo = Promise.all([engagement, translationBundle ?? Promise.resolve(undefined)]);
@@ -175,27 +168,15 @@ export const EngagementHero = () => {
                 <Suspense
                     fallback={
                         <>
-                            <Skeleton>
-                                <EyebrowText m="0">Sponsor Name</EyebrowText>
+                            <Skeleton variant="text">
+                                <EyebrowText m="0">Sponsor Name Goes Here</EyebrowText>
                             </Skeleton>
-                            <Skeleton>
+                            <Skeleton variant="text">
                                 <Heading1 weight="thin" sx={{ mb: '32px' }}>
-                                    Engagement Name
+                                    Example Engagement Name
                                 </Heading1>
                             </Skeleton>
-                            <Grid container mb="48px" flexDirection="row" alignItems="center" columnSpacing={1}>
-                                <Grid>
-                                    <StatusChipSkeleton />
-                                </Grid>
-                                <Grid>
-                                    <Skeleton>
-                                        <BodyText bold size="small" sx={{ color: 'gray.110' }}>
-                                            <time dateTime="2022-02-02">Feb 02, 2022</time> to{' '}
-                                            <time dateTime="2022-02-02">Feb 02, 2022</time>
-                                        </BodyText>
-                                    </Skeleton>
-                                </Grid>
-                            </Grid>
+                            <EngagementStatusDateRowSkeleton marginBottom={'3rem'} />
                             <Skeleton
                                 variant="rectangular"
                                 sx={{ borderRadius: '8px', height: '56px', width: '152px' }}
@@ -205,8 +186,6 @@ export const EngagementHero = () => {
                 >
                     <Await resolve={engagementInfo}>
                         {([engagement, resolvedTranslationBundle]: [Engagement, TranslationBundle | undefined]) => {
-                            const startDate = convertToPacific(engagement.start_date);
-                            const endDate = convertToPacific(engagement.end_date);
                             const usePreviewState = Boolean(isPreviewMode && previewStateType);
                             const effectiveSurveyStatus =
                                 previewValue<string | null>({
@@ -277,24 +256,14 @@ export const EngagementHero = () => {
                                             previewFallback={<TextPlaceholder type="short" />}
                                         />
                                     </Heading1>
-                                    <Grid container mb="48px" flexDirection="row" alignItems="center" columnSpacing={1}>
-                                        <Grid>
-                                            <EngagementStatusChip statusId={effectiveStatusId} />
-                                        </Grid>
-                                        <Grid>
-                                            <BodyText bold size="small" sx={{ color: '#201F1E' }}>
-                                                <time dateTime={`${startDate?.format(semanticDateFormat)}`}>
-                                                    {startDate?.format(dateFormat)}
-                                                </time>{' '}
-                                                to{' '}
-                                                <time dateTime={`${endDate?.format(semanticDateFormat)}`}>
-                                                    {endDate?.format(dateFormat)}
-                                                </time>
-                                            </BodyText>
-                                        </Grid>
-                                    </Grid>
+                                    <EngagementStatusDateRow
+                                        statusId={effectiveStatusId}
+                                        startDate={engagement.start_date}
+                                        endDate={engagement.end_date}
+                                        marginBottom={'3rem'}
+                                    />
                                     {shouldShowStateMessage && (
-                                        <Box sx={{ color: 'error.main', mt: '24px', mb: '8px' }}>
+                                        <Box sx={{ color: 'error.main', mt: '24px', mb: '-4px' }}>
                                             <PreviewSwitch
                                                 hasValue={Boolean(resolvedStateMessage?.trim())}
                                                 value={

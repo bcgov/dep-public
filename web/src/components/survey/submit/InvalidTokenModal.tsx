@@ -59,7 +59,7 @@ export const InvalidTokenModal = () => {
                 </Grid>
                 <Grid container size={12} justifyContent="flex-end" spacing={1} sx={{ mt: '1em' }}>
                     <Button variant="primary" href={engagementPath} LinkComponent={RouterLinkRenderer}>
-                        {translate('surveySubmit.inValidToken.button')}
+                        {translate('surveySubmit.backToEngagement')}
                     </Button>
                 </Grid>
             </Grid>

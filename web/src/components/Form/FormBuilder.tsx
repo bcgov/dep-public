@@ -10,6 +10,8 @@ const FormBuilder = ({ handleFormChange, savedForm }: FormBuilderProps) => {
     // Add file upload and other handlers for Formio to call when uploading files.
     const fileUploadOptions = createSimpleFileOptions();
 
+    // Add accessibility attributes to Formio buttons and wizard tabs,
+    // and handle keyboard navigation for wizard tabs.
     useEffect(() => {
         const formioRoot = formioRootRef.current;
         if (!formioRoot) return;
@@ -28,6 +30,7 @@ const FormBuilder = ({ handleFormChange, savedForm }: FormBuilderProps) => {
         const getAddPageControls = () =>
             Array.from(formioRoot.querySelectorAll<HTMLElement>('.wizard-page-label.badge-success'));
 
+        // Handle keyboard navigation for wizard tabs
         const handleWizardTabKeydown = (event: KeyboardEvent) => {
             const tabs = getWizardPageTabs();
             const currentTab = event.currentTarget as HTMLElement;
@@ -41,7 +44,7 @@ const FormBuilder = ({ handleFormChange, savedForm }: FormBuilderProps) => {
                 currentTab.click();
                 return;
             }
-
+            // Find the appropriate next index based on the key pressed
             const lastIndex = tabs.length - 1;
             const nextIndex = (() => {
                 if (event.key === 'ArrowRight') {
@@ -62,18 +65,21 @@ const FormBuilder = ({ handleFormChange, savedForm }: FormBuilderProps) => {
 
                 return null;
             })();
-
+            // If nextIndex is null, it means the key pressed was
+            // not one of the handled keys, so we return early.
             if (nextIndex === null) {
                 return;
             }
-
+            // If we have a valid nextIndex, we prevent the default
+            // behavior and focus on the next tab.
             event.preventDefault();
             const nextTab = tabs[nextIndex];
             pendingFocusIndex = nextIndex;
             nextTab.focus();
             nextTab.click();
         };
-
+        // Handle keyboard input for the "Add Page" control in the
+        // wizard
         const handleAddPageKeydown = (event: KeyboardEvent) => {
             if (event.key !== 'Enter' && event.key !== ' ') {
                 return;
@@ -92,7 +98,9 @@ const FormBuilder = ({ handleFormChange, savedForm }: FormBuilderProps) => {
                 pendingFocusIndex = clickedIndex;
             }
         };
-
+        // Apply accessibility attributes to Formio wizard tabs
+        // and "Add Page" controls, and manage focus when a tab
+        // is clicked or navigated to via keyboard.
         const applyWizardA11yAttributes = () => {
             const tablist = formioRoot.querySelector<HTMLOListElement>('ol.breadcrumb.wizard-pages');
             const wizardTabs = getWizardPageTabs();
@@ -135,10 +143,19 @@ const FormBuilder = ({ handleFormChange, savedForm }: FormBuilderProps) => {
                 pendingFocusIndex = null;
             }
         };
-
+        // Add accessibility attributes to other Formio buttons
+        // that do not use the <button> element, and ensure that they are
+        // focusable and have the correct role.
         const applyButtonA11yAttributes = () => {
             const buttons = getAllButtons();
             buttons.forEach((button) => {
+                const handleKeyDown = (event: KeyboardEvent) => {
+                    if (event.key === 'Enter' || event.key === ' ') {
+                        event.preventDefault();
+                        button.click();
+                    }
+                };
+                button.onkeydown = handleKeyDown;
                 button.setAttribute('role', 'button');
                 button.setAttribute('tabindex', '0');
             });
