@@ -1,0 +1,707 @@
+// Override bootstrap default value
+$enable-smooth-scroll: false;
+
+// Variables
+$bcgov-blue: #053662;
+$bcgov-blue-secondary: #2b71b8;
+$bcgov-orange: #fcba19;
+$bcgov-grey: #e1dfdd;
+$bcgov-font: #292929;
+$bcgov-error: #ce3e39;
+$bcgov-link: #1a5a96;
+$bcgov-input-placeholder: #7a7876;
+
+// Typography
+.v-application {
+    line-height: 1.4;
+    font-size: 0.875rem;
+}
+
+.card {
+    overflow: clip;
+}
+
+h1 {
+    font-size: 1.9em;
+}
+h2 {
+    font-size: 1.7em;
+}
+h3 {
+    font-size: 1.3em;
+}
+h4 {
+    font-size: 1.05em;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5 {
+    color: $bcgov-font;
+    line-height: 1.2;
+    font-weight: bold;
+}
+
+p {
+    color: $bcgov-font;
+    line-height: 1.7;
+}
+
+// links
+a,
+a.nav-link,
+a.nav-link:hover {
+    color: $bcgov-link;
+}
+
+// Horizontal Rule
+hr {
+    margin-bottom: 1em;
+    .orange {
+        border-top: 2px solid $bcgov-orange;
+    }
+}
+
+// General Transition Animation Behavior
+.component-fade-enter-active,
+.component-fade-leave-active {
+    transition: opacity 0.3s ease;
+}
+.component-fade-enter,
+.component-fade-leave-to {
+    opacity: 0;
+}
+
+// Anchor and Tab Behavior
+a,
+a.nav-link:not(.active):not(.disabled),
+.formio-component-file .fileSelector a,
+.v-tab {
+    text-decoration-line: underline;
+    text-decoration-color: color-mix(in srgb, currentcolor 40%, transparent);
+    &:hover {
+        text-decoration-color: currentColor;
+        button,
+        .v-icon {
+            text-decoration: none;
+        }
+    }
+}
+
+.v-btn {
+    span > span {
+        font-weight: bold;
+    }
+    &:hover {
+        background-color: #d8ebff;
+        span > span {
+            text-decoration: underline;
+        }
+    }
+    &.v-btn--disabled {
+        color: #777;
+    }
+
+    &.v-btn--outlined {
+        border: 2px solid #fff;
+        &.v-btn--disabled {
+            border-color: rgba(0, 0, 0, 0.26);
+        }
+    }
+}
+
+// Customized expand/collapse section
+.nrmc-expand-collapse {
+    width: 100%;
+    min-height: 50px;
+
+    .v-expansion-panel--active {
+        margin-bottom: 20px;
+    }
+
+    .v-expansion-panel--active > .v-expansion-panel-title {
+        min-height: 50px;
+    }
+
+    .v-expansion-panel-title {
+        padding: 10px;
+        background-color: $bcgov-grey;
+        .icon {
+            order: 0;
+        }
+
+        .header {
+            order: 1;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex: 1 auto;
+        }
+    }
+}
+
+.v-stepper-header {
+    box-shadow: none !important;
+}
+
+/////////////////////////////////
+///  override formio styles:
+/////////////////////////////////
+
+// override formio form designer
+.form-designer,
+.formbuilder,
+// override form viewer
+.form-wrapper,
+// override preview panel in form builder component editor modal
+.component-preview,
+.component-edit-tabs {
+    // layout
+    div[class^='col-']:nth-child(n + 1) {
+        padding-top: 0; // make nested columns line up vertically alongside components in non-nested adjacent columns
+    }
+
+    // tabs, cards, headings etc..
+    .card-header {
+        font-weight: bold;
+        color: $bcgov-font;
+        opacity: 1;
+        &[aria-expanded='false'] {
+            border-bottom: none;
+        }
+        .fa-minus-square-o::before,
+        .fa-plus-square-o::before {
+            font-size: 130%;
+            color: black;
+        }
+        .fa-minus-square-o::before {
+            content: '\f106';
+        }
+        .fa-plus-square-o::before {
+            content: '\f107';
+        }
+    }
+
+    // Undo "break-all". Breaking in the middle of all words affects readability.
+    .formio-component .table {
+        word-break: normal;
+    }
+
+    .formio-error-wrapper {
+        background-color: transparent;
+    }
+    .formio-error-wrapper,
+    .formio-warning-wrapper {
+        padding: 0;
+    }
+
+    // tabs component
+    .formio-component-simpletabs {
+        & > .card {
+            border: 0;
+
+            & > .card-body {
+                border-style: solid;
+                border-color: rgba(0, 0, 0, 0.125);
+                border-width: 0 1px 1px 1px;
+                border-bottom-left-radius: var(--bs-border-radius);
+                border-bottom-right-radius: var(--bs-border-radius);
+            }
+        }
+        & > .card > .card-header {
+            background: none;
+            &:has(.nav-tabs) {
+                padding-left: calc(0.5 * var(--bs-card-cap-padding-x));
+            }
+
+            .nav-item {
+                background-color: $bcgov-grey;
+                margin-right: 3px;
+                border-top-left-radius: var(--bs-border-radius);
+                border-top-right-radius: var(--bs-border-radius);
+
+                .nav-link {
+                    @extend a;
+                    font-weight: normal;
+
+                    &.active {
+                        color: $bcgov-font;
+                        background: white;
+
+                        &:hover {
+                            color: $bcgov-font;
+                            cursor: default;
+                            text-decoration: none;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // form inputs
+    .form-control {
+        // placeholder text to match bcgov
+        &::placeholder,
+        .choices__placeholder {
+            color: $bcgov-input-placeholder;
+            opacity: inherit;
+        }
+
+        &:not(.is-invalid) {
+            // input borders to match bcgov (exclude invalid fields that should be red)
+            border: 1px solid $bcgov-input-placeholder;
+        }
+    }
+
+    // remove alert icons from invalid fields
+    .form-control.is-invalid,
+    .was-validated .form-control:invalid {
+        background-image: none;
+    }
+
+    // add rounded corners to Date / Time Component input groups and red border if invalid
+    .input-group > .flatpickr-input.form-control {
+        & + .form-control.input {
+            border-top-left-radius: 0.25rem;
+            border-bottom-left-radius: 0.25rem;
+        }
+        // if validation error make borders red;
+        &.is-invalid + .form-control.input {
+            border: 1px solid #dc3545;
+
+            &:focus {
+                border-color: #dc3545;
+                -webkit-box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+                box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+            }
+        }
+    }
+
+    // buttons
+
+    .btn {
+        @extend .v-btn;
+    }
+
+    // add margin to create space between the button and form.io inputs
+    .formio-component-button {
+        margin-top: 1rem;
+    }
+
+    // tooltips
+    .tooltip-inner {
+        background-color: #606060;
+        border-radius: 3px;
+        box-shadow: 0 2px 8px 0 rgba(175, 175, 175, 0.5);
+        font-size: 0.85em;
+    }
+
+    // validation messages and help text
+    .form-text {
+        font-size: 0.85em;
+    }
+    .invalid-feedback {
+        font-size: 100%; // reset this wrapper
+    }
+    .form-text.error {
+        background: none !important;
+        color: $bcgov-error;
+    }
+
+    // hide asterisks after input in Data Grid when labels appear as table headers
+    .formio-component-datagrid {
+        label.field-required.control-label--hidden::after {
+            content: '';
+        }
+    }
+
+    // dropdowns
+    .choices__list--dropdown,
+    .choices__list--single {
+        .choices__item {
+            &:not(.is-selected) {
+                color: $bcgov-font;
+            }
+        }
+    }
+
+    .choices__list--dropdown {
+        .choices__item:hover {
+            background-color: #d8ebff;
+        }
+    }
+
+    .choices__list--single {
+        .choices__item {
+            display: inline;
+        }
+    }
+
+    .choices__list--multiple {
+        .choices__item {
+            margin-bottom: 0;
+            font-size: 14px;
+            background: white;
+            color: $bcgov-link;
+            border-color: $bcgov-link;
+            &:hover {
+                background-color: #d8ebff;
+            }
+            .choices__button {
+                border-left-color: $bcgov-link;
+                background-image: url(data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjEiIGhlaWdodD0iMjEiIHZpZXdCb3g9IjAgMCAyMSAyMSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSIjMDAwIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxwYXRoIGQ9Ik0yLjU5Mi4wNDRsMTguMzY0IDE4LjM2NC0yLjU0OCAyLjU0OEwuMDQ0IDIuNTkyeiIvPjxwYXRoIGQ9Ik0wIDE4LjM2NEwxOC4zNjQgMGwyLjU0OCAyLjU0OEwyLjU0OCAyMC45MTJ6Ii8+PC9nPjwvc3ZnPg==);
+            }
+        }
+    }
+
+    // hide 'X' (button that removes selected option) on dropdown, when placeholder exists and no selectiuon has been made
+    .choices__placeholder button {
+        display: none;
+    }
+
+    // radio buttons and checkboxes
+    .form-radio {
+        .form-check {
+            margin-bottom: 5px;
+            .form-check-label {
+                font-size: 1em;
+
+                .form-check-input {
+                    transform: scale(1.3);
+                }
+                span {
+                    margin-left: 5px;
+                }
+            }
+        }
+    }
+
+    // form builder misc.
+    .drag-and-drop-alert.alert-info {
+        border: 2px dashed grey;
+        background-color: transparent;
+        color: grey;
+        padding: 30px;
+    }
+}
+
+/////////////////////////////////
+// override Formio form designer
+/////////////////////////////////
+
+.form-designer {
+    .formio-component-submit .btn.btn-primary,
+    .formio-component-submit .btn.btn-primary:hover {
+        @extend :disabled;
+        background-color: rgba(0, 0, 0, 0.12);
+    }
+}
+
+.formcomponents {
+    .builder-sidebar {
+        overflow: visible;
+        top: 12.5rem;
+        .form-builder-panel {
+            .formcomponent.btn-block {
+                width: 100%;
+            }
+        }
+    }
+}
+
+.form-wrapper {
+    .formio-component-file {
+        .file {
+            .row {
+                margin-left: 24px;
+            }
+        }
+    }
+}
+
+// allow dropdowns to continue expanding downwards within a modal
+.formio-dialog-content {
+    .component-edit-container {
+        overflow: visible;
+
+        .choices__list.choices__list--dropdown {
+            overflow: auto;
+
+            div.choices__list {
+                max-height: 175px;
+            }
+        }
+    }
+}
+
+// formio component buttons
+.btn-primary.formcomponent.drag-copy,
+.btn-primary.formcomponent.drag-copy:hover,
+.formcomponent.drag-copy:active {
+    background-color: #e4f2ff;
+    color: #292929;
+    font-size: 0.8rem;
+    border: none;
+}
+.drag-container .btn-primary.formcomponent.drag-copy {
+    opacity: 0.3;
+    color: white;
+    background: $bcgov-blue;
+}
+
+.info-helper {
+    color: #00000061;
+    margin-top: 2px;
+}
+
+.info-helper:hover {
+    color: #01254a;
+}
+
+.v-tooltip > .v-overlay__content {
+    pointer-events: auto !important; //Have to replace Tooltips default behaviour pointer-events: none as we have some tooltips with External Links.
+    background: #7a7876e6 !important;
+}
+
+.preview_info_link_field_white {
+    color: white !important;
+    text-decoration: underline;
+}
+.center_vertical_content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 300px;
+}
+
+.label .v-label {
+    right: 0 !important;
+    left: auto !important;
+}
+
+.label span {
+    margin-right: 30px;
+}
+
+.flex-xs-column-reverse {
+    flex-direction: column-reverse;
+}
+
+.flex-xs-column {
+    flex-direction: column;
+}
+
+.dir-rtl {
+    direction: rtl !important;
+    text-align: right;
+}
+
+.dir-ltl {
+    direction: ltr !important;
+    text-align: left;
+}
+
+.v-skeleton-loader {
+    background: none !important;
+    display: block !important;
+}
+
+.submissions-table tbody tr:nth-child(odd) td {
+    background-color: #f5f5f5 !important;
+}
+
+.v-table.v-table--hover > .v-table__wrapper > table > tbody > tr:hover td {
+    background-color: #eee !important;
+}
+
+.v-data-table,
+.v-data-table-server,
+.v-table {
+    font-size: 16px !important;
+}
+
+.v-select .v-field__input {
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+}
+
+.v-select .v-list-item--density-default {
+    min-height: 38px !important;
+}
+
+.vselect .v-label {
+    opacity: 1 !important;
+}
+
+// Disable file downloads for public forms in readonly mode
+.form-wrapper.disable-file-downloads .formio-form {
+    .formio-component-simplefile a[href],
+    .formio-component-file a[href] {
+        pointer-events: none !important;
+        color: #6c757d !important;
+        text-decoration: none !important;
+        cursor: not-allowed !important;
+    }
+}
+
+.v-window {
+    overflow: visible !important;
+}
+.v-stepper.v-sheet {
+    overflow: visible !important;
+}
+
+.status-overlay {
+    position: fixed;
+    z-index: 9999;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: all;
+
+    .status-content {
+        background: #fff;
+        border: 1px solid #000;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        padding: 0;
+        width: 95vw;
+        max-width: 800px;
+        min-width: 320px;
+        max-height: 80vh;
+        min-height: 180px;
+        overflow: auto;
+        display: flex;
+        flex-direction: column;
+        position: relative;
+
+        .status-header {
+            font-size: 1.25rem;
+            font-weight: bold;
+            padding: 1em 0.5em;
+            border-top-left-radius: 8px;
+            border-top-right-radius: 8px;
+            box-shadow: 0 1px 0 rgba(0, 0, 0, 0.2);
+            margin-bottom: 0;
+            text-align: left;
+            letter-spacing: 0.5px;
+            height: 60px;
+            display: flex;
+
+            i {
+                margin-right: 0.5em;
+                color: red;
+            }
+        }
+
+        .status-footer {
+            padding: 1em 0.5em;
+            border-bottom-left-radius: 8px;
+            border-bottom-right-radius: 8px;
+            box-shadow: 0 -1px 0 rgba(0, 0, 0, 0.2);
+            margin-top: auto;
+            text-align: center;
+            letter-spacing: 0.5px;
+            height: 60px;
+            display: flex;
+            align-items: right;
+            justify-content: right;
+        }
+
+        .chefs-unavailable-message,
+        .moreinfo-intro,
+        .moreinfo-outro {
+            margin: 1em 0.75em;
+            font-size: 1.1em;
+            padding: 0.75em 1em;
+        }
+
+        .moreinfo-outro {
+            font-size: 0.95em;
+        }
+
+        h2 {
+            margin-top: 0;
+        }
+
+        .info-links {
+            font-size: 0.95em;
+
+            button {
+                color: #003366;
+                text-decoration: underline;
+                background: none;
+                border: none;
+                cursor: pointer;
+                padding: 0;
+                margin: 0 0.5em 0 0;
+
+                &:hover {
+                    color: #005b96;
+                }
+            }
+        }
+
+        .status-connections-table {
+            width: 90%;
+            margin: 1em auto;
+            border-collapse: collapse;
+            font-size: 16px !important;
+
+            th,
+            td {
+                padding: 0.5em 1em;
+                border-bottom: 1px solid #eee;
+                text-align: left;
+            }
+
+            th {
+                background: #f6f8fa;
+                font-weight: bold;
+                color: #003366 !important;
+                font-size: 1.1em !important;
+            }
+
+            tr:hover td {
+                background-color: #eee !important;
+            }
+        }
+    }
+}
+
+@media (min-width: 600px) {
+    .status-overlay {
+        padding-bottom: 2.5em;
+
+        .status-content {
+            width: 600px;
+            min-width: 400px;
+            max-width: 900px;
+            min-height: 200px;
+        }
+    }
+}
+
+@media (min-width: 900px) {
+    .status-overlay {
+        padding-bottom: 3em;
+
+        .status-content {
+            width: 800px;
+            min-width: 600px;
+            max-width: 1100px;
+            min-height: 220px;
+        }
+    }
+}

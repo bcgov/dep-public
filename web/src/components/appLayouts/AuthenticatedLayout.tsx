@@ -32,7 +32,12 @@ export const AuthenticatedLayout = () => {
                 >
                     <Box
                         component="main"
-                        sx={{ flexGrow: 1, marginTop: { xs: '3.5em', md: '6.5em' }, width: '100%', overflowX: 'auto' }}
+                        sx={{
+                            flexGrow: 1,
+                            marginTop: { xs: '3.5em', md: '6.5em' },
+                            width: '100%',
+                            overflowX: 'visible',
+                        }}
                     >
                         <Outlet />
                         <FeedbackModal />

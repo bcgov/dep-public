@@ -11,7 +11,7 @@ interface ClientSidePaginationProps<T> {
     children: (props: CustomTableProps<T>) => React.ReactElement<CustomTableProps<T>>;
 }
 
-export function ClientSidePagination<T>({ rows, searchFilter, children }: ClientSidePaginationProps<T>) {
+export function ClientSidePagination<T>({ rows, searchFilter, children }: Readonly<ClientSidePaginationProps<T>>) {
     const [paginationOptions, setPaginationOptions] = React.useState<PaginationOptions<T>>({
         page: 1,
         size: 10, // default page size

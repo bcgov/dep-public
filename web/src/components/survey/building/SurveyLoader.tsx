@@ -11,7 +11,7 @@ import { getSurvey } from 'services/surveyService';
 import { fetchSurveyReportSettings } from 'services/surveyService/reportSettingsService';
 
 export type SurveyLoaderData = {
-    engagement: Promise<Engagement>;
+    engagement: Promise<Engagement | null>;
     reportSettings: Promise<SurveyReportSetting[] | null>;
     submission: Promise<SurveySubmission | null>;
     survey: Promise<Survey>;
@@ -48,7 +48,7 @@ export const SurveyLoader = async ({ params, pattern }: LoaderFunctionArgs) => {
             const survey = getSurvey(surveyId);
             const engagement = survey.then((surveyData) => {
                 if (!surveyData.engagement_id) {
-                    throw new Error('Survey is missing engagement ID');
+                    return null;
                 }
                 return getEngagement(Number(surveyData.engagement_id));
             });

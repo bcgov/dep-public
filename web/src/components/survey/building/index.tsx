@@ -44,6 +44,7 @@ import UnsavedWorkConfirmation from 'components/common/Navigation/UnsavedWorkCon
 import { fetchSurveyReportSettings } from 'services/surveyService/reportSettingsService';
 import { ROUTES, getPath } from 'routes/routes';
 import { useSurveyLoaderData } from '../useSurveyLoaderData';
+import { AutoBreadcrumbs } from 'components/common/Navigation/Breadcrumb';
 
 interface SurveyForm {
     id: string;
@@ -216,6 +217,9 @@ export const FormBuilderPage = () => {
         >
             <UnsavedWorkConfirmation blockNavigationWhen={hasUnsavedWork} />
             <Grid size={12}>
+                <AutoBreadcrumbs />
+            </Grid>
+            <Grid size={12}>
                 <Stack direction="row" justifyContent="flex-start" alignItems="center">
                     <If condition={isEditingName}>
                         <Then>
@@ -365,7 +369,7 @@ export const FormBuilderPage = () => {
                     <Tooltip
                         title="When you toggle ON this option and save your Survey, your Survey will be 'Hidden'. When the toggle is ON and as long as the survey is not attached to an engagement, the Survey will only be visible to Administrators. When you are ready to make it available and able to be cloned or attached to an engagement, change the toggle to OFF and click the Save button."
                         placement="top"
-                        componentsProps={{
+                        slotProps={{
                             tooltip: {
                                 sx: {
                                     bgcolor: '#003366',
@@ -392,7 +396,7 @@ export const FormBuilderPage = () => {
                     >
                         Report Settings
                     </Button>
-                    <Button href={getPath(ROUTES.SURVEYS)}>Cancel</Button>
+                    <Button href={getPath(ROUTES.SURVEY_PREVIEW, { surveyId: survey?.id ?? 0 })}>Back</Button>
                 </Stack>
             </Grid>
             <AutoSaveSnackBar

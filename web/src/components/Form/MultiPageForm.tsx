@@ -17,8 +17,9 @@ const MultiPageForm = ({
     verificationToken,
 }: FormSubmitterProps) => {
     const [currentPage, setCurrentPage] = useState(0);
-    const simpleFileOptions = createSimpleFileOptions({ verificationToken });
-    const handleScrollUp = () => {
+    const options = createSimpleFileOptions({ verificationToken, noAlerts: true });
+    const handleChangePage = (pageData: PageData) => {
+        setCurrentPage(pageData.page);
         globalThis.scrollTo({
             top: 100,
             behavior: 'smooth',
@@ -26,23 +27,14 @@ const MultiPageForm = ({
     };
 
     return (
-        <div className="formio">
+        <div className="formio multipageform form-wrapper">
             <FormStepper currentPage={currentPage} pages={savedForm?.components ?? []} />
             <Form
                 form={savedForm || { display: 'wizard' }}
-                options={{
-                    noAlerts: true,
-                    ...simpleFileOptions,
-                }}
+                options={options}
                 onChange={(form: unknown) => handleFormChange(form as FormSubmissionData)}
-                onNextPage={(pageData: PageData) => {
-                    setCurrentPage(pageData.page);
-                    handleScrollUp();
-                }}
-                onPrevPage={(pageData: PageData) => {
-                    setCurrentPage(pageData.page);
-                    handleScrollUp();
-                }}
+                onNextPage={handleChangePage}
+                onPrevPage={handleChangePage}
                 onCancel={() => handleFormCancel?.()}
                 onSubmit={(form: unknown) => handleFormSubmit?.((form as FormSubmissionData).data)}
             />
