@@ -75,14 +75,14 @@ export const SystemMessage = ({
                 ...props.sx,
             }}
         >
-            <Grid sx={{ pr: 1, fontSize: '18px' }}>
+            <Grid container height="21px" alignItems="center" pr={1} fontSize="18px">
                 {icon ? (
                     <FontAwesomeIcon icon={icon} color={color || colors.notification[status].icon} />
                 ) : (
                     <StatusIcon status={status} color={color} />
                 )}
             </Grid>
-            <Grid sx={{ width: '100%', maxWidth: { xs: '100%', md: '600px', fontSize: '14px' } }}>{children}</Grid>
+            <Grid sx={{ width: '100%', maxWidth: { xs: '100%', md: '600px' }, fontSize: '14px' }}>{children}</Grid>
             <Grid justifySelf="flex-end" sx={{ mt: -0.75, opacity: onDismiss ? 1 : 0 }}>
                 <Button
                     disabled={!onDismiss}
