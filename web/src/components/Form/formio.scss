@@ -12,7 +12,7 @@
 :where([class*='formio'], .gu-mirror) {
     // Import styling Bootstrap SCSS files so they apply their styles to the formio components.
     // Overriding Sonarcloud linting because it thinks @import statements can't go inside selectors, but in SCSS they can
-    @import '~bootstrap/scss/reboot', '~bootstrap/scss/type', '~bootstrap/scss/containers', '~bootstrap/scss/grid','~bootstrap/scss/tables', '~bootstrap/scss/forms', '~bootstrap/scss/buttons', '~bootstrap/scss/transitions','~bootstrap/scss/dropdown', '~bootstrap/scss/button-group', '~bootstrap/scss/nav', '~bootstrap/scss/navbar','~bootstrap/scss/card', '~bootstrap/scss/accordion', '~bootstrap/scss/breadcrumb', '~bootstrap/scss/pagination','~bootstrap/scss/badge', '~bootstrap/scss/alert', '~bootstrap/scss/progress', '~bootstrap/scss/list-group','~bootstrap/scss/close', '~bootstrap/scss/toasts', '~bootstrap/scss/modal', '~bootstrap/scss/tooltip','~bootstrap/scss/popover', '~bootstrap/scss/carousel', '~bootstrap/scss/spinners', '~bootstrap/scss/offcanvas','~bootstrap/scss/placeholders', '~bootstrap/scss/helpers', '~bootstrap/scss/utilities/api'; // NOSONAR
+    @import '~bootstrap/scss/reboot', '~bootstrap/scss/type', '~bootstrap/scss/containers', '~bootstrap/scss/grid', '~bootstrap/scss/tables', '~bootstrap/scss/forms', '~bootstrap/scss/buttons', '~bootstrap/scss/transitions', '~bootstrap/scss/dropdown', '~bootstrap/scss/button-group', '~bootstrap/scss/nav', '~bootstrap/scss/navbar', '~bootstrap/scss/card', '~bootstrap/scss/accordion', '~bootstrap/scss/breadcrumb', '~bootstrap/scss/pagination', '~bootstrap/scss/badge', '~bootstrap/scss/alert', '~bootstrap/scss/progress', '~bootstrap/scss/list-group', '~bootstrap/scss/close', '~bootstrap/scss/toasts', '~bootstrap/scss/modal', '~bootstrap/scss/tooltip', '~bootstrap/scss/popover', '~bootstrap/scss/carousel', '~bootstrap/scss/spinners', '~bootstrap/scss/offcanvas', '~bootstrap/scss/placeholders', '~bootstrap/scss/helpers', '~bootstrap/scss/utilities/api'; // NOSONAR
     @import '~met-formio/dist/met-formio-components'; // NOSONAR
     @import '@bcgov/formio/dist/bcgov-formio-components'; //NOSONAR
 }
@@ -290,6 +290,10 @@ input.form-check-input {
             0px 6px 9px 0px rgba(0, 0, 0, 0.07),
             0px 3px 15px 0px rgba(0, 0, 0, 0.06);
     }
+}
+
+.btn.btn-xxs.component-settings-button-edit-json i::before {
+    content: '\f121';
 }
 
 .btn:not(.btn-xxs) i {
