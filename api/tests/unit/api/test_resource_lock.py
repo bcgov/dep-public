@@ -1,4 +1,4 @@
-# Copyright © 2019 Province of British Columbia
+# Copyright © 2026 Province of British Columbia
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -224,6 +224,37 @@ def test_refresh_lock_post_business_exception(client, jwt, session, setup_admin_
 
 
 def test_release_lock_post_business_exception(client, jwt, session, setup_admin_user_and_claims):
+    """Assert release POST returns BusinessException payload/status."""
+    _, claims = setup_admin_user_and_claims
+    headers = factory_auth_header(jwt=jwt, claims=claims)
+    payload = {
+        'lock_token': 'token-1',
+    }
+
+    with patch('api.resources.resource_lock.authorization.check_auth', return_value=False):
+        with patch.object(
+            ResourceLockService,
+            'release_lock',
+            side_effect=BusinessException(
+                error={'code': 'not_owner', 'message': 'not lock owner'},
+                status_code=HTTPStatus.FORBIDDEN,
+            ),
+        ):
+            rv = client.post(
+                '/api/locks/release',
+                data=json.dumps(payload),
+                headers=headers,
+                content_type=ContentType.JSON.value,
+            )
+
+    assert rv.status_code == HTTPStatus.FORBIDDEN
+    assert rv.get_json() == {
+        'code': 'not_owner',
+        'message': 'not lock owner',
+    }
+
+
+def test_release_lock_by_token(client, jwt, session, setup_admin_user_and_claims):
     """Assert release POST returns BusinessException payload/status."""
     _, claims = setup_admin_user_and_claims
     headers = factory_auth_header(jwt=jwt, claims=claims)

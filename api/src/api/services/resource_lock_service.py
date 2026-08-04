@@ -176,20 +176,6 @@ class ResourceLockService:
         raise BusinessException(error=error, status_code=status_code)
 
     @classmethod
-    def _release_lock_row(
-        cls,
-        *,
-        lock: ResourceLock,
-        reason: str,
-        released_at=None,
-        commit: bool = True,
-    ):
-        lock.released_at = released_at or utc_now()
-        lock.release_reason = reason
-        if commit:
-            lock.commit()
-
-    @classmethod
     def _released_lock_response(cls, lock: Optional[ResourceLock] = None) -> dict[str, Any]:
         return {
             'released': True,
@@ -712,12 +698,8 @@ class ResourceLockService:
             )
 
         # Active row exists but has expired. Release in-place, then create a new lock row.
-        cls._release_lock_row(
-            lock=active,
-            reason='expired_takeover',
-            released_at=now,
-            commit=False,
-        )
+        active.release_by_token(
+            lock_token=active.lock_token, release_reason='expired_takeover')
         db.session.flush()
         return None
 
@@ -761,11 +743,8 @@ class ResourceLockService:
             )
 
         if lock.expires_at <= now:
-            cls._release_lock_row(
-                lock=lock,
-                reason='expired_takeover',
-                released_at=now,
-            )
+            lock.release_by_token(
+                lock_token=lock.lock_token, release_reason='expired_takeover')
             cls._lock_error(
                 code='lock_expired',
                 message='Lock has expired',
@@ -805,7 +784,8 @@ class ResourceLockService:
                 lock=lock,
             )
 
-        cls._release_lock_row(lock=lock, reason=release_reason)
+        lock.release_by_token(
+            lock_token=lock.lock_token, release_reason=release_reason)
         return cls._released_lock_response(lock)
 
     @classmethod
