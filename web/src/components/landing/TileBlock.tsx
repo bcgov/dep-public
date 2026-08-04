@@ -147,8 +147,8 @@ const TileBlock = () => {
                     <Grid>
                         <Pagination
                             defaultPage={1}
-                            page={Number(searchParams.get('page'))}
-                            count={Math.ceil(count / Number(searchParams.get('size')))}
+                            page={Number(searchParams.get('page')) || 1}
+                            count={Math.ceil(count / Number(searchParams.get('size') || 9))}
                             color="primary"
                             showFirstButton
                             showLastButton

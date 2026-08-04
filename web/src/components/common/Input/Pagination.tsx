@@ -1,86 +1,135 @@
 import React from 'react';
-import { Pagination as MuiPagination, PaginationItem, PaginationProps, styled } from '@mui/material';
-import { colors, elevations, globalFocusShadow } from '..';
+import {
+    Grid2 as Grid,
+    Box,
+    Pagination as MuiPagination,
+    PaginationItem,
+    PaginationProps,
+    PaginationRenderItemParams,
+    styled,
+    useMediaQuery,
+    Theme,
+} from '@mui/material';
+import { colors } from '..';
+import { Button } from './Button';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faChevronLeft, faChevronRight } from '@fortawesome/pro-regular-svg-icons';
+import { BodyText } from '../Typography';
 
-const PrimaryButtonStyles = {
-    boxShadow: elevations.default,
-    backgroundColor: colors.button.default.shade,
-    color: colors.type.inverted.primary,
-    '&:focus': {
-        backgroundColor: `color-mix(in srgb, ${colors.button.default.shade}, black 20%)`,
-        boxShadow: elevations.hover,
-    },
-    '&:focus-visible': {
-        backgroundColor: `color-mix(in srgb, ${colors.button.default.shade}, black 20%)`,
-        outline: `2px solid ${colors.focus.regular.outer}`,
-        boxShadow: [globalFocusShadow, elevations.hover].join(','),
-    },
-    '&:hover': {
-        backgroundColor: `color-mix(in srgb, ${colors.button.default.shade}, black 20%)`,
-        boxShadow: elevations.hover,
-        '&:focus-visible': {
-            boxShadow: [globalFocusShadow, elevations.hover].join(','),
+const StyledPaginationItem = styled(PaginationItem)(() => ({
+    minWidth: 44,
+    height: 44,
+    borderRadius: 8,
+
+    border: '1px solid #C8C6C4',
+    backgroundColor: '#FFFFFF',
+
+    '&.Mui-selected': {
+        backgroundColor: colors.surface.blue[80],
+        color: '#FFFFFF',
+
+        '&:hover': {
+            backgroundColor: colors.surface.blue[80],
         },
     },
-    '&:active': {
-        backgroundColor: `color-mix(in srgb, ${colors.button.default.shade}, black 20%)`,
-        boxShadow: elevations.pressed,
-        '&:focus-visible': {
-            boxShadow: [globalFocusShadow, elevations.pressed].join(','),
-        },
-    },
-    '&:disabled': {
-        backgroundColor: '#EDEBE9',
-        boxShadow: 'none',
-        color: colors.type.regular.disabled,
-    },
-};
 
-const SecondaryButtonStyles = {
-    backgroundColor: 'white',
-    color: colors.type.regular.primary,
-    '&:focus': {
-        backgroundColor: '#F8F8F8',
-        boxShadow: elevations.hover,
-        color: colors.type.inverted,
+    '&.MuiPaginationItem-previousNext': {
+        padding: '0 1.5rem',
+        width: 'auto',
+    },
+
+    '&.MuiPaginationItem-ellipsis': {
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        width: '1.5rem',
+        minWidth: '1.5rem',
+        padding: 0,
+        margin: 0,
         border: 'none',
     },
-    '&:focus-visible': {
-        backgroundColor: '#F8F8F8',
-        outline: `2px solid ${colors.focus.regular.outer}`,
-        boxShadow: [globalFocusShadow, elevations.hover].join(','),
-        color: colors.type.inverted,
-        border: 'none',
-    },
-    '&:hover': {
-        backgroundColor: '#F8F8F8',
-        boxShadow: elevations.hover,
-        color: colors.type.inverted,
-        border: 'none',
-        '&:focus-visible': {
-            boxShadow: [globalFocusShadow, elevations.hover].join(','),
-        },
-    },
-    '&:active': {
-        backgroundColor: '#F8F8F8',
-        boxShadow: elevations.pressed,
-        color: colors.type.inverted,
-        border: `2px solid ${colors.surface.gray[110]}`,
-        '&:focus-visible': {
-            boxShadow: [globalFocusShadow, elevations.pressed].join(','),
-        },
-    },
-    '&:disabled': {
-        backgroundColor: 'white',
-        boxShadow: 'none',
-        color: colors.type.regular.disabled,
-    },
-};
-
-const CustomPaginationItem = styled(PaginationItem)(({ selected }) => ({
-    ...(selected ? PrimaryButtonStyles : SecondaryButtonStyles),
 }));
 
+const buttonStyles = {
+    height: '44px',
+    color: '#201F1E',
+    borderColor: '#C8C6C4 !important',
+    fontSize: '14px',
+    boxShadow: 'none',
+    '&:hover, &:active': {
+        boxShadow: 'none',
+    },
+};
+
+/**
+ * A pagination component that wraps around the MUI Pagination component.
+ * It includes icon + text previous/next buttons, <page> of <count> summary, custom neighbour and first/last behavior.
+ * Custom styling and conditional mobile rendering are also utilized.
+ * @param {PaginationProps} props - Props to pass to the MUIPagination component.
+ * @param {number} props.page - The currently selected page of the pagination.
+ * @param {number} props.count - The total number of pages for the pagination.
+ * @param {function} props.onChange - The propagating onChange event that triggers the onChange callback function in the parent component.
+ * @returns {JSX.Element | null}
+ * @see {@link https://mui.com/material-ui/api/pagination/} for more details on the MUI Pagination API.
+ */
 export const Pagination: React.FC<PaginationProps> = (props) => {
-    return <MuiPagination {...props} renderItem={(item) => <CustomPaginationItem {...item} />} />;
+    const { onChange, page, count } = props;
+    if (!page || !count || !onChange) return null;
+
+    const isMobile = useMediaQuery((theme: Theme) => theme.breakpoints.down('sm'), { noSsr: true });
+
+    const buttonIsVisible = (item: PaginationRenderItemParams): boolean => {
+        // Ellipsis -> true
+        if (item.type === 'start-ellipsis' || item.type === 'end-ellipsis') return true;
+        // Render item's page value is not valid -> false
+        if (!item.page) return false;
+        // Page is within -1 or +1 of current page or is the first/last page -> true
+        return Math.abs(item.page - page) <= 1 || item.page === 1 || item.page === count;
+    };
+
+    return (
+        <Grid display="flex" alignItems="center" gap={1} flexDirection={{ xs: 'column', sm: 'row' }} maxWidth="100%">
+            <Box display="flex" alignItems="center" gap={1}>
+                <Button
+                    aria-label="previous page"
+                    sx={{ ...buttonStyles, p: isMobile ? '0 1rem' : '0 1.5rem' }}
+                    startIcon={isMobile ? null : <FontAwesomeIcon icon={faChevronLeft} />}
+                    disabled={page === 1}
+                    onClick={(e) => onChange(e as unknown as React.ChangeEvent<unknown>, Math.max(1, page - 1))}
+                >
+                    Previous
+                </Button>
+
+                <MuiPagination
+                    sx={{ '& ul': { flexWrap: 'nowrap' } }}
+                    {...props}
+                    page={page}
+                    count={count}
+                    hidePrevButton
+                    hideNextButton
+                    showFirstButton={false} // Using custom button for this
+                    showLastButton={false} // Using custom button for this
+                    siblingCount={1}
+                    boundaryCount={1}
+                    renderItem={(item) => {
+                        return buttonIsVisible(item) ? <StyledPaginationItem {...item} /> : null;
+                    }}
+                />
+
+                <Button
+                    aria-label="next page"
+                    sx={{ ...buttonStyles, p: isMobile ? '0 1rem' : '0 1.5rem' }}
+                    endIcon={isMobile ? null : <FontAwesomeIcon icon={faChevronRight} />}
+                    disabled={page === count}
+                    onClick={(e) => onChange(e as unknown as React.ChangeEvent<unknown>, Math.min(count, page + 1))}
+                >
+                    Next
+                </Button>
+            </Box>
+
+            <BodyText aria-label={`Currently on page ${page} of ${count}`} sx={{ padding: '8px' }} color={'#787373'}>
+                Page {page} of {count}
+            </BodyText>
+        </Grid>
+    );
 };
