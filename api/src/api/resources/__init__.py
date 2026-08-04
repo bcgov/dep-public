@@ -64,6 +64,7 @@ from .timeline_event_translation import API as TIMELINE_EVENT_TRANSLATION_API
 from .engagement_translation import API as ENGAGEMENT_TRANSLATION_API
 from .engagement_details_tab_translation import API as ENGAGEMENT_DETAILS_TAB_TRANSLATION_API
 from .engagement_content_translation import API as ENGAGEMENT_CONTENT_TRANSLATION_API
+from .resource_lock import API as RESOURCE_LOCK_API
 from .version import API as VERSION_API
 
 __all__ = ('API_BLUEPRINT',)
@@ -127,6 +128,7 @@ API.add_namespace(ENGAGEMENT_DETAILS_TAB_TRANSLATION_API,
                   path='/engagement/<int:engagement_id>/details/translations')
 API.add_namespace(ENGAGEMENT_CONTENT_TRANSLATION_API,
                   path='/engagement/<int:engagement_id>/content/translations')
+API.add_namespace(RESOURCE_LOCK_API, path='/locks')
 API.add_namespace(VERSION_API, path='/version')
 API.add_namespace(widget_image_translation_api,
                   path='/widget-image-translation')

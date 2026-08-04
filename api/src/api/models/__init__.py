@@ -68,3 +68,4 @@ from .user_group import UserGroup
 from .user_role import UserRole
 from .group_role_mapping import GroupRoleMapping
 from .user_group_membership import UserGroupMembership
+from .resource_lock import ResourceLock

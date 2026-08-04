@@ -1,3 +1,11 @@
+## August 4, 2026
+
+- **Feature** Add API-side locking to Engagements and related resources [🎟️ DEP-282](https://citz-gdx.atlassian.net/browse/DEP-282)
+  - Added a new `ResourceLock` model, schema, and resource to the API to help prevent concurrent edits of engagement resources (Engagement, Engagement Content Tab, Widget, and translations thereof).
+  - Added endpoints for acquiring, refreshing, and releasing locks on resources, as well as getting a lock's state. These endpoints should be used to manage locks during editing sessions.
+  - Updated the Engagement endpoints to check for active locks before allowing updates. If a resource is locked by another user, the API returns a 423 Locked response, preventing conflicting edits.
+  - Added unit tests for the new locking functionality to ensure correct behavior and prevent regressions.
+
 ## July 27, 2026
 
 - **Feature** Re-style Formio components; ensure BC Gov components work properly [🎟️ DEP-276](https://citz-gdx.atlassian.net/browse/DEP-276)

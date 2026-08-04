@@ -125,7 +125,8 @@ class Config:  # pylint: disable=too-few-public-methods
     # Echoes the SQL queries generated - useful for debugging
     SQLALCHEMY_ECHO = env_truthy('SQLALCHEMY_ECHO')
     # Disable modification tracking for performance
-    SQLALCHEMY_TRACK_MODIFICATIONS = env_truthy('SQLALCHEMY_TRACK_MODIFICATIONS')
+    SQLALCHEMY_TRACK_MODIFICATIONS = env_truthy(
+        'SQLALCHEMY_TRACK_MODIFICATIONS')
 
     # Used for session management. Randomized by default for security, but
     # should be set to a fixed value in production to avoid invalidating sessions.
@@ -133,7 +134,8 @@ class Config:  # pylint: disable=too-few-public-methods
 
     # A temporary writable location to unzip shapefile uploads.
     # This folder will be REMOVED after every shapefile conversion.
-    SHAPEFILE_UPLOAD_FOLDER = os.getenv('SHAPEFILE_UPLOAD_FOLDER', '/tmp/uploads')
+    SHAPEFILE_UPLOAD_FOLDER = os.getenv(
+        'SHAPEFILE_UPLOAD_FOLDER', '/tmp/uploads')
 
     # The maximum number of characters allowed in a slug.
     SLUG_MAX_CHARACTERS = int(os.getenv('SLUG_MAX_CHARACTERS', '100'))
@@ -149,11 +151,13 @@ class Config:  # pylint: disable=too-few-public-methods
     USE_DOCKER_MOCK = env_truthy('USE_DOCKER_MOCK')
 
     # Timezone in Victoria, BC
-    LEGISLATIVE_TIMEZONE = os.getenv('LEGISLATIVE_TIMEZONE', 'America/Vancouver')
+    LEGISLATIVE_TIMEZONE = os.getenv(
+        'LEGISLATIVE_TIMEZONE', 'America/Vancouver')
 
     # Used to create the default tenant when setting up the database.
     # Also used for some test cases.
-    DEFAULT_TENANT_SHORT_NAME = os.getenv('DEFAULT_TENANT_SHORT_NAME', 'DEFAULT')
+    DEFAULT_TENANT_SHORT_NAME = os.getenv(
+        'DEFAULT_TENANT_SHORT_NAME', 'DEFAULT')
     DEFAULT_TENANT_NAME = os.getenv('DEFAULT_TENANT_NAME', 'Default Tenant')
     DEFAULT_TENANT_DESCRIPTION = os.getenv(
         'DEFAULT_TENANT_DESCRIPTION',
@@ -171,9 +175,15 @@ class Config:  # pylint: disable=too-few-public-methods
 
     # If enabled, Emails will be send onlt to the internal email address set in constant INTERNAL_EMAIL_DOMAIN
     # such as `@gov.bc.ca` . Mainly used for dev and test environments.
-    SEND_EMAIL_INTERNAL_ONLY = env_truthy('SEND_EMAIL_INTERNAL_ONLY', default=False)
+    SEND_EMAIL_INTERNAL_ONLY = env_truthy(
+        'SEND_EMAIL_INTERNAL_ONLY', default=False)
 
     DEFAULT_LANGUAGE = os.getenv('DEFAULT_LANGUAGE', 'en')
+
+    # Feature flag: when enabled, PATCH /engagements requires lock validation.
+    # Keep disabled until frontend lock UX is ready.
+    ENGAGEMENT_LOCK_VALIDATION_ENABLED = env_truthy(
+        'ENGAGEMENT_LOCK_VALIDATION_ENABLED', default=False)
 
     EPIC_CONFIG = {
         'ENABLED': env_truthy('EPIC_INTEGRATION_ENABLED'),
@@ -371,8 +381,10 @@ class TestConfig(TestKeyConfig, Config):  # pylint: disable=too-few-public-metho
             'KEYCLOAK_TEST_ADMIN_SECRET',
             self.KC['ADMIN_SECRET']
         )
-        self.KC['BASE_URL'] = os.getenv('KEYCLOAK_TEST_BASE_URL', self.KC['BASE_URL'])
-        self.KC['REALMNAME'] = os.getenv('KEYCLOAK_TEST_REALMNAME', self.KC['REALMNAME'])
+        self.KC['BASE_URL'] = os.getenv(
+            'KEYCLOAK_TEST_BASE_URL', self.KC['BASE_URL'])
+        self.KC['REALMNAME'] = os.getenv(
+            'KEYCLOAK_TEST_REALMNAME', self.KC['REALMNAME'])
 
     # Propagate exceptions up to the test runner
     TESTING = env_truthy('TESTING', default=True)
