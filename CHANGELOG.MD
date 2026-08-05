@@ -1,3 +1,10 @@
+## August 5, 2026
+
+- **Feature** Added API-side locking to Surveys [🎟️ DEP-283](https://citz-gdx.atlassian.net/browse/DEP-283)
+  - Updated resource_lock_service to allow locks on Survey resources, including the Survey Builder and other settings sections.
+  - Updated the Survey endpoints to prevent updates if a survey is locked by another user, returning a 423 Locked response.
+  - Added unit tests to ensure correct locking behavior for survey resources.
+
 ## August 4, 2026
 
 - **Feature** Add API-side locking to Engagements and related resources [🎟️ DEP-282](https://citz-gdx.atlassian.net/browse/DEP-282)

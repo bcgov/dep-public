@@ -15,7 +15,7 @@
 
 from http import HTTPStatus
 
-from flask import request
+from flask import g, request
 from flask_cors import cross_origin
 from flask_restx import Namespace, Resource
 
@@ -24,6 +24,7 @@ from api.auth import jwt as _jwt
 from api.exceptions.business_exception import BusinessException
 from api.models.pagination_options import PaginationOptions
 from api.models.survey_search_options import SurveySearchOptions
+from api.resources.lock_validation_decorators import require_survey_builder_lock
 from api.schemas.survey import SurveySchema
 from api.services.survey_service import SurveyService
 from api.utils.roles import Role
@@ -132,12 +133,13 @@ class Surveys(Resource):
     @staticmethod
     @cross_origin(origins=allowedorigins())
     @_jwt.requires_auth
+    @require_survey_builder_lock
     def put():
         """Update a existing survey."""
         try:
-            requestjson = request.get_json()
+            requestjson = dict(g.survey_builder_payload)
             survey_schema = SurveySchema().load(requestjson)
-            user_id = TokenInfo.get_id()
+            user_id = g.lock_validation_user_id
             survey_schema['updated_by'] = user_id
             SurveyService().update(survey_schema)
             return survey_schema, HTTPStatus.OK

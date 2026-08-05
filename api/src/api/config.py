@@ -185,6 +185,10 @@ class Config:  # pylint: disable=too-few-public-methods
     ENGAGEMENT_LOCK_VALIDATION_ENABLED = env_truthy(
         'ENGAGEMENT_LOCK_VALIDATION_ENABLED', default=False)
 
+    # Feature flag: when enabled, survey builder/report-setting writes require lock validation.
+    SURVEY_LOCK_VALIDATION_ENABLED = env_truthy(
+        'SURVEY_LOCK_VALIDATION_ENABLED', default=False)
+
     EPIC_CONFIG = {
         'ENABLED': env_truthy('EPIC_INTEGRATION_ENABLED'),
         'JWT_OIDC_ISSUER': os.getenv('EPIC_JWT_OIDC_ISSUER'),
