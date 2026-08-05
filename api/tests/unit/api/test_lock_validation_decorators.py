@@ -312,8 +312,10 @@ def test_require_survey_builder_lock():
     with app.test_request_context(
         '/resource',
         method='POST',
-        headers={ResourceLockService.LOCK_HEADER_NAME: 'lock-token-1',
-                 "Content-Type": "application/json"},
+        headers={
+            ResourceLockService.LOCK_HEADER_NAME: 'lock-token-1',
+            'Content-Type': 'application/json'
+        },
         json={'id': 123}
     ):
         with patch('api.resources.lock_validation_decorators.TokenInfo.get_id', return_value='user-1'):
