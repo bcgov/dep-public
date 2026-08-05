@@ -2,15 +2,15 @@
 
 from http import HTTPStatus
 
-from flask import jsonify, request
+from flask import g, jsonify
 from flask_cors import cross_origin
 from flask_restx import Namespace, Resource
 
 from api.auth import jwt as _jwt
 from api.exceptions.business_exception import BusinessException
+from api.resources.lock_validation_decorators import require_engagement_content_translation_lock
 from api.services.engagement_details_tab_translation_service import EngagementDetailsTabTranslationService
 from api.services.widget_translation_service import WidgetTranslationService
-from api.utils.token_info import TokenInfo
 from api.utils.util import allowedorigins, cors_preflight
 
 
@@ -70,17 +70,18 @@ class EngagementContentTranslationByLanguage(Resource):
     @staticmethod
     @cross_origin(origins=allowedorigins())
     @_jwt.requires_auth
+    @require_engagement_content_translation_lock()
     def put(engagement_id, language_id):
         """Sync details-tab and/or widget translations for an engagement and language."""
         try:
-            request_json = request.get_json() or {}
+            request_json = g.engagement_content_translation_payload
             details_tabs_payload = request_json.get('details_tabs')
             widgets_payload = request_json.get('widgets')
             timeline_widgets_payload = request_json.get('timeline_widgets')
             events_widgets_payload = request_json.get('events_widgets')
             documents_widgets_payload = request_json.get('documents_widgets')
             image_widgets_payload = request_json.get('image_widgets')
-            user_id = TokenInfo.get_id()
+            user_id = g.lock_validation_user_id
 
             response = {}
             if details_tabs_payload is not None:

@@ -25,10 +25,13 @@ from api.exceptions.business_exception import BusinessException
 from api.schemas import utils as schema_utils
 from api.schemas.engagement_translation import EngagementTranslationSchema
 from api.services.engagement_translation_service import EngagementTranslationService
+from api.services.resource_lock_service import ResourceLockService
+from api.utils.token_info import TokenInfo
 from api.utils.util import allowedorigins, cors_preflight
 
 
-API = Namespace('engagement_translation', description='Endpoints for Engagement translation Management')
+API = Namespace('engagement_translation',
+                description='Endpoints for Engagement translation Management')
 
 
 @cors_preflight('GET, OPTIONS')
@@ -61,7 +64,8 @@ class EngagementTranslations(Resource):
         try:
             request_json = request.get_json()
             request_json['engagement_id'] = engagement_id
-            valid_format, errors = schema_utils.validate(request_json, 'engagement_translation')
+            valid_format, errors = schema_utils.validate(
+                request_json, 'engagement_translation')
             if not valid_format:
                 return {'message': schema_utils.serialize(errors)}, HTTPStatus.BAD_REQUEST
 
@@ -123,10 +127,21 @@ class EngagementTranslation(Resource):
         """Update engagement translation."""
         try:
             request_json = request.get_json() or {}
-            translation_data = EngagementTranslationSchema(partial=True).load(request_json)
+            translation_data = EngagementTranslationSchema(
+                partial=True).load(request_json)
+            ResourceLockService.validate_engagement_translation_lock_by_id(
+                engagement_id=engagement_id,
+                engagement_translation_id=engagement_translation_id,
+                translation_payload=translation_data,
+                lock_token=request.headers.get(
+                    ResourceLockService.LOCK_HEADER_NAME),
+                owner_user_sub=TokenInfo.get_id(),
+            )
             updated_engagement = EngagementTranslationService().update_engagement_translation(
                 engagement_id, engagement_translation_id, translation_data)
             return updated_engagement, HTTPStatus.OK
+        except BusinessException as err:
+            return err.error, err.status_code
         except ValueError as err:
             return str(err), HTTPStatus.NOT_FOUND
         except ValidationError as err:

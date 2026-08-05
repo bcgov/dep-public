@@ -16,17 +16,22 @@
 import json
 from http import HTTPStatus
 
-from flask import current_app, request
+from flask import current_app, g, request
 from flask_cors import cross_origin
 from flask_restx import Namespace, Resource
 from marshmallow import ValidationError
 
 from api.auth import auth
 from api.auth import jwt as _jwt
+from api.constants.membership_type import MembershipType
+from api.exceptions.business_exception import BusinessException
 from api.models.pagination_options import PaginationOptions
 from api.models.tenant import Tenant as TenantModel
+from api.resources.lock_validation_decorators import require_engagement_patch_lock
 from api.schemas.engagement import EngagementSchema
 from api.services.engagement_service import EngagementService
+from api.services import authorization
+from api.services.resource_lock_service import ResourceLockService
 from api.utils.roles import Role
 from api.utils.tenant_validator import require_role
 from api.utils.token_info import TokenInfo
@@ -62,6 +67,35 @@ class Engagement(Resource):
             return ENGAGEMENT_NOT_FOUND, HTTPStatus.NOT_FOUND
         except ValueError as err:
             return str(err), HTTPStatus.INTERNAL_SERVER_ERROR
+
+
+@cors_preflight('GET,OPTIONS')
+@API.route('/<int:engagement_id>/locks')
+class EngagementLocks(Resource):
+    """Resource for lock status on a single engagement."""
+
+    @staticmethod
+    @cross_origin(origins=allowedorigins())
+    @_jwt.requires_auth
+    def get(engagement_id: int):
+        """Fetch active locks for an engagement."""
+        try:
+            authorization.check_auth(
+                one_of_roles=(MembershipType.TEAM_MEMBER.name,
+                              Role.EDIT_ENGAGEMENT.value),
+                engagement_id=engagement_id,
+            )
+            owner_user_sub = TokenInfo.get_id()
+            owner_session_id = request.args.get('owner_session_id')
+            response = ResourceLockService.get_active_locks_for_resource(
+                resource_type=ResourceLockService.RESOURCE_TYPE_ENGAGEMENT_SECTION,
+                resource_id=engagement_id,
+                requester_user_sub=owner_user_sub,
+                requester_session_id=owner_session_id,
+            )
+            return response, HTTPStatus.OK
+        except BusinessException as err:
+            return err.error, err.status_code
 
 
 @cors_preflight('GET,OPTIONS')
@@ -199,17 +233,16 @@ class Engagements(Resource):
     @staticmethod
     @cross_origin(origins=allowedorigins())
     @_jwt.requires_auth
+    @require_engagement_patch_lock
     def patch():
         """Update saved engagement partially."""
         try:
-            requestjson = request.get_json()
-            user_id = TokenInfo.get_id()
+            requestjson = dict(g.engagement_patch_payload)
+            user_id = g.engagement_patch_user_id
             requestjson['updated_by'] = user_id
 
             engagement_schema = EngagementSchema()
             payload = engagement_schema.load(requestjson, partial=True)
-            if not isinstance(payload, dict):
-                return 'Invalid engagement payload', HTTPStatus.BAD_REQUEST
             engagement = EngagementService().edit_engagement(payload)
 
             return engagement_schema.dump(engagement), HTTPStatus.OK
