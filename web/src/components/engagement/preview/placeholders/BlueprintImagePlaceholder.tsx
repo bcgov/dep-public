@@ -82,7 +82,6 @@ export const BlueprintImagePlaceholder: React.FC<BlueprintImagePlaceholderProps>
                     padding: 4,
                     maxWidth: '600px',
                     textWrap: 'nowrap',
-                    writingMode: { xs: 'horizontal-tb', md: 'sideways-lr', lg: 'horizontal-tb' },
                     ...textProps?.sx,
                 }}
             >
