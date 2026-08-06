@@ -79,14 +79,10 @@ const SortSelect = ({ sort }: { sort: string }) => {
 
     const updateSort = (event: SelectChangeEvent<unknown>) => {
         const newString = String(event.target.value);
-        if (!newString) return;
-        const [key, order] = newString?.split(':');
-        setSearchParams(
-            updateSearchParams(
-                { sort_key: key || undefined, sort_order: (order || undefined) as SortOrder },
-                searchParams,
-            ),
-        );
+        if (!newString || !newString.includes(':')) return;
+        const [key, order] = newString.split(':');
+        if (!key || !order) return;
+        setSearchParams(updateSearchParams({ sort_key: key, sort_order: order as SortOrder }, searchParams));
     };
 
     return (
