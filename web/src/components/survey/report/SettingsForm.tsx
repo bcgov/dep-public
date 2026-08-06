@@ -1,6 +1,6 @@
 import React, { Suspense, useState } from 'react';
-import { Await, useNavigate, useRevalidator, useAsyncValue } from 'react-router';
-import { ClickAwayListener, Grid2 as Grid, Stack, InputAdornment, Tooltip, Skeleton, Paper } from '@mui/material';
+import { useNavigate, useRevalidator, useParams } from 'react-router';
+import { ClickAwayListener, Grid2 as Grid, Stack, InputAdornment, Tooltip, Skeleton } from '@mui/material';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCopy } from '@fortawesome/pro-regular-svg-icons/faCopy';
 import SettingsTable from './SettingsTable';
@@ -18,32 +18,30 @@ import { RouterLinkRenderer } from 'components/common/Navigation/Link';
 import { AppConfig } from 'config';
 import { useSurveyLoaderData } from '../useSurveyLoaderData';
 import { Awaited } from 'utils';
+import { AutoBreadcrumbs } from 'components/common/Navigation/Breadcrumb';
+import { ResponsiveContainer } from 'components/common/Layout';
 
 const SettingsFormPage = () => {
-    const { survey, engagement, reportSettings } = useSurveyLoaderData();
     return (
-        <Grid
-            container
-            spacing={2}
-            sx={{ display: 'flex', flexDirection: 'column', width: '100%', maxWidth: '1000px', mt: '3rem' }}
-        >
-            <Paper elevation={0} sx={{ padding: '3rem', mr: '1rem' }}>
-                <Heading3 style={{ fontWeight: 'bold', marginBottom: '3rem' }}>Report Settings</Heading3>
-                <Suspense fallback={<Skeleton variant="rectangular" height="10em" width="100%" />}>
-                    <Await
-                        resolve={{ survey, engagement, reportSettings }}
-                        errorElement={<div>Error loading report settings</div>}
-                    >
-                        <SettingsForm />
-                    </Await>
-                </Suspense>
-            </Paper>
-        </Grid>
+        <ResponsiveContainer>
+            <Grid size={12} mb={1}>
+                <AutoBreadcrumbs />
+            </Grid>
+            <Heading3 style={{ fontWeight: 'bold', marginBottom: '3rem' }}>Report Settings</Heading3>
+            <Suspense fallback={<Skeleton variant="rectangular" height="10em" width="100%" />}>
+                <SettingsForm />
+            </Suspense>
+        </ResponsiveContainer>
     );
 };
 
 const SettingsForm = () => {
-    const { survey, engagement, reportSettings } = useAsyncValue() as Awaited<SurveyLoaderData>;
+    const surveyId = useParams<{ surveyId: string }>().surveyId ?? 0;
+    const loaderData = useSurveyLoaderData();
+    const survey = React.use(loaderData.survey) as Awaited<SurveyLoaderData>['survey'];
+    const engagement = React.use(loaderData.engagement) as Awaited<SurveyLoaderData>['engagement'];
+    const reportSettings = React.use(loaderData.reportSettings) as Awaited<SurveyLoaderData>['reportSettings'];
+    console.log('reportSettings', reportSettings);
     const [searchTerm, setSearchTerm] = useState<string>('');
     const engagementSlug = engagement?.slug;
     const [displayedSettings, setDisplayedSettings] = useState<{ [key: number]: boolean }>({});
@@ -102,7 +100,7 @@ const SettingsForm = () => {
     const baseUrl = getBaseUrl();
     const engagementUrl = !engagementSlug
         ? 'Link will appear when the survey is linked to an engagement'
-        : `${baseUrl}/${getPath(ROUTES.PUBLIC_DASHBOARD_BY_SLUG, { slug: engagementSlug, dashboardType: 'report', language })}`;
+        : `${baseUrl}${getPath(ROUTES.PUBLIC_DASHBOARD_BY_SLUG, { slug: engagementSlug, dashboardType: 'report', language })}`;
 
     const handleTooltipClose = () => {
         setCopyTooltip(false);
@@ -177,13 +175,12 @@ const SettingsForm = () => {
             </Grid>
             <Grid size={12}>
                 <Suspense fallback={<Skeleton variant="rectangular" height="10em" width="100%" />}>
-                    <Await resolve={reportSettings}>
-                        <SettingsTable
-                            displayedMap={displayedSettings}
-                            setDisplayedMap={setDisplayedSettings}
-                            searchTerm={searchTerm}
-                        />
-                    </Await>
+                    <SettingsTable
+                        displayedMap={displayedSettings}
+                        setDisplayedMap={setDisplayedSettings}
+                        searchTerm={searchTerm}
+                        surveyReportSettings={reportSettings ?? []}
+                    />
                 </Suspense>
             </Grid>
             <Grid>
@@ -191,10 +188,7 @@ const SettingsForm = () => {
                     <Button variant="primary" onClick={handleSaveSettings} data-testid="survey/report/save-button">
                         Save
                     </Button>
-                    <Button
-                        LinkComponent={RouterLinkRenderer}
-                        href={getPath(ROUTES.SURVEY_BUILD, { surveyId: survey?.id })}
-                    >
+                    <Button LinkComponent={RouterLinkRenderer} href={getPath(ROUTES.SURVEY_BUILD, { surveyId })}>
                         Back
                     </Button>
                 </Stack>

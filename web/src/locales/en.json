@@ -92,19 +92,13 @@
                 "from": "From: ",
                 "to": "To: ",
                 "reset": "Reset All Filters",
-                "toggleBy": [
-                    "Weekly",
-                    "Monthly"
-                ]
+                "toggleBy": ["Weekly", "Monthly"]
             }
         },
         "barBlock": {
             "label": "Survey Results",
             "questionLabel": "Click on a question to view results below",
-            "charType": [
-                "Show as Bar Chart",
-                "Show as TreeMap Chart"
-            ],
+            "charType": ["Show as Bar Chart", "Show as TreeMap Chart"],
             "button": "Read Comments",
             "questionBarBlock": "Question"
         }
@@ -121,10 +115,7 @@
         },
         "table": {
             "emptyText": "Engagement does not have any published comments",
-            "label": [
-                "Comment",
-                "Comment Date"
-            ]
+            "label": ["Comment", "Comment Date"]
         }
     },
     "surveyEdit": {
@@ -145,6 +136,7 @@
         }
     },
     "surveySubmit": {
+        "backToEngagement": "Back to Engagement",
         "inValidToken": {
             "header": "Oops! Something Went Wrong",
             "bodyLine1": "You are trying to access a survey through an invalid link, please check the possible reasons:",
@@ -152,8 +144,7 @@
                 "The survey link is expired (24 hours).",
                 "This link has already been previously used.",
                 "The engagement period is over."
-            ],
-            "button": "Back to Engagement"
+            ]
         },
         "surveyForm": {
             "button": {
@@ -174,11 +165,7 @@
     "NoResults": {
         "header": "Unfortunately we couldn’t find any matching engagements.",
         "paragraph": "Here are some things you can try:",
-        "list": [
-            "Reduce the number of filters applied",
-            "Clear all applied filters",
-            "Use a more generic search term"
-        ],
+        "list": ["Reduce the number of filters applied", "Clear all applied filters", "Use a more generic search term"],
         "contact": {
             "header": "Still can’t find what you’re looking for?",
             "paragraph": "Please contact us, we are here to help.",

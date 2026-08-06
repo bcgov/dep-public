@@ -56,8 +56,12 @@ class StaffUsers(Resource):
         try:
             user_data = TokenInfo.get_user_data()
             user = StaffUserService().create_or_update_user(user_data)
-            user.roles = current_app.config['JWT_ROLE_CALLBACK'](g.jwt_oidc_token_info)
+            user.roles = current_app.config['JWT_ROLE_CALLBACK'](
+                g.jwt_oidc_token_info)
             user_info = StaffUserSchema().dump(user)
+            if user:
+                current_app.logger.debug(
+                    'User Login: %s - %s, %s', user.external_id, user.last_name, user.first_name)
             StaffUserService.attach_roles([user_info])
             return user_info, HTTPStatus.OK
         except KeyError as err:
@@ -80,8 +84,10 @@ class StaffUsers(Resource):
         users = StaffUserService.find_users(
             pagination_options=pagination_options,
             search_text=args.get('search_text', '', str),
-            include_roles=args.get('include_roles', default=False, type=lambda v: v.lower() == 'true'),
-            include_inactive=args.get('include_inactive', default=False, type=lambda v: v.lower() == 'true')
+            include_roles=args.get(
+                'include_roles', default=False, type=lambda v: v.lower() == 'true'),
+            include_inactive=args.get(
+                'include_inactive', default=False, type=lambda v: v.lower() == 'true')
         )
         return jsonify(users), HTTPStatus.OK
 
@@ -99,7 +105,8 @@ class StaffUser(Resource):
         args = request.args
         user = StaffUserService.get_user_by_id(
             user_id,
-            include_roles=args.get('include_roles', default=False, type=lambda v: v.lower() == 'true'),
+            include_roles=args.get(
+                'include_roles', default=False, type=lambda v: v.lower() == 'true'),
             include_inactive=True,
         )
         return user, HTTPStatus.OK
@@ -111,7 +118,8 @@ class StaffUser(Resource):
         """Permanently delete an inactive user."""
         try:
             user_data = TokenInfo.get_user_data()
-            response = StaffUserService.delete_deactivated_user(user_id, user_data.get('external_id'))
+            response = StaffUserService.delete_deactivated_user(
+                user_id, user_data.get('external_id'))
             return response, HTTPStatus.OK
         except BusinessException as err:
             return {'message': err.error}, err.status_code
@@ -153,7 +161,8 @@ class UserRoles(Resource):
         """Add user to composite roles."""
         try:
             args = request.args
-            user_schema = StaffUserService().assign_composite_role_to_user(user_id, args.get('role'))
+            user_schema = StaffUserService().assign_composite_role_to_user(
+                user_id, args.get('role'))
             return user_schema, HTTPStatus.OK
         except KeyError as err:
             return str(err), HTTPStatus.INTERNAL_SERVER_ERROR
@@ -191,7 +200,8 @@ class EngagementMemberships(Resource):
         """Get engagement details by user id."""
         try:
             members = MembershipService.get_engagements_by_user(user_id)
-            engagement_schema = EngagementSchema(exclude=['surveys', 'rich_content', 'rich_description'], many=True)
+            engagement_schema = EngagementSchema(
+                exclude=['surveys', 'rich_content', 'rich_description'], many=True)
             return jsonify(engagement_schema.dump(members, many=True)), HTTPStatus.OK
         except BusinessException as err:
             return {'message': err.error}, err.status_code
@@ -210,8 +220,8 @@ class UserTenants(Resource):
         if user_id == 'me':
             user_data = TokenInfo.get_user_data()
             user_id = user_data.get('external_id')
-            current_app.logger.debug('User ID: %s', user_id)
-            user_roles = current_app.config['JWT_ROLE_CALLBACK'](g.jwt_oidc_token_info)
+            user_roles = current_app.config['JWT_ROLE_CALLBACK'](
+                g.jwt_oidc_token_info)
             if Role.SUPER_ADMIN.value in user_roles:
                 return TenantService.get_all(), HTTPStatus.OK
         else:
@@ -224,7 +234,8 @@ class UserTenants(Resource):
 
         try:
             members = UserGroupMembershipService.get_user_memberships(user_id)
-            tenants = TenantSchema().dumps([member.tenant for member in members], many=True)
+            tenants = TenantSchema().dumps(
+                [member.tenant for member in members], many=True)
             return tenants, HTTPStatus.OK
         except BusinessException as err:
             return {'message': err.error}, err.status_code

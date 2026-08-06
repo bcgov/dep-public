@@ -4,12 +4,12 @@ import { HeadCell } from 'components/common/Table/types';
 import CustomTable from 'components/common/Table';
 import { ClientSidePagination } from 'components/common/Table/ClientSidePagination';
 import { SurveyReportSetting } from 'models/surveyReportSetting';
-import { useAsyncValue } from 'react-router';
 
 const SettingsTable = ({
     displayedMap,
     setDisplayedMap,
     searchTerm,
+    surveyReportSettings,
 }: {
     displayedMap: { [key: number]: boolean };
     setDisplayedMap: React.Dispatch<
@@ -18,9 +18,8 @@ const SettingsTable = ({
         }>
     >;
     searchTerm: string;
+    surveyReportSettings: SurveyReportSetting[];
 }) => {
-    const surveyReportSettings = useAsyncValue() as SurveyReportSetting[];
-
     useEffect(() => {
         const map = surveyReportSettings.reduce(
             (acc, curr) => {

@@ -31,12 +31,17 @@ class Survey(BaseModel):  # pylint: disable=too-few-public-methods
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.String(50), index=True)
-    form_json = db.Column(postgresql.JSONB(astext_type=db.Text()), nullable=False, server_default='{}')
-    engagement_id = db.Column(db.Integer, ForeignKey('engagement.id', ondelete='SET NULL'), nullable=True)
-    comments = db.relationship('Comment', backref='survey', cascade='all, delete')
-    submissions = db.relationship('Submission', backref='survey', cascade='all, delete')
+    form_json = db.Column(postgresql.JSONB(
+        astext_type=db.Text()), nullable=False, server_default='{}')
+    engagement_id = db.Column(db.Integer, ForeignKey(
+        'engagement.id', ondelete='SET NULL'), nullable=True)
+    comments = db.relationship(
+        'Comment', backref='survey', cascade='all, delete')
+    submissions = db.relationship(
+        'Submission', backref='survey', cascade='all, delete')
     # Survey templates might not need tenant id
-    tenant_id = db.Column(db.Integer, db.ForeignKey('tenant.id'), nullable=True)
+    tenant_id = db.Column(
+        db.Integer, db.ForeignKey('tenant.id'), nullable=True)
     is_hidden = db.Column(db.Boolean, nullable=False)
     is_template = db.Column(db.Boolean, nullable=False)
     generate_dashboard = db.Column(db.Boolean, default=True)
@@ -139,14 +144,17 @@ class Survey(BaseModel):  # pylint: disable=too-few-public-methods
         # if role has access to view all engagements then include all surveys which are in ready status or
         # surveys linked to draft and assigned engagements
         if survey_search_options.can_view_all_engagements:
-            if survey_search_options.assigned_engagements is not None:
-                query = cls._filter_accessible_surveys(query, survey_search_options.assigned_engagements)
+            if survey_search_options.assigned_engagements:
+                query = cls._filter_accessible_surveys(
+                    query, survey_search_options.assigned_engagements)
         # else include all surveys linked to assigned engagements
         else:
-            query = query.filter(Engagement.id.in_(survey_search_options.assigned_engagements))
+            query = query.filter(Engagement.id.in_(
+                survey_search_options.assigned_engagements))
 
         if survey_search_options.search_text:
-            query = query.filter(Survey.name.ilike('%' + survey_search_options.search_text + '%'))
+            query = query.filter(Survey.name.ilike(
+                '%' + survey_search_options.search_text + '%'))
         return query
 
     @classmethod
@@ -229,17 +237,21 @@ class Survey(BaseModel):  # pylint: disable=too-few-public-methods
     @staticmethod
     def _filter_by_created_date(query, search_options: SurveySearchOptions):
         if search_options.created_date_from:
-            query = query.filter(Survey.created_date >= search_options.created_date_from)
+            query = query.filter(Survey.created_date >=
+                                 search_options.created_date_from)
         if search_options.created_date_to:
-            query = query.filter(Survey.created_date <= search_options.created_date_to)
+            query = query.filter(Survey.created_date <=
+                                 search_options.created_date_to)
         return query
 
     @classmethod
     def _filter_by_published_date(cls, query, search_options: SurveySearchOptions):
         if search_options.published_date_from:
-            query = query.filter(Engagement.published_date >= search_options.published_date_from)
+            query = query.filter(Engagement.published_date >=
+                                 search_options.published_date_from)
         if search_options.published_date_to:
-            query = query.filter(Engagement.published_date <= search_options.published_date_to)
+            query = query.filter(Engagement.published_date <=
+                                 search_options.published_date_to)
         return query
 
     @classmethod

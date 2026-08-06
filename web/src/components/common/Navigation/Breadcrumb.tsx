@@ -1,5 +1,5 @@
-import { Breadcrumbs } from '@mui/material';
-import React, { useMemo } from 'react';
+import { Breadcrumbs, Skeleton } from '@mui/material';
+import React, { Suspense, useMemo } from 'react';
 import { BodyText } from '../Typography';
 import { Link } from '.';
 import { UIMatch, useMatches } from 'react-router';
@@ -78,7 +78,7 @@ export interface UIMatchWithCrumb extends UIMatch<unknown, UIRouteHandle> {}
  * @param {boolean} [props.smallScreenOnly] - If true, only displays the breadcrumbs on small screens.
  * @returns A list of breadcrumbs.
  */
-export const AutoBreadcrumbs: React.FC<{ smallScreenOnly?: boolean }> = ({ smallScreenOnly }) => {
+const UnsuspendedAutoBreadcrumbs: React.FC<{ smallScreenOnly?: boolean }> = ({ smallScreenOnly }) => {
     const matches = (useMatches() as UIMatchWithCrumb[]).filter((match) => match.handle?.crumb);
     const matchKey = matches.map((m) => m.pathname).join('|');
 
@@ -142,5 +142,15 @@ export const AutoBreadcrumbs: React.FC<{ smallScreenOnly?: boolean }> = ({ small
                 );
             })}
         </Breadcrumbs>
+    );
+};
+
+export const AutoBreadcrumbs = (props: { smallScreenOnly?: boolean } = {}) => {
+    return (
+        // Suspend the component so that it can use React.use() to resolve any promises returned by the crumb functions.
+        // This allows us to smoothly handle async data fetching for breadcrumb names.
+        <Suspense fallback={<Skeleton variant="text" width={200} height={24} sx={{ lineHeight: '24px' }} />}>
+            <UnsuspendedAutoBreadcrumbs smallScreenOnly={props.smallScreenOnly} />
+        </Suspense>
     );
 };

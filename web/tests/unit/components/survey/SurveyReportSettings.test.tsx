@@ -8,6 +8,7 @@ import ReportSettings from 'components/survey/report';
 import { createMemoryRouter, RouterProvider } from 'react-router';
 import { SurveyReportSetting } from 'models/surveyReportSetting';
 import { createDefaultEngagement } from 'models/engagement';
+import * as surveyLoaderHook from 'components/survey/useSurveyLoaderData';
 
 global['Request'] = jest.fn().mockImplementation((input: string = '', init: RequestInit = {}) => ({
     // React Router data APIs call toUpperCase on request.method; default to GET
@@ -148,10 +149,21 @@ describe('Survey report settings tests', () => {
         Promise<SurveyReportSetting[]>,
         [string, SurveyReportSetting[]]
     >;
+    let reactUseSpy: jest.SpyInstance;
 
     beforeEach(() => {
         setupEnv();
         jest.clearAllMocks();
+
+        reactUseSpy = jest.spyOn(React, 'use').mockImplementation((value: unknown) => value as never);
+
+        jest.spyOn(surveyLoaderHook, 'useSurveyLoaderData').mockReturnValue({
+            survey,
+            reportSettings: SurveyReportSettings,
+            engagement: draftEngagement,
+            verification: null,
+            submission: null,
+        } as never);
 
         updateSurveyReportSettingsMock = jest
             .spyOn(reportSettingsService, 'updateSurveyReportSettings')
@@ -177,6 +189,7 @@ describe('Survey report settings tests', () => {
 
     afterEach(() => {
         __TESTING__.submitImplRef.impl = undefined;
+        reactUseSpy.mockRestore();
     });
 
     function renderPage() {

@@ -39,7 +39,7 @@ export const PublicLayout = () => {
                 <NotificationModal />
                 {isAuthenticated ? <InternalHeader constrained showSideNav={false} /> : <PublicHeader />}
                 <ScrollToTop />
-                <Box component="main" sx={{ marginTop: isAuthenticated ? '3.375em' : 0 }}>
+                <Box component="main" sx={{ marginTop: isAuthenticated ? '3em' : 0 }}>
                     <Outlet />
                 </Box>
                 <FeedbackModal />

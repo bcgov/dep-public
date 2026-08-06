@@ -2,16 +2,18 @@
 
 from http import HTTPStatus
 
-from flask import jsonify, request
+from flask import g, jsonify, request
 from flask_cors import cross_origin
 from flask_restx import Namespace, Resource
 from marshmallow import ValidationError
 
 from api.auth import jwt as _jwt
 from api.exceptions.business_exception import BusinessException
+from api.resources.lock_validation_decorators import (
+    lock_error_message, lock_error_status_failure, require_engagement_section_lock)
 from api.schemas import utils as schema_utils
 from api.services.engagement_details_tab_translation_service import EngagementDetailsTabTranslationService
-from api.utils.token_info import TokenInfo
+from api.services.resource_lock_service import ResourceLockService
 from api.utils.util import allowedorigins, cors_preflight
 
 
@@ -42,12 +44,21 @@ class EngagementDetailsTabTranslationsByLanguage(Resource):
     @staticmethod
     @cross_origin(origins=allowedorigins())
     @_jwt.requires_auth
+    @require_engagement_section_lock(
+        section_key=ResourceLockService.SECTION_AUTHORING_DETAILS,
+        language_kwarg='language_id',
+        error_builder=lock_error_message,
+        invalid_language_response=(
+            {'message': 'language_id must be an integer'}, HTTPStatus.BAD_REQUEST),
+    )
     def post(engagement_id, language_id):
         """Create new details tab translations for an engagement and language (single or bulk)."""
         try:
+            language_id_int = g.lock_validation_language_id
             request_json = request.get_json()
             schema_id = 'engagement_details_tab_translation'
-            payload = request_json if isinstance(request_json, list) else [request_json]
+            payload = request_json if isinstance(
+                request_json, list) else [request_json]
 
             for idx, item in enumerate(payload):
                 item.setdefault('language_id', language_id)
@@ -64,23 +75,38 @@ class EngagementDetailsTabTranslationsByLanguage(Resource):
                 EngagementDetailsTabTranslationService()
                 .create_translations(
                     engagement_id,
-                    language_id,
+                    language_id_int,
                     payload,
                 )
             )
             return jsonify(created_translations), HTTPStatus.CREATED
+        except BusinessException as err:
+            return {'message': err.error}, err.status_code
         except ValidationError as err:
             return {'message': err.messages}, HTTPStatus.BAD_REQUEST
+        except ValueError:
+            return {'message': 'language_id must be an integer'}, HTTPStatus.BAD_REQUEST
 
     @staticmethod
     @cross_origin(origins=allowedorigins())
     @_jwt.requires_auth
+    @require_engagement_section_lock(
+        section_key=ResourceLockService.SECTION_AUTHORING_DETAILS,
+        language_kwarg='language_id',
+        error_builder=lock_error_status_failure,
+        invalid_language_response=(
+            {'status': 'failure', 'message': 'language_id must be an integer'},
+            HTTPStatus.BAD_REQUEST,
+        ),
+    )
     def put(engagement_id, language_id):
         """Bulk update details tabs for an engagement (sync create/update/delete)."""
         try:
+            language_id_int = g.lock_validation_language_id
             request_json = request.get_json()
             schema_id = 'engagement_details_tab_translation'
-            payload = request_json if isinstance(request_json, list) else [request_json]
+            payload = request_json if isinstance(
+                request_json, list) else [request_json]
 
             for idx, item in enumerate(payload):
                 item.setdefault('language_id', language_id)
@@ -95,12 +121,14 @@ class EngagementDetailsTabTranslationsByLanguage(Resource):
                     )
             updated_translations = EngagementDetailsTabTranslationService().sync_translations(
                 engagement_id,
-                language_id,
+                language_id_int,
                 payload,
-                user_id=TokenInfo.get_id(),
+                user_id=g.lock_validation_user_id,
             )
             return jsonify(updated_translations), HTTPStatus.OK
         except BusinessException as err:
-            return {'status': 'failure', 'message': err.error}, HTTPStatus.BAD_REQUEST
+            return {'status': 'failure', 'message': err.error}, err.status_code
         except ValidationError as err:
             return {'status': 'failure', 'message': err.messages}, HTTPStatus.BAD_REQUEST
+        except ValueError:
+            return {'status': 'failure', 'message': 'language_id must be an integer'}, HTTPStatus.BAD_REQUEST

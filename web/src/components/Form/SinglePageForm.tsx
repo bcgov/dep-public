@@ -13,12 +13,10 @@ const SinglePageForm = ({
     const simpleFileOptions = createSimpleFileOptions({ verificationToken });
 
     return (
-        <div className="formio">
+        <div className="formio singlepageform form-wrapper">
             <Form
                 form={savedForm || { display: 'form' }}
-                options={{
-                    ...simpleFileOptions,
-                }}
+                options={simpleFileOptions}
                 onCancel={() => handleFormCancel?.()}
                 onChange={(form: unknown) => handleFormChange(form as FormSubmissionData)}
                 onSubmit={(form: unknown) => handleFormSubmit?.((form as FormSubmissionData).data)}

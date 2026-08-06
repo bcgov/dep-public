@@ -3,6 +3,25 @@
 - **Feature** Added updated pagination component, engagement sorting, and engagement count [🎟️ DEP-317](https://citz-gdx.atlassian.net/browse/DEP-317)
   - Updated translation strings
 
+## August 4, 2026
+
+- **Feature** Add API-side locking to Engagements and related resources [🎟️ DEP-282](https://citz-gdx.atlassian.net/browse/DEP-282)
+  - Added a new `ResourceLock` model, schema, and resource to the API to help prevent concurrent edits of engagement resources (Engagement, Engagement Content Tab, Widget, and translations thereof).
+  - Added endpoints for acquiring, refreshing, and releasing locks on resources, as well as getting a lock's state. These endpoints should be used to manage locks during editing sessions.
+  - Updated the Engagement endpoints to check for active locks before allowing updates. If a resource is locked by another user, the API returns a 423 Locked response, preventing conflicting edits.
+  - Added unit tests for the new locking functionality to ensure correct behavior and prevent regressions.
+
+## July 27, 2026
+
+- **Feature** Re-style Formio components; ensure BC Gov components work properly [🎟️ DEP-276](https://citz-gdx.atlassian.net/browse/DEP-276)
+  - Ensured all Formio imports come from the same package, which means all components are brought into the same runtime when using Formio.use(). This fixes an issue where some components were unable to render certain other components as children.
+  - Updated Formio component styles to match BC Gov design system, including button sizes, focus states, and other visual elements. This ensures a consistent look and feel across the application. Also imported some style overrides from the CHEFS frontend.
+  - Created custom overrides to ensure focus states and buttons feel at home within DEP.
+  - Added focusability for buttons that lacked tabindex and aria roles, improving accessibility for keyboard and screen reader users.
+  - Removed kludged Bootstrap styles and imported Bootstrap SCSS directly into the Formio SCSS file, allowing for better control over styling and ensuring Bootstrap does not overwrite outer components.
+  - Removed buggy Typescript declarations for Formio.Utils; import directly from Formio instead
+  - Moved admin survey preview page; adjusted link name
+
 ## July 09, 2026
 
 - **Chore** Removed French as a required language for multi-language engagements [🎟️ DEP-321](https://citz-gdx.atlassian.net/browse/DEP-321)
