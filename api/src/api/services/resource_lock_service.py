@@ -24,9 +24,11 @@ class ResourceLockService:
 
     LOCK_HEADER_NAME = 'X-Resource-Lock-Token'
     ENGAGEMENT_PATCH_VALIDATION_FLAG = 'ENGAGEMENT_LOCK_VALIDATION_ENABLED'
+    SURVEY_LOCK_VALIDATION_FLAG = 'SURVEY_LOCK_VALIDATION_ENABLED'
     DEFAULT_TTL_SECONDS = 90
 
     RESOURCE_TYPE_ENGAGEMENT_SECTION = 'engagement_section'
+    RESOURCE_TYPE_SURVEY = 'survey'
 
     SECTION_AUTHORING_BANNER = 'authoring.banner'
     SECTION_AUTHORING_SUMMARY = 'authoring.summary'
@@ -35,6 +37,9 @@ class ResourceLockService:
     SECTION_AUTHORING_SUBSCRIBE = 'authoring.subscribe'
     SECTION_AUTHORING_MORE = 'authoring.more'
     SECTION_CONFIG_GENERAL = 'config.general'
+
+    SECTION_SURVEY_BUILDER = 'survey.builder'
+    SECTION_SURVEY_REPORT_SETTINGS = 'survey.report_settings'
 
     WIDGET_LOCATION_SUMMARY = 1
     WIDGET_LOCATION_DETAILS = 2
@@ -877,6 +882,38 @@ class ResourceLockService:
             return False
 
         return bool(current_app.config.get(cls.ENGAGEMENT_PATCH_VALIDATION_FLAG, False))
+
+    @classmethod
+    def is_survey_lock_validation_enabled(cls) -> bool:
+        """Feature flag gate for survey lock enforcement."""
+        if not has_app_context():
+            return False
+
+        return bool(current_app.config.get(cls.SURVEY_LOCK_VALIDATION_FLAG, False))
+
+    @classmethod
+    def validate_survey_section_lock(  # pylint: disable=too-many-arguments
+        cls,
+        *,
+        survey_id: int,
+        section_key: str,
+        lock_token: Optional[str],
+        owner_user_sub: str,
+    ) -> Optional[ResourceLock]:
+        """Validate a lock token for a survey section scope."""
+        if not cls.is_survey_lock_validation_enabled():
+            return None
+
+        expected_scope = cls.build_scope_key(
+            cls.RESOURCE_TYPE_SURVEY,
+            survey_id,
+            section_key,
+        )
+        return cls._validate_lock_for_scope(
+            expected_scope=expected_scope,
+            lock_token=lock_token,
+            owner_user_sub=owner_user_sub,
+        )
 
     @classmethod
     def _serialize_lock(cls, lock: ResourceLock, is_mine: bool = False) -> dict[str, Any]:

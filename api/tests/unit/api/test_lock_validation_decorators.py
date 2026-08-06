@@ -23,7 +23,8 @@ from flask import Flask, g
 
 from api.exceptions.business_exception import BusinessException
 from api.resources.lock_validation_decorators import (
-    require_engagement_content_translation_lock, require_widget_translation_lock, require_widget_translation_lock_by_id)
+    require_engagement_content_translation_lock, require_survey_builder_lock, require_survey_section_lock,
+    require_widget_translation_lock, require_widget_translation_lock_by_id)
 from api.services.resource_lock_service import ResourceLockService
 
 
@@ -237,3 +238,125 @@ def test_require_widget_translation_lock_by_id_business_exception():
 
     assert status == HTTPStatus.FORBIDDEN
     assert response == {'code': 'forbidden', 'message': 'not lock owner'}
+
+
+def test_require_survey_section_lock():
+    """Assert decorator validates survey section lock."""
+    app = Flask(__name__)
+
+    @require_survey_section_lock(section_key='survey_section_1')
+    def handler(survey_id):
+        return {
+            'survey_id': survey_id,
+            'user_id': g.lock_validation_user_id,
+        }, HTTPStatus.OK
+
+    with app.test_request_context(
+        '/resource',
+        method='POST',
+        headers={ResourceLockService.LOCK_HEADER_NAME: 'lock-token-1'},
+    ):
+        with patch('api.resources.lock_validation_decorators.TokenInfo.get_id', return_value='user-1'):
+            with patch.object(ResourceLockService, 'validate_survey_section_lock') as validate_mock:
+                response, status = handler(survey_id=123)
+
+    assert status == HTTPStatus.OK
+    assert response['survey_id'] == 123
+    assert response['user_id'] == 'user-1'
+    validate_mock.assert_called_once_with(
+        survey_id=123,
+        section_key='survey_section_1',
+        lock_token='lock-token-1',
+        owner_user_sub='user-1',
+    )
+
+
+def test_require_survey_section_lock_business_exception():
+    """Assert decorator returns raw business error payload for survey section lock errors."""
+    app = Flask(__name__)
+
+    @require_survey_section_lock(section_key='survey_section_1')
+    def handler(survey_id):
+        return {'survey_id': survey_id}, HTTPStatus.OK
+
+    with app.test_request_context(
+        '/resource',
+        method='POST',
+        headers={ResourceLockService.LOCK_HEADER_NAME: 'lock-token-1'},
+    ):
+        with patch('api.resources.lock_validation_decorators.TokenInfo.get_id', return_value='user-1'):
+            with patch.object(
+                ResourceLockService,
+                'validate_survey_section_lock',
+                side_effect=BusinessException(
+                    error={'code': 'lock_conflict', 'message': 'locked'},
+                    status_code=HTTPStatus.CONFLICT,
+                ),
+            ):
+                response, status = handler(survey_id=123)
+
+    assert status == HTTPStatus.CONFLICT
+    assert response == {'code': 'lock_conflict', 'message': 'locked'}
+
+
+def test_require_survey_builder_lock():
+    """Assert decorator validates survey builder lock."""
+    app = Flask(__name__)
+
+    @require_survey_builder_lock
+    def handler(survey_id):
+        return {
+            'survey_id': survey_id,
+            'user_id': g.lock_validation_user_id,
+        }, HTTPStatus.OK
+    with app.test_request_context(
+        '/resource',
+        method='POST',
+        headers={
+            ResourceLockService.LOCK_HEADER_NAME: 'lock-token-1',
+            'Content-Type': 'application/json'
+        },
+        json={'id': 123}
+    ):
+        with patch('api.resources.lock_validation_decorators.TokenInfo.get_id', return_value='user-1'):
+            with patch.object(ResourceLockService, 'validate_survey_section_lock') as validate_mock:
+                response, status = handler(survey_id=123)
+
+    assert status == HTTPStatus.OK
+    assert response['survey_id'] == 123
+    assert response['user_id'] == 'user-1'
+    validate_mock.assert_called_once_with(
+        survey_id=123,
+        section_key=ResourceLockService.SECTION_SURVEY_BUILDER,
+        lock_token='lock-token-1',
+        owner_user_sub='user-1',
+    )
+
+
+def test_require_survey_builder_lock_business_exception():
+    """Assert decorator returns raw business error payload for survey builder lock errors."""
+    app = Flask(__name__)
+
+    @require_survey_builder_lock
+    def handler(survey_id):
+        return {'survey_id': survey_id}, HTTPStatus.OK
+
+    with app.test_request_context(
+        '/resource',
+        method='POST',
+        headers={ResourceLockService.LOCK_HEADER_NAME: 'lock-token-1'},
+        json={'id': 123}
+    ):
+        with patch('api.resources.lock_validation_decorators.TokenInfo.get_id', return_value='user-1'):
+            with patch.object(
+                ResourceLockService,
+                'validate_survey_section_lock',
+                side_effect=BusinessException(
+                    error={'code': 'lock_conflict', 'message': 'locked'},
+                    status_code=HTTPStatus.CONFLICT,
+                ),
+            ):
+                response, status = handler(survey_id=123)
+
+    assert status == HTTPStatus.CONFLICT
+    assert response == {'code': 'lock_conflict', 'message': 'locked'}

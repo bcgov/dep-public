@@ -22,7 +22,9 @@ from marshmallow import ValidationError
 
 from api.auth import auth
 from api.auth import jwt as _jwt
+from api.resources.lock_validation_decorators import require_survey_section_lock
 from api.services.report_setting_service import ReportSettingService
+from api.services.resource_lock_service import ResourceLockService
 from api.utils.util import allowedorigins, cors_preflight
 
 
@@ -54,9 +56,11 @@ class ReportSetting(Resource):
             return str(err), HTTPStatus.INTERNAL_SERVER_ERROR
 
     @staticmethod
-    # @TRACER.trace()
     @cross_origin(origins=allowedorigins())
     @_jwt.requires_auth
+    @require_survey_section_lock(
+        section_key=ResourceLockService.SECTION_SURVEY_REPORT_SETTINGS,
+    )
     def patch(survey_id):
         """Update saved report setting partially."""
         try:
