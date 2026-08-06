@@ -124,12 +124,8 @@ const ResultsArea = () => {
             <Grid size={12} container direction="row" alignItems={'center'} justifyContent="center" marginBottom="2em">
                 <Grid>
                     <Pagination
-                        defaultPage={1}
                         page={Number(searchParams.get('page')) || 1}
                         count={Math.ceil(count / Number(searchParams.get('size') || 8))}
-                        color="primary"
-                        showFirstButton
-                        showLastButton
                         onChange={(_, pageNumber) =>
                             setSearchParams(updateSearchParams({ page: pageNumber }, searchParams))
                         }

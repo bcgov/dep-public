@@ -1,5 +1,5 @@
 import React from 'react';
-import { Grid2 as Grid, Box, PaginationProps, useMediaQuery, Theme } from '@mui/material';
+import { Grid2 as Grid, useMediaQuery, Theme } from '@mui/material';
 import { colors } from '..';
 import { Button } from './Button';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -11,9 +11,9 @@ const buttonStyles = {
     borderRadius: '8px',
     height: '44px',
     minWidth: '44px',
-    padding: '0.5rem',
+    padding: '0.625rem',
     border: `1px solid ${colors.surface.gray[60]} !important`,
-    fontSize: '14px',
+    fontSize: { xs: '12px', sm: '14px' },
     boxShadow: 'none',
     '&.MuiButton-containedPrimary': {
         backgroundColor: colors.surface.blue[80],
@@ -24,25 +24,32 @@ const buttonStyles = {
     },
 };
 
+interface PaginationProps {
+    page: number;
+    count: number;
+    onChange: (event: React.ChangeEvent<unknown>, page: number) => void | undefined;
+}
+
 /**
  * A custom pagination component.
  * It includes icon + text previous/next buttons, <page> of <count> summary, and custom page number display logic.
  * Custom styling and conditional mobile rendering are also utilized.
- * @param {PaginationProps} props - Props to pass to the MUIPagination component.
+ * @param {PaginationProps} props - Props to pass to the pagination component.
  * @param {number} props.page - The currently selected page of the pagination.
  * @param {number} props.count - The total number of pages for the pagination.
  * @param {function} props.onChange - The propagating onChange event that triggers the onChange callback function in the parent component.
  * @returns {JSX.Element | null}
  */
-export const Pagination: React.FC<PaginationProps> = (props) => {
-    const { t: translate } = useAppTranslation();
+export const Pagination = (props: PaginationProps) => {
     const { onChange, page, count } = props;
     if (!page || !Number.isFinite(page) || !count || !Number.isFinite(count) || !onChange) return null;
+
+    const { t: translate } = useAppTranslation();
     const isMobile = useMediaQuery((theme: Theme) => theme.breakpoints.down('sm'), { noSsr: true });
 
     return (
-        <Grid display="flex" alignItems="center" gap={1} flexDirection={{ xs: 'column', sm: 'row' }} maxWidth="100%">
-            <Box display="flex" alignItems="center" gap={1}>
+        <Grid container alignItems="center" gap={1} flexDirection={{ xs: 'column', sm: 'row' }}>
+            <Grid container component="nav" alignItems="center" flexWrap="nowrap" gap={{ xs: 0.5, md: 1 }}>
                 <Button
                     aria-label="Go to previous page"
                     sx={{ ...buttonStyles, p: isMobile ? '0 1rem' : '0 1.5rem' }}
@@ -64,7 +71,7 @@ export const Pagination: React.FC<PaginationProps> = (props) => {
                 >
                     {translate('common.paginationNext')}
                 </Button>
-            </Box>
+            </Grid>
 
             <BodyText
                 aria-label={`Currently on page ${page} of ${count}`}
@@ -78,11 +85,7 @@ export const Pagination: React.FC<PaginationProps> = (props) => {
     );
 };
 
-const PageList = (props: {
-    page: number;
-    count: number;
-    onChange: (event: React.ChangeEvent<unknown>, page: number) => void | undefined;
-}) => {
+const PageList = (props: PaginationProps) => {
     const { page, count, onChange } = props;
 
     // First page
@@ -113,7 +116,7 @@ const PageList = (props: {
     }
 
     return (
-        <>
+        <Grid container gap={0.5} alignItems="flex-end" flexWrap="nowrap">
             {pageButtons.map((pb) => {
                 const isCurrentPage = pb === page;
                 if (pb > 0) {
@@ -134,12 +137,12 @@ const PageList = (props: {
                     <BodyText
                         aria-hidden="true"
                         key={pb === -2 ? 'startEllipsis' : 'endEllipsis'}
-                        style={{ position: 'relative', bottom: '-8px', padding: '0 4px' }}
+                        style={{ padding: '0 4px' }}
                     >
                         ...
                     </BodyText>
                 );
             })}
-        </>
+        </Grid>
     );
 };

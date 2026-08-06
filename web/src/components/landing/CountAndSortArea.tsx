@@ -86,10 +86,10 @@ const SortSelect = ({ sort }: { sort: string }) => {
     };
 
     return (
-        <Grid container spacing={1.5} alignItems="center" flexWrap="nowrap" sx={{ height: '50px', mb: 'auto' }}>
+        <Grid container spacing={1.5} alignItems="center" flexWrap="nowrap">
             <BodyText
                 sx={{
-                    display: 'flex',
+                    display: { xs: 'none', sm: 'flex' },
                 }}
             >
                 {translate('landing.filters.sortBy')}
@@ -99,6 +99,7 @@ const SortSelect = ({ sort }: { sort: string }) => {
                 sx={{
                     height: '2.5rem',
                     width: '12.5rem',
+                    fontSize: '14px',
                 }}
                 value={sort}
                 options={sortOptions}
