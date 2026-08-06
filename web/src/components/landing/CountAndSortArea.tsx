@@ -33,10 +33,10 @@ const CountAndSortArea = () => {
     return (
         <Grid
             container
-            flexDirection={{ xs: 'column', md: 'row' }}
-            flexWrap={{ xs: 'wrap', md: 'nowrap' }}
-            justifyContent={{ xs: 'flex-start', md: 'space-between' }}
-            alignItems={{ xs: 'flex-start', md: 'space-between' }}
+            flexDirection={{ xs: 'column', sm: 'row' }}
+            flexWrap={{ xs: 'wrap', sm: 'nowrap' }}
+            justifyContent={{ xs: 'flex-start', sm: 'space-between' }}
+            alignItems={{ xs: 'flex-start', sm: 'space-between' }}
             rowSpacing={'10px'}
             p={0}
             m="0 0 2rem"
@@ -79,14 +79,14 @@ const SortSelect = ({ sort }: { sort: string }) => {
 
     const updateSort = (event: SelectChangeEvent<unknown>) => {
         const newString = String(event.target.value);
-        if (!newString || !newString.includes(':')) return;
+        if (!newString?.includes(':')) return;
         const [key, order] = newString.split(':');
         if (!key || !order) return;
         setSearchParams(updateSearchParams({ sort_key: key, sort_order: order as SortOrder }, searchParams));
     };
 
     return (
-        <Grid container spacing={1.5} alignItems="center" sx={{ height: '50px', mb: 'auto' }}>
+        <Grid container spacing={1.5} alignItems="center" flexWrap="nowrap" sx={{ height: '50px', mb: 'auto' }}>
             <BodyText
                 sx={{
                     display: 'flex',
