@@ -1,4 +1,4 @@
-import { render, waitFor, screen, fireEvent, within, getByRole } from '@testing-library/react';
+import { render, waitFor, screen, fireEvent, within } from '@testing-library/react';
 import { ThemeProvider } from '@mui/material';
 import { DarkTheme } from 'styles/Theme';
 import React from 'react';
@@ -145,15 +145,23 @@ describe('Landing page tests', () => {
     test('Status dropdown is working', async () => {
         renderLanding();
 
-        const statusDropdown = await screen.findByRole('combobox');
+        const statusDropdown = await screen.findByLabelText(/Status Filter/i);
 
         fireEvent.mouseDown(statusDropdown);
 
-        const listbox = within(getByRole(document.body, 'listbox'));
+        const listbox = within(screen.getByRole('listbox'));
 
         fireEvent.click(listbox.getByText('landing.filters.status.open'));
 
         expect(statusDropdown).toBeInTheDocument();
+    });
+
+    test('Sort dropdown is rendered', async () => {
+        renderLanding();
+
+        const sortDropdown = await screen.findByText('landing.filters.sort.newestCreated');
+
+        expect(sortDropdown).toBeInTheDocument();
     });
 
     test('Filter drawer is opened and closed', async () => {
@@ -181,6 +189,38 @@ describe('Landing page tests', () => {
 
         await waitFor(() => {
             expect(screen.getByTestId('NoResultsHeader')).toBeInTheDocument();
+        });
+    });
+
+    test('Pagination is rendered when multiple pages exist', async () => {
+        mockUseLoaderData.mockReturnValue({
+            engagements: Promise.resolve({
+                items: Array.from({ length: 8 }, (_, i) => ({
+                    ...openEngagement,
+                    id: i + 1,
+                    name: `Engagement ${i + 1}`,
+                })),
+                total: 20,
+            }),
+            allMetaFilters: Promise.resolve([]),
+        });
+
+        renderLanding();
+
+        await waitFor(() => {
+            expect(screen.getByLabelText('Currently on page 1 of 3')).toBeInTheDocument();
+
+            expect(
+                screen.getByRole('button', {
+                    name: /previous page/i,
+                }),
+            ).toBeDisabled();
+
+            expect(
+                screen.getByRole('button', {
+                    name: /next page/i,
+                }),
+            ).toBeInTheDocument();
         });
     });
 });

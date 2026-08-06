@@ -1,13 +1,15 @@
 import LandingSection from './LandingSection';
 import React from 'react';
-import FilterBlock from './FilterBlock';
-import TileBlock from './TileBlock';
+import SearchAndFilterArea from './SearchAndFilterArea';
+import ResultsArea from './ResultsArea';
+import CountAndSortArea from './CountAndSortArea';
 
 const EngagementSearch = () => {
     return (
         <LandingSection>
-            <FilterBlock />
-            <TileBlock />
+            <SearchAndFilterArea />
+            <CountAndSortArea />
+            <ResultsArea />
         </LandingSection>
     );
 };

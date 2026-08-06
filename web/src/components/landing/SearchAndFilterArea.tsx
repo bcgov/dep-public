@@ -20,7 +20,7 @@ import { getSearchParamObject, updateSearchParams } from './utils';
 import { EngagementDisplayStatus } from 'constants/engagementStatus';
 import { tryParse } from 'helper';
 
-const FilterBlock = () => {
+const SearchAndFilterArea = () => {
     const { searchParams, setSearchParams, clearFilters, setFiltersOpen } = useContext(LandingDataContext);
 
     const selectedValue =
@@ -87,16 +87,19 @@ const FilterBlock = () => {
     };
 
     return (
-        <Grid container size={12} justifyContent="flex-start" alignItems="flex-start" rowSpacing={3} pb="2rem">
+        <Grid container size={12} justifyContent="flex-start" alignItems="flex-start" rowSpacing={3} mb={1}>
             <Grid
                 container
+                gap={2}
                 size={12}
                 justifyContent="flex-start"
                 alignItems="flex-end"
                 columnSpacing={2}
                 rowSpacing={4}
                 marginTop="2em"
-                sx={{ padding: 0, flexWrap: 'nowrap', flexDirection: 'row' }}
+                p={0}
+                flexWrap={{ xs: 'wrap', sm: 'nowrap' }}
+                flexDirection="row"
                 ref={tileBlockRef}
             >
                 <Grid width="100%">
@@ -120,9 +123,9 @@ const FilterBlock = () => {
                                 startAdornment: (
                                     <FontAwesomeIcon
                                         icon={faMagnifyingGlass}
+                                        color={theme.palette.primary.main}
                                         style={{
                                             fontSize: '20px',
-                                            color: theme.palette.primary.main,
                                             marginRight: '5px',
                                         }}
                                     />
@@ -144,12 +147,7 @@ const FilterBlock = () => {
                         }}
                     />
                 </Grid>
-                <Grid
-                    size={{ xs: 12, sm: 3, md: 2, lg: 2, xl: 1 }}
-                    container
-                    justifyContent="flex-start"
-                    alignItems="flex-start"
-                >
+                <Grid size={{ xs: 12, sm: 3, md: 2 }} container justifyContent="flex-start" alignItems="flex-start">
                     <Button
                         fullWidth
                         aria-label={translate('landing.filters.aria.openDrawer')}
@@ -164,7 +162,7 @@ const FilterBlock = () => {
             <Grid size={12} container justifyContent="flex-start" alignItems="flex-start">
                 <Stack
                     direction="row"
-                    sx={{ mb: 2 }}
+                    mb={2}
                     flexWrap="wrap"
                     justifyContent="flex-start"
                     alignItems="flex-start"
@@ -217,8 +215,9 @@ const FilterBlock = () => {
                     )}
                     <When
                         condition={
-                            getSearchParamObject('engagement_status', searchParams)?.length ||
-                            getSearchParamObject('meta_filters', searchParams)?.length
+                            (searchParams.get('engagement_status') &&
+                                searchParams.get('engagement_status') !== '[-1]') ||
+                            (searchParams.get('meta_filters') && searchParams.get('engagement_status') !== '[]')
                         }
                     >
                         <Button
@@ -226,7 +225,7 @@ const FilterBlock = () => {
                             onClick={clearFilters}
                             sx={{
                                 fontWeight: 'normal',
-                                height: 48,
+                                height: '48px',
                                 fontSize: '15px',
                                 borderRadius: '2em',
                                 p: 2,
@@ -246,4 +245,4 @@ const FilterBlock = () => {
     );
 };
 
-export default FilterBlock;
+export default SearchAndFilterArea;

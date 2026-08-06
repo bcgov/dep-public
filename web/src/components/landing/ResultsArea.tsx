@@ -10,7 +10,7 @@ import { LandingDataContext } from '.';
 import { Engagement } from 'models/engagement';
 import { updateSearchParams } from './utils';
 
-const TileBlock = () => {
+const ResultsArea = () => {
     const {
         engagements: engs,
         loadingEngagements,
@@ -148,7 +148,7 @@ const TileBlock = () => {
                         <Pagination
                             defaultPage={1}
                             page={Number(searchParams.get('page')) || 1}
-                            count={Math.ceil(count / Number(searchParams.get('size') || 9))}
+                            count={Math.ceil(count / Number(searchParams.get('size') || 8))}
                             color="primary"
                             showFirstButton
                             showLastButton
@@ -163,4 +163,4 @@ const TileBlock = () => {
     );
 };
 
-export default TileBlock;
+export default ResultsArea;

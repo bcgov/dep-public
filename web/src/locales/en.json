@@ -1,10 +1,16 @@
 {
     "common": {
-        "logout": "Logout"
+        "logout": "Logout",
+        "paginationPrevious": "Previous",
+        "paginationNext": "Next",
+        "paginationPage": "Page",
+        "paginationOf": "of"
     },
     "header": {},
     "landing": {
         "filters": {
+            "countEngagement": "engagement",
+            "countFound": "found",
             "drawer": {
                 "openButton": "Filter",
                 "title": "Filter Engagements",
@@ -15,6 +21,13 @@
             "clear": "Clear Filters",
             "search": "Search Engagements",
             "searchPlaceholder": "Engagement Title",
+            "sortBy": "Sort by",
+            "sort": {
+                "newestCreated": "Newest (created)",
+                "oldestCreated": "Oldest (created)",
+                "newestUpdated": "Newest (updated)",
+                "oldestUpdated": "Oldest (updated)"
+            },
             "status": {
                 "all": "All Engagements",
                 "open": "Open Engagements",
@@ -29,7 +42,6 @@
                 "selected": "Applied",
                 "notSelected": "Not Applied",
                 "applyFilters": "Apply Filters and close filter options",
-                "clearFilters": "Clear all filters",
                 "statusFilter": "Engagement Status Selector - {0} selected"
             }
         }

@@ -15,27 +15,30 @@ import { Button } from './Button';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faChevronLeft, faChevronRight } from '@fortawesome/pro-regular-svg-icons';
 import { BodyText } from '../Typography';
+import { useAppTranslation } from 'hooks';
 
 const StyledPaginationItem = styled(PaginationItem)(() => ({
     minWidth: 44,
     height: 44,
     borderRadius: 8,
-
-    border: '1px solid #C8C6C4',
-    backgroundColor: '#FFFFFF',
+    border: `1px solid ${colors.surface.gray[60]}`,
+    backgroundColor: 'white',
 
     '&.Mui-selected': {
         backgroundColor: colors.surface.blue[80],
-        color: '#FFFFFF',
+        color: 'white',
 
         '&:hover': {
             backgroundColor: colors.surface.blue[80],
         },
     },
 
-    '&.MuiPaginationItem-previousNext': {
-        padding: '0 1.5rem',
-        width: 'auto',
+    '&.MuiPaginationItem-root:hover': {
+        transition: 'box-shadow 0.25s',
+        boxShadow:
+            '0px 5px 6px 0px rgba(0, 0, 0, 0.20), ' +
+            '0px 9px 12px 0px rgba(0, 0, 0, 0.14), ' +
+            '0px 3px 16px 0px rgba(0, 0, 0, 0.12)',
     },
 
     '&.MuiPaginationItem-ellipsis': {
@@ -52,13 +55,10 @@ const StyledPaginationItem = styled(PaginationItem)(() => ({
 
 const buttonStyles = {
     height: '44px',
-    color: '#201F1E',
-    borderColor: '#C8C6C4 !important',
+    color: colors.surface.gray[110],
+    borderColor: `${colors.surface.gray[60]} !important`,
     fontSize: '14px',
     boxShadow: 'none',
-    '&:hover, &:active': {
-        boxShadow: 'none',
-    },
 };
 
 /**
@@ -73,9 +73,9 @@ const buttonStyles = {
  * @see {@link https://mui.com/material-ui/api/pagination/} for more details on the MUI Pagination API.
  */
 export const Pagination: React.FC<PaginationProps> = (props) => {
+    const { t: translate } = useAppTranslation();
     const { onChange, page, count } = props;
     if (!page || !count || !onChange) return null;
-
     const isMobile = useMediaQuery((theme: Theme) => theme.breakpoints.down('sm'), { noSsr: true });
 
     const buttonIsVisible = (item: PaginationRenderItemParams): boolean => {
@@ -97,7 +97,7 @@ export const Pagination: React.FC<PaginationProps> = (props) => {
                     disabled={page === 1}
                     onClick={(e) => onChange(e as unknown as React.ChangeEvent<unknown>, Math.max(1, page - 1))}
                 >
-                    Previous
+                    {translate('common.paginationPrevious')}
                 </Button>
 
                 <MuiPagination
@@ -123,12 +123,17 @@ export const Pagination: React.FC<PaginationProps> = (props) => {
                     disabled={page === count}
                     onClick={(e) => onChange(e as unknown as React.ChangeEvent<unknown>, Math.min(count, page + 1))}
                 >
-                    Next
+                    {translate('common.paginationNext')}
                 </Button>
             </Box>
 
-            <BodyText aria-label={`Currently on page ${page} of ${count}`} sx={{ padding: '8px' }} color={'#787373'}>
-                Page {page} of {count}
+            <BodyText
+                aria-label={`Currently on page ${page} of ${count}`}
+                p="8px"
+                fontWeight={400}
+                color={colors.surface.gray[80]}
+            >
+                {`${translate('common.paginationPage')} ${page} ${translate('common.paginationOf')} ${count}`}
             </BodyText>
         </Grid>
     );

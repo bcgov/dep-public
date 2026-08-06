@@ -1,3 +1,8 @@
+## Aug 05, 2026
+
+- **Feature** Added updated pagination component, engagement sorting, and engagement count [🎟️ DEP-317](https://citz-gdx.atlassian.net/browse/DEP-317)
+  - Updated translation strings
+
 ## July 09, 2026
 
 - **Chore** Removed French as a required language for multi-language engagements [🎟️ DEP-321](https://citz-gdx.atlassian.net/browse/DEP-321)

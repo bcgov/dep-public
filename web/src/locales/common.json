@@ -75,6 +75,8 @@
     },
     "landing": {
         "filters": {
+            "countEngagement": "engagement",
+            "countFound": "found",
             "drawer": {
                 "openButton": "Filter",
                 "title": "Filter Engagements",
@@ -85,6 +87,13 @@
             "clear": "Clear Filters",
             "search": "Search Engagements",
             "searchPlaceholder": "Engagement Title",
+            "sortBy": "Sort by",
+            "sort": {
+                "newestCreated": "Newest (created)",
+                "oldestCreated": "Oldest (created)",
+                "newestUpdated": "Newest (updated)",
+                "oldestUpdated": "Oldest (updated)"
+            },
             "status": {
                 "all": "All Engagements",
                 "open": "Open Engagements",
@@ -108,6 +117,10 @@
         "headerTitleAreaLabel" : "Header Title Area",
         "logoutAreaLabel": "Logout Button",
         "defaultBCText": "British Columbia Logo",
-        "defaultText" : "Site Logo"
+        "defaultText": "Site Logo",
+        "paginationPrevious": "Previous",
+        "paginationNext": "Next",
+        "paginationPage": "Page",
+        "paginationOf": "of"
     }
 }
