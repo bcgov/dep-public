@@ -7,9 +7,6 @@ import { useAppSelector, useAppTranslation } from 'hooks';
 import { findTenantInPath } from 'utils';
 import { getPath, ROUTES } from './routes';
 
-const listItemStyle = { marginBottom: 1 };
-const marginStyle = { mr: 2 };
-
 const notFoundFallback = {
     header0: "The page you're looking for cannot be found.",
     header1: "The page you're looking for might have been removed, moved or is temporarily unavailable.",
@@ -38,41 +35,33 @@ const SuggestionsList = () => {
 
     return (
         <Box>
-            <p style={{ ...listItemStyle, fontWeight: 'bold' }}>
+            <p style={{ marginBottom: 1, fontWeight: 'bold' }}>
                 {useTranslateOrFallback('notFound.paragraph', notFoundFallback.paragraph)}
             </p>
-            <ul>
-                <li style={listItemStyle}>{useTranslateOrFallback('notFound.list.0', notFoundFallback.list0)}</li>
-                <li style={listItemStyle}>
+            <Grid container component="ul" spacing={1}>
+                <li>{useTranslateOrFallback('notFound.list.0', notFoundFallback.list0)}</li>
+                <li>
                     {useTranslateOrFallback('notFound.list.1', notFoundFallback.list1)}{' '}
                     <Link href={href} to={to}>
                         {useTranslateOrFallback('notFound.list.2', notFoundFallback.list2)}
                     </Link>{' '}
                     {useTranslateOrFallback('notFound.list.3', notFoundFallback.list3)}
                 </li>
-                <li style={listItemStyle}>{useTranslateOrFallback('notFound.list.4', notFoundFallback.list4)}</li>
-                <li style={listItemStyle}>{useTranslateOrFallback('notFound.list.5', notFoundFallback.list5)}</li>
-            </ul>
+                <li>{useTranslateOrFallback('notFound.list.4', notFoundFallback.list4)}</li>
+                <li>{useTranslateOrFallback('notFound.list.5', notFoundFallback.list5)}</li>
+            </Grid>
         </Box>
     );
 };
 
 const NotFound = () => (
-    <Grid
-        mt={4}
-        container
-        direction={'column'}
-        justifyContent="center"
-        alignItems="center"
-        spacing={1}
-        padding={'2em 2em 1em 2em'}
-    >
-        <Grid sx={{ ...marginStyle, marginBottom: 3 }}>
+    <Grid mt={4} size={12} container direction={'column'} justifyContent="center" alignItems="center" spacing={1}>
+        <Grid mr={2} mb={3}>
             <Heading1 bold fontSize="2em">
                 {useTranslateOrFallback('notFound.header.0', notFoundFallback.header0)}
             </Heading1>
         </Grid>
-        <Grid sx={{ marginStyle, marginBottom: 2 }}>
+        <Grid mr={2} mb={2}>
             <SvgIcon
                 fontSize="inherit"
                 component={ErrorSvg}

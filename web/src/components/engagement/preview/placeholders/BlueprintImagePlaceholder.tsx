@@ -1,12 +1,13 @@
 import React from 'react';
-import { Box } from '@mui/material';
+import { Box, BoxProps } from '@mui/material';
 import { colors } from 'styles/Theme';
 import { BodyText } from 'components/common/Typography';
 
-interface BlueprintImagePlaceholderProps {
+interface BlueprintImagePlaceholderProps extends BoxProps {
     height?: string | number;
     title?: string;
     description?: string;
+    textProps?: BoxProps;
 }
 
 /**
@@ -16,23 +17,26 @@ interface BlueprintImagePlaceholderProps {
 export const BlueprintImagePlaceholder: React.FC<BlueprintImagePlaceholderProps> = ({
     height = '500px',
     title = 'Image Placeholder',
-    description = 'Upload an image to see it here',
+    description = '',
+    textProps,
+    ...props
 }) => {
     return (
         <Box
+            zIndex={1}
+            {...props}
             sx={{
                 height,
                 pointerEvents: 'none',
-                zIndex: -2,
                 width: '100%',
                 bgcolor: colors.surface.blue[20],
-                borderRadius: '8px',
                 position: 'relative',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 overflow: 'hidden',
                 boxSizing: 'border-box',
+                ...props.sx,
             }}
         >
             {/* X corner-to-corner using SVG to create correct diagonal lines */}
@@ -41,7 +45,6 @@ export const BlueprintImagePlaceholder: React.FC<BlueprintImagePlaceholderProps>
                 sx={{
                     position: 'absolute',
                     inset: 0,
-                    zIndex: -1,
                     width: '100%',
                     height: '100%',
                     pointerEvents: 'none',
@@ -55,7 +58,7 @@ export const BlueprintImagePlaceholder: React.FC<BlueprintImagePlaceholderProps>
                     y1="0"
                     x2="100"
                     y2="100"
-                    stroke={colors.surface.blue[60]}
+                    stroke={colors.surface.blue[50]}
                     strokeWidth="1"
                     vectorEffect="non-scaling-stroke"
                 />
@@ -65,20 +68,22 @@ export const BlueprintImagePlaceholder: React.FC<BlueprintImagePlaceholderProps>
                     y1="0"
                     x2="0"
                     y2="100"
-                    stroke={colors.surface.blue[60]}
+                    stroke={colors.surface.blue[50]}
                     strokeWidth="1"
                     vectorEffect="non-scaling-stroke"
                 />
             </Box>
             {/* Explanatory text */}
             <Box
+                zIndex={2}
+                {...textProps}
                 sx={{
-                    marginLeft: { xs: '0', md: '720px' }, // to avoid overlapping with hero content on larger screens
                     textAlign: 'center',
                     padding: 4,
                     maxWidth: '600px',
                     textWrap: 'nowrap',
                     writingMode: { xs: 'horizontal-tb', md: 'sideways-lr', lg: 'horizontal-tb' },
+                    ...textProps?.sx,
                 }}
             >
                 <BodyText sx={{ color: 'blue.80', mb: 1, fontSize: '24px' }}>{title}</BodyText>

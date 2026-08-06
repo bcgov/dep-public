@@ -4,7 +4,6 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Box, Grid2 as Grid, Skeleton } from '@mui/material';
 import { Button } from 'components/common/Input/Button';
 import { Heading1, Heading2, BodyText } from 'components/common/Typography/';
-import { ResponsiveContainer } from 'components/common/Layout';
 import {
     Table,
     TableBody,
@@ -19,10 +18,6 @@ import { Tenant } from 'models/tenant';
 import { Await, useNavigate, useRouteLoaderData } from 'react-router';
 import { ROUTES, getPath } from 'routes/routes';
 import { RouterLinkRenderer } from 'components/common/Navigation/Link';
-// Prevents page load fail due to waiting for engagement title on refresh
-const AutoBreadcrumbs = React.lazy(() =>
-    import('components/common/Navigation/Breadcrumb').then((m) => ({ default: m.AutoBreadcrumbs })),
-);
 
 const TenantListingPage = () => {
     const navigate = useNavigate();
@@ -30,11 +25,9 @@ const TenantListingPage = () => {
     const tenants = useRouteLoaderData('tenant-admin') as Promise<Tenant[]>;
 
     return (
-        <ResponsiveContainer>
-            <AutoBreadcrumbs />
-
+        <Grid container>
             <Grid size={12}>
-                <Heading1>Tenant Admin</Heading1>
+                <Heading1 mt={1}>Tenant Admin</Heading1>
             </Grid>
             <Grid container direction="row" mb="0.5em" alignItems="flex-start" size={12}>
                 <Grid size={{ xs: 12, sm: 'grow' }}>
@@ -136,7 +129,7 @@ const TenantListingPage = () => {
                     </TableBody>
                 </Table>
             </Box>
-        </ResponsiveContainer>
+        </Grid>
     );
 };
 

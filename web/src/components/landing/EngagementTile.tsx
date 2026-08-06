@@ -13,6 +13,7 @@ import { colors, elevations, globalFocusShadow } from 'components/common';
 import { BaseTheme, DarkTheme } from 'styles/Theme';
 import { RouterLinkRenderer } from 'components/common/Navigation/Link';
 import { getPath, ROUTES } from 'routes/routes';
+import BlueprintImagePlaceholder from 'components/engagement/preview/placeholders/BlueprintImagePlaceholder';
 
 interface EngagementTileProps {
     passedEngagement?: Engagement;
@@ -128,7 +129,9 @@ const EngagementTile = ({ passedEngagement, engagementId }: EngagementTileProps)
                         },
                     }}
                 >
-                    {Boolean(banner_url) && <CardMedia sx={{ height: '172px' }} image={banner_url} />}
+                    <CardMedia sx={{ height: '172px' }} image={banner_url ?? ''}>
+                        {!banner_url && <BlueprintImagePlaceholder height="100%" />}
+                    </CardMedia>
                     <CardContent sx={{ height: '270px', p: '40px 32px', boxSizing: 'border-box' }}>
                         <Box
                             sx={{

@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import CustomTable from 'components/common/Table';
 import { useLocation, useParams } from 'react-router';
-import { ResponsiveContainer } from 'components/common/Layout';
 import { HeadCell, PageInfo, PaginationOptions } from 'components/common/Table/types';
 import { Link, Grid2 as Grid, Stack, TextField, Menu, MenuItem, Tooltip } from '@mui/material';
 import { Button } from 'components/common/Input/Button';
@@ -339,13 +338,7 @@ const CommentTextListing = () => {
     ];
 
     return (
-        <ResponsiveContainer
-            direction="row"
-            justifyContent="flex-start"
-            alignItems="flex-start"
-            container
-            rowSpacing={1}
-        >
+        <Grid direction="row" justifyContent="flex-start" alignItems="flex-start" container rowSpacing={1}>
             <Grid size={{ xs: 12, lg: 7 }}>
                 <Stack direction="row" spacing={1} alignItems="flex-start" justifyContent="flex-start">
                     <TextField
@@ -429,7 +422,7 @@ const CommentTextListing = () => {
                     loading={tableLoading}
                 />
             </Grid>
-        </ResponsiveContainer>
+        </Grid>
     );
 };
 

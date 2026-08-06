@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import Grid from '@mui/material/Grid2';
-import { ResponsiveContainer } from 'components/common/Layout';
 import { Button } from 'components/common/Input/Button';
 import { CommentTypeEnum, Feedback, FeedbackStatusEnum, SourceTypeEnum } from 'models/feedback';
 import { useAppDispatch, useAppSelector } from 'hooks';
@@ -16,7 +15,6 @@ import { updateURLWithPagination } from 'components/common/Table/utils';
 import { ActionsDropDown } from './actionDropdown';
 import { USER_ROLES } from 'services/userService/constants';
 import { When } from 'react-if';
-import { AutoBreadcrumbs } from 'components/common/Navigation/Breadcrumb';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArchive, faInbox } from '@fortawesome/pro-regular-svg-icons';
 const FeedbackListing = () => {
@@ -142,8 +140,7 @@ const FeedbackListing = () => {
     ];
 
     return (
-        <ResponsiveContainer>
-            <AutoBreadcrumbs />
+        <Grid container>
             <Grid size={12}>
                 <Stack
                     direction={{ xs: 'column', md: 'row' }}
@@ -192,7 +189,7 @@ const FeedbackListing = () => {
                     pageInfo={pageInfo}
                 />
             </Grid>
-        </ResponsiveContainer>
+        </Grid>
     );
 };
 

@@ -3,19 +3,14 @@ import { Grid2 as Grid } from '@mui/material';
 import { useNavigate } from 'react-router';
 import { BodyText, Heading2 } from 'components/common/Typography';
 import { Button } from 'components/common/Input/Button';
-import { ResponsiveContainer } from 'components/common/Layout';
-import { AutoBreadcrumbs } from 'components/common/Navigation/Breadcrumb';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPersonToDoor } from '@fortawesome/pro-regular-svg-icons';
 
 const Unauthorized = () => {
     const navigate = useNavigate();
     return (
-        <ResponsiveContainer>
+        <Grid container>
             <Grid container direction="column" spacing={4}>
-                <Grid size={12}>
-                    <AutoBreadcrumbs />
-                </Grid>
                 <Grid size={12}>
                     <Heading2 mb={0} decorated>
                         Unauthorized
@@ -40,7 +35,7 @@ const Unauthorized = () => {
                     </Grid>
                 </Grid>
             </Grid>
-        </ResponsiveContainer>
+        </Grid>
     );
 };
 

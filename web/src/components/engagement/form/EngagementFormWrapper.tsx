@@ -1,6 +1,5 @@
 import React from 'react';
 import { MidScreenLoader } from 'components/common';
-import { ResponsiveContainer } from 'components/common/Layout';
 import { Grid2 as Grid } from '@mui/material';
 import WidgetsBlock from './EngagementWidgets';
 import { useRouteLoaderData } from 'react-router';
@@ -16,11 +15,9 @@ const EngagementFormWrapper = () => {
     }
 
     return (
-        <ResponsiveContainer container direction="row" justifyContent="flex-start" alignItems="flex-start" spacing={2}>
-            <Grid size={{ xs: 12, lg: 4 }}>
-                <WidgetsBlock />
-            </Grid>
-        </ResponsiveContainer>
+        <Grid size={{ xs: 12, lg: 4 }}>
+            <WidgetsBlock />
+        </Grid>
     );
 };
 

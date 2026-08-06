@@ -2,7 +2,6 @@ import React, { useState, useContext } from 'react';
 import CustomTable from 'components/common/Table';
 import Grid from '@mui/material/Grid2';
 import { useLocation } from 'react-router';
-import { ResponsiveContainer } from 'components/common/Layout';
 import { HeadCell, PaginationOptions } from 'components/common/Table/types';
 import { formatToPacific } from 'components/common/dateHelper';
 import { Collapse, Link } from '@mui/material';
@@ -111,13 +110,7 @@ const Submissions = () => {
     ];
 
     return (
-        <ResponsiveContainer
-            direction="row"
-            justifyContent="flex-start"
-            alignItems="flex-start"
-            container
-            rowSpacing={1}
-        >
+        <Grid direction="row" justifyContent="flex-start" alignItems="flex-start" container rowSpacing={1}>
             <Grid size={12}>
                 <Stack direction={{ xs: 'column', md: 'row' }} spacing={1} width="100%" justifyContent="space-between">
                     <Stack direction="row" spacing={1}>
@@ -189,7 +182,7 @@ const Submissions = () => {
                     loading={loading}
                 />
             </Grid>
-        </ResponsiveContainer>
+        </Grid>
     );
 };
 

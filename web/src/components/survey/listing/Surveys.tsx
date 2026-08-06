@@ -2,7 +2,6 @@ import React, { useContext, useState } from 'react';
 import CustomTable from 'components/common/Table';
 import Grid from '@mui/material/Grid2';
 import { useNavigate } from 'react-router';
-import { ResponsiveContainer } from 'components/common/Layout';
 import { Survey } from 'models/survey';
 import { HeadCell, PaginationOptions } from 'components/common/Table/types';
 import { formatToPacific } from 'components/common/dateHelper';
@@ -33,10 +32,6 @@ import { Button, TextInput } from 'components/common/Input';
 import { faPlus } from '@fortawesome/pro-regular-svg-icons';
 import { ROUTES, getPath } from 'routes/routes';
 import { RouterLinkRenderer } from 'components/common/Navigation/Link';
-// Prevents page load fail due to waiting for engagement title on refresh
-const AutoBreadcrumbs = React.lazy(() =>
-    import('components/common/Navigation/Breadcrumb').then((m) => ({ default: m.AutoBreadcrumbs })),
-);
 
 const Surveys = () => {
     const {
@@ -401,7 +396,8 @@ const Surveys = () => {
     ];
 
     return (
-        <ResponsiveContainer
+        <Grid
+            size={12}
             direction="row"
             justifyContent="flex-start"
             alignItems="flex-start"
@@ -409,9 +405,6 @@ const Surveys = () => {
             columnSpacing={2}
             rowSpacing={1}
         >
-            <Grid size={12}>
-                <AutoBreadcrumbs />
-            </Grid>
             <Grid size={12}>
                 <Stack direction={{ xs: 'column', md: 'row' }} spacing={1} width="100%" justifyContent="space-between">
                     <Stack direction={{ xs: 'column', md: 'row' }} spacing={1} alignItems="center">
@@ -493,7 +486,7 @@ const Surveys = () => {
                     pageInfo={pageInfo}
                 />
             </Grid>
-        </ResponsiveContainer>
+        </Grid>
     );
 };
 

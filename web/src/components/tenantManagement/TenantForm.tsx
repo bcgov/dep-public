@@ -122,7 +122,7 @@ export const TenantForm = ({
                 sx={{
                     maxWidth: '1000px',
                     margin: {
-                        // on small screens, negate the padding of the ResponsiveContainer
+                        // on small screens, negate the padding of the outer container
                         // so the container hugs the edge of the screen
                         xs: '0 -16px',
                         sm: '0',

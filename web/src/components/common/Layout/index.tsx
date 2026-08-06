@@ -1,6 +1,5 @@
 import React from 'react';
-import { Box, Grid2 as Grid, BoxProps, Grid2Props as GridProps } from '@mui/material';
-import { Outlet } from 'react-router';
+import { Box, BoxProps } from '@mui/material';
 
 /**
  * A styled Box component that pads and outlines its content with the primary color of the theme.
@@ -21,40 +20,6 @@ export const OutlineBox = (props: BoxProps) => {
         >
             {props.children}
         </Box>
-    );
-};
-
-/**
- * A responsive container component that decreases its side padding on smaller screens.
- * The side padding is set to 1em on small screens, 1.5em on medium screens, and 3em on large screens.
- * @param props - The props to pass to the Box component.
- *                It accepts all BoxProps from MUI, including children, sx, etc.
- * @returns JSX.Element: A Box component with responsive padding.
- */
-export const ResponsiveContainer: React.FC<GridProps> = (props: GridProps) => {
-    return (
-        <Grid
-            {...props}
-            py="3em"
-            px={{ xs: '1em', md: '1.5em', lg: '3em' }}
-            // Set as a container unless explicitly disabled
-            container={props.container === false ? false : true}
-        >
-            {props.children}
-        </Grid>
-    );
-};
-
-/**
- * A route wrapper that adds a responsive container around its child routes.
- * This component is used to ensure that all routes within it are displayed with consistent padding and styling.
- * Do not use further ResponsiveContainer components inside this wrapper.
- */
-export const ResponsiveWrapper: React.FC = () => {
-    return (
-        <ResponsiveContainer>
-            <Outlet />
-        </ResponsiveContainer>
     );
 };
 

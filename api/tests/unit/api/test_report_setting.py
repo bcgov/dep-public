@@ -35,7 +35,8 @@ from tests.utilities.factory_utils import (
 ])
 def test_get_report_setting(client, jwt, session, side_effect, expected_status):  # pylint:disable=unused-argument
     """Assert that report setting can be fetched."""
-    headers = factory_auth_header(jwt=jwt, claims=TestJwtClaims.staff_admin_role)
+    headers = factory_auth_header(
+        jwt=jwt, claims=TestJwtClaims.staff_admin_role)
     survey, _ = factory_survey_and_eng_model(TestSurveyInfo.survey3)
 
     report_setting_data = {
@@ -65,9 +66,11 @@ def test_get_report_setting(client, jwt, session, side_effect, expected_status):
     (KeyError('Test error'), HTTPStatus.INTERNAL_SERVER_ERROR),
     (ValueError('Test error'), HTTPStatus.INTERNAL_SERVER_ERROR),
 ])
-def test_patch_report_setting(client, jwt, session, side_effect, expected_status):  # pylint:disable=unused-argument
+def test_patch_report_setting(client, jwt, session, side_effect, expected_status,
+                              setup_admin_user_and_claims):  # pylint:disable=unused-argument
     """Assert that report setting can be PATCHed."""
-    headers = factory_auth_header(jwt=jwt, claims=TestJwtClaims.staff_admin_role)
+    _, claims = setup_admin_user_and_claims
+    headers = factory_auth_header(jwt=jwt, claims=claims)
     survey, _ = factory_survey_and_eng_model(TestSurveyInfo.survey3)
 
     report_setting_data = {

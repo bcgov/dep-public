@@ -1,7 +1,6 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowRightFromBracket, faRefresh, faShieldKeyhole } from '@fortawesome/pro-regular-svg-icons';
 import { Grid2 as Grid } from '@mui/material';
-import { ResponsiveContainer } from 'components/common/Layout';
 import { BodyText, Heading1 } from 'components/common/Typography';
 import React from 'react';
 import { Button } from 'components/common/Input';
@@ -9,7 +8,7 @@ import UserService from 'services/userService';
 
 const NoAccess = () => {
     return (
-        <ResponsiveContainer container sx={{ paddingLeft: { xs: '2em', md: '5vw', lg: '10em' } }}>
+        <Grid container sx={{ paddingLeft: { xs: '2em', md: '5vw', lg: '10em' } }}>
             <Grid container size={12} alignItems="center" spacing={1} justifyContent="flex-start">
                 <Grid
                     container
@@ -59,7 +58,7 @@ const NoAccess = () => {
                     </Grid>
                 </Grid>
             </Grid>
-        </ResponsiveContainer>
+        </Grid>
     );
 };
 

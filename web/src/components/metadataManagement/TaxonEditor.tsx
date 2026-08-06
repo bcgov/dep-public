@@ -15,8 +15,6 @@ import TaxonEditForm from './TaxonEditForm';
 import { Else, If, Then } from 'react-if';
 import { TaxonCard, TaxonCardSkeleton } from './TaxonCard';
 import { Button } from 'components/common/Input/Button';
-import { AutoBreadcrumbs } from 'components/common/Navigation/Breadcrumb';
-import { ResponsiveContainer } from 'components/common/Layout';
 import { faArrowsFromLine, faArrowsToLine, faPlusCircle } from '@fortawesome/pro-regular-svg-icons';
 import { BodyText, Heading1 } from 'components/common/Typography';
 import { DarkTheme, BaseTheme } from 'styles/Theme';
@@ -130,10 +128,11 @@ export const TaxonEditor = () => {
     };
 
     return (
-        <ResponsiveContainer>
-            <AutoBreadcrumbs />
+        <Grid container size={12} gap={1}>
             <Grid size={12}>
-                <Heading1 mb={1}>Metadata Management</Heading1>
+                <Heading1 mt={0.5} mb={1}>
+                    Metadata Management
+                </Heading1>
             </Grid>
             <Grid size={12}>
                 <BodyText mb={1}>Manage the ways metadata is collected and organized for your engagements.</BodyText>
@@ -346,6 +345,6 @@ export const TaxonEditor = () => {
                     </Else>
                 </If>
             </Grid>
-        </ResponsiveContainer>
+        </Grid>
     );
 };

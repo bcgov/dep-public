@@ -9,7 +9,6 @@ import {
     Stack,
     Radio,
 } from '@mui/material';
-import { ResponsiveContainer } from 'components/common/Layout';
 import { Button } from 'components/common/Input/Button';
 import { Heading3 } from 'components/common/Typography/Headings';
 import CloneOptions from './CloneOptions';
@@ -35,7 +34,7 @@ const OptionsForm = () => {
     }
 
     return (
-        <ResponsiveContainer container direction="row" alignItems="flex-start" justifyContent="flex-start" spacing={2}>
+        <Grid container size={12}>
             <Grid size={12}>
                 <Stack direction="row" justifyContent="space-between" alignItems="center">
                     <Heading3>Survey</Heading3>
@@ -88,7 +87,7 @@ const OptionsForm = () => {
                     </Stack>
                 </Grid>
             </When>
-        </ResponsiveContainer>
+        </Grid>
     );
 };
 

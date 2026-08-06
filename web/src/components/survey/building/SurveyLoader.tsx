@@ -47,10 +47,10 @@ export const SurveyLoader = async ({ params, pattern }: LoaderFunctionArgs) => {
             // If we are accessing the survey directly via the survey ID
             const survey = getSurvey(surveyId);
             const engagement = survey.then((surveyData) => {
-                if (!surveyData.engagement_id) {
+                if (!surveyData.engagement) {
                     return null;
                 }
-                return getEngagement(Number(surveyData.engagement_id));
+                return surveyData.engagement;
             });
             return { engagement, survey };
         }

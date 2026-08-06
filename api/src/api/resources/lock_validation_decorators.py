@@ -221,3 +221,76 @@ def require_widget_translation_lock_by_id(
         return wrapper
 
     return decorator
+
+
+def require_survey_section_lock(
+    *,
+    section_key: str,
+    survey_id_kwarg: str = 'survey_id',
+    error_builder: LockErrorBuilder = lock_error_raw,
+) -> Callable:
+    """Validate a survey section lock for route-scoped operations.
+
+    Reads survey_id from URL kwargs by default; pass survey_id_kwarg to override.
+    """
+
+    def decorator(func: Callable) -> Callable:
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            survey_id = kwargs.get(survey_id_kwarg)
+            user_id = TokenInfo.get_id()
+            try:
+                ResourceLockService.validate_survey_section_lock(
+                    survey_id=survey_id,
+                    section_key=section_key,
+                    lock_token=request.headers.get(
+                        ResourceLockService.LOCK_HEADER_NAME),
+                    owner_user_sub=user_id,
+                )
+            except BusinessException as err:
+                return error_builder(err)
+
+            g.lock_validation_user_id = user_id
+            return func(*args, **kwargs)
+
+        return wrapper
+
+    return decorator
+
+
+def require_survey_builder_lock(func: Callable) -> Callable:
+    """Validate survey builder lock for PUT /surveys/ before calling the handler.
+
+    Reads survey id from the JSON body since the PUT route has no URL id param.
+    """
+
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        request_json = request.get_json()
+        if not isinstance(request_json, dict):
+            return 'Invalid survey payload', HTTPStatus.BAD_REQUEST
+
+        survey_id = request_json.get('id')
+        if isinstance(survey_id, str) and survey_id.isdigit():
+            survey_id = int(survey_id)
+
+        if not isinstance(survey_id, int):
+            return 'Survey id is required', HTTPStatus.BAD_REQUEST
+
+        user_id = TokenInfo.get_id()
+        try:
+            ResourceLockService.validate_survey_section_lock(
+                survey_id=survey_id,
+                section_key=ResourceLockService.SECTION_SURVEY_BUILDER,
+                lock_token=request.headers.get(
+                    ResourceLockService.LOCK_HEADER_NAME),
+                owner_user_sub=user_id,
+            )
+        except BusinessException as err:
+            return err.error, err.status_code
+
+        g.survey_builder_payload = request_json
+        g.lock_validation_user_id = user_id
+        return func(*args, **kwargs)
+
+    return wrapper

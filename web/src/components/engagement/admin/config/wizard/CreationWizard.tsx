@@ -1,8 +1,6 @@
 import React from 'react';
-import { ResponsiveContainer } from 'components/common/Layout';
 import { useFetcher, createSearchParams } from 'react-router';
 import { FormProvider, useForm } from 'react-hook-form';
-import { AutoBreadcrumbs } from 'components/common/Navigation/Breadcrumb';
 import EngagementForm, { EngagementConfigurationData } from '.';
 import { Heading1, Heading2 } from 'components/common/Typography';
 import { SystemMessage } from 'components/common/Layout/SystemMessage';
@@ -54,10 +52,11 @@ const EngagementCreationWizard = () => {
     };
 
     return (
-        <ResponsiveContainer gap={1}>
-            <AutoBreadcrumbs />
+        <Grid container size={12} gap={1}>
             <Grid size={12}>
-                <Heading1 mb={0}>New Engagement</Heading1>
+                <Heading1 mb={0} mt={2}>
+                    New Engagement
+                </Heading1>
             </Grid>
             <Grid size={12}>
                 <Heading2 weight="thin" mb="1rem">
@@ -75,7 +74,7 @@ const EngagementCreationWizard = () => {
                     <EngagementForm engagement={null} onSubmit={onSubmit} />
                 </FormProvider>
             </Grid>
-        </ResponsiveContainer>
+        </Grid>
     );
 };
 
