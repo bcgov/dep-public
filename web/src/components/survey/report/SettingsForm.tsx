@@ -18,20 +18,15 @@ import { RouterLinkRenderer } from 'components/common/Navigation/Link';
 import { AppConfig } from 'config';
 import { useSurveyLoaderData } from '../useSurveyLoaderData';
 import { Awaited } from 'utils';
-import { AutoBreadcrumbs } from 'components/common/Navigation/Breadcrumb';
-import { ResponsiveContainer } from 'components/common/Layout';
 
 const SettingsFormPage = () => {
     return (
-        <ResponsiveContainer>
-            <Grid size={12} mb={1}>
-                <AutoBreadcrumbs />
-            </Grid>
+        <Grid container size={12}>
             <Heading3 style={{ fontWeight: 'bold', marginBottom: '3rem' }}>Report Settings</Heading3>
             <Suspense fallback={<Skeleton variant="rectangular" height="10em" width="100%" />}>
                 <SettingsForm />
             </Suspense>
-        </ResponsiveContainer>
+        </Grid>
     );
 };
 

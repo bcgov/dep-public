@@ -23,7 +23,6 @@ import { ReactComponent as PagePreviewIcon } from 'assets/images/pagePreview.svg
 import { AuthoringBottomNavProps, LanguageSelectorProps } from './types';
 import { useFormContext } from 'react-hook-form';
 import { EngagementUpdateData } from './AuthoringContext';
-import { ResponsiveContainer } from 'components/common/Layout';
 import { Await, useMatch, useNavigate, useParams } from 'react-router';
 import ConfirmModal from 'components/common/Modals/ConfirmModal';
 import { Language } from 'models/language';
@@ -326,7 +325,10 @@ const AuthoringBottomNav = ({
                             </BodyText>
                         </Grid>
                     </Grid>
-                    <ResponsiveContainer
+                    <Grid
+                        py="3em"
+                        px={{ xs: '1em', md: '1.5em', lg: '3em' }}
+                        container
                         sx={{
                             width: '100%',
                             maxWidth: { xs: 'calc(2em + 700px)', md: 'calc(3rem + 700px)', lg: 'calc(6.2rem + 700px)' },
@@ -424,7 +426,7 @@ const AuthoringBottomNav = ({
                                 </Button>
                             </Tooltip>
                         </Grid>
-                    </ResponsiveContainer>
+                    </Grid>
                 </ThemeProvider>
             </Grid>
         </AppBar>,

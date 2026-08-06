@@ -136,7 +136,7 @@ const AuthenticatedRoutes = resolveLazyRouteTree(
                         crumb: async (data: { engagement: Promise<{ name: string; id: number }> }) =>
                             data.engagement.then((engagement) => ({
                                 name: engagement.name,
-                                link: getPath(ROUTES.ENGAGEMENT_DETAILS_AUTHORING, {
+                                link: getPath(ROUTES.ENGAGEMENT_DETAILS_CONFIG, {
                                     engagementId: engagement.id,
                                 }),
                             })),
@@ -160,25 +160,10 @@ const AuthenticatedRoutes = resolveLazyRouteTree(
                         );
                     }}
                 >
-                    <LazyRoute index element={<Navigate to="authoring" />} />
-                    <LazyRoute
-                        path="config/edit"
-                        handle={{ crumb: () => ({ name: 'Configuration', link: '../config' }) }}
-                        actionLazy={() => import('engagements/admin/config/EngagementUpdateAction')}
-                    >
-                        <LazyRoute
-                            index
-                            handle={{ crumb: () => ({ name: 'Edit' }) }}
-                            ComponentLazy={() => import('engagements/admin/config/wizard/ConfigWizard')}
-                        />
-                    </LazyRoute>
+                    <LazyRoute index element={<Navigate to="config" />} />
                     {/* Wraps the tabs with the engagement title and TabContext */}
                     <LazyRoute ComponentLazy={() => import('engagements/admin/view')}>
-                        <LazyRoute
-                            path="config"
-                            handle={{ crumb: () => ({ name: 'Configuration' }) }}
-                            ComponentLazy={() => import('engagements/admin/view/ConfigSummary')}
-                        />
+                        <LazyRoute path="config" ComponentLazy={() => import('engagements/admin/view/ConfigSummary')} />
                         <LazyRoute
                             path="authoring"
                             handle={{ crumb: () => ({ name: 'Authoring' }) }}
@@ -205,6 +190,12 @@ const AuthenticatedRoutes = resolveLazyRouteTree(
                             lazy={() => import('routes/NotFound').then((module) => ({ Component: module.default }))}
                         />
                     </LazyRoute>
+                    <LazyRoute
+                        actionLazy={() => import('engagements/admin/config/EngagementUpdateAction')}
+                        path="config/edit"
+                        handle={{ crumb: () => ({ name: 'Edit Configuration' }) }}
+                        ComponentLazy={() => import('engagements/admin/config/wizard/ConfigWizard')}
+                    />
                     {/* Authoring editing pages — /manage/engagements/:engagementId/authoring/:languageCode/:page */}
                     <LazyRoute
                         path="authoring"

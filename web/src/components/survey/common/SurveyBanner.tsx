@@ -3,7 +3,7 @@ import { Await } from 'react-router';
 import { Grid2 as Grid, Skeleton } from '@mui/material';
 import { BodyText, EyebrowText, Heading1 } from 'components/common/Typography';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faLinkSlash } from '@fortawesome/pro-regular-svg-icons';
+import { faCopy, faLinkSlash } from '@fortawesome/pro-regular-svg-icons';
 import {
     EngagementStatusDateRow,
     EngagementStatusDateRowSkeleton,
@@ -33,26 +33,9 @@ export const SurveyBanner: React.FC<SurveyBannerProps> = ({
     const publicContentMaxWidth = 1120;
     const publicMinGutter = 2;
     const alignedLeftPadding = `max(${publicMinGutter}rem, calc((100vw - ${publicContentMaxWidth}px) / 2))`;
-    const unlinkedFallback = showUnlinkedFallback ? (
-        <>
-            <Grid container alignItems="center" columnSpacing={1} sx={{ mb: '0.75rem' }}>
-                <Grid>
-                    <FontAwesomeIcon icon={faLinkSlash} style={{ fontSize: '1rem' }} />
-                </Grid>
-                <Grid>
-                    <BodyText bold sx={{ color: 'gray.100', mb: 0 }}>
-                        No linked engagement
-                    </BodyText>
-                </Grid>
-            </Grid>
-            <BodyText sx={{ color: 'gray.90', mb: 0 }}>
-                Link this survey to an engagement to preview banner imagery, live status, and engagement dates.
-            </BodyText>
-        </>
-    ) : null;
 
     return (
-        <Grid container size={12} mb={marginBottom} justifyContent="center">
+        <Grid container size={12} mb={marginBottom} justifyContent="center" sx={{ '& [hidden]': { display: 'none' } }}>
             <Suspense
                 fallback={
                     <SurveyBannerSkeleton
@@ -78,16 +61,13 @@ export const SurveyBanner: React.FC<SurveyBannerProps> = ({
                                 height: '24rem',
                                 ml: { xs: '0', md: alignContentToPublicPageBounds ? 0 : '-2rem' },
                                 pr: { xs: '0', md: alignContentToPublicPageBounds ? 0 : '2rem' },
-                                background: engagement?.banner_url
-                                    ? `url(${engagement.banner_url}) no-repeat center right, linear-gradient(140deg, #A9C5DD 0%, #D6E3EE 55%, #EDF3F9 100%)`
-                                    : 'linear-gradient(140deg, #A9C5DD 0%, #D6E3EE 55%, #EDF3F9 100%)',
-                                maskImage:
-                                    alignContentToPublicPageBounds || !engagement?.banner_url
-                                        ? 'none'
-                                        : {
-                                              xs: 'none',
-                                              md: 'linear-gradient(to right, transparent 0px, black 32px, black 100%)',
-                                          },
+                                background: `url(${engagement?.banner_url ?? ''}) no-repeat center right, linear-gradient(140deg, #A9C5DD 0%, #D6E3EE 55%, #EDF3F9 100%)`,
+                                maskImage: alignContentToPublicPageBounds
+                                    ? 'none'
+                                    : {
+                                          xs: 'none',
+                                          md: 'linear-gradient(to right, transparent 0px, black 32px, black 100%)',
+                                      },
                                 backgroundSize: 'cover',
                                 boxShadow: elevations.pressed,
                                 alignItems: { xs: 'flex-end', md: 'center' },
@@ -117,24 +97,46 @@ export const SurveyBanner: React.FC<SurveyBannerProps> = ({
                                     boxSizing: 'content-box',
                                 }}
                             >
-                                <EyebrowText mb="8px">{eyebrowText}</EyebrowText>
-                                <Heading1 weight="thin" sx={{ mt: 0, mb: '0.5rem' }}>
+                                <Grid size={12} component={EyebrowText} mb="8px">
+                                    {eyebrowText}
+                                </Grid>
+                                <Grid size={12} component={Heading1} weight="thin" sx={{ mt: 0, mb: '0.5rem' }}>
                                     {survey.name}
-                                </Heading1>
-                                {engagement ? (
-                                    <>
-                                        <BodyText bold sx={{ color: 'gray.100', mb: '1rem' }}>
-                                            {engagement.name}
-                                        </BodyText>
+                                </Grid>
+                                <Grid container alignItems="center" columnSpacing={1} hidden={!engagement}>
+                                    <Grid size={12} component={BodyText} bold sx={{ color: 'gray.100', mb: '1rem' }}>
+                                        {engagement?.name}
+                                    </Grid>
+                                    <Grid size={12}>
                                         <EngagementStatusDateRow
-                                            statusId={engagement.submission_status}
-                                            startDate={engagement.start_date}
-                                            endDate={engagement.end_date}
+                                            statusId={engagement?.submission_status ?? 1}
+                                            startDate={engagement?.start_date ?? ''}
+                                            endDate={engagement?.end_date ?? ''}
                                         />
-                                    </>
-                                ) : (
-                                    unlinkedFallback
-                                )}
+                                    </Grid>
+                                </Grid>
+                                <Grid
+                                    container
+                                    alignItems="center"
+                                    columnSpacing={1}
+                                    sx={{ mb: '0.75rem' }}
+                                    hidden={!!engagement || !showUnlinkedFallback || survey.is_template}
+                                >
+                                    <Grid>
+                                        <FontAwesomeIcon icon={faLinkSlash} style={{ fontSize: '1rem' }} />
+                                    </Grid>
+                                    <Grid>
+                                        <BodyText bold sx={{ color: 'gray.100', mb: 0 }}>
+                                            No linked engagement
+                                        </BodyText>
+                                    </Grid>
+                                </Grid>
+                                <Grid container alignItems="center" columnSpacing={1} hidden={!survey.is_template}>
+                                    <FontAwesomeIcon icon={faCopy} width="20px" style={{ fontSize: '1rem' }} />
+                                    <BodyText bold sx={{ color: 'gray.100', mb: 0 }}>
+                                        This survey is marked as a template
+                                    </BodyText>
+                                </Grid>
                             </Grid>
                         </Grid>
                     )}

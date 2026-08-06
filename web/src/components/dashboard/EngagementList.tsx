@@ -1,6 +1,5 @@
 import React, { useContext } from 'react';
 import Grid from '@mui/material/Grid2';
-import { ResponsiveContainer } from 'components/common/Layout';
 import { Heading1, Heading3 } from 'components/common/Typography';
 import { Accordion, AccordionDetails, AccordionSummary, accordionSummaryClasses, Skeleton } from '@mui/material';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -9,7 +8,6 @@ import EngagementAccordionContent from './AccordionContent';
 import { SubmissionStatus } from 'constants/engagementStatus';
 import { DashboardContext } from './DashboardContext';
 import { Palette } from 'styles/Theme';
-import { AutoBreadcrumbs } from 'components/common/Navigation/Breadcrumb';
 
 const EngagementList = () => {
     const { openEngagements, upcomingEngagements, closedEngagements, isLoading } = useContext(DashboardContext);
@@ -25,17 +23,15 @@ const EngagementList = () => {
     );
 
     const EngagementDashboardSkeleton = () => (
-        <ResponsiveContainer
+        <Grid
             direction="row"
             justifyContent="flex-start"
             alignItems="flex-start"
             container
             columnSpacing={2}
             rowSpacing={3}
+            size={12}
         >
-            <Grid size={12}>
-                <AutoBreadcrumbs />
-            </Grid>
             <Grid size={12}>
                 <Heading1 mt={0}>Engagements Dashboard</Heading1>
             </Grid>
@@ -49,7 +45,7 @@ const EngagementList = () => {
                     />
                 </Grid>
             ))}
-        </ResponsiveContainer>
+        </Grid>
     );
 
     const EngagementAccordion = ({
@@ -82,7 +78,7 @@ const EngagementList = () => {
     }
 
     return (
-        <ResponsiveContainer
+        <Grid
             direction="row"
             justifyContent="flex-start"
             alignItems="flex-start"
@@ -90,9 +86,6 @@ const EngagementList = () => {
             columnSpacing={2}
             rowSpacing={3}
         >
-            <Grid size={12}>
-                <AutoBreadcrumbs />
-            </Grid>
             <Grid size={12}>
                 <Heading1 mt={0}>Engagements Dashboard</Heading1>
             </Grid>
@@ -165,7 +158,7 @@ const EngagementList = () => {
                     </AccordionDetails>
                 </EngagementAccordion>
             </Grid>
-        </ResponsiveContainer>
+        </Grid>
     );
 };
 

@@ -1,8 +1,6 @@
 import React, { Suspense, useEffect } from 'react';
-import { ResponsiveContainer } from 'components/common/Layout';
 import { useFetcher, createSearchParams, useRouteLoaderData, Await } from 'react-router';
 import { FormProvider, useForm } from 'react-hook-form';
-import { AutoBreadcrumbs } from 'components/common/Navigation/Breadcrumb';
 import EngagementForm, { EngagementConfigurationData } from '.';
 import { EngagementLoaderAdminData } from 'engagements/admin/EngagementLoaderAdmin';
 import { Engagement } from 'models/engagement';
@@ -20,8 +18,7 @@ const EngagementConfigurationWizard = () => {
     const slug = engagement.slug;
     const languages = React.use(loaderData.languages);
     return (
-        <ResponsiveContainer>
-            <AutoBreadcrumbs />
+        <Grid container size={12}>
             <Grid size={12}>
                 <Suspense
                     fallback={
@@ -40,7 +37,7 @@ const EngagementConfigurationWizard = () => {
                     <ConfigForm engagement={engagement} teamMembers={teamMembers} slug={slug} languages={languages} />
                 </Suspense>
             </Grid>
-        </ResponsiveContainer>
+        </Grid>
     );
 };
 

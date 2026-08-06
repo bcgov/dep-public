@@ -62,7 +62,6 @@ jest.mock('components/common/Typography/', () => ({
 }));
 
 jest.mock('components/common/Layout', () => ({
-    ResponsiveContainer: ({ children }: { children: ReactNode }) => <div>{children}</div>,
     DetailsContainer: ({ children }: { children: ReactNode }) => <div>{children}</div>,
     Detail: ({ children }: { children: ReactNode }) => <div>{children}</div>,
 }));

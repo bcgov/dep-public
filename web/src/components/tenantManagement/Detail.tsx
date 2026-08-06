@@ -1,12 +1,11 @@
 import React, { Suspense } from 'react';
 import { Box, Grid2 as Grid, Skeleton } from '@mui/material';
 import { Heading1, Heading2, BodyText, Heading4 } from 'components/common/Typography/';
-import { ResponsiveContainer, DetailsContainer, Detail } from 'components/common/Layout';
+import { DetailsContainer, Detail } from 'components/common/Layout';
 import { useNavigate, useRouteLoaderData, Await, useRevalidator } from 'react-router';
 import { deleteTenant } from 'services/tenantService';
 import { useAppDispatch } from 'hooks';
 import { openNotification } from 'services/notificationService/notificationSlice';
-import { AutoBreadcrumbs } from 'components/common/Navigation/Breadcrumb';
 import { Tenant } from 'models/tenant';
 import { Button } from 'components/common/Input/Button';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -77,8 +76,7 @@ const TenantDetail = () => {
     return (
         <Suspense
             fallback={
-                <ResponsiveContainer>
-                    <AutoBreadcrumbs />
+                <Grid container>
                     <Skeleton variant="text" width="40%">
                         <Heading1>Loading...</Heading1>
                     </Skeleton>
@@ -176,13 +174,12 @@ const TenantDetail = () => {
                             </Grid>
                         </DetailsContainer>
                     </Box>
-                </ResponsiveContainer>
+                </Grid>
             }
         >
             <Await resolve={tenant}>
                 {(resolvedTenant) => (
-                    <ResponsiveContainer>
-                        <AutoBreadcrumbs />
+                    <Grid container>
                         <Grid size={12}>
                             <Heading1>{resolvedTenant.name}</Heading1>
                         </Grid>
@@ -209,7 +206,7 @@ const TenantDetail = () => {
                         <DetailsContainer
                             sx={{
                                 margin: {
-                                    // on small screens, negate the padding of the ResponsiveContainer
+                                    // on small screens, negate the padding of the outer container
                                     // so the container hugs the edge of the screen
                                     xs: '0 -16px',
                                     sm: '0',
@@ -311,7 +308,7 @@ const TenantDetail = () => {
                                 </Grid>
                             </Grid>
                         </DetailsContainer>
-                    </ResponsiveContainer>
+                    </Grid>
                 )}
             </Await>
         </Suspense>

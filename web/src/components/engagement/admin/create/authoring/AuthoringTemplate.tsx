@@ -3,8 +3,6 @@ import { Form, useParams, Await, Outlet, useLocation, useMatch, useRouteLoaderDa
 import AuthoringBottomNav from './AuthoringBottomNav';
 import type { EngagementUpdateData } from './AuthoringContext';
 import { useFormContext } from 'react-hook-form';
-import { AutoBreadcrumbs } from 'components/common/Navigation/Breadcrumb';
-import { ResponsiveContainer } from 'components/common/Layout';
 import { Heading1, Heading2 } from 'components/common/Typography';
 import { BodyText } from 'components/common/Typography/Body';
 import { useAppDispatch, useAppSelector } from 'hooks';
@@ -169,18 +167,8 @@ const AuthoringTemplate = () => {
     }, [location.key, location.state]);
 
     return (
-        <ResponsiveContainer>
-            <AutoBreadcrumbs />
-            <Grid
-                mt="2rem"
-                size={12}
-                sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    columnGap: '0.5rem',
-                    minHeight: '24px',
-                }}
-            >
+        <Grid container>
+            <Grid container size={12} mt={2} alignItems="center" columnGap="0.5rem" minHeight="24px">
                 <Grid component="span" sx={{ display: 'inline-flex', alignItems: 'center', minHeight: '24px' }}>
                     <Suspense>
                         <Await resolve={engagement}>
@@ -265,7 +253,7 @@ const AuthoringTemplate = () => {
                     />
                 </Form>
             </Grid>
-        </ResponsiveContainer>
+        </Grid>
     );
 };
 

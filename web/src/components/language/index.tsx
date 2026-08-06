@@ -7,8 +7,6 @@ import { Language } from 'models/language';
 import { Heading1, BodyText } from 'components/common/Typography/';
 import { useAppDispatch } from 'hooks';
 import { openNotification } from 'services/notificationService/notificationSlice';
-import { ResponsiveContainer } from 'components/common/Layout';
-import { AutoBreadcrumbs } from 'components/common/Navigation/Breadcrumb';
 import { Grid2 as Grid } from '@mui/material';
 
 export const addOrRemoveLanguage = async (
@@ -88,8 +86,7 @@ const LanguageAdminPanel = () => {
     }, []);
 
     return (
-        <ResponsiveContainer data-testid="language-admin-panel">
-            <AutoBreadcrumbs />
+        <Grid container data-testid="language-admin-panel" spacing={2}>
             <Grid size={12}>
                 <Heading1>Languages</Heading1>
             </Grid>
@@ -116,7 +113,7 @@ const LanguageAdminPanel = () => {
                     )}
                 />
             )}
-        </ResponsiveContainer>
+        </Grid>
     );
 };
 

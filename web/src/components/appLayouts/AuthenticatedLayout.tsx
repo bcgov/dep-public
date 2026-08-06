@@ -1,7 +1,7 @@
 import React from 'react';
 import '@bcgov/design-tokens/css-prefixed/variables.css'; // Variables will be within scope within AuthenticatedLayout and its children
 import { Outlet } from 'react-router';
-import { Box, ThemeProvider } from '@mui/material';
+import { Box, Grid2 as Grid, ThemeProvider } from '@mui/material';
 import InternalHeader from '../layout/Header/InternalHeader';
 import { Notification } from 'components/common/notification';
 import { NotificationModal } from 'components/common/modal';
@@ -13,6 +13,7 @@ import ScrollToTop from 'components/scrollToTop';
 import FormioListener from 'components/FormioListener';
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { AutoBreadcrumbs } from 'components/common/Navigation/Breadcrumb';
 
 export const AuthenticatedLayout = () => {
     return (
@@ -39,7 +40,12 @@ export const AuthenticatedLayout = () => {
                             overflowX: 'visible',
                         }}
                     >
-                        <Outlet />
+                        <Grid py="3em" px={{ xs: '1em', md: '1.5em', lg: '3em' }} container spacing={2}>
+                            <Grid size={12}>
+                                <AutoBreadcrumbs />
+                            </Grid>
+                            <Outlet />
+                        </Grid>
                         <FeedbackModal />
                     </Box>
                 </LocalizationProvider>

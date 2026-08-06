@@ -18,7 +18,6 @@ import FormBuilder from 'components/Form/FormBuilder';
 import { putSurvey } from 'services/surveyService';
 import { useAppDispatch } from 'hooks';
 import { openNotification } from 'services/notificationService/notificationSlice';
-import { ResponsiveContainer } from 'components/common/Layout';
 import { Heading3 } from 'components/common/Typography/Headings';
 import { FormBuilderData } from 'components/Form/types';
 import { EngagementStatus } from 'constants/engagementStatus';
@@ -44,7 +43,6 @@ import UnsavedWorkConfirmation from 'components/common/Navigation/UnsavedWorkCon
 import { fetchSurveyReportSettings } from 'services/surveyService/reportSettingsService';
 import { ROUTES, getPath } from 'routes/routes';
 import { useSurveyLoaderData } from '../useSurveyLoaderData';
-import { AutoBreadcrumbs } from 'components/common/Navigation/Breadcrumb';
 
 interface SurveyForm {
     id: string;
@@ -207,18 +205,8 @@ export const FormBuilderPage = () => {
     };
 
     return (
-        <ResponsiveContainer
-            container
-            direction="row"
-            alignItems="flex-start"
-            justifyContent="flex-start"
-            size={12}
-            spacing={4}
-        >
+        <Grid container direction="row" alignItems="flex-start" justifyContent="flex-start" size={12} spacing={4}>
             <UnsavedWorkConfirmation blockNavigationWhen={hasUnsavedWork} />
-            <Grid size={12}>
-                <AutoBreadcrumbs />
-            </Grid>
             <Grid size={12}>
                 <Stack direction="row" justifyContent="flex-start" alignItems="center">
                     <If condition={isEditingName}>
@@ -263,7 +251,7 @@ export const FormBuilderPage = () => {
                 </Stack>
                 <Divider />
             </Grid>
-            <Grid>
+            <Grid size={12}>
                 <FormGroup>
                     <FormControlLabel
                         control={
@@ -405,7 +393,7 @@ export const FormBuilderPage = () => {
                     setAutoSaveNotificationOpen(false);
                 }}
             />
-        </ResponsiveContainer>
+        </Grid>
     );
 };
 

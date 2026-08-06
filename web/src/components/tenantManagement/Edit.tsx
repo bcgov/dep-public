@@ -1,7 +1,6 @@
 import React, { Suspense } from 'react';
 
 import { Grid2 as Grid } from '@mui/material';
-import { ResponsiveContainer } from 'components/common/Layout';
 import { Heading1, Heading2, BodyText } from 'components/common/Typography/';
 import { TenantForm } from './TenantForm';
 import { updateTenant } from 'services/tenantService';
@@ -12,10 +11,6 @@ import { openNotification } from 'services/notificationService/notificationSlice
 import { useRouteLoaderData, useNavigate, Await, useRevalidator } from 'react-router';
 import { MidScreenLoader } from 'components/common';
 import { ROUTES, getPath } from 'routes/routes';
-// Prevents page load fail due to waiting for engagement title on refresh
-const AutoBreadcrumbs = React.lazy(() =>
-    import('components/common/Navigation/Breadcrumb').then((m) => ({ default: m.AutoBreadcrumbs })),
-);
 
 const TenantEditPage = () => {
     const dispatch = useAppDispatch();
@@ -45,9 +40,7 @@ const TenantEditPage = () => {
                         }
                     };
                     return (
-                        <ResponsiveContainer>
-                            <AutoBreadcrumbs />
-
+                        <Grid container>
                             <Grid size={12}>
                                 <Heading1>Edit Tenant Instance</Heading1>
                             </Grid>
@@ -67,7 +60,7 @@ const TenantEditPage = () => {
                                 submitText="Update"
                                 onCancel={onCancel}
                             />
-                        </ResponsiveContainer>
+                        </Grid>
                     );
                 }}
             </Await>

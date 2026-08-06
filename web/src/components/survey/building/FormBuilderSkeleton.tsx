@@ -1,10 +1,10 @@
 import React from 'react';
 import { Skeleton, Grid2 as Grid } from '@mui/material';
-import { ResponsiveContainer } from 'components/common/Layout';
 
 export const FormBuilderSkeleton = () => {
     return (
-        <ResponsiveContainer
+        <Grid
+            size={12}
             container
             alignItems="flex-start"
             justifyContent="flex-start"
@@ -32,7 +32,7 @@ export const FormBuilderSkeleton = () => {
                     <Skeleton variant="rectangular" width="100%" height="3em" />
                 </Grid>
             </Grid>
-        </ResponsiveContainer>
+        </Grid>
     );
 };
 

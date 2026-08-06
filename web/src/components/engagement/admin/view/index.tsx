@@ -2,13 +2,12 @@ import React, { Suspense, useEffect, useState } from 'react';
 import { useRouteLoaderData, Await, useMatches, UIMatch, Outlet, useRevalidator } from 'react-router';
 import { Engagement } from 'models/engagement';
 import { Grid2 as Grid, Skeleton, Tab } from '@mui/material';
-import { ResponsiveContainer } from 'components/common/Layout';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
 import { EngagementLoaderAdminData } from 'components/engagement/admin/EngagementLoaderAdmin';
 import { RouterLinkRenderer } from 'components/common/Navigation/Link';
 import { BodyText, Heading1 } from 'components/common/Typography';
 import { StatusLabel } from '../create/authoring/StatusLabel';
-import { AutoBreadcrumbs } from 'components/common/Navigation/Breadcrumb';
+import { ROUTES } from 'routes/routes';
 
 const AdminEngagementView = () => {
     const { engagement } = useRouteLoaderData('single-engagement') as EngagementLoaderAdminData;
@@ -22,9 +21,24 @@ const AdminEngagementView = () => {
         publish: 'Publishing',
     };
 
+    const EngagementViewLinks = {
+        config: ROUTES.ENGAGEMENT_DETAILS_CONFIG,
+        authoring: ROUTES.ENGAGEMENT_DETAILS_AUTHORING,
+        activity: ROUTES.ENGAGEMENT_DETAILS_ACTIVITY,
+        results: ROUTES.ENGAGEMENT_DETAILS_RESULTS,
+        publish: ROUTES.ENGAGEMENT_DETAILS_PUBLISH,
+    };
+
+    const getEngagementViewLink = (tab: string, engagementId: number) => {
+        const route = EngagementViewLinks[tab as keyof typeof EngagementViewLinks];
+        return route ? route.replace(':engagementId', engagementId.toString()) : '';
+    };
+
     const revalidator = useRevalidator();
     const matches = useMatches() as UIMatch[];
-    const currentTab = matches[matches.length - 1].pathname.split('/').pop() ?? '';
+    console.log('Matches:', matches);
+    const currentTab = matches.at(-1)?.pathname.split('/').findLast(Boolean) ?? '';
+    console.log('Current Tab:', currentTab);
 
     useEffect(() => {
         if (revalidator.state === 'idle') {
@@ -33,9 +47,8 @@ const AdminEngagementView = () => {
     }, [revalidator.state, engagement]);
 
     return (
-        <ResponsiveContainer>
-            <AutoBreadcrumbs />
-            <Grid size={12} mt={4}>
+        <Grid container size={12}>
+            <Grid size={12} mt={2}>
                 <Suspense fallback={<StatusLabel completed={false} text="Loading..." />}>
                     <Await key={revalidator.state} resolve={engagement}>
                         {(engagement: Engagement) => {
@@ -89,7 +102,7 @@ const AdminEngagementView = () => {
                                 }
                                 disableFocusRipple
                                 LinkComponent={RouterLinkRenderer}
-                                href={`${key}`}
+                                href={getEngagementViewLink(key, engagementData?.id ?? 0)}
                                 sx={{
                                     fontWeight: 'bold',
                                     display: 'flex',
@@ -137,7 +150,7 @@ const AdminEngagementView = () => {
                     </TabPanel>
                 </Grid>
             </TabContext>
-        </ResponsiveContainer>
+        </Grid>
     );
 };
 

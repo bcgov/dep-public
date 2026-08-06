@@ -13,7 +13,7 @@ export interface AuthoringRoute {
 export const getAuthoringRoutes = (engagementId: number, languageCode: string = 'en'): AuthoringRoute[] => [
     {
         name: 'Engagement Home',
-        path: getPath(ROUTES.ENGAGEMENT_DETAILS_AUTHORING, { engagementId }),
+        path: getPath(ROUTES.ENGAGEMENT_DETAILS, { engagementId }),
         base: `/engagements`,
         authenticated: false,
         allowedRoles: [USER_ROLES.EDIT_ENGAGEMENT],

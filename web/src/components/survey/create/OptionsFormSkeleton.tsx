@@ -1,11 +1,10 @@
 import { Grid2 as Grid, Skeleton, Stack, Typography } from '@mui/material';
 import { RepeatedGrid } from 'components/common';
-import { ResponsiveContainer } from 'components/common/Layout';
 import React from 'react';
 
 export const OptionsFormSkeleton = () => {
     return (
-        <ResponsiveContainer container direction="row" alignItems="flex-start" justifyContent="flex-start" spacing={2}>
+        <Grid container direction="row" alignItems="flex-start" justifyContent="flex-start" spacing={2}>
             <Grid size={12}>
                 <Typography variant="h3">
                     <Skeleton />
@@ -33,6 +32,6 @@ export const OptionsFormSkeleton = () => {
                     </Stack>
                 </RepeatedGrid>
             </Grid>
-        </ResponsiveContainer>
+        </Grid>
     );
 };

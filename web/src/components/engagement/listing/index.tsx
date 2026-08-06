@@ -11,7 +11,6 @@ import { faXmark } from '@fortawesome/pro-regular-svg-icons/faXmark';
 import { faCommentsQuestionCheck } from '@fortawesome/pro-regular-svg-icons/faCommentsQuestionCheck';
 import Collapse from '@mui/material/Collapse';
 import { useNavigate, useFetcher, createSearchParams, useSearchParams } from 'react-router';
-import { ResponsiveContainer } from 'components/common/Layout';
 import { Engagement } from 'models/engagement';
 import { useAppSelector } from 'hooks';
 import { createDefaultPageInfo, HeadCell, PageInfo, PaginationOptions } from 'components/common/Table/types';
@@ -30,7 +29,6 @@ import AdvancedSearch from './AdvancedSearch/SearchComponent';
 import { Button, TextInput } from 'components/common/Input';
 import { faPlus } from '@fortawesome/pro-regular-svg-icons';
 import { EngagementListLoaderData } from 'engagements/public/view/EngagementListLoader';
-import { AutoBreadcrumbs } from 'components/common/Navigation/Breadcrumb';
 import { ROUTES, getPath } from 'routes/routes';
 import { RouterLinkRenderer } from 'components/common/Navigation/Link';
 
@@ -135,7 +133,7 @@ const EngagementListing = () => {
             renderCell: (row: Engagement) => (
                 <Link
                     component={RouterLinkRenderer}
-                    href={getPath(ROUTES.ENGAGEMENT_DETAILS_AUTHORING, { engagementId: Number(row.id) })}
+                    href={getPath(ROUTES.ENGAGEMENT_DETAILS_CONFIG, { engagementId: Number(row.id) })}
                 >
                     {row.name}
                 </Link>
@@ -391,7 +389,7 @@ const EngagementListing = () => {
     ];
 
     return (
-        <ResponsiveContainer
+        <Grid
             direction="row"
             justifyContent="flex-start"
             alignItems="flex-start"
@@ -399,9 +397,6 @@ const EngagementListing = () => {
             columnSpacing={2}
             rowSpacing={1}
         >
-            <Grid>
-                <AutoBreadcrumbs />
-            </Grid>
             <Grid size={12}>
                 <Stack
                     direction={{ xs: 'column', md: 'row' }}
@@ -510,7 +505,7 @@ const EngagementListing = () => {
                     pageInfo={{ ...pageInfo, total: engagementPage?.total ?? 0 }}
                 />
             </Grid>
-        </ResponsiveContainer>
+        </Grid>
     );
 };
 

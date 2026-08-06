@@ -1,7 +1,6 @@
 import React from 'react';
 
 import { Grid2 as Grid } from '@mui/material';
-import { ResponsiveContainer } from 'components/common/Layout';
 import { Heading1, Heading2, BodyText } from 'components/common/Typography/';
 import { TenantForm } from './TenantForm';
 import { createTenant } from 'services/tenantService';
@@ -11,10 +10,6 @@ import { useAppDispatch } from 'hooks';
 import { openNotification } from 'services/notificationService/notificationSlice';
 import { useNavigate, useRevalidator } from 'react-router';
 import { ROUTES, getPath } from 'routes/routes';
-// Prevents page load fail due to waiting for engagement title on refresh
-const AutoBreadcrumbs = React.lazy(() =>
-    import('components/common/Navigation/Breadcrumb').then((m) => ({ default: m.AutoBreadcrumbs })),
-);
 
 const TenantCreationPage = () => {
     const dispatch = useAppDispatch();
@@ -38,8 +33,7 @@ const TenantCreationPage = () => {
     };
 
     return (
-        <ResponsiveContainer>
-            <AutoBreadcrumbs />
+        <Grid container>
             <Grid size={12}>
                 <Heading1>Create Tenant Instance</Heading1>
             </Grid>
@@ -54,7 +48,7 @@ const TenantCreationPage = () => {
                 </Grid>
             </Grid>
             <TenantForm onSubmit={onSubmit} submitText="Create Instance" onCancel={onCancel} />
-        </ResponsiveContainer>
+        </Grid>
     );
 };
 

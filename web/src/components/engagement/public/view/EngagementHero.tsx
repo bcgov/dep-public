@@ -129,6 +129,9 @@ export const EngagementHero = () => {
                             previewFallback={
                                 <Box sx={{ width: '100%', height: { xs: '160px', md: '840px' } }}>
                                     <BlueprintImagePlaceholder
+                                        // to avoid overlapping with hero content on larger screens
+                                        textProps={{ marginLeft: { xs: '0', md: '720px' } }}
+                                        zIndex={-2}
                                         title="Hero Image"
                                         description="(fills the entire hero banner area)"
                                         height="100%"

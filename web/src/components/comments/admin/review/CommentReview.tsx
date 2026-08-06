@@ -18,7 +18,6 @@ import { getSubmission, reviewComments } from 'services/submissionService';
 import { useAppDispatch, useAppTranslation, useAppSelector } from 'hooks';
 import { useParams, useNavigate } from 'react-router';
 import { openNotification } from 'services/notificationService/notificationSlice';
-import { ResponsiveContainer } from 'components/common/Layout';
 import { BodyText, Heading3, Heading4 } from 'components/common/Typography';
 import { Button } from 'components/common/Input/Button';
 import { CommentStatus } from 'constants/commentStatus';
@@ -204,332 +203,270 @@ const CommentReview = () => {
     const threatEmailContact = tenant.contact_email;
     const threatConactName = tenant.contact_name;
     return (
-        <ResponsiveContainer>
+        <Grid container direction="row" justifyContent="flex-start" alignItems="flex-start" rowSpacing={4}>
             <EmailPreviewModal
                 open={emailPreviewOpen}
                 handleClose={() => setEmailPreviewOpen(false)}
                 header={'Your comment on (Engagement name) needs to be edited'}
                 renderEmail={getEmailPreview()}
             />
-            <Grid
-                container
-                direction="row"
-                padding="3em"
-                justifyContent="flex-start"
-                alignItems="flex-start"
-                rowSpacing={4}
-            >
-                <Grid container direction="row" rowSpacing={2}>
-                    <Grid container direction="row" size={6} spacing={1}>
-                        <Grid>
-                            <BodyText bold>Comment ID:</BodyText>
-                        </Grid>
-                        <Grid>
-                            <BodyText sx={{ pl: 2 }}>{id}</BodyText>
-                        </Grid>
+            <Grid container direction="row" rowSpacing={2}>
+                <Grid container direction="row" size={6} spacing={1}>
+                    <Grid>
+                        <BodyText bold>Comment ID:</BodyText>
                     </Grid>
-
-                    <Grid container direction="row" size={6} spacing={1}>
-                        <Grid>
-                            <BodyText bold>Status:</BodyText>
-                        </Grid>
-                        <Grid>
-                            <BodyText sx={{ pl: 2 }}>{CommentStatus[comment_status_id]}</BodyText>
-                        </Grid>
-                    </Grid>
-
-                    <Grid container direction="row" size={6} spacing={1}>
-                        <Grid>
-                            <BodyText bold>Comment Date:</BodyText>
-                        </Grid>
-                        <Grid>
-                            <BodyText sx={{ pl: 2 }}>{formatToPacific(created_date, 'YYYY-MM-DD')}</BodyText>
-                        </Grid>
-                    </Grid>
-
-                    <Grid container direction="row" size={6} spacing={1}>
-                        <Grid>
-                            <BodyText bold>Reviewed by:</BodyText>
-                        </Grid>
-                        <Grid>
-                            <BodyText sx={{ pl: 2 }}>{reviewed_by}</BodyText>
-                        </Grid>
-                    </Grid>
-                    <Grid container direction="row" size={6} spacing={1}></Grid>
-                    <Grid container direction="row" size={6} spacing={1}>
-                        <Grid>
-                            <BodyText bold>Date Reviewed:</BodyText>
-                        </Grid>
-                        <Grid>
-                            <BodyText sx={{ pl: 2 }}>{formatToPacific(review_date, 'YYYY-MM-DD')}</BodyText>
-                        </Grid>
+                    <Grid>
+                        <BodyText sx={{ pl: 2 }}>{id}</BodyText>
                     </Grid>
                 </Grid>
-                <Grid container rowSpacing={2}>
-                    <Grid size={12}>
-                        <Grid size={12}>
-                            <Heading3 bold>Comment(s)</Heading3>
-                        </Grid>
+
+                <Grid container direction="row" size={6} spacing={1}>
+                    <Grid>
+                        <BodyText bold>Status:</BodyText>
                     </Grid>
-                    {submission.comments?.map((comment) => {
-                        return (
-                            <Grid key={comment.id} size={12}>
-                                <Divider />
-                                <Grid container direction="row" alignItems={'flex-start'} justifyContent="flex-start">
-                                    <Grid size={1} paddingTop={3}>
-                                        <If condition={comment.is_displayed}>
-                                            <Then>
-                                                <Grid size={12}>
-                                                    <Tooltip
-                                                        disableInteractive
-                                                        title={'Displayed to the public'}
-                                                        placement="top"
-                                                        arrow
-                                                    >
-                                                        <span>
-                                                            <FontAwesomeIcon
-                                                                icon={faMessageCheck}
-                                                                style={{ fontSize: '24px', color: '#757575' }}
-                                                            />
-                                                        </span>
-                                                    </Tooltip>
-                                                </Grid>
-                                            </Then>
-                                            <Else>
-                                                <Grid size={12}>
-                                                    <Tooltip
-                                                        disableInteractive
-                                                        title={'Not displayed to the public'}
-                                                        placement="top"
-                                                        arrow
-                                                    >
-                                                        <span>
-                                                            <FontAwesomeIcon
-                                                                icon={faMessageSlash}
-                                                                style={{ fontSize: '24px', color: '#757575' }}
-                                                            />
-                                                        </span>
-                                                    </Tooltip>
-                                                </Grid>
-                                            </Else>
-                                        </If>
+                    <Grid>
+                        <BodyText sx={{ pl: 2 }}>{CommentStatus[comment_status_id]}</BodyText>
+                    </Grid>
+                </Grid>
+
+                <Grid container direction="row" size={6} spacing={1}>
+                    <Grid>
+                        <BodyText bold>Comment Date:</BodyText>
+                    </Grid>
+                    <Grid>
+                        <BodyText sx={{ pl: 2 }}>{formatToPacific(created_date, 'YYYY-MM-DD')}</BodyText>
+                    </Grid>
+                </Grid>
+
+                <Grid container direction="row" size={6} spacing={1}>
+                    <Grid>
+                        <BodyText bold>Reviewed by:</BodyText>
+                    </Grid>
+                    <Grid>
+                        <BodyText sx={{ pl: 2 }}>{reviewed_by}</BodyText>
+                    </Grid>
+                </Grid>
+                <Grid container direction="row" size={6} spacing={1}></Grid>
+                <Grid container direction="row" size={6} spacing={1}>
+                    <Grid>
+                        <BodyText bold>Date Reviewed:</BodyText>
+                    </Grid>
+                    <Grid>
+                        <BodyText sx={{ pl: 2 }}>{formatToPacific(review_date, 'YYYY-MM-DD')}</BodyText>
+                    </Grid>
+                </Grid>
+            </Grid>
+            <Grid container rowSpacing={2}>
+                <Grid size={12}>
+                    <Grid size={12}>
+                        <Heading3 bold>Comment(s)</Heading3>
+                    </Grid>
+                </Grid>
+                {submission.comments?.map((comment) => {
+                    return (
+                        <Grid key={comment.id} size={12}>
+                            <Divider />
+                            <Grid container direction="row" alignItems={'flex-start'} justifyContent="flex-start">
+                                <Grid size={1} paddingTop={3}>
+                                    <If condition={comment.is_displayed}>
+                                        <Then>
+                                            <Grid size={12}>
+                                                <Tooltip
+                                                    disableInteractive
+                                                    title={'Displayed to the public'}
+                                                    placement="top"
+                                                    arrow
+                                                >
+                                                    <span>
+                                                        <FontAwesomeIcon
+                                                            icon={faMessageCheck}
+                                                            style={{ fontSize: '24px', color: '#757575' }}
+                                                        />
+                                                    </span>
+                                                </Tooltip>
+                                            </Grid>
+                                        </Then>
+                                        <Else>
+                                            <Grid size={12}>
+                                                <Tooltip
+                                                    disableInteractive
+                                                    title={'Not displayed to the public'}
+                                                    placement="top"
+                                                    arrow
+                                                >
+                                                    <span>
+                                                        <FontAwesomeIcon
+                                                            icon={faMessageSlash}
+                                                            style={{ fontSize: '24px', color: '#757575' }}
+                                                        />
+                                                    </span>
+                                                </Tooltip>
+                                            </Grid>
+                                        </Else>
+                                    </If>
+                                </Grid>
+                                <Grid size={11}>
+                                    <Grid size={12} paddingTop={2}>
+                                        <BodyText>{comment.label ?? 'Label not available.'}</BodyText>
                                     </Grid>
-                                    <Grid size={11}>
-                                        <Grid size={12} paddingTop={2}>
-                                            <BodyText>{comment.label ?? 'Label not available.'}</BodyText>
-                                        </Grid>
-                                        <Grid size={12}>
-                                            <BodyText>{comment.text}</BodyText>
-                                        </Grid>
+                                    <Grid size={12}>
+                                        <BodyText>{comment.text}</BodyText>
                                     </Grid>
                                 </Grid>
                             </Grid>
-                        );
-                    })}
-                    <Grid size={12}>
-                        <Divider />
-                    </Grid>
-                </Grid>
-                <If condition={!submission.comments || submission.comments.length == 0}>
-                    <Then>
-                        <Grid container direction="row" size={12} spacing={2}>
-                            <Grid size={12}>
-                                <BodyText bold>This submission has no comments.</BodyText>
-                            </Grid>
                         </Grid>
-                    </Then>
-                    <Else>
+                    );
+                })}
+                <Grid size={12}>
+                    <Divider />
+                </Grid>
+            </Grid>
+            <If condition={!submission.comments || submission.comments.length == 0}>
+                <Then>
+                    <Grid container direction="row" size={12} spacing={2}>
+                        <Grid size={12}>
+                            <BodyText bold>This submission has no comments.</BodyText>
+                        </Grid>
+                    </Grid>
+                </Then>
+                <Else>
+                    <Grid size={12}>
+                        <FormControl>
+                            <FormLabel id="controlled-radio-buttons-group">
+                                <Heading3 sx={{ color: '#494949' }}>Comments Approval</Heading3>
+                            </FormLabel>
+                            <RadioGroup
+                                defaultValue={defaultVerdict}
+                                onChange={(e) => handleReviewChange(Number(e.target.value))}
+                            >
+                                <FormControlLabel
+                                    value={CommentStatus.Approved}
+                                    control={<Radio />}
+                                    label={<BodyText>Approve</BodyText>}
+                                />
+                                <FormControlLabel
+                                    value={CommentStatus.Rejected}
+                                    control={<Radio />}
+                                    label={<BodyText>Reject</BodyText>}
+                                />
+                                <FormControlLabel
+                                    value={CommentStatus.NeedsFurtherReview}
+                                    control={<Radio />}
+                                    label={<BodyText>Needs further review</BodyText>}
+                                />
+                            </RadioGroup>
+                        </FormControl>
+                    </Grid>
+                    <When condition={review == CommentStatus.Rejected}>
                         <Grid size={12}>
                             <FormControl>
-                                <FormLabel id="controlled-radio-buttons-group">
-                                    <Heading3 sx={{ color: '#494949' }}>Comments Approval</Heading3>
+                                <FormLabel id="controlled-checkbox-group">
+                                    <Heading4 sx={{ color: '#494949' }}>Reason for Rejection</Heading4>
                                 </FormLabel>
-                                <RadioGroup
-                                    defaultValue={defaultVerdict}
-                                    onChange={(e) => handleReviewChange(Number(e.target.value))}
-                                >
-                                    <FormControlLabel
-                                        value={CommentStatus.Approved}
-                                        control={<Radio />}
-                                        label={<BodyText>Approve</BodyText>}
-                                    />
-                                    <FormControlLabel
-                                        value={CommentStatus.Rejected}
-                                        control={<Radio />}
-                                        label={<BodyText>Reject</BodyText>}
-                                    />
-                                    <FormControlLabel
-                                        value={CommentStatus.NeedsFurtherReview}
-                                        control={<Radio />}
-                                        label={<BodyText>Needs further review</BodyText>}
-                                    />
-                                </RadioGroup>
-                            </FormControl>
-                        </Grid>
-                        <When condition={review == CommentStatus.Rejected}>
-                            <Grid size={12}>
-                                <FormControl>
-                                    <FormLabel id="controlled-checkbox-group">
-                                        <Heading4 sx={{ color: '#494949' }}>Reason for Rejection</Heading4>
-                                    </FormLabel>
-                                    <FormControlLabel
-                                        label={<BodyText>Contains personal information</BodyText>}
-                                        control={
-                                            <Checkbox
-                                                checked={hasPersonalInfo}
-                                                onChange={(event, checked) => setHasPersonalInfo(checked)}
-                                            />
-                                        }
-                                    />
-                                    <FormControlLabel
-                                        label={<BodyText>Contains profanity or inappropriate language</BodyText>}
-                                        control={
-                                            <Checkbox
-                                                checked={hasProfanity}
-                                                onChange={(event, checked) => setHasProfanity(checked)}
-                                            />
-                                        }
-                                    />
-                                    <FormControlLabel
-                                        label={<BodyText>Contains threat/menace</BodyText>}
-                                        control={
-                                            <Checkbox
-                                                checked={hasThreat}
-                                                onChange={(event, checked) => setHasThreat(checked)}
-                                            />
-                                        }
-                                    />
-                                    <BodyText size="small" bold color="#d32f2f" marginLeft={'3em'} mt={'-1em'}>
-                                        {translate('comment.admin.review.threatTextOne')}&nbsp;
-                                        {threatConactName}&nbsp;
-                                        {translate('comment.admin.review.threatTextTwo')} &nbsp;
-                                        <Link href={`mailto:${threatEmailContact}`}>{threatEmailContact}</Link>
-                                    </BodyText>
-                                    <FormControlLabel
-                                        label={<BodyText sx={{ color: '#494949' }}>Other</BodyText>}
-                                        control={
-                                            <Checkbox
-                                                checked={hasOtherReason}
-                                                onChange={(event, checked) => {
-                                                    setHasOtherReason(checked);
-                                                    if (!checked) {
-                                                        setOtherReason('');
-                                                    }
-                                                }}
-                                            />
-                                        }
-                                    />
-                                    <BodyText sx={{ marginLeft: '3em', color: '#707070', fontSize: '13px' }}>
-                                        This will be inserted in the email sent to the respondent:
-                                    </BodyText>
-                                    <BodyText
-                                        sx={{
-                                            marginLeft: '3em',
-                                            fontStyle: 'italic',
-                                            color: '#707070',
-                                            fontSize: '13px',
-                                        }}
-                                    >
-                                        We have reviewed your feedback and can't accept it for the following reason(s):
-                                        - Your feedback contains "other"
-                                    </BodyText>
-                                    <TextField
-                                        disabled={!hasOtherReason}
-                                        value={otherReason}
-                                        sx={{ marginLeft: '2em' }}
-                                        FormHelperTextProps={{ error: true }}
-                                        onChange={(event) => setOtherReason(event.target.value)}
-                                        inputProps={{ maxLength: MAX_OTHER_REASON_CHAR }}
-                                        multiline
-                                    />
-                                    <br />
-                                    <BodyText sx={{ fontWeight: 'bold', color: '#494949' }}>Review Notes</BodyText>
-                                    <BodyText sx={{ color: '#707070', fontSize: '13px' }}>
-                                        This note will be inserted in the email sent to the respondent to help them
-                                        understand what needs to be edited for their comment(s) to be approved.
-                                    </BodyText>
-                                    {reviewNotes.map((staffNote) => {
-                                        return (
-                                            <TextField
-                                                value={staffNote.note}
-                                                key={staffNote.note_type}
-                                                fullWidth
-                                                multiline={true}
-                                                rows={4}
-                                                FormHelperTextProps={{ error: true }}
-                                                onChange={(event) => {
-                                                    handleNoteChange(
-                                                        event.target.value,
-                                                        staffNote.note_type,
-                                                        staffNote.id,
-                                                    );
-                                                }}
-                                            />
-                                        );
-                                    })}
-
-                                    <When condition={review == CommentStatus.Rejected && notifyEmail && !hasThreat}>
-                                        <Grid
-                                            size={12}
-                                            sx={{ m: 1 }}
-                                            container
-                                            alignItems="flex-end"
-                                            justifyContent="flex-end"
-                                        >
-                                            <Button onClick={previewEmail}>{'Preview Email'}</Button>
-                                        </Grid>
-                                    </When>
-                                    <br />
-                                    <BodyText bold>Internal Note</BodyText>
-                                    {internalNotes.map((staffNote) => {
-                                        return (
-                                            <TextField
-                                                value={staffNote.note}
-                                                key={staffNote.note_type}
-                                                fullWidth
-                                                multiline={true}
-                                                rows={4}
-                                                FormHelperTextProps={{ error: true }}
-                                                onChange={(event) => {
-                                                    handleNoteChange(
-                                                        event.target.value,
-                                                        staffNote.note_type,
-                                                        staffNote.id,
-                                                    );
-                                                }}
-                                            />
-                                        );
-                                    })}
-                                    <br />
-                                    <BodyText>
-                                        Clicking the "Save" button will trigger an automatic email to be sent to the
-                                        person who made this comment. They will have the option to edit and re-submit
-                                        their comment. The edited comment will have to be approved before it is
-                                        published.
-                                    </BodyText>
-                                    <br />
-                                    <FormControlLabel
-                                        label={<BodyText>Don't send this email to the person who commented.</BodyText>}
-                                        control={
-                                            <Checkbox
-                                                checked={notifyEmail === true ? false : true}
-                                                onChange={(event, checked) =>
-                                                    setNotifyEmail(checked === true ? false : true)
+                                <FormControlLabel
+                                    label={<BodyText>Contains personal information</BodyText>}
+                                    control={
+                                        <Checkbox
+                                            checked={hasPersonalInfo}
+                                            onChange={(event, checked) => setHasPersonalInfo(checked)}
+                                        />
+                                    }
+                                />
+                                <FormControlLabel
+                                    label={<BodyText>Contains profanity or inappropriate language</BodyText>}
+                                    control={
+                                        <Checkbox
+                                            checked={hasProfanity}
+                                            onChange={(event, checked) => setHasProfanity(checked)}
+                                        />
+                                    }
+                                />
+                                <FormControlLabel
+                                    label={<BodyText>Contains threat/menace</BodyText>}
+                                    control={
+                                        <Checkbox
+                                            checked={hasThreat}
+                                            onChange={(event, checked) => setHasThreat(checked)}
+                                        />
+                                    }
+                                />
+                                <BodyText size="small" bold color="#d32f2f" marginLeft={'3em'} mt={'-1em'}>
+                                    {translate('comment.admin.review.threatTextOne')}&nbsp;
+                                    {threatConactName}&nbsp;
+                                    {translate('comment.admin.review.threatTextTwo')} &nbsp;
+                                    <Link href={`mailto:${threatEmailContact}`}>{threatEmailContact}</Link>
+                                </BodyText>
+                                <FormControlLabel
+                                    label={<BodyText sx={{ color: '#494949' }}>Other</BodyText>}
+                                    control={
+                                        <Checkbox
+                                            checked={hasOtherReason}
+                                            onChange={(event, checked) => {
+                                                setHasOtherReason(checked);
+                                                if (!checked) {
+                                                    setOtherReason('');
                                                 }
-                                            />
-                                        }
-                                    />
-                                    <br />
-                                    <FormHelperText error={true}>
-                                        {hasError
-                                            ? 'Please enter at least one reason for rejecting the comment(s).'
-                                            : ''}
-                                    </FormHelperText>
-                                </FormControl>
-                            </Grid>
-                        </When>
-                        <When condition={review !== CommentStatus.Rejected}>
-                            <Grid size={12}>
+                                            }}
+                                        />
+                                    }
+                                />
+                                <BodyText sx={{ marginLeft: '3em', color: '#707070', fontSize: '13px' }}>
+                                    This will be inserted in the email sent to the respondent:
+                                </BodyText>
+                                <BodyText
+                                    sx={{
+                                        marginLeft: '3em',
+                                        fontStyle: 'italic',
+                                        color: '#707070',
+                                        fontSize: '13px',
+                                    }}
+                                >
+                                    We have reviewed your feedback and can't accept it for the following reason(s): -
+                                    Your feedback contains "other"
+                                </BodyText>
+                                <TextField
+                                    disabled={!hasOtherReason}
+                                    value={otherReason}
+                                    sx={{ marginLeft: '2em' }}
+                                    FormHelperTextProps={{ error: true }}
+                                    onChange={(event) => setOtherReason(event.target.value)}
+                                    inputProps={{ maxLength: MAX_OTHER_REASON_CHAR }}
+                                    multiline
+                                />
+                                <br />
+                                <BodyText sx={{ fontWeight: 'bold', color: '#494949' }}>Review Notes</BodyText>
+                                <BodyText sx={{ color: '#707070', fontSize: '13px' }}>
+                                    This note will be inserted in the email sent to the respondent to help them
+                                    understand what needs to be edited for their comment(s) to be approved.
+                                </BodyText>
+                                {reviewNotes.map((staffNote) => {
+                                    return (
+                                        <TextField
+                                            value={staffNote.note}
+                                            key={staffNote.note_type}
+                                            fullWidth
+                                            multiline={true}
+                                            rows={4}
+                                            FormHelperTextProps={{ error: true }}
+                                            onChange={(event) => {
+                                                handleNoteChange(event.target.value, staffNote.note_type, staffNote.id);
+                                            }}
+                                        />
+                                    );
+                                })}
+
+                                <When condition={review == CommentStatus.Rejected && notifyEmail && !hasThreat}>
+                                    <Grid
+                                        size={12}
+                                        sx={{ m: 1 }}
+                                        container
+                                        alignItems="flex-end"
+                                        justifyContent="flex-end"
+                                    >
+                                        <Button onClick={previewEmail}>{'Preview Email'}</Button>
+                                    </Grid>
+                                </When>
+                                <br />
                                 <BodyText bold>Internal Note</BodyText>
                                 {internalNotes.map((staffNote) => {
                                     return (
@@ -546,20 +483,62 @@ const CommentReview = () => {
                                         />
                                     );
                                 })}
-                            </Grid>
-                        </When>
-                        <Grid size={12}>
-                            <Stack direction="row" spacing={2}>
-                                <Button variant="primary" loading={isSaving} onClick={handleSave}>
-                                    Save &amp; Continue
-                                </Button>
-                                <Button onClick={() => navigate(-1)}>Cancel</Button>
-                            </Stack>
+                                <br />
+                                <BodyText>
+                                    Clicking the "Save" button will trigger an automatic email to be sent to the person
+                                    who made this comment. They will have the option to edit and re-submit their
+                                    comment. The edited comment will have to be approved before it is published.
+                                </BodyText>
+                                <br />
+                                <FormControlLabel
+                                    label={<BodyText>Don't send this email to the person who commented.</BodyText>}
+                                    control={
+                                        <Checkbox
+                                            checked={notifyEmail === true ? false : true}
+                                            onChange={(event, checked) =>
+                                                setNotifyEmail(checked === true ? false : true)
+                                            }
+                                        />
+                                    }
+                                />
+                                <br />
+                                <FormHelperText error={true}>
+                                    {hasError ? 'Please enter at least one reason for rejecting the comment(s).' : ''}
+                                </FormHelperText>
+                            </FormControl>
                         </Grid>
-                    </Else>
-                </If>
-            </Grid>
-        </ResponsiveContainer>
+                    </When>
+                    <When condition={review !== CommentStatus.Rejected}>
+                        <Grid size={12}>
+                            <BodyText bold>Internal Note</BodyText>
+                            {internalNotes.map((staffNote) => {
+                                return (
+                                    <TextField
+                                        value={staffNote.note}
+                                        key={staffNote.note_type}
+                                        fullWidth
+                                        multiline={true}
+                                        rows={4}
+                                        FormHelperTextProps={{ error: true }}
+                                        onChange={(event) => {
+                                            handleNoteChange(event.target.value, staffNote.note_type, staffNote.id);
+                                        }}
+                                    />
+                                );
+                            })}
+                        </Grid>
+                    </When>
+                    <Grid size={12}>
+                        <Stack direction="row" spacing={2}>
+                            <Button variant="primary" loading={isSaving} onClick={handleSave}>
+                                Save &amp; Continue
+                            </Button>
+                            <Button onClick={() => navigate(-1)}>Cancel</Button>
+                        </Stack>
+                    </Grid>
+                </Else>
+            </If>
+        </Grid>
     );
 };
 

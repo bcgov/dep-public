@@ -7,14 +7,12 @@ import { faMagnifyingGlass } from '@fortawesome/pro-regular-svg-icons/faMagnifyi
 import { USER_STATUS, User } from 'models/user';
 import { HeadCell } from 'components/common/Table/types';
 import { Button } from 'components/common/Input/Button';
-import { ResponsiveContainer } from 'components/common/Layout';
 import { Link } from '@mui/material';
 import { RouterLinkRenderer } from 'components/common/Navigation/Link';
 import CustomTable from 'components/common/Table';
 import { formatToPacific } from 'components/common/dateHelper';
 import { UserManagementContext } from './UserManagementContext';
 import { ActionsDropDown } from './ActionsDropDown';
-import { AutoBreadcrumbs } from 'components/common/Navigation/Breadcrumb';
 import { ROUTES, getPath } from 'routes/routes';
 
 const UserManagementListing = () => {
@@ -83,11 +81,8 @@ const UserManagementListing = () => {
     ];
 
     return (
-        <ResponsiveContainer>
-            <Grid size={12}>
-                <AutoBreadcrumbs />
-            </Grid>
-            <Grid size={{ xs: 12, lg: 10 }} mt={1}>
+        <Grid container>
+            <Grid size={{ xs: 12, lg: 10 }}>
                 <Stack direction={{ xs: 'column', md: 'row' }} spacing={1} width="100%" justifyContent="space-between">
                     <Stack direction="row" spacing={1} alignItems="center">
                         <TextInput
@@ -129,7 +124,7 @@ const UserManagementListing = () => {
                     pageInfo={pageInfo}
                 />
             </Grid>
-        </ResponsiveContainer>
+        </Grid>
     );
 };
 

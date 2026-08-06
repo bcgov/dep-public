@@ -47,13 +47,11 @@ export const SurveyBarPrintable = ({ engagement, engagementIsLoading, dashboardT
 
     if (isError) {
         return (
-            <>
-                <Grid size={12}>
-                    <BodyText bold mb={2} color="primary">
-                        {translate('dashboard.barBlock.label')}
-                    </BodyText>
-                </Grid>
-            </>
+            <Grid size={12}>
+                <BodyText bold mb={2} color="primary">
+                    {translate('dashboard.barBlock.label')}
+                </BodyText>
+            </Grid>
         );
     }
 
