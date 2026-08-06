@@ -481,7 +481,7 @@ const EngagementListing = () => {
                             size="small"
                             variant="primary"
                             icon={<FontAwesomeIcon icon={faPlus} />}
-                            href={getPath(ROUTES.ENGAGEMENT_CREATE_WIZARD)}
+                            href={getPath(ROUTES.ENGAGEMENT_CREATE)}
                             sx={{ minWidth: 'max-content' }}
                             fullWidth={isMediumScreen}
                         >

@@ -9,6 +9,7 @@ import {
 import { getDetailsTabs } from 'services/engagementDetailsTabService';
 import { EngagementDetailsTab } from 'models/engagementDetailsTab';
 import { AppConfig } from 'config';
+import { useNavigate } from 'react-router';
 
 export const AUTHORING_SECTION_NAMES = [
     'Hero Banner',
@@ -476,6 +477,7 @@ export const useAuthoringSectionCompletion = ({
         () => normalizeLanguageCodes(normalizedCurrentLanguageCode, selectedLanguageCodes).join('|'),
         [normalizedCurrentLanguageCode, selectedLanguageCodes],
     );
+    const navigate = useNavigate();
 
     useEffect(() => {
         let cancelled = false;
@@ -530,6 +532,13 @@ export const useAuthoringSectionCompletion = ({
                 }
             })
             .catch((error: unknown) => {
+                if (
+                    error instanceof Response &&
+                    error.status === 302 &&
+                    error.headers.get('Location') === '/manage/unauthorized'
+                ) {
+                    navigate('/manage/unauthorized', { replace: true });
+                }
                 console.debug('[AuthoringSectionCompletionDebug] compute failed', {
                     engagementId,
                     languageCode,

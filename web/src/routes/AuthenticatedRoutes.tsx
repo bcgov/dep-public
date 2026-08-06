@@ -115,14 +115,12 @@ const AuthenticatedRoutes = resolveLazyRouteTree(
                     loaderLazy={() => import('engagements/public/view').then((m) => m.engagementListLoader)}
                 />
                 <LazyRoute
-                    path="create"
                     ComponentLazy={() => import('routes/AuthGateRoute')}
                     handle={{ allowedRoles: [USER_ROLES.CREATE_ENGAGEMENT] }}
                     actionLazy={() => import('engagements/admin/config/EngagementCreateAction')}
                 >
-                    <LazyRoute index element={<Navigate to="wizard" />} />
                     <LazyRoute
-                        path="wizard"
+                        path="create"
                         handle={{ crumb: () => ({ name: 'New Engagement' }) }}
                         ComponentLazy={() => import('engagements/admin/config/wizard/CreationWizard')}
                     />

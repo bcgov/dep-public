@@ -37,7 +37,7 @@ const UserGuideNav = () => {
             surveyId: SAMPLE_IDS.surveyId,
             submissionId: SAMPLE_IDS.submissionId,
         })]: `${HELP_URL}/posts/comment-review-page/`,
-        [getPath(ROUTES.ENGAGEMENT_CREATE_WIZARD)]: `${HELP_URL}/posts/create-engagement/`,
+        [getPath(ROUTES.ENGAGEMENT_CREATE)]: `${HELP_URL}/posts/create-engagement/`,
         [getPath(ROUTES.ENGAGEMENT_DETAILS_AUTHORING, { engagementId: SAMPLE_IDS.engagementId })]:
             `${HELP_URL}/posts/engagement-details/`,
         [getPath(ROUTES.ADMIN_ENGAGEMENT_PREVIEW, {

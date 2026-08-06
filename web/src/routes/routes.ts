@@ -33,7 +33,6 @@ export const ROUTES = {
     ENGAGEMENT: '/manage/engagements/:engagementId',
     ENGAGEMENT_SEARCH: '/manage/engagements/search',
     ENGAGEMENT_CREATE: '/manage/engagements/create',
-    ENGAGEMENT_CREATE_WIZARD: '/manage/engagements/create/wizard',
     ENGAGEMENT_DETAILS: '/manage/engagements/:engagementId/',
     ENGAGEMENT_DETAILS_CONFIG_EDIT: '/manage/engagements/:engagementId/config/edit',
     ENGAGEMENT_DETAILS_CONFIG: '/manage/engagements/:engagementId/config',
