@@ -217,11 +217,7 @@ const SearchAndFilterArea = () => {
                         condition={
                             (searchParams.get('engagement_status') &&
                                 searchParams.get('engagement_status') !== '[-1]') ||
-<<<<<<<< HEAD:web/src/components/landing/EngagementSearch/SearchAndFilterArea.tsx
                             (searchParams.get('meta_filters') && searchParams.get('meta_filters') !== '[]')
-========
-                            (searchParams.get('meta_filters') && searchParams.get('engagement_status') !== '[]')
->>>>>>>> main:web/src/components/landing/SearchAndFilterArea.tsx
                         }
                     >
                         <Button

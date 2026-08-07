@@ -124,17 +124,8 @@ const ResultsArea = () => {
             <Grid size={12} container direction="row" alignItems={'center'} justifyContent="center" marginBottom="2em">
                 <Grid>
                     <Pagination
-<<<<<<<< HEAD:web/src/components/landing/EngagementSearch/ResultsArea.tsx
-                        defaultPage={1}
                         page={Number(searchParams.get('page')) || 1}
                         count={Math.ceil(count / Number(searchParams.get('size') || 8))}
-                        color="primary"
-                        showFirstButton
-                        showLastButton
-========
-                        page={Number(searchParams.get('page')) || 1}
-                        count={Math.ceil(count / Number(searchParams.get('size') || 8))}
->>>>>>>> main:web/src/components/landing/ResultsArea.tsx
                         onChange={(_, pageNumber) =>
                             setSearchParams(updateSearchParams({ page: pageNumber }, searchParams))
                         }
