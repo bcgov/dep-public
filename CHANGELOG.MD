@@ -1,3 +1,11 @@
+## August 7, 2026
+
+- **Feature** Added some fixes to prepare for the new search/filter system [🎟️ DEP-316](https://citz-gdx.atlassian.net/browse/DEP-316)
+    - Fixed metadata and engagement parsing logic in landing loader
+    - Removed unneeded revalidation hook that was causing double engagement results loading
+    - Fixed API logic for engagement status filter in engagement model
+    - Moved EngagementSearch components to a separate subfolder within landing folder for better organization
+
 ## August 5, 2026
 
 - **Feature** Added API-side locking to Surveys [🎟️ DEP-283](https://citz-gdx.atlassian.net/browse/DEP-283)

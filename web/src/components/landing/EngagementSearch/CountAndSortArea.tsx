@@ -1,11 +1,11 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { LandingDataContext } from './index';
+import { LandingDataContext } from '../index';
 import { BodyText } from 'components/common/Typography';
 import Grid from '@mui/material/Grid2';
 import { Select } from 'components/common/Input/Select';
-import { updateSearchParams } from './utils';
+import { updateSearchParams } from '../utils';
 import { Box, SelectChangeEvent } from '@mui/material';
-import { SortOrder } from './types';
+import { SortOrder } from '../types';
 import { useAppTranslation } from 'hooks';
 
 const CountAndSortArea = () => {

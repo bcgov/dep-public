@@ -6,9 +6,9 @@ import EngagementTile from './EngagementTile';
 import NoResult from 'routes/NoResults';
 import { LiveAnnouncer, LiveMessage } from 'react-aria-live';
 import { Pagination } from 'components/common/Input';
-import { LandingDataContext } from '.';
+import { LandingDataContext } from '..';
 import { Engagement } from 'models/engagement';
-import { updateSearchParams } from './utils';
+import { updateSearchParams } from '../utils';
 
 const ResultsArea = () => {
     const {

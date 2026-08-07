@@ -22,7 +22,10 @@ const landingLoader = ({ request }: LoaderFunctionArgs): LandingLoaderData => {
     const engagementsPromise = getEngagements({
         search_text: searchText ?? defaultSearchFilters.search_text,
         page: Number(page ?? defaultSearchFilters.page),
-        metadata: metaFilters && tryParse(metaFilters) ? JSON.parse(metaFilters) : defaultSearchFilters.meta_filters,
+        metadata:
+            metaFilters && Array.isArray(JSON.parse(metaFilters))
+                ? JSON.parse(metaFilters)
+                : defaultSearchFilters.meta_filters,
         engagement_status: translateEngagementStatus(engagementStatus),
         sort_key: sortKey ?? defaultSearchFilters.sort_key,
         sort_order: (sortOrder && validSortOrders.includes(sortOrder)

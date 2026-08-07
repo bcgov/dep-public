@@ -1,7 +1,7 @@
 import React, { Suspense } from 'react';
 import { Box, Grid2 as Grid, Skeleton } from '@mui/material';
-import { TileSkeleton } from 'components/landing/TileSkeleton';
-import EngagementTile from 'components/landing/EngagementTile';
+import { TileSkeleton } from 'components/landing/EngagementSearch/TileSkeleton';
+import EngagementTile from 'components/landing/EngagementSearch/EngagementTile';
 import { Heading2 } from 'components/common/Typography';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowLeftLong } from '@fortawesome/pro-regular-svg-icons';
