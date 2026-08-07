@@ -130,7 +130,18 @@ export const EngagementHero = () => {
                                 <Box sx={{ width: '100%', height: { xs: '160px', md: '840px' } }}>
                                     <BlueprintImagePlaceholder
                                         // to avoid overlapping with hero content on larger screens
-                                        textProps={{ marginLeft: { xs: '0', md: '720px' } }}
+                                        textProps={{
+                                            marginLeft: { xs: '0', md: '720px' },
+                                            sx: {
+                                                // Flip text sideways to accommodate the hero content
+                                                // given small margin on the right side of the hero content
+                                                writingMode: {
+                                                    xs: 'horizontal-tb',
+                                                    md: 'sideways-lr',
+                                                    lg: 'horizontal-tb',
+                                                },
+                                            },
+                                        }}
                                         zIndex={-2}
                                         title="Hero Image"
                                         description="(fills the entire hero banner area)"
