@@ -303,7 +303,7 @@ class Engagement(BaseModel):
         if EngagementDisplayStatus.Closed.value in statuses:
             status_filter.append(
                 and_(
-                    Engagement.status_id == Status.Closed.value,
+                    Engagement.status_id == Status.Published.value,
                     Engagement.end_date < datetime.now()
                 )
             )

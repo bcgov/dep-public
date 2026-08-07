@@ -8,8 +8,8 @@ import { useAppTranslation } from 'hooks';
 import { Button } from 'components/common/Input/Button';
 import { DarkTheme } from 'styles/Theme';
 import { Heading2, Heading4 } from 'components/common/Typography';
-import { LandingDataContext } from '.';
-import { getSearchParamObject, updateSearchParams } from './utils';
+import { LandingDataContext } from '..';
+import { getSearchParamObject, updateSearchParams } from '../utils';
 import { MetadataFilter } from 'components/metadataManagement/types';
 
 const FilterDrawer = () => {

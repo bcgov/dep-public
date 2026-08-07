@@ -11,12 +11,12 @@ import { MetadataFilter } from 'components/metadataManagement/types';
 import { debounce } from 'lodash';
 import { useAppTranslation } from 'hooks';
 import { Button } from 'components/common/Input/Button';
-import { colors } from '../common';
+import { colors } from '../../common';
 import { CustomTextField, Select } from 'components/common/Input';
 import { When } from 'react-if';
 import { BodyText } from 'components/common/Typography/Body';
-import { LandingDataContext } from '.';
-import { getSearchParamObject, updateSearchParams } from './utils';
+import { LandingDataContext } from '..';
+import { getSearchParamObject, updateSearchParams } from '../utils';
 import { EngagementDisplayStatus } from 'constants/engagementStatus';
 import { tryParse } from 'helper';
 
@@ -217,7 +217,7 @@ const SearchAndFilterArea = () => {
                         condition={
                             (searchParams.get('engagement_status') &&
                                 searchParams.get('engagement_status') !== '[-1]') ||
-                            (searchParams.get('meta_filters') && searchParams.get('engagement_status') !== '[]')
+                            (searchParams.get('meta_filters') && searchParams.get('meta_filters') !== '[]')
                         }
                     >
                         <Button
