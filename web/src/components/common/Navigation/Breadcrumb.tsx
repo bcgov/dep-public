@@ -1,8 +1,8 @@
 import { Breadcrumbs, Skeleton } from '@mui/material';
-import React, { Suspense, useMemo } from 'react';
+import React, { Suspense, useEffect, useState } from 'react';
 import { BodyText } from '../Typography';
 import { Link } from '.';
-import { UIMatch, useMatches } from 'react-router';
+import { Await, UIMatch, useLocation, useMatches } from 'react-router';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faHome } from '@fortawesome/pro-regular-svg-icons';
 
@@ -78,37 +78,27 @@ export interface UIMatchWithCrumb extends UIMatch<unknown, UIRouteHandle> {}
  * @param {boolean} [props.smallScreenOnly] - If true, only displays the breadcrumbs on small screens.
  * @returns A list of breadcrumbs.
  */
-const UnsuspendedAutoBreadcrumbs: React.FC<{ smallScreenOnly?: boolean }> = ({ smallScreenOnly }) => {
+export const AutoBreadcrumbs: React.FC<{ smallScreenOnly?: boolean }> = ({ smallScreenOnly }) => {
     const matches = (useMatches() as UIMatchWithCrumb[]).filter((match) => match.handle?.crumb);
-    const matchKey = matches.map((m) => m.pathname).join('|');
+    const routeKey = useLocation().key; // Use location key to force re-render when the route changes
+    const [crumbCache, setCrumbCache] = useState<Record<string, BreadcrumbProps | Promise<BreadcrumbProps>>>({});
 
-    const crumbs = useMemo(() => {
-        return matches.map((match) => {
-            const data = match.loaderData;
-            const handle = match.handle;
-
-            try {
-                return handle?.crumb?.(data) ?? { name: '', link: '' };
-            } catch {
-                return { name: '', link: '' };
-            }
+    useEffect(() => {
+        setCrumbCache((prevCache) => {
+            const newCache: Record<string, BreadcrumbProps | Promise<BreadcrumbProps>> = {};
+            matches.forEach((match) => {
+                if (match.handle?.crumb) {
+                    const cachedCrumb = prevCache[match.pathname];
+                    if (cachedCrumb) {
+                        newCache[match.pathname] = cachedCrumb;
+                    } else {
+                        newCache[match.pathname] = match.handle.crumb(match.loaderData);
+                    }
+                }
+            });
+            return newCache;
         });
-    }, [matchKey]); // Recompute only when matches change
-
-    const resolvedCrumbs = crumbs.map((unresolvedCrumb) => {
-        if (unresolvedCrumb instanceof Promise) {
-            return React.use(unresolvedCrumb);
-        }
-        return unresolvedCrumb;
-    });
-
-    const crumbMap = Object.create(null);
-    resolvedCrumbs.forEach((crumb, index) => {
-        const pathname = matches[index]?.pathname;
-        if (pathname) {
-            crumbMap[pathname] = crumb;
-        }
-    });
+    }, [routeKey]); // Recompute only when matches change
 
     return (
         <Breadcrumbs
@@ -118,39 +108,38 @@ const UnsuspendedAutoBreadcrumbs: React.FC<{ smallScreenOnly?: boolean }> = ({ s
                 fontSize: '14px',
             }}
         >
-            {matches.map((match, index) => {
-                const resolvedCrumb = crumbMap[match.pathname];
-                if (!resolvedCrumb) return null;
-                const name = resolvedCrumb?.name;
-                const link = index < matches.length - 1 ? (resolvedCrumb?.link ?? match.pathname) : undefined;
+            {matches.map((match, index) => (
+                <Suspense
+                    key={routeKey}
+                    fallback={<Skeleton variant="text" width={100} height={24} sx={{ lineHeight: '24px' }} />}
+                >
+                    <Await key={match.pathname} resolve={crumbCache[match.pathname]}>
+                        {(resolvedCrumb) => {
+                            if (!resolvedCrumb) return null;
+                            const name = resolvedCrumb?.name;
+                            const link =
+                                index < matches.length - 1 ? (resolvedCrumb?.link ?? match.pathname) : undefined;
 
-                return link ? (
-                    <Link size="small" key={match.pathname + name} to={link} sx={{ lineHeight: '24px' }}>
-                        {index === 0 && <FontAwesomeIcon icon={faHome} style={{ marginRight: '4px' }} />}
-                        {name}
-                    </Link>
-                ) : (
-                    <BodyText
-                        size="small"
-                        bold={index === matches.length - 1}
-                        key={match.pathname + name}
-                        sx={{ lineHeight: '24px' }}
-                    >
-                        {index === 0 && <FontAwesomeIcon icon={faHome} style={{ marginRight: '4px' }} />}
-                        {name}
-                    </BodyText>
-                );
-            })}
+                            return link ? (
+                                <Link size="small" key={match.pathname + name} to={link} sx={{ lineHeight: '24px' }}>
+                                    {index === 0 && <FontAwesomeIcon icon={faHome} style={{ marginRight: '4px' }} />}
+                                    {name}
+                                </Link>
+                            ) : (
+                                <BodyText
+                                    size="small"
+                                    bold={index === matches.length - 1}
+                                    key={match.pathname + name}
+                                    sx={{ lineHeight: '24px' }}
+                                >
+                                    {index === 0 && <FontAwesomeIcon icon={faHome} style={{ marginRight: '4px' }} />}
+                                    {name}
+                                </BodyText>
+                            );
+                        }}
+                    </Await>
+                </Suspense>
+            ))}
         </Breadcrumbs>
-    );
-};
-
-export const AutoBreadcrumbs = (props: { smallScreenOnly?: boolean } = {}) => {
-    return (
-        // Suspend the component so that it can use React.use() to resolve any promises returned by the crumb functions.
-        // This allows us to smoothly handle async data fetching for breadcrumb names.
-        <Suspense fallback={<Skeleton variant="text" width={200} height={24} sx={{ lineHeight: '24px' }} />}>
-            <UnsuspendedAutoBreadcrumbs smallScreenOnly={props.smallScreenOnly} />
-        </Suspense>
     );
 };
