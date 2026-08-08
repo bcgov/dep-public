@@ -35,7 +35,7 @@ const TenantCreationPage = () => {
     return (
         <Grid container>
             <Grid size={12}>
-                <Heading1>Create Tenant Instance</Heading1>
+                <Heading1 mt={0}>Create Tenant Instance</Heading1>
             </Grid>
             <Grid container spacing={0} direction="column" mb="0.5em" size={12}>
                 <Grid size={12}>

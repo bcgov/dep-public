@@ -130,7 +130,7 @@ export const TaxonEditor = () => {
     return (
         <Grid container size={12} gap={1}>
             <Grid size={12}>
-                <Heading1 mt={0.5} mb={1}>
+                <Heading1 mt={0} mb={1}>
                     Metadata Management
                 </Heading1>
             </Grid>

@@ -16,7 +16,7 @@ import { globalFocusVisible } from 'components/common';
 import { ROUTES, getPath } from 'routes/routes';
 
 const TenantDetail = () => {
-    const tenant = useRouteLoaderData('tenant') as Promise<Tenant>;
+    const loaderData = useRouteLoaderData('tenant');
     const navigate = useNavigate();
     const dispatch = useAppDispatch();
     const revalidator = useRevalidator();
@@ -74,120 +74,22 @@ const TenantDetail = () => {
     };
 
     return (
-        <Suspense
-            fallback={
-                <Grid container>
-                    <Skeleton variant="text" width="40%">
-                        <Heading1>Loading...</Heading1>
-                    </Skeleton>
-                    <Grid container spacing={0} direction="row" mb="0.5em">
-                        <Grid size={{ xs: 12, sm: 7, lg: 9 }}>
-                            <Skeleton variant="text" width="60%">
-                                <Heading2 decorated>Loading...</Heading2>
-                            </Skeleton>
-                        </Grid>
-                        <Grid size={{ xs: 'auto', sm: 5, lg: 3 }} sx={{ textAlign: 'right' }}>
-                            <Skeleton variant="rectangular" height={36} width={100} />
-                        </Grid>
-                    </Grid>
-                    <Box
-                        style={{
-                            display: 'block',
-                            overflowX: 'auto',
-                            width: 'calc(100% + 4px)',
-                            padding: '0px 2px 2px',
-                            margin: '0px -2px -2px',
-                        }}
-                    >
-                        <DetailsContainer
-                            sx={{
-                                margin: {
-                                    xs: '0 -16px',
-                                    sm: '0',
-                                },
-                            }}
-                        >
-                            <Detail>
-                                <Skeleton variant="text" width="40%">
-                                    <BodyText bold>Loading...</BodyText>
-                                </Skeleton>
-                                <Skeleton variant="text" width="80%">
-                                    <BodyText>Loading...</BodyText>
-                                </Skeleton>
-                            </Detail>
-
-                            <Detail>
-                                <Skeleton variant="text" width="40%">
-                                    <BodyText bold>Loading...</BodyText>
-                                </Skeleton>
-                                <Skeleton variant="text" width="80%">
-                                    <BodyText>Loading...</BodyText>
-                                </Skeleton>
-                            </Detail>
-
-                            <Detail>
-                                <Skeleton variant="text" width="40%">
-                                    <BodyText bold>Loading...</BodyText>
-                                </Skeleton>
-                                <Skeleton variant="text" width="80%">
-                                    <BodyText>Loading...</BodyText>
-                                </Skeleton>
-                            </Detail>
-
-                            <Detail>
-                                <Skeleton variant="text" width="40%">
-                                    <BodyText bold>Loading...</BodyText>
-                                </Skeleton>
-                                <Skeleton variant="text" width="80%">
-                                    <BodyText>Loading...</BodyText>
-                                </Skeleton>
-                            </Detail>
-
-                            <Detail>
-                                <Skeleton variant="text" width="40%">
-                                    <BodyText bold>Loading...</BodyText>
-                                </Skeleton>
-                                <Skeleton variant="text" width="80%">
-                                    <BodyText>Loading...</BodyText>
-                                </Skeleton>
-                            </Detail>
-
-                            <Detail>
-                                <Skeleton variant="rectangular" height={166} width="100%" />
-                                <Skeleton variant="text" width="40%">
-                                    <BodyText bold>Loading...</BodyText>
-                                </Skeleton>
-                                <Skeleton variant="text" width="80%">
-                                    <BodyText>Loading...</BodyText>
-                                </Skeleton>
-                                <Skeleton variant="text" width="40%">
-                                    <BodyText bold>Loading...</BodyText>
-                                </Skeleton>
-                                <Skeleton variant="text" width="80%">
-                                    <BodyText>Loading...</BodyText>
-                                </Skeleton>
-                            </Detail>
-                            <Grid container spacing={2}>
-                                <Grid size={12}>
-                                    <Skeleton variant="rectangular" height={36} width={100} />
-                                </Grid>
-                            </Grid>
-                        </DetailsContainer>
-                    </Box>
+        <Grid container size={12} maxWidth="1120px" direction="column" spacing={2}>
+            <Grid size={12}>
+                <Heading1 mt={0}>
+                    <Suspense fallback={<Skeleton variant="text" width={240} />}>
+                        <Await resolve={loaderData.tenant}>{(resolvedTenant) => resolvedTenant.name}</Await>
+                    </Suspense>
+                </Heading1>
+            </Grid>
+            <Grid container spacing={0} direction="row" mb="0.5em" size={12}>
+                <Grid size={{ xs: 12, sm: 'grow' }}>
+                    <Heading2 decorated>Tenant Details</Heading2>
                 </Grid>
-            }
-        >
-            <Await resolve={tenant}>
-                {(resolvedTenant) => (
-                    <Grid container>
-                        <Grid size={12}>
-                            <Heading1>{resolvedTenant.name}</Heading1>
-                        </Grid>
-                        <Grid container spacing={0} direction="row" mb="0.5em" size={12}>
-                            <Grid size={{ xs: 12, sm: 'grow' }}>
-                                <Heading2 decorated>Tenant Details</Heading2>
-                            </Grid>
-                            <Grid size="auto">
+                <Grid size="auto">
+                    <Suspense fallback={<Skeleton variant="rectangular" width={200} height={48} />}>
+                        <Await resolve={loaderData.tenant}>
+                            {(resolvedTenant) => (
                                 <Button
                                     variant="primary"
                                     icon={penToSquareIcon}
@@ -201,102 +103,139 @@ const TenantDetail = () => {
                                 >
                                     Edit
                                 </Button>
-                            </Grid>
-                        </Grid>
-                        <DetailsContainer
-                            sx={{
-                                margin: {
-                                    // on small screens, negate the padding of the outer container
-                                    // so the container hugs the edge of the screen
-                                    xs: '0 -16px',
-                                    sm: '0',
-                                },
-                            }}
-                        >
-                            <Detail spacing={2}>
-                                <Heading4>Tenant Instance Name</Heading4>
-                                <BodyText>{resolvedTenant.name}</BodyText>
-                            </Detail>
+                            )}
+                        </Await>
+                    </Suspense>
+                </Grid>
+            </Grid>
+            <DetailsContainer
+                sx={{
+                    margin: {
+                        // on small screens, negate the padding of the outer container
+                        // so the container hugs the edge of the screen
+                        xs: '0 -16px',
+                        sm: '0',
+                    },
+                }}
+            >
+                <Detail spacing={2}>
+                    <Heading4>Tenant Instance Name</Heading4>
+                    <Suspense fallback={<Skeleton variant="text" width={240} />}>
+                        <Await resolve={loaderData.tenant}>
+                            {(resolvedTenant) => <BodyText>{resolvedTenant.name}</BodyText>}
+                        </Await>
+                    </Suspense>
+                </Detail>
 
-                            <Detail spacing={2}>
-                                <Heading4>Primary Contact</Heading4>
-                                <Grid container size={12} alignItems="center">
-                                    <Grid size="auto">
-                                        <BodyText>{resolvedTenant.contact_name}</BodyText>
-                                    </Grid>
-                                    <Grid
-                                        size="grow"
-                                        alignSelf="flex-end"
-                                        textAlign="right"
-                                        component={'a'}
-                                        tabIndex={0}
-                                        target="#"
-                                        sx={{
-                                            cursor: 'pointer',
-                                            display: { xs: 'none', sm: 'block' },
-                                            ...globalFocusVisible,
-                                        }}
-                                        onClick={() => copyEmail(resolvedTenant)}
-                                        onKeyDown={(e: React.KeyboardEvent<HTMLAnchorElement>) => {
-                                            if (e.key === 'Enter' || e.key === ' ') {
-                                                e.preventDefault();
-                                                copyEmail(resolvedTenant);
-                                            }
-                                        }}
-                                    >
-                                        <BodyText>
+                <Detail spacing={2}>
+                    <Heading4>Primary Contact</Heading4>
+                    <Grid container size={12} alignItems="center">
+                        <Grid container size="auto">
+                            <Suspense fallback={<Skeleton variant="text" width={240} />}>
+                                <Await resolve={loaderData.tenant}>
+                                    {(resolvedTenant) => <BodyText>{resolvedTenant.contact_name}</BodyText>}
+                                </Await>
+                            </Suspense>
+                        </Grid>
+                        <Grid container size="grow" justifyContent="flex-end">
+                            <Suspense fallback={<Skeleton variant="text" width={240} />}>
+                                <Await resolve={loaderData.tenant}>
+                                    {(resolvedTenant) => (
+                                        <BodyText
+                                            component={'a'}
+                                            tabIndex={0}
+                                            sx={{
+                                                cursor: 'pointer',
+                                                ...globalFocusVisible,
+                                            }}
+                                            onClick={() => copyEmail(resolvedTenant)}
+                                            onKeyDown={(e: React.KeyboardEvent<HTMLAnchorElement>) => {
+                                                if (e.key === 'Enter' || e.key === ' ') {
+                                                    e.preventDefault();
+                                                    copyEmail(resolvedTenant);
+                                                }
+                                            }}
+                                        >
                                             {resolvedTenant.contact_email} {faCopyIcon}
                                         </BodyText>
-                                    </Grid>
-                                </Grid>
-                            </Detail>
+                                    )}
+                                </Await>
+                            </Suspense>
+                        </Grid>
+                    </Grid>
+                </Detail>
 
-                            <Detail spacing={2}>
-                                <Heading4>Short Name</Heading4>
-                                <BodyText>{resolvedTenant.short_name}</BodyText>
-                            </Detail>
+                <Detail spacing={2}>
+                    <Heading4>Short Name</Heading4>
+                    <Suspense fallback={<Skeleton variant="text" width={240} />}>
+                        <Await resolve={loaderData.tenant}>
+                            {(resolvedTenant) => <BodyText>{resolvedTenant.short_name}</BodyText>}
+                        </Await>
+                    </Suspense>
+                </Detail>
 
-                            <Detail>
-                                <Heading4>Hero Banner Title</Heading4>
-                                <BodyText>{resolvedTenant.title}</BodyText>
-                            </Detail>
+                <Detail>
+                    <Heading4>Hero Banner Title</Heading4>
+                    <Suspense fallback={<Skeleton variant="text" width={240} />}>
+                        <Await resolve={loaderData.tenant}>
+                            {(resolvedTenant) => <BodyText>{resolvedTenant.title}</BodyText>}
+                        </Await>
+                    </Suspense>
+                </Detail>
 
-                            <Detail>
-                                <Heading4>Hero Banner Description</Heading4>
-                                <BodyText>{resolvedTenant.description}</BodyText>
-                            </Detail>
+                <Detail>
+                    <Heading4>Hero Banner Description</Heading4>
+                    <Suspense fallback={<Skeleton variant="text" width={240} />}>
+                        <Await resolve={loaderData.tenant}>
+                            {(resolvedTenant) => <BodyText>{resolvedTenant.description}</BodyText>}
+                        </Await>
+                    </Suspense>
+                </Detail>
 
-                            <Detail>
-                                <Grid size={12} gap={1}>
-                                    <Heading4>Hero Banner Image</Heading4>
-                                    <div
-                                        style={{
-                                            height: '166px',
-                                            alignSelf: 'stretch',
-                                            margin: '16px 0',
-                                            backgroundImage: `url(${
-                                                resolvedTenant.hero_image_url || LandingPageBanner
-                                            })`,
-                                            backgroundSize: 'cover',
-                                            backgroundPosition: 'center',
-                                        }}
-                                    />
-                                </Grid>
-                                {resolvedTenant.hero_image_credit && (
+                <Detail>
+                    <Grid size={12} gap={1}>
+                        <Heading4>Hero Banner Image</Heading4>
+                        <div
+                            style={{
+                                height: '166px',
+                                alignSelf: 'stretch',
+                                margin: '16px 0',
+                                backgroundImage: `url(${loaderData.tenant.hero_image_url || LandingPageBanner})`,
+                                backgroundSize: 'cover',
+                                backgroundPosition: 'center',
+                            }}
+                        />
+                    </Grid>
+                    <Suspense fallback={<Skeleton variant="text" width={240} />}>
+                        <Await resolve={loaderData.tenant}>
+                            {(resolvedTenant) =>
+                                resolvedTenant.hero_image_credit && (
                                     <Grid size={12}>
                                         <BodyText bold>Photo Credit</BodyText>
                                         <BodyText size="small">{resolvedTenant.hero_image_credit}</BodyText>
                                     </Grid>
-                                )}
-                                {resolvedTenant.hero_image_description && (
+                                )
+                            }
+                        </Await>
+                    </Suspense>
+                    <Suspense fallback={<Skeleton variant="text" width={240} />}>
+                        <Await resolve={loaderData.tenant}>
+                            {(resolvedTenant) =>
+                                resolvedTenant.hero_image_description && (
                                     <Grid size={12}>
                                         <BodyText bold>Description</BodyText>
                                         <BodyText size="small">{resolvedTenant.hero_image_description}</BodyText>
                                     </Grid>
-                                )}
-                            </Detail>
-                            <Grid container spacing={2} size={12}>
-                                <Grid size={12}>
+                                )
+                            }
+                        </Await>
+                    </Suspense>
+                </Detail>
+                <Grid container spacing={2} size={12}>
+                    <Grid size={12}>
+                        <Suspense fallback={<Skeleton variant="text" width={240} />}>
+                            <Await resolve={loaderData.tenant}>
+                                {(resolvedTenant) => (
                                     <Button
                                         color="danger"
                                         icon={trashCanIcon}
@@ -305,13 +244,13 @@ const TenantDetail = () => {
                                     >
                                         Delete Tenant Instance
                                     </Button>
-                                </Grid>
-                            </Grid>
-                        </DetailsContainer>
+                                )}
+                            </Await>
+                        </Suspense>
                     </Grid>
-                )}
-            </Await>
-        </Suspense>
+                </Grid>
+            </DetailsContainer>
+        </Grid>
     );
 };
 

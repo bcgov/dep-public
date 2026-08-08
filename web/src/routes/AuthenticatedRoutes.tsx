@@ -53,13 +53,11 @@ const AuthenticatedRoutes = resolveLazyRouteTree(
                     loaderLazy={() => import('components/survey/building/SurveyLoader')}
                     ErrorBoundaryLazy={() => import('routes/NotFound')}
                     handle={{
-                        crumb: async (data: { survey: Promise<{ name: string; id: number }> }) => {
-                            const survey = await data.survey;
-                            return {
+                        crumb: (data: { survey: Promise<{ name: string; id: number }> }) =>
+                            data.survey.then((survey) => ({
                                 name: survey.name,
                                 link: getPath(ROUTES.SURVEY_PREVIEW, { surveyId: survey.id }),
-                            };
-                        },
+                            })),
                     }}
                     shouldRevalidate={({ currentParams, nextParams, formMethod, actionResult }) => {
                         return (
@@ -197,15 +195,7 @@ const AuthenticatedRoutes = resolveLazyRouteTree(
                     {/* Authoring editing pages — /manage/engagements/:engagementId/authoring/:languageCode/:page */}
                     <LazyRoute
                         path="authoring"
-                        handle={{
-                            allowedRoles: [USER_ROLES.EDIT_ENGAGEMENT],
-                            crumb: (data?: { engagement?: { id?: number } }) => ({
-                                name: 'Authoring',
-                                link: data?.engagement?.id
-                                    ? `/manage/engagements/${data.engagement.id}/details/authoring`
-                                    : undefined,
-                            }),
-                        }}
+                        handle={{ allowedRoles: [USER_ROLES.EDIT_ENGAGEMENT], crumb: () => ({ name: 'Authoring' }) }}
                     >
                         <LazyRoute
                             path=":languageCode"
@@ -347,12 +337,13 @@ const AuthenticatedRoutes = resolveLazyRouteTree(
                     loaderLazy={() => import('components/tenantManagement/tenantLoader')}
                     ErrorBoundaryLazy={() => import('routes/NotFound')}
                     handle={{
-                        crumb: (data: { name: string; short_name: string }) => ({
-                            link: getPath(ROUTES.TENANT_ADMIN_DETAIL, {
-                                tenantShortName: data.short_name,
-                            }),
-                            name: data.name,
-                        }),
+                        crumb: (data: { tenant: Promise<{ name: string; short_name: string }> }) =>
+                            data.tenant.then((tenant) => ({
+                                link: getPath(ROUTES.TENANT_ADMIN_DETAIL, {
+                                    tenantShortName: tenant.short_name,
+                                }),
+                                name: tenant.name,
+                            })),
                     }}
                     shouldRevalidate={({ currentParams, nextParams }) => {
                         return currentParams.tenantShortName !== nextParams.tenantShortName;

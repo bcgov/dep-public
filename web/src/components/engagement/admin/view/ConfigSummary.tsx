@@ -3,7 +3,7 @@ import { Avatar, Grid2 as Grid, IconButton, Skeleton, Tooltip } from '@mui/mater
 import { BodyText, Heading2 } from '../../../common/Typography';
 import { OutlineBox } from 'components/common/Layout';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCopy } from '@fortawesome/pro-light-svg-icons';
+import { faCopy, faClipboardCheck } from '@fortawesome/pro-light-svg-icons';
 import { globalFocusVisible } from 'components/common';
 import { getBaseUrl } from 'helper';
 import { Await, useParams, useRouteLoaderData } from 'react-router';
@@ -27,18 +27,18 @@ export const ConfigSummary = () => {
     const engagementId = useParams().engagementId;
     const language: LanguageState = useAppSelector((state) => state.language);
     const loaderData = useRouteLoaderData('single-engagement') as EngagementLoaderAdminData;
-    const [tooltipOpen, setTooltipOpen] = React.useState(false);
+    const [recentlyCopied, setRecentlyCopied] = React.useState(false);
 
     useEffect(() => {
-        if (tooltipOpen) {
+        if (recentlyCopied) {
             const timer = setTimeout(() => {
-                setTooltipOpen(false);
+                setRecentlyCopied(false);
             }, 2000);
             return () => {
                 clearTimeout(timer);
             };
         }
-    }, [tooltipOpen]);
+    }, [recentlyCopied]);
 
     const getEngagementDate = (engagement: Engagement, event: 'start' | 'end') => {
         const day = convertToPacific(engagement[`${event}_date`]);
@@ -62,53 +62,55 @@ export const ConfigSummary = () => {
                             </Grid>
                             <Grid container columnSpacing={1} alignItems="center">
                                 <LiveAnnouncer>
-                                    <LiveMessage aria-live="assertive" message={tooltipOpen ? 'Copied!' : ''} />
+                                    <LiveMessage aria-live="assertive" message={recentlyCopied ? 'Copied!' : ''} />
                                     <BodyText component="span" display="inline" alignItems="center">
-                                        <Tooltip arrow open={tooltipOpen} title="Copied!" placement="top">
-                                            <Suspense
-                                                fallback={
-                                                    <Skeleton
-                                                        sx={{ display: 'inline-block', verticalAlign: 'middle', mr: 1 }}
-                                                        variant="circular"
-                                                        height="32px"
-                                                        width="32px"
-                                                    />
-                                                }
-                                            >
-                                                <Await resolve={loaderData.engagement}>
-                                                    {(engagement: Engagement) => (
-                                                        <IconButton
-                                                            size="small"
-                                                            sx={{
-                                                                mr: 1,
-                                                                backgroundColor: 'primary.light',
-                                                                color: 'white',
-                                                                width: '32px',
-                                                                height: '32px',
-                                                                '&:hover': {
-                                                                    backgroundColor: 'primary.main',
-                                                                },
-                                                                ...globalFocusVisible,
-                                                                display: 'inline-block',
+                                        <Suspense
+                                            fallback={
+                                                <Skeleton
+                                                    sx={{ display: 'inline-block', verticalAlign: 'middle', mr: 1 }}
+                                                    variant="circular"
+                                                    height="32px"
+                                                    width="32px"
+                                                />
+                                            }
+                                        >
+                                            <Await resolve={loaderData.engagement}>
+                                                {(engagement: Engagement) => (
+                                                    <IconButton
+                                                        size="small"
+                                                        sx={{
+                                                            mr: 1,
+                                                            backgroundColor: 'primary.light',
+                                                            color: 'white',
+                                                            width: '32px',
+                                                            height: '32px',
+                                                            '&:hover': {
+                                                                backgroundColor: 'primary.main',
+                                                            },
+                                                            ...globalFocusVisible,
+                                                            display: 'inline-block',
+                                                        }}
+                                                        onClick={() => {
+                                                            navigator.clipboard.writeText(
+                                                                `${siteUrl}${getPath(ROUTES.PUBLIC_ENGAGEMENT_BY_SLUG, { slug: engagement.slug, language: language.id })}`,
+                                                            );
+                                                            setRecentlyCopied(true);
+                                                        }}
+                                                        aria-label="Press enter to copy engagement URL to clipboard"
+                                                    >
+                                                        <FontAwesomeIcon
+                                                            fontSize={16}
+                                                            icon={recentlyCopied ? faClipboardCheck : faCopy}
+                                                            style={{
+                                                                position: 'relative',
+                                                                bottom: '4px',
+                                                                transform: `${recentlyCopied ? 'scale(1.2)' : 'scale(1)'}`,
                                                             }}
-                                                            onClick={() => {
-                                                                navigator.clipboard.writeText(
-                                                                    `${siteUrl}${getPath(ROUTES.PUBLIC_ENGAGEMENT_BY_SLUG, { slug: engagement.slug, language: language.id })}`,
-                                                                );
-                                                                setTooltipOpen(true);
-                                                            }}
-                                                            aria-label="Press enter to copy engagement URL to clipboard"
-                                                        >
-                                                            <FontAwesomeIcon
-                                                                fontSize={16}
-                                                                icon={faCopy}
-                                                                style={{ position: 'relative', bottom: '4px' }}
-                                                            />
-                                                        </IconButton>
-                                                    )}
-                                                </Await>
-                                            </Suspense>
-                                        </Tooltip>
+                                                        />
+                                                    </IconButton>
+                                                )}
+                                            </Await>
+                                        </Suspense>
                                         <BodyText bold component="span">
                                             {siteUrl}/
                                         </BodyText>

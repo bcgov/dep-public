@@ -1,5 +1,5 @@
-import React, { Suspense, useEffect, useState } from 'react';
-import { useRouteLoaderData, Await, useMatches, UIMatch, Outlet, useRevalidator } from 'react-router';
+import React, { Suspense } from 'react';
+import { useRouteLoaderData, Await, useMatches, UIMatch, Outlet, useParams } from 'react-router';
 import { Engagement } from 'models/engagement';
 import { Grid2 as Grid, Skeleton, Tab } from '@mui/material';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
@@ -10,8 +10,8 @@ import { StatusLabel } from '../create/authoring/StatusLabel';
 import { ROUTES } from 'routes/routes';
 
 const AdminEngagementView = () => {
-    const { engagement } = useRouteLoaderData('single-engagement') as EngagementLoaderAdminData;
-    const [engagementData, setEngagementData] = useState<Engagement | null>(null);
+    const loaderData = useRouteLoaderData('single-engagement') as EngagementLoaderAdminData;
+    const { engagementId } = useParams<{ engagementId: string }>();
 
     const EngagementViewTabs = {
         config: 'Configuration',
@@ -34,44 +34,26 @@ const AdminEngagementView = () => {
         return route ? route.replace(':engagementId', engagementId.toString()) : '';
     };
 
-    const revalidator = useRevalidator();
     const matches = useMatches() as UIMatch[];
-    console.log('Matches:', matches);
     const currentTab = matches.at(-1)?.pathname.split('/').findLast(Boolean) ?? '';
-    console.log('Current Tab:', currentTab);
-
-    useEffect(() => {
-        if (revalidator.state === 'idle') {
-            Promise.resolve(engagement).then(setEngagementData);
-        }
-    }, [revalidator.state, engagement]);
 
     return (
         <Grid container size={12}>
             <Grid size={12} mt={2}>
-                <Suspense fallback={<StatusLabel completed={false} text="Loading..." />}>
-                    <Await key={revalidator.state} resolve={engagement}>
+                <Suspense fallback={<StatusLabel isLoading />}>
+                    <Await resolve={loaderData.engagement}>
                         {(engagement: Engagement) => {
-                            setEngagementData(engagement);
                             return <StatusLabel status={Number(engagement?.status_id)} />;
                         }}
                     </Await>
                 </Suspense>
             </Grid>
             <Grid>
-                <Suspense
-                    fallback={
-                        <Skeleton variant="text">
-                            <Heading1 mt={1} mb={3}>
-                                Loading...
-                            </Heading1>
-                        </Skeleton>
-                    }
-                >
-                    <Heading1 mt={1} mb={3}>
-                        {engagementData?.name}
-                    </Heading1>
-                </Suspense>
+                <Heading1 mt={1} mb={3}>
+                    <Suspense fallback={<Skeleton variant="text" width="400px" />}>
+                        <Await resolve={loaderData.engagement}>{(engagement: Engagement) => engagement.name}</Await>
+                    </Suspense>
+                </Heading1>
             </Grid>
             <TabContext value={currentTab}>
                 <Grid size={12}>
@@ -102,7 +84,7 @@ const AdminEngagementView = () => {
                                 }
                                 disableFocusRipple
                                 LinkComponent={RouterLinkRenderer}
-                                href={getEngagementViewLink(key, engagementData?.id ?? 0)}
+                                href={getEngagementViewLink(key, Number.parseInt(engagementId ?? '0'))}
                                 sx={{
                                     fontWeight: 'bold',
                                     display: 'flex',
@@ -146,7 +128,9 @@ const AdminEngagementView = () => {
                 </Grid>
                 <Grid size={12}>
                     <TabPanel value={currentTab} sx={{ padding: '2rem 0' }}>
-                        <Outlet />
+                        <Suspense>
+                            <Outlet />
+                        </Suspense>
                     </TabPanel>
                 </Grid>
             </TabContext>

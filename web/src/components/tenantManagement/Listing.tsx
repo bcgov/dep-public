@@ -22,19 +22,19 @@ import { RouterLinkRenderer } from 'components/common/Navigation/Link';
 const TenantListingPage = () => {
     const navigate = useNavigate();
     const circlePlusIcon = <FontAwesomeIcon icon={faPlus} />;
-    const tenants = useRouteLoaderData('tenant-admin') as Promise<Tenant[]>;
+    const loaderData = useRouteLoaderData('tenant-admin');
 
     return (
         <Grid container>
             <Grid size={12}>
-                <Heading1 mt={1}>Tenant Admin</Heading1>
+                <Heading1 mt={0}>Tenant Admin</Heading1>
             </Grid>
             <Grid container direction="row" mb="0.5em" alignItems="flex-start" size={12}>
                 <Grid size={{ xs: 12, sm: 'grow' }}>
                     <Heading2 decorated>
                         Tenant Instances{' '}
-                        <Suspense fallback={<span />}>
-                            <Await resolve={tenants}>
+                        <Suspense>
+                            <Await resolve={loaderData.tenants}>
                                 {(resolvedTenants) => <span>({resolvedTenants.length})</span>}
                             </Await>
                         </Suspense>
@@ -84,7 +84,7 @@ const TenantListingPage = () => {
                                 </TableRow>
                             ))}
                         >
-                            <Await resolve={tenants} errorElement={<p>Could not load tenants</p>}>
+                            <Await resolve={loaderData.tenants} errorElement={<p>Could not load tenants</p>}>
                                 {(resolvedTenants) => (
                                     <>
                                         {resolvedTenants.map((tenant: Tenant) => {

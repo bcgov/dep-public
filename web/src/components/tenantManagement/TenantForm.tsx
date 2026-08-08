@@ -26,7 +26,7 @@ export const TenantForm = ({
 }) => {
     const [bannerImage, setBannerImage] = useState<File | null>();
     const [savedBannerImageFileName, setSavedBannerImageFileName] = useState(initialTenant?.hero_image_url ?? '');
-    const tenants = useRouteLoaderData('tenant-admin') as Promise<Tenant[]>;
+    const loaderData = useRouteLoaderData('tenant-admin');
 
     const { handleSubmit, formState, control, reset, setValue, watch } = useForm<Tenant>({
         defaultValues: {
@@ -199,7 +199,7 @@ export const TenantForm = ({
                     />
                 </Detail>
                 <Detail>
-                    <Await resolve={tenants}>
+                    <Await resolve={loaderData.tenants}>
                         {(resolvedTenants: Tenant[]) => (
                             <Controller
                                 name="short_name"

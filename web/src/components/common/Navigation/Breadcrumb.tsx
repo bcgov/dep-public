@@ -15,6 +15,14 @@ export type BreadcrumbProps = {
     isIndex?: boolean;
 };
 
+type BreadcrumbCache = Record<
+    string,
+    {
+        breadcrumb: BreadcrumbProps | Promise<BreadcrumbProps>;
+        loaderData: unknown;
+    }
+>;
+
 /**
  * A component that displays a breadcrumb trail based on the provided crumbs.
  * Each crumb can be a link or plain text, and the last crumb is always displayed as plain text.
@@ -81,18 +89,21 @@ export interface UIMatchWithCrumb extends UIMatch<unknown, UIRouteHandle> {}
 export const AutoBreadcrumbs: React.FC<{ smallScreenOnly?: boolean }> = ({ smallScreenOnly }) => {
     const matches = (useMatches() as UIMatchWithCrumb[]).filter((match) => match.handle?.crumb);
     const routeKey = useLocation().key; // Use location key to force re-render when the route changes
-    const [crumbCache, setCrumbCache] = useState<Record<string, BreadcrumbProps | Promise<BreadcrumbProps>>>({});
+    const [crumbCache, setCrumbCache] = useState<BreadcrumbCache>({});
 
     useEffect(() => {
         setCrumbCache((prevCache) => {
-            const newCache: Record<string, BreadcrumbProps | Promise<BreadcrumbProps>> = {};
+            const newCache: BreadcrumbCache = {};
             matches.forEach((match) => {
                 if (match.handle?.crumb) {
                     const cachedCrumb = prevCache[match.pathname];
-                    if (cachedCrumb) {
+                    if (cachedCrumb && cachedCrumb.loaderData === match.loaderData) {
                         newCache[match.pathname] = cachedCrumb;
                     } else {
-                        newCache[match.pathname] = match.handle.crumb(match.loaderData);
+                        newCache[match.pathname] = {
+                            breadcrumb: match.handle.crumb(match.loaderData),
+                            loaderData: match.loaderData,
+                        };
                     }
                 }
             });
@@ -113,28 +124,36 @@ export const AutoBreadcrumbs: React.FC<{ smallScreenOnly?: boolean }> = ({ small
                     key={routeKey}
                     fallback={<Skeleton variant="text" width={100} height={24} sx={{ lineHeight: '24px' }} />}
                 >
-                    <Await key={match.pathname} resolve={crumbCache[match.pathname]}>
+                    <Await key={match.pathname} resolve={crumbCache[match.pathname]?.breadcrumb}>
                         {(resolvedCrumb) => {
                             if (!resolvedCrumb) return null;
                             const name = resolvedCrumb?.name;
                             const link =
                                 index < matches.length - 1 ? (resolvedCrumb?.link ?? match.pathname) : undefined;
-
-                            return link ? (
-                                <Link size="small" key={match.pathname + name} to={link} sx={{ lineHeight: '24px' }}>
-                                    {index === 0 && <FontAwesomeIcon icon={faHome} style={{ marginRight: '4px' }} />}
-                                    {name}
-                                </Link>
-                            ) : (
-                                <BodyText
+                            const DisplayComponent = link ? Link : BodyText;
+                            return (
+                                <DisplayComponent
                                     size="small"
-                                    bold={index === matches.length - 1}
+                                    bold={index === matches.length - 1 || undefined}
                                     key={match.pathname + name}
-                                    sx={{ lineHeight: '24px' }}
+                                    to={link}
+                                    sx={{
+                                        display: 'inline-block',
+                                        lineHeight: '24px',
+                                        // Give the breadcrumbs a max width so that they don't overflow the
+                                        // screen, but allow the current page to take up more space.
+                                        maxWidth:
+                                            index === matches.length - 1
+                                                ? 'max(150px, calc(100vw - 2rem))'
+                                                : 'max(150px, calc(50vw - 2rem))',
+                                        overflow: 'hidden',
+                                        textOverflow: 'ellipsis',
+                                        whiteSpace: 'nowrap',
+                                    }}
                                 >
                                     {index === 0 && <FontAwesomeIcon icon={faHome} style={{ marginRight: '4px' }} />}
                                     {name}
-                                </BodyText>
+                                </DisplayComponent>
                             );
                         }}
                     </Await>

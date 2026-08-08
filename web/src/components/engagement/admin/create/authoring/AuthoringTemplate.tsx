@@ -170,7 +170,7 @@ const AuthoringTemplate = () => {
         <Grid container>
             <Grid container size={12} mt={2} alignItems="center" columnGap="0.5rem" minHeight="24px">
                 <Grid component="span" sx={{ display: 'inline-flex', alignItems: 'center', minHeight: '24px' }}>
-                    <Suspense>
+                    <Suspense fallback={<StatusLabel isLoading />}>
                         <Await resolve={engagement}>
                             {(engagement: Engagement) => <StatusLabel status={engagement.status_id} />}
                         </Await>

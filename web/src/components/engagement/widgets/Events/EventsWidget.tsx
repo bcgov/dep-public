@@ -176,7 +176,7 @@ const EventsWidget = ({ widget }: EventsWidgetProps) => {
                 };
 
                 return (
-                    <>
+                    <React.Fragment key={event.id}>
                         <Heading2 mb={0} pb={0}>
                             {resolvedEventName}
                         </Heading2>
@@ -206,7 +206,7 @@ const EventsWidget = ({ widget }: EventsWidgetProps) => {
                                 </Grid>
                             </Paper>
                         </ThemeProvider>
-                    </>
+                    </React.Fragment>
                 );
             })}
         </Grid>
