@@ -57,9 +57,6 @@ jest.mock('react-router', () => {
         }),
         useNavigate: jest.fn(() => navigate),
         useRouteLoaderData: jest.fn((id) => {
-            if (id === 'tenant-admin') {
-                return [mockTenant]; // Return array directly for tenant list
-            }
             return { tenants: [mockTenant] };
         }),
         useBlocker: jest.fn((fn) => {

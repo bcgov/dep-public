@@ -1,5 +1,5 @@
 import React, { Suspense, useEffect } from 'react';
-import { Avatar, Grid2 as Grid, IconButton, Skeleton, Tooltip } from '@mui/material';
+import { Avatar, Grid2 as Grid, IconButton, Skeleton } from '@mui/material';
 import { BodyText, Heading2 } from '../../../common/Typography';
 import { OutlineBox } from 'components/common/Layout';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';

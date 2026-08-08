@@ -51,10 +51,10 @@ jest.mock('react-router', () => {
     const actual = jest.requireActual('react-router');
     const useRouteLoaderDataMock = jest.fn((id: string) => {
         if (id === 'tenant') {
-            return mockTenant;
+            return { tenant: mockTenant };
         }
         if (id === 'tenant-admin') {
-            return [mockTenant];
+            return { tenants: [mockTenant] };
         }
         return actual.useRouteLoaderData(id);
     });
@@ -84,7 +84,6 @@ jest.mock('@mui/material', () => ({
     ...jest.requireActual('@mui/material'),
     Box: ({ children }: { children: ReactNode }) => <div>{children}</div>,
     Grid: ({ children }: { children: ReactNode }) => <div>{children}</div>,
-    Skeleton: ({ children }: { children: ReactNode }) => <div>{children}</div>,
 }));
 
 jest.mock('components/common/Typography/', () => ({
@@ -249,7 +248,7 @@ describe('Tenant Editing Page tests', () => {
         });
         renderPage();
         await waitFor(() => {
-            expect(screen.getByTestId('loader')).toBeVisible();
+            expect(screen.getByTestId('loading-skeleton')).toBeVisible();
             expect(useRouteLoaderDataMock).toHaveBeenCalledWith('tenant');
         });
     });

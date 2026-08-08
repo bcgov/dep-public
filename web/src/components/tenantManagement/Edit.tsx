@@ -32,7 +32,9 @@ const TenantEditPage = () => {
                     <BodyText size="small">* Required fields</BodyText>
                 </Grid>
             </Grid>
-            <Suspense fallback={<Skeleton variant="rectangular" width="100%" height={400} />}>
+            <Suspense
+                fallback={<Skeleton data-testid="loading-skeleton" variant="rectangular" width="100%" height={400} />}
+            >
                 <Await resolve={loaderData.tenant}>
                     {(resolvedTenant) => {
                         const shortName = resolvedTenant?.short_name;

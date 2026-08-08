@@ -51,7 +51,6 @@ jest.mock('@mui/material', () => ({
     ...jest.requireActual('@mui/material'),
     Box: ({ children }: { children: ReactNode }) => <div>{children}</div>,
     Grid: ({ children }: { children: ReactNode }) => <div>{children}</div>,
-    Skeleton: ({ children }: { children: ReactNode }) => <div>{children}</div>,
 }));
 
 jest.mock('components/common/Typography/', () => ({
@@ -166,8 +165,8 @@ describe('Tenant Detail Page tests', () => {
             return props.fallback;
         });
         render(<RouterProvider router={router} />);
-        const loadingTexts = screen.getAllByText('Loading...');
-        expect(loadingTexts.length).toBeGreaterThan(0);
+        const loadingSkeletons = screen.getAllByTestId('loading-skeleton');
+        expect(loadingSkeletons.length).toBeGreaterThan(0);
         jest.restoreAllMocks();
     });
 });

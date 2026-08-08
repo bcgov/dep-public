@@ -58,7 +58,7 @@ class SurveyService:
                 one_of_roles=one_of_roles, engagement_id=eng_id)
 
         survey = SurveySchema().dump(survey_model)
-        if engagement_banner_filename := survey.get('engagement', {}).get('banner_filename'):
+        if engagement_banner_filename := (survey.get('engagement') or {}).get('banner_filename'):
             survey['engagement']['banner_url'] = ObjectStorageService().get_url(
                 engagement_banner_filename)
         return survey

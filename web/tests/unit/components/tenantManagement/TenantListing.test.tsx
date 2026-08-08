@@ -77,11 +77,12 @@ jest.mock('react-router', () => ({
     useLocation: jest.fn(() => ({
         search: '',
     })),
-    useRouteLoaderData: jest.fn((routeId) => {
-        if (routeId === 'tenant-admin') {
-            return [mockTenantOne, mockTenantTwo];
-        }
-    }),
+    useRouteLoaderData: jest.fn(() => Promise.resolve({ tenants: [mockTenantOne, mockTenantTwo] })),
+    Await: ({ children, resolve }: { children: (data: unknown) => ReactNode; resolve: unknown }) => {
+        // For tests, immediately "resolve" the promise by calling children with mockTenant
+        // This simulates the resolved state without actually waiting
+        return <>{children([mockTenantOne, mockTenantTwo])}</>;
+    },
 }));
 
 describe('Tenant Listing Page tests', () => {

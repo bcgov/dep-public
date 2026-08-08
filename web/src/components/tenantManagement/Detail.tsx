@@ -1,5 +1,5 @@
 import React, { Suspense } from 'react';
-import { Box, Grid2 as Grid, Skeleton } from '@mui/material';
+import { Grid2 as Grid, Skeleton } from '@mui/material';
 import { Heading1, Heading2, BodyText, Heading4 } from 'components/common/Typography/';
 import { DetailsContainer, Detail } from 'components/common/Layout';
 import { useNavigate, useRouteLoaderData, Await, useRevalidator } from 'react-router';
@@ -77,7 +77,7 @@ const TenantDetail = () => {
         <Grid container size={12} maxWidth="1120px" direction="column" spacing={2}>
             <Grid size={12}>
                 <Heading1 mt={0}>
-                    <Suspense fallback={<Skeleton variant="text" width={240} />}>
+                    <Suspense fallback={<Skeleton data-testid="loading-skeleton" variant="text" width={240} />}>
                         <Await resolve={loaderData.tenant}>{(resolvedTenant) => resolvedTenant.name}</Await>
                     </Suspense>
                 </Heading1>
@@ -200,7 +200,7 @@ const TenantDetail = () => {
                                 height: '166px',
                                 alignSelf: 'stretch',
                                 margin: '16px 0',
-                                backgroundImage: `url(${loaderData.tenant.hero_image_url || LandingPageBanner})`,
+                                backgroundImage: `url(${loaderData?.tenant?.hero_image_url || LandingPageBanner})`,
                                 backgroundSize: 'cover',
                                 backgroundPosition: 'center',
                             }}
