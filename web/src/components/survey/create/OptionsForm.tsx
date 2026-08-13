@@ -10,7 +10,7 @@ import {
     Radio,
 } from '@mui/material';
 import { Button } from 'components/common/Input/Button';
-import { Heading3 } from 'components/common/Typography/Headings';
+import { Heading1 } from 'components/common/Typography/Headings';
 import CloneOptions from './CloneOptions';
 import { CreateOptions } from './CreateOptions';
 import { CreateSurveyContext } from './CreateSurveyContext';
@@ -37,7 +37,7 @@ const OptionsForm = () => {
         <Grid container size={12}>
             <Grid size={12}>
                 <Stack direction="row" justifyContent="space-between" alignItems="center">
-                    <Heading3>Survey</Heading3>
+                    <Heading1>New Survey</Heading1>
                 </Stack>
                 <Divider />
             </Grid>

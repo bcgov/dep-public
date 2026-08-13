@@ -9,7 +9,6 @@ import {
     Toolbar,
     SwipeableDrawer,
     Grid2 as Grid,
-    Avatar,
     ThemeProvider,
 } from '@mui/material';
 import { getAuthoringRoutes as getRoutes, AuthoringRoute as Route } from './AuthoringNavElements';
@@ -33,6 +32,7 @@ import {
     useAuthoringSectionCompletion,
 } from 'components/engagement/admin/create/authoring/useAuthoringSectionCompletion';
 import { EngagementLoaderAdminData } from 'components/engagement/admin/EngagementLoaderAdmin';
+import { UserAvatar } from 'components/common/Layout/UserAvatar';
 import { AppConfig } from 'config';
 
 export const routeItemStyle = {
@@ -248,9 +248,8 @@ const DrawerBox = ({ isMediumScreenOrLarger, setOpen, engagementId }: DrawerBoxP
             component="nav"
             aria-label="Authoring Navigation"
             sx={{
-                mr: '0',
-                mt: isMediumScreenOrLarger ? '9rem' : '5.625rem',
-                pl: '3.1rem',
+                mt: { xs: '5.625rem', md: '9rem' },
+                padding: { xs: '1rem', md: '0 0 0 3.1rem' },
                 overflow: 'auto',
                 backgroundColor: 'background.default',
                 zIndex: ZIndex.sideNav,
@@ -349,12 +348,12 @@ const AuthoringSideNav = ({ open, setOpen, isMediumScreen, engagementId }: Autho
                         width: '100%',
                         height: '100%',
                         minHeight: 'calc(100vh)',
-                        background: 'blue.90',
+                        background: (theme) => theme.palette.primary.main,
                     },
                 },
             }}
             sx={{
-                mt: '5rem',
+                mt: '4rem',
                 zIndex: (theme) => theme.zIndex.drawer + 3, // render above feedback button
             }}
             onOpen={() => setOpen(true)}
@@ -377,17 +376,7 @@ const AuthoringSideNav = ({ open, setOpen, isMediumScreen, engagementId }: Autho
                         spacing={1}
                     >
                         <Grid>
-                            <Avatar
-                                sx={{
-                                    backgroundColor: 'blue.10',
-                                    height: 32,
-                                    width: 32,
-                                    fontSize: '16px',
-                                }}
-                            >
-                                {currentUser?.first_name[0]}
-                                {currentUser?.last_name[0]}
-                            </Avatar>
+                            <UserAvatar />
                         </Grid>
                         <Grid sx={{ textAlign: 'left' }}>
                             <BodyText size="small" sx={{ userSelect: 'none' }}>

@@ -1,7 +1,6 @@
 import React, { Suspense, useEffect, useRef, useState } from 'react';
 import {
     AppBar,
-    Avatar,
     ButtonBase,
     Box,
     Collapse,
@@ -42,6 +41,7 @@ import { RouterLinkRenderer, Link } from 'components/common/Navigation/Link';
 import { AppConfig } from 'config';
 import { ViewSwitcherHandle } from 'routes/ViewSwitcherHandle';
 import { getMyTenants } from 'services/tenantService';
+import { UserAvatar } from 'components/common/Layout/UserAvatar';
 
 let fallbackMyTenantsPromise: Promise<Tenant[]> | null = null;
 
@@ -621,17 +621,7 @@ const UserButtonContent = ({ isOpen }: { isOpen: boolean }) => {
     return (
         <Grid container data-testid="user-menu-button" direction="row" alignItems="center" spacing={1}>
             <Grid>
-                <Avatar
-                    sx={{
-                        backgroundColor: colors.surface.blue[10],
-                        height: 32,
-                        width: 32,
-                        fontSize: '16px',
-                    }}
-                >
-                    {currentUser?.first_name[0]}
-                    {currentUser?.last_name[0]}
-                </Avatar>
+                <UserAvatar />
             </Grid>
             <Grid>
                 <BodyText size="small" sx={{ userSelect: 'none' }}>

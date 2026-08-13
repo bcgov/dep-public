@@ -33,7 +33,7 @@ interface RepeatedGridProps {
 export const RepeatedGrid = ({ times = 1, children, ...rest }: RepeatedGridProps) => {
     return (
         <>
-            {[...Array(times)].map((_element, index) => (
+            {[...new Array(times)].map((_element, index) => (
                 <Grid key={`repeated-grid-${index}`} {...rest}>
                     {children}
                 </Grid>

@@ -25,3 +25,4 @@ export const OutlineBox = (props: BoxProps) => {
 
 export { Table, TableHead, TableHeadRow, TableHeadCell, TableBody, TableRow, TableCell, TableContainer } from './Table';
 export { DetailsContainer, Detail } from './Details';
+export { UserAvatar } from './UserAvatar';

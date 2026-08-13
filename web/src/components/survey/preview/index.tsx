@@ -51,7 +51,7 @@ const SurveyPreview = () => {
                                     {(engagement) =>
                                         engagement && (
                                             <Button
-                                                href={getPath(ROUTES.ENGAGEMENT, {
+                                                href={getPath(ROUTES.ENGAGEMENT_DETAILS_AUTHORING, {
                                                     engagementId: engagement?.id ?? 0,
                                                 })}
                                                 icon={<PagePreviewIcon aria-hidden="true" />}

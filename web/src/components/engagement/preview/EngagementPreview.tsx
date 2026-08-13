@@ -4,7 +4,6 @@ import { Box, Modal } from '@mui/material';
 import PreviewControlBar from './PreviewControlBar';
 import PreviewContent from './PreviewContent';
 import { SubmissionStatusTypes } from './PreviewStateTabs';
-import { checkEngagementCompleteness } from './utils/checkCompleteness';
 import { Engagement } from 'models/engagement';
 import { EngagementLoaderPublicData } from '../public/view/EngagementLoaderPublic';
 import { SubmissionStatus } from 'constants/engagementStatus';
@@ -13,6 +12,8 @@ import { faArrowLeft, faArrowRight, faGlobePointer } from '@fortawesome/pro-regu
 import { PreviewLoaderDataProvider } from './PreviewLoaderDataContext';
 import PublicHeader from 'components/layout/Header/PublicHeader';
 import ConfirmModal from 'components/common/Modals/ConfirmModal';
+import { useAuthoringSectionCompletion } from 'engagements/admin/create/authoring/useAuthoringSectionCompletion';
+import { AppConfig } from 'config';
 
 interface PreviewNavigationGuardProps {
     previewPathPrefix: string;
@@ -355,7 +356,13 @@ export const EngagementPreview: React.FC = () => {
         };
     }, [contentVersion]);
 
-    const isComplete = resolvedEngagement ? checkEngagementCompleteness(resolvedEngagement) : false;
+    const { requiredSectionsComplete } = useAuthoringSectionCompletion({
+        engagementId: Number.parseInt(engagementId ?? '0'),
+        languageCode: languageCode ?? AppConfig.language.defaultLanguageId,
+        engagementPromise: loaderData.engagement,
+        detailsTabsPromise: loaderData.details,
+        refreshToken: contentVersion,
+    });
 
     const previewLoaderData: EngagementLoaderPublicData = useMemo(
         () => ({
@@ -381,7 +388,7 @@ export const EngagementPreview: React.FC = () => {
                 onStateChange={setPreviewState}
                 onReload={handleReload}
                 isReloading={isReloading}
-                isComplete={isComplete}
+                isComplete={requiredSectionsComplete}
             />
             <PublicHeader />
             <PreviewContent key={previewContentKey} previewStateType={previewState} />

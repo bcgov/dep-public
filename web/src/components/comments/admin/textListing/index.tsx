@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import CustomTable from 'components/common/Table';
 import { useLocation, useParams } from 'react-router';
 import { HeadCell, PageInfo, PaginationOptions } from 'components/common/Table/types';
-import { Link, Grid2 as Grid, Stack, TextField, Menu, MenuItem, Tooltip } from '@mui/material';
+import { Link, Grid2 as Grid, Stack, Menu, MenuItem, Tooltip } from '@mui/material';
 import { Button } from 'components/common/Input/Button';
 import { RouterLinkRenderer } from 'components/common/Navigation/Link';
 import { BodyText } from 'components/common/Typography/Body';
@@ -30,6 +30,7 @@ import { PermissionsGate } from 'components/permissionsGate';
 import { HTTP_STATUS_CODES } from 'constants/httpResponseCodes';
 import axios from 'axios';
 import { ROUTES, getPath } from 'routes/routes';
+import { TextInput } from 'components/common/Input';
 
 const CommentTextListing = () => {
     const { roles, userDetail, assignedEngagements } = useAppSelector((state) => state.user);
@@ -187,7 +188,7 @@ const CommentTextListing = () => {
                         <Link
                             component={RouterLinkRenderer}
                             href={getPath(ROUTES.SURVEY_SUBMISSION_REVIEW, {
-                                surveyId: Number(row.survey_id),
+                                surveyId: Number(surveyId),
                                 submissionId: row.id,
                             })}
                         >
@@ -292,12 +293,8 @@ const CommentTextListing = () => {
                                     justifyContent: 'flex-start',
                                 }}
                             >
-                                <BodyText
-                                    sx={{
-                                        pb: '0.1em',
-                                    }}
-                                >
-                                    <b>Comment Date: </b>
+                                <BodyText bold pb="0.1em">
+                                    Comment Date:
                                 </BodyText>
                                 <BodyText>{formatToPacific(row.created_date, 'YYYY-MM-DD')}</BodyText>
                             </Stack>
@@ -338,74 +335,96 @@ const CommentTextListing = () => {
     ];
 
     return (
-        <Grid direction="row" justifyContent="flex-start" alignItems="flex-start" container rowSpacing={1}>
-            <Grid size={{ xs: 12, lg: 7 }}>
-                <Stack direction="row" spacing={1} alignItems="flex-start" justifyContent="flex-start">
-                    <TextField
-                        id="comments"
-                        variant="outlined"
-                        label="Search Comments"
-                        value={searchText}
-                        onChange={(e) => setSearchText(e.target.value)}
-                        size="small"
-                    />
-                    <Button
-                        variant="primary"
-                        data-testid="CommentListing/search-button"
-                        onClick={() => handleSearchBarClick(searchText)}
-                    >
-                        <FontAwesomeIcon icon={faMagnifyingGlass} style={{ fontSize: '20px' }} />
-                    </Button>
-                </Stack>
-            </Grid>
-            <Grid size={{ xs: 12, lg: 5 }}>
-                <Stack direction={{ xs: 'column', md: 'row' }} spacing={1} width="100%" justifyContent="flex-end">
-                    <Button
-                        variant="primary"
-                        LinkComponent={RouterLinkRenderer}
-                        href={getPath(ROUTES.SURVEY_COMMENTS, { surveyId: submissions[0]?.survey_id || 0 })}
-                    >
-                        Return to Comments List
-                    </Button>
-                    <PermissionsGate
-                        scopes={[USER_ROLES.EXPORT_INTERNAL_COMMENT_SHEET, USER_ROLES.EXPORT_PROPONENT_COMMENT_SHEET]}
-                        errorProps={{ disabled: true }}
-                    >
-                        <Button
-                            onClick={handleExportToCSVOpen}
-                            aria-controls="simple-menu"
-                            aria-haspopup="true"
-                            loading={isExporting}
-                            icon={
-                                <FontAwesomeIcon
-                                    icon={faChevronDown}
-                                    style={{
-                                        fontSize: '12px',
-                                        transition: 'transform 0.3s ease',
-                                        transform: exportToCSVOpen ? 'rotate(180deg)' : 'rotate(0deg)',
-                                    }}
-                                />
+        <Grid
+            direction="row"
+            justifyContent="flex-start"
+            alignItems="flex-start"
+            container
+            columnSpacing={2}
+            rowSpacing={1}
+            size={12}
+        >
+            <Grid size={12}>
+                <Stack
+                    direction={{ xs: 'column', md: 'row' }}
+                    spacing={1}
+                    width="100%"
+                    justifyContent="space-between"
+                    alignItems="flex-start"
+                >
+                    <Stack direction={{ xs: 'column', md: 'row' }} spacing={1} alignItems="center" width="100%">
+                        <TextInput
+                            id="comments"
+                            sx={{ height: '40px', pr: 0, minWidth: '13em' }}
+                            placeholder="Search comments"
+                            value={searchText}
+                            onChange={(text) => setSearchText(text)}
+                            endAdornment={
+                                <Button
+                                    variant="primary"
+                                    size="small"
+                                    onClick={() => handleSearchBarClick(searchText)}
+                                    sx={{ m: 0, borderRadius: '0px 8px 8px 0px' }}
+                                >
+                                    <FontAwesomeIcon icon={faMagnifyingGlass} style={{ fontSize: '20px' }} />
+                                </Button>
                             }
+                        />
+                    </Stack>
+
+                    <Stack direction={{ xs: 'column', md: 'row' }} spacing={1} width="100%" justifyContent="flex-end">
+                        <PermissionsGate
+                            scopes={[
+                                USER_ROLES.EXPORT_INTERNAL_COMMENT_SHEET,
+                                USER_ROLES.EXPORT_PROPONENT_COMMENT_SHEET,
+                            ]}
+                            errorProps={{ disabled: true }}
                         >
-                            Export to CSV
-                        </Button>
-                    </PermissionsGate>
-                    <Menu
-                        id="simple-menu"
-                        anchorEl={anchorEl}
-                        keepMounted
-                        open={Boolean(anchorEl)}
-                        onClose={handleExportToCSVClose}
-                    >
-                        <MenuItem onClick={handleExportProponentComments} style={customStyle}>
-                            Public/Proponent
-                        </MenuItem>
-                        <PermissionsGate scopes={[USER_ROLES.EXPORT_INTERNAL_COMMENT_SHEET]}>
-                            <MenuItem onClick={handleExportStaffComments} style={customStyle}>
-                                Internal Only/Detailed
-                            </MenuItem>
+                            <Button
+                                size="small"
+                                onClick={handleExportToCSVOpen}
+                                aria-controls="simple-menu"
+                                aria-haspopup="true"
+                                loading={isExporting}
+                                icon={
+                                    <FontAwesomeIcon
+                                        icon={faChevronDown}
+                                        style={{
+                                            fontSize: '12px',
+                                            transition: 'transform 0.3s ease',
+                                            transform: exportToCSVOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                                        }}
+                                    />
+                                }
+                            >
+                                Export to CSV
+                            </Button>
                         </PermissionsGate>
-                    </Menu>
+                        <Button
+                            size="small"
+                            variant="primary"
+                            LinkComponent={RouterLinkRenderer}
+                            href={surveyId ? getPath(ROUTES.SURVEY_COMMENTS, { surveyId }) : '#'}
+                        >
+                            Return to Comments List
+                        </Button>
+                        <Menu
+                            id="simple-menu"
+                            anchorEl={anchorEl}
+                            keepMounted
+                            open={Boolean(anchorEl)}
+                            onClose={handleExportToCSVClose}
+                        >
+                            <MenuItem onClick={handleExportProponentComments} style={customStyle}>
+                                Public/Proponent
+                            </MenuItem>
+                            <PermissionsGate scopes={[USER_ROLES.EXPORT_INTERNAL_COMMENT_SHEET]}>
+                                <MenuItem onClick={handleExportStaffComments} style={customStyle}>
+                                    Internal Only/Detailed
+                                </MenuItem>
+                            </PermissionsGate>
+                        </Menu>
+                    </Stack>
                 </Stack>
             </Grid>
             <Grid size={12}>

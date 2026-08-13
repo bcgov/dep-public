@@ -1,11 +1,10 @@
 import React, { useState, useContext } from 'react';
 import CustomTable from 'components/common/Table';
 import Grid from '@mui/material/Grid2';
-import { useLocation } from 'react-router';
+import { useLocation, useParams } from 'react-router';
 import { HeadCell, PaginationOptions } from 'components/common/Table/types';
 import { formatToPacific } from 'components/common/dateHelper';
-import { Collapse, Link } from '@mui/material';
-import TextField from '@mui/material/TextField';
+import { Collapse, Link, Theme, useMediaQuery } from '@mui/material';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faMagnifyingGlass } from '@fortawesome/pro-regular-svg-icons/faMagnifyingGlass';
 import { faChevronDown } from '@fortawesome/pro-solid-svg-icons/faChevronDown';
@@ -21,6 +20,7 @@ import { Heading1 } from 'components/common/Typography';
 import { Button } from 'components/common/Input/Button';
 import { RouterLinkRenderer } from 'components/common/Navigation/Link';
 import { ROUTES, getPath } from 'routes/routes';
+import { TextInput } from 'components/common/Input';
 
 const Submissions = () => {
     const {
@@ -37,7 +37,9 @@ const Submissions = () => {
     } = useContext(CommentListingContext);
     const { roles, userDetail, assignedEngagements } = useAppSelector((state) => state.user);
     const { state } = useLocation();
+    const { surveyId } = useParams();
     const [isAdvancedSearchOpen, setIsAdvancedSearchOpen] = useState(Boolean(state));
+    const isMediumScreen = useMediaQuery((theme: Theme) => theme.breakpoints.down('md'));
 
     const handleSearchBarClick = (filter: string) => {
         setSearchFilter({
@@ -64,7 +66,7 @@ const Submissions = () => {
                         <Link
                             component={RouterLinkRenderer}
                             href={getPath(ROUTES.SURVEY_SUBMISSION_REVIEW, {
-                                surveyId: Number(row.survey_id),
+                                surveyId: Number(surveyId),
                                 submissionId: row.id,
                             })}
                         >
@@ -110,30 +112,55 @@ const Submissions = () => {
     ];
 
     return (
-        <Grid direction="row" justifyContent="flex-start" alignItems="flex-start" container rowSpacing={1}>
+        <Grid
+            direction="row"
+            justifyContent="flex-start"
+            alignItems="flex-start"
+            container
+            columnSpacing={2}
+            rowSpacing={1}
+            size={12}
+        >
             <Grid size={12}>
-                <Stack direction={{ xs: 'column', md: 'row' }} spacing={1} width="100%" justifyContent="space-between">
-                    <Stack direction="row" spacing={1}>
-                        <TextField
-                            id="comments"
-                            variant="outlined"
-                            label="Search Comments"
+                <Stack
+                    direction={{ xs: 'column', md: 'row' }}
+                    spacing={1}
+                    width="100%"
+                    justifyContent="space-between"
+                    alignItems="flex-start"
+                >
+                    <Stack direction={{ xs: 'column', md: 'row' }} spacing={1} alignItems="center" width="100%">
+                        <TextInput
+                            title=""
+                            inputProps={{ 'aria-label': 'Search comments' }}
+                            sx={{ height: '40px', pr: 0, minWidth: '13em' }}
+                            placeholder="Search comments"
+                            fullWidth={isMediumScreen}
                             value={searchText}
-                            onChange={(e) => setSearchText(e.target.value)}
-                            size="small"
+                            onChange={(text) => setSearchText(text)}
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                    handleSearchBarClick(searchText);
+                                }
+                            }}
+                            endAdornment={
+                                <Button
+                                    variant="primary"
+                                    size="small"
+                                    onClick={() => handleSearchBarClick(searchText)}
+                                    sx={{ m: 0, borderRadius: '0px 8px 8px 0px' }}
+                                >
+                                    <FontAwesomeIcon icon={faMagnifyingGlass} style={{ fontSize: '20px' }} />
+                                </Button>
+                            }
                         />
                         <Button
                             size="small"
-                            data-testid="CommentListing/search-button"
-                            onClick={() => handleSearchBarClick(searchText)}
-                            variant="primary"
-                        >
-                            <FontAwesomeIcon icon={faMagnifyingGlass} style={{ fontSize: '20px' }} />
-                        </Button>
-                        <Button
-                            size="small"
+                            sx={{ minWidth: 'max-content' }}
                             data-testid="comment-listing/advanced-search-button"
+                            name="advancedSearch"
                             onClick={() => setIsAdvancedSearchOpen(!isAdvancedSearchOpen)}
+                            fullWidth={isMediumScreen}
                             icon={
                                 <FontAwesomeIcon
                                     icon={faChevronDown}
@@ -148,16 +175,16 @@ const Submissions = () => {
                             Advanced Search
                         </Button>
                     </Stack>
-                    <Stack direction="row" spacing={1}>
-                        <Button
-                            size="small"
-                            variant="primary"
-                            component={RouterLinkRenderer}
-                            href={getPath(ROUTES.SURVEY_COMMENTS_ALL, { surveyId: survey.id })}
-                        >
-                            Read All Comments
-                        </Button>
-                    </Stack>
+                    <Button
+                        size="small"
+                        variant="primary"
+                        component={RouterLinkRenderer}
+                        href={surveyId ? getPath(ROUTES.SURVEY_COMMENTS_ALL, { surveyId }) : '#'}
+                        sx={{ minWidth: 'max-content' }}
+                        fullWidth={isMediumScreen}
+                    >
+                        Read All Comments
+                    </Button>
                 </Stack>
             </Grid>
 

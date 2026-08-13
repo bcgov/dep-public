@@ -53,6 +53,7 @@ const mockSubmission1 = {
 
 jest.mock('@mui/material', () => ({
     ...jest.requireActual('@mui/material'),
+    useMediaQuery: () => false,
     Link: ({ children }: { children: ReactNode }) => {
         return <a>{children}</a>;
     },

@@ -10,7 +10,6 @@ import {
     Divider,
     SwipeableDrawer,
     Grid2 as Grid,
-    Avatar,
     ThemeProvider,
 } from '@mui/material';
 import { useLocation, useMatches } from 'react-router';
@@ -33,6 +32,7 @@ import { faArrowRight } from '@fortawesome/free-solid-svg-icons';
 import { ROUTES, getPath } from 'routes/routes';
 import { AppConfig } from 'config';
 import { ViewSwitcherHandle } from 'routes/ViewSwitcherHandle';
+import { UserAvatar } from 'components/common/Layout/UserAvatar';
 
 export const routeItemStyle = {
     padding: 0,
@@ -296,17 +296,7 @@ const SideNav = ({ open, setOpen, isMediumScreen }: SideNavProps) => {
                         spacing={1}
                     >
                         <Grid>
-                            <Avatar
-                                sx={{
-                                    backgroundColor: 'blue.10',
-                                    height: 32,
-                                    width: 32,
-                                    fontSize: '16px',
-                                }}
-                            >
-                                {currentUser?.first_name[0]}
-                                {currentUser?.last_name[0]}
-                            </Avatar>
+                            <UserAvatar />
                         </Grid>
                         <Grid sx={{ textAlign: 'left' }}>
                             <BodyText size="small" sx={{ userSelect: 'none' }}>
