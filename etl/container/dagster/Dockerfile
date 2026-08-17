@@ -3,14 +3,14 @@
 
 FROM python:3.12.2-bullseye
 
-ARG DAGSTER_LIBRARIES_VERSION=0.26.16
+ARG DAGSTER_LIBRARIES_VERSION=0.29.18
 
 RUN pip install \
-    dagit==1.10.16 \
+    dagit==1.13.1 \
     dagster-docker==${DAGSTER_LIBRARIES_VERSION} \
-    dagster-graphql==1.10.16 \
+    dagster-graphql==1.13.1 \
     dagster-postgres==${DAGSTER_LIBRARIES_VERSION} \
-    dagster==1.10.16
+    dagster==1.13.1
 
 # Set $DAGSTER_HOME and copy dagster instance and workspace YAML there
 ENV DAGSTER_HOME=/opt/dagster/dagster_home/
