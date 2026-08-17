@@ -25,7 +25,8 @@ from api.services.widget_image_service import WidgetImageService
 from api.utils.util import allowedorigins, cors_preflight
 
 
-API = Namespace('widget_images', description='Endpoints for Image Widget Management')
+API = Namespace('widget_images',
+                description='Endpoints for Image Widget Management')
 
 # Do not allow updating the widget_id or engagement_id via API calls
 
@@ -93,7 +94,7 @@ class Image(Resource):
         """Update image widget."""
         request_json = request.get_json()
         try:
-            WidgetImageSchema().load(request_json)
+            WidgetImageSchema(partial=True).load(request_json)
             widget_image = WidgetImageService().update_image(
                 widget_id, image_widget_id, request_json
             )
