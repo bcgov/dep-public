@@ -3,7 +3,7 @@
 
 FROM python:3.12.2-bullseye
 
-ARG DAGSTER_LIBRARIES_VERSION=0.29.18
+ARG DAGSTER_LIBRARIES_VERSION=0.29.1
 
 RUN pip install \
     dagit==1.13.1 \
