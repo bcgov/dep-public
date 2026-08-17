@@ -1,12 +1,12 @@
 FROM python:3.12.2-slim-bullseye
 
-ARG DAGSTER_LIBRARIES_VERSION=0.26.16
+ARG DAGSTER_LIBRARIES_VERSION=0.29.1
 
 RUN pip install --upgrade pip
 # Dagster + celery + k8s dependencies
 RUN \
     pip install \
-    dagster==1.10.16 \
+    dagster==1.13.1 \
     dagster-postgres==${DAGSTER_LIBRARIES_VERSION} \
     dagster-celery[flower,redis,kubernetes]==${DAGSTER_LIBRARIES_VERSION} \
     dagster-aws==${DAGSTER_LIBRARIES_VERSION} \
