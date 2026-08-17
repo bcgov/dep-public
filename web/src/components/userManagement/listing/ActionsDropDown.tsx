@@ -27,6 +27,9 @@ export const ActionsDropDown = ({ selectedUser }: { selectedUser: User }) => {
         if (selectedUser?.main_role == USER_COMPOSITE_ROLE.ADMIN.label) {
             return true;
         }
+        if (selectedUser?.main_role == USER_COMPOSITE_ROLE.SUPER_ADMIN.label) {
+            return true;
+        }
         return false;
     };
 
