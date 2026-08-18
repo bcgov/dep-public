@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import dayjs, { Dayjs } from 'dayjs';
 import { FormProvider, useForm, Resolver } from 'react-hook-form';
-import { createSearchParams, useFetcher, useMatch, useParams } from 'react-router';
+import { createSearchParams, useFetcher, useMatch, useParams, useRevalidator, useRouteLoaderData } from 'react-router';
 import { convertToRaw, EditorState } from 'draft-js';
 import * as yup from 'yup';
 import { EngagementViewSections } from 'components/engagement/public/view';
@@ -15,6 +15,9 @@ import { ROUTES, getPath } from 'routes/routes';
 import AuthoringTemplate from './AuthoringTemplate';
 import { AuthoringFormContext } from './AuthoringFormContext';
 import { AppConfig } from 'config';
+import { EngagementLoaderAdminData } from 'engagements/admin/EngagementLoaderAdmin';
+import { Language } from 'models/language';
+import { useAuthoringSectionLocks } from './useAuthoringSectionLocks';
 
 const tabSchema = yup.object({
     id: yup.number().required(),
@@ -261,7 +264,12 @@ export const defaultValuesObject = {
 
 export const AuthoringContext = () => {
     const [defaultValues, setDefaultValues] = useState(defaultValuesObject);
+    const [activeLockToken, setActiveLockToken] = useState<string | null>(null);
+    const [activeLockSectionKey, setActiveLockSectionKey] = useState<string | null>(null);
+    const [activeLockLanguageId, setActiveLockLanguageId] = useState<number | undefined>(undefined);
+    const [lockScopeWideningRequested, setLockScopeWideningRequested] = useState(false);
     const fetcher = useFetcher();
+    const revalidator = useRevalidator();
     // Check if the form has succeeded or failed after a submit, and issue a message to the user.
     const dispatch = useAppDispatch();
     useEffect(() => {
@@ -275,12 +283,51 @@ export const AuthoringContext = () => {
                     text: responseText,
                 }),
             );
+            if ('success' === fetcher.data) {
+                revalidator.revalidate();
+            }
+            setLockScopeWideningRequested(false);
             fetcher.data = undefined;
         }
-    }, [fetcher.data]);
-    const { languageCode } = useParams() as { languageCode: string };
+    }, [dispatch, fetcher, fetcher.data, revalidator]);
+    const { engagementId, languageCode } = useParams() as { engagementId?: string; languageCode?: string };
+    const { locks, languages } = useRouteLoaderData('single-engagement') as EngagementLoaderAdminData;
+    const activeLanguageCode = (languageCode ?? AppConfig.language.defaultLanguageId).toLowerCase();
+    const [languageOptions, setLanguageOptions] = useState<Language[]>([]);
+    const [isLoadingLanguageOptions, setIsLoadingLanguageOptions] = useState(true);
     const currentLanguageCode = languageCode || AppConfig.language.defaultLanguageId;
     const pageName = useMatch(ROUTES.AUTHORING_PAGE)?.params.page;
+    useEffect(() => {
+        let isMounted = true;
+        setIsLoadingLanguageOptions(true);
+
+        void languages
+            .then((resolvedLanguages) => {
+                if (!isMounted) {
+                    return;
+                }
+
+                setLanguageOptions(resolvedLanguages);
+            })
+            .finally(() => {
+                if (!isMounted) {
+                    return;
+                }
+
+                setIsLoadingLanguageOptions(false);
+            });
+
+        return () => {
+            isMounted = false;
+        };
+    }, [languages]);
+
+    const lockState = useAuthoringSectionLocks({
+        engagementId: Number(engagementId),
+        languageCode: activeLanguageCode,
+        languageOptions,
+        initialLocksPromise: locks,
+    });
     /* Changes the resolver based on the page name. 
     If you require more complex validation, you can 
     define your own resolver and add a case for it here.
@@ -342,6 +389,9 @@ export const AuthoringContext = () => {
                     send_report: (data.send_report || '').toString(),
                     slug: data.slug,
                     request_type: data.request_type,
+                    lock_token: activeLockToken ?? '',
+                    lock_section_key: activeLockSectionKey ?? '',
+                    lock_language_id: activeLockLanguageId !== undefined ? String(activeLockLanguageId) : '',
                     language_code: currentLanguageCode,
                     text_content: data.text_content,
                     json_content: data.json_content,
@@ -398,12 +448,42 @@ export const AuthoringContext = () => {
                 },
             );
         },
-        [useFetcher, pageName, currentLanguageCode],
+        [activeLockLanguageId, activeLockSectionKey, activeLockToken, currentLanguageCode, fetcher, pageName],
     );
 
     const contextValue = useMemo(
-        () => ({ onSubmit, defaultValues, setDefaultValues, fetcher }),
-        [onSubmit, defaultValues, setDefaultValues, fetcher],
+        () => ({
+            onSubmit,
+            defaultValues,
+            setDefaultValues,
+            fetcher,
+            activeLanguageCode,
+            isLoadingLanguageOptions,
+            languageOptions,
+            activeLockToken,
+            setActiveLockToken,
+            activeLockSectionKey,
+            setActiveLockSectionKey,
+            activeLockLanguageId,
+            setActiveLockLanguageId,
+            lockScopeWideningRequested,
+            setLockScopeWideningRequested,
+            ...lockState,
+        }),
+        [
+            onSubmit,
+            defaultValues,
+            setDefaultValues,
+            fetcher,
+            activeLanguageCode,
+            isLoadingLanguageOptions,
+            languageOptions,
+            activeLockToken,
+            activeLockSectionKey,
+            activeLockLanguageId,
+            lockScopeWideningRequested,
+            lockState,
+        ],
     );
 
     return (

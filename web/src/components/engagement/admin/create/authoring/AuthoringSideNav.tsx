@@ -24,16 +24,23 @@ import { USER_ROLES } from 'services/userService/constants';
 import UserService from 'services/userService';
 import { faArrowRight } from '@fortawesome/free-solid-svg-icons';
 import { faArrowLeftLong } from '@fortawesome/pro-light-svg-icons';
-import { faCheck } from '@fortawesome/pro-regular-svg-icons';
+import { faCheck, faLockAlt } from '@fortawesome/pro-regular-svg-icons';
 import { StatusCircle } from '../../view/AuthoringTab';
-import { useFetchers, useLocation, useParams, useRouteLoaderData } from 'react-router';
+import { useFetchers, useParams, useRevalidator, useRouteLoaderData } from 'react-router';
 import {
+    AUTHORING_SECTION,
+    AUTHORING_SECTION_NAMES,
     AuthoringSectionName,
     useAuthoringSectionCompletion,
 } from 'components/engagement/admin/create/authoring/useAuthoringSectionCompletion';
 import { EngagementLoaderAdminData } from 'components/engagement/admin/EngagementLoaderAdmin';
 import { UserAvatar } from 'components/common/Layout/UserAvatar';
 import { AppConfig } from 'config';
+import { Language } from 'models/language';
+import LockOwnerAvatar from './LockOwnerAvatar';
+import { findSectionLock } from './useAuthoringSectionLocks';
+import useAuthoringSectionLockNavigation, { useSectionLockState } from './useAuthoringSectionLockNavigation';
+import { useEngagementLocks } from 'services/resourceLockService/useEngagementLocks';
 
 export const routeItemStyle = {
     padding: 0,
@@ -65,12 +72,21 @@ const DrawerBox = ({ isMediumScreenOrLarger, setOpen, engagementId }: DrawerBoxP
     const permissions = useAppSelector((state) => state.user.roles);
     const { languageCode } = useParams() as { languageCode?: string };
     const defaultLanguageCode = AppConfig.language.defaultLanguageId.toLowerCase();
-    const location = useLocation();
-    const { engagement, languages, details } = useRouteLoaderData('single-engagement') as EngagementLoaderAdminData;
+    const defaultLanguageName = AppConfig.language.defaultLanguageName;
+    const { engagement, languages, details, locks } = useRouteLoaderData(
+        'single-engagement',
+    ) as EngagementLoaderAdminData;
+    const revalidator = useRevalidator();
     const fetchers = useFetchers();
     const inFlightFetcherKeysRef = useRef<Set<string>>(new Set());
-    const [saveRefreshNonce, setSaveRefreshNonce] = useState(0);
-    const [selectedLanguageCodes, setSelectedLanguageCodes] = useState<string[]>([defaultLanguageCode]);
+    const [selectedLanguages, setSelectedLanguages] = useState<Language[]>([]);
+    const selectedLanguageCodes = useMemo(() => {
+        if (selectedLanguages.length > 0) {
+            return selectedLanguages.map((language) => language.code);
+        }
+
+        return [defaultLanguageCode];
+    }, [defaultLanguageCode, selectedLanguages]);
 
     const fetchersByKey = useMemo(() => {
         return fetchers.map((fetcher) => ({
@@ -98,9 +114,9 @@ const DrawerBox = ({ isMediumScreenOrLarger, setOpen, engagementId }: DrawerBoxP
         inFlightFetcherKeysRef.current = currentInFlightKeys;
 
         if (shouldRefreshAfterSave) {
-            setSaveRefreshNonce((value) => value + 1);
+            revalidator.revalidate();
         }
-    }, [fetchersByKey]);
+    }, [fetchersByKey, revalidator]);
 
     useLayoutEffect(() => {
         let isMounted = true;
@@ -110,26 +126,23 @@ const DrawerBox = ({ isMediumScreenOrLarger, setOpen, engagementId }: DrawerBoxP
                 return;
             }
 
-            const nextCodes: string[] = [];
-            if (resolvedLanguages.length > 0) {
-                for (const language of resolvedLanguages) {
-                    nextCodes.push(language.code);
-                }
-            } else {
-                nextCodes.push(defaultLanguageCode);
-            }
+            const normalizedLanguages =
+                resolvedLanguages.length > 0
+                    ? resolvedLanguages
+                    : [{ id: 0, code: defaultLanguageCode, name: defaultLanguageName, right_to_left: false }];
+            const nextCodes = normalizedLanguages.map((language) => language.code);
 
-            if (areLanguageCodesEqual(selectedLanguageCodes, nextCodes)) {
+            if (areLanguageCodesEqual(selectedLanguageCodes, nextCodes) && selectedLanguages.length > 0) {
                 return;
             }
 
-            setSelectedLanguageCodes(nextCodes);
+            setSelectedLanguages(normalizedLanguages);
         });
 
         return () => {
             isMounted = false;
         };
-    }, [defaultLanguageCode, languages, selectedLanguageCodes]);
+    }, [defaultLanguageCode, defaultLanguageName, languages, selectedLanguageCodes, selectedLanguages.length]);
 
     const { completionBySection } = useAuthoringSectionCompletion({
         engagementId: Number(engagementId),
@@ -137,8 +150,28 @@ const DrawerBox = ({ isMediumScreenOrLarger, setOpen, engagementId }: DrawerBoxP
         selectedLanguageCodes,
         engagementPromise: engagement,
         detailsTabsPromise: details,
-        refreshToken: `${location.pathname}|${saveRefreshNonce}`,
     });
+    const { locks: liveLocks } = useEngagementLocks({
+        engagementId: Number(engagementId),
+        initialLocksPromise: locks,
+    });
+    const locksBySection = useMemo(() => {
+        const entries = AUTHORING_SECTION_NAMES.map((sectionName) => {
+            return [
+                sectionName,
+                findSectionLock({
+                    locks: liveLocks,
+                    sectionName,
+                    languageId:
+                        selectedLanguages.find((language) => language.code === (languageCode ?? defaultLanguageCode))
+                            ?.id ?? undefined,
+                }),
+            ] as const;
+        });
+
+        return Object.fromEntries(entries) as Record<AuthoringSectionName, ReturnType<typeof findSectionLock>>;
+    }, [defaultLanguageCode, languageCode, liveLocks, selectedLanguages]);
+    const { breakLockModal, requestNavigation } = useAuthoringSectionLockNavigation();
 
     const authoringRoutes = getRoutes(Number(engagementId), languageCode ?? defaultLanguageCode);
     const matchingRoutePaths: string[] = authoringRoutes
@@ -158,30 +191,30 @@ const DrawerBox = ({ isMediumScreenOrLarger, setOpen, engagementId }: DrawerBoxP
     });
 
     const renderListItem = (route: Route, isSelected: boolean) => {
-        const isCompleted = completionBySection[route.name as AuthoringSectionName] ?? false;
+        if (route.name === 'Engagement Home') {
+            return null;
+        }
+
+        const sectionName: AuthoringSectionName = route.name;
+        const isCompleted = completionBySection[sectionName] ?? false;
         const shouldShowStatusCircle = isCompleted === false;
-        let completionCheckIcon: React.ReactNode = null;
-        if (isCompleted) {
-            completionCheckIcon = (
-                <FontAwesomeIcon
-                    icon={faCheck}
-                    style={{
-                        color: 'inherit',
-                        fontWeight: 'bold',
-                    }}
-                />
-            );
-        }
-        let completionIndicator: React.ReactNode = null;
-        if (shouldShowStatusCircle) {
-            completionIndicator = <StatusCircle required={Boolean(route.required)} />;
-        }
+        const sectionLock = locksBySection[sectionName];
+        const { isDisabled } = useSectionLockState({ lock: sectionLock });
+
+        const fadeWhenDisabled = (color: string) => {
+            if (isDisabled) return color;
+            return `color-mix(in srgb, ${color} 60%, white)`;
+        };
 
         return (
             <React.Fragment key={route.name}>
-                <When condition={'Hero Banner' === route.name || 'View Results' === route.name}>
+                <When
+                    condition={
+                        AUTHORING_SECTION.HERO_BANNER === route.name || AUTHORING_SECTION.VIEW_RESULTS === route.name
+                    }
+                >
                     <BodyText bold size="small" sx={{ textTransform: 'uppercase', mt: '2rem', mb: '1rem' }}>
-                        {'Hero Banner' === route.name ? 'Required' : 'Optional'} Sections
+                        {AUTHORING_SECTION.HERO_BANNER === route.name ? 'Required' : 'Optional'} Sections
                     </BodyText>
                 </When>
                 <ListItem
@@ -194,6 +227,7 @@ const DrawerBox = ({ isMediumScreenOrLarger, setOpen, engagementId }: DrawerBoxP
                     <ListItemButton
                         component={RouterLinkRenderer}
                         disableRipple
+                        disabled={isDisabled}
                         sx={{
                             '&:hover, &:active, &:focus': {
                                 backgroundColor: 'transparent',
@@ -202,11 +236,19 @@ const DrawerBox = ({ isMediumScreenOrLarger, setOpen, engagementId }: DrawerBoxP
                         }}
                         data-testid={`SideNav/${route.name}-button`}
                         href={route.path}
-                        onClick={() => setOpen(false)}
+                        onClick={(event) => {
+                            event.preventDefault();
+                            requestNavigation({
+                                href: route.path,
+                                sectionName,
+                                lock: sectionLock,
+                                onBeforeNavigate: () => setOpen(false),
+                            });
+                        }}
                     >
                         <BodyText
                             sx={{
-                                color: isSelected ? 'primary.main' : 'text.primary',
+                                color: isSelected ? 'primary.main' : fadeWhenDisabled('text.primary'),
                                 fontWeight: isSelected ? 'bold' : '500',
                                 fontSize: '1rem',
                             }}
@@ -216,26 +258,52 @@ const DrawerBox = ({ isMediumScreenOrLarger, setOpen, engagementId }: DrawerBoxP
                                     paddingRight: '0.6rem',
                                 }}
                             >
-                                {completionCheckIcon}
+                                {isCompleted && (
+                                    <FontAwesomeIcon
+                                        icon={faCheck}
+                                        style={{
+                                            color: 'inherit',
+                                            fontWeight: 'bold',
+                                        }}
+                                    />
+                                )}
                             </span>
 
                             {route.name}
                         </BodyText>
-                        {completionIndicator}
+                        {shouldShowStatusCircle && <StatusCircle required={Boolean(route.required)} />}
+                        <span
+                            style={{
+                                marginLeft: 'auto',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '0.5rem',
+                                paddingRight: '1.9rem',
+                            }}
+                        >
+                            <LockOwnerAvatar size={24} lock={sectionLock ?? undefined} />
+                        </span>
                         <When condition={currentRoutePath === route.path}>
-                            <span
+                            <BodyText
+                                sx={{
+                                    position: 'absolute',
+                                    right: '1.2rem',
+                                    color: isSelected ? 'primary.main' : 'text.primary',
+                                }}
+                            >
+                                <FontAwesomeIcon icon={faPencil} fontSize="1rem" />
+                            </BodyText>
+                        </When>
+                        <When condition={currentRoutePath !== route.path && Boolean(sectionLock)}>
+                            <BodyText
                                 style={{
                                     position: 'absolute',
                                     right: '1.2rem',
+                                    color: 'text.primary',
                                 }}
                             >
-                                <FontAwesomeIcon
-                                    icon={faPencil}
-                                    style={{
-                                        color: isSelected ? 'primary.main' : 'text.primary',
-                                    }}
-                                />
-                            </span>
+                                <FontAwesomeIcon icon={faLockAlt} fontSize="1rem" />
+                            </BodyText>
                         </When>
                     </ListItemButton>
                 </ListItem>
@@ -256,6 +324,7 @@ const DrawerBox = ({ isMediumScreenOrLarger, setOpen, engagementId }: DrawerBoxP
                 borderRadius: '0 8px 8px 0',
             }}
         >
+            {breakLockModal}
             <List sx={{ pt: { xs: 4, md: 0 }, pb: '0' }}>
                 {/* Engagement Home link */}
                 <Link

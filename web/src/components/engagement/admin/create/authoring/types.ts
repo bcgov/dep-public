@@ -6,8 +6,8 @@ import { Engagement } from 'models/engagement';
 import { EditorState } from 'draft-js';
 import { FetcherWithComponents } from 'react-router';
 import { EngagementDetailsTab } from 'models/engagementDetailsTab';
-import { LanguageState } from 'reduxSlices/languageSlice';
 import { EngagementStatus } from 'constants/engagementStatus';
+import { ResourceLockRecord, ResourceLocksForEngagement } from 'services/resourceLockService';
 
 export interface AuthoringNavProps {
     open: boolean;
@@ -27,11 +27,38 @@ export interface AuthoringContextType {
     defaultValues: EngagementUpdateData;
     setDefaultValues: Dispatch<SetStateAction<EngagementUpdateData>>;
     fetcher: FetcherWithComponents<object>;
+    activeLockToken: string | null;
+    setActiveLockToken: Dispatch<SetStateAction<string | null>>;
+    activeLockSectionKey: string | null;
+    setActiveLockSectionKey: Dispatch<SetStateAction<string | null>>;
+    activeLockLanguageId?: number;
+    setActiveLockLanguageId: Dispatch<SetStateAction<number | undefined>>;
+    // Set by a section (e.g. Details tabs) when the user adds/removes a structural, cross-language
+    // resource, so the current section's edit lock escalates to an unscoped (whole-section) lock.
+    lockScopeWideningRequested: boolean;
+    setLockScopeWideningRequested: Dispatch<SetStateAction<boolean>>;
+    activeLanguageCode: string;
+    isLoadingLanguageOptions: boolean;
+    languageOptions: Language[];
+    locks: ResourceLocksForEngagement;
+    isLoading: boolean;
+    languageId?: number;
+    locksBySection: Record<
+        | 'Hero Banner'
+        | 'Summary'
+        | 'Details'
+        | 'Provide Feedback'
+        | 'View Results'
+        | 'Subscribe'
+        | 'More Engagements'
+        | 'Survey'
+        | '3rd Party Feedback Method Link',
+        ResourceLockRecord | null
+    >;
+    refreshLocks: () => Promise<ResourceLocksForEngagement>;
 }
 
 export interface LanguageSelectorProps {
-    currentLanguage: LanguageState;
-    languages: Promise<Language[]>;
     isDirty: boolean;
     isSubmitting: boolean;
     currentSectionIncompleteLanguageCodes: string[];
@@ -44,13 +71,10 @@ export interface AuthoringMorePreformProps {
 }
 
 export interface AuthoringBottomNavProps {
-    currentLanguage: LanguageState;
-    languages: Promise<Language[]>;
     pageTitle: string;
     pageName: string;
     currentSectionIncompleteLanguageCodes: string[];
     isSectionCompletionLoading: boolean;
-    onSaveSection: () => void;
     setUnsavedWorkPromptSuppressed: Dispatch<SetStateAction<boolean>>;
 }
 
