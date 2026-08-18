@@ -112,6 +112,21 @@ class ResourceLock(BaseModel):
         ).all()
 
     @classmethod
+    def find_active_by_section(
+        cls,
+        resource_type: str,
+        resource_id: int,
+        section_key: str,
+    ) -> list['ResourceLock']:
+        """Return active locks for a section, across all languages including unscoped locks."""
+        return cls.query.filter_by(
+            resource_type=resource_type,
+            resource_id=resource_id,
+            section_key=section_key,
+            released_at=None,
+        ).all()
+
+    @classmethod
     def find_unexpired_by_token(cls, lock_token: str) -> Optional['ResourceLock']:
         """Return an unexpired lock row by lock token, if still active."""
         return cls.query.filter(

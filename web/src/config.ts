@@ -20,6 +20,7 @@ const IS_SINGLE_TENANT_ENVIRONMENT = getEnv('REACT_APP_IS_SINGLE_TENANT_ENVIRONM
 const DEFAULT_TENANT = getEnv('REACT_APP_DEFAULT_TENANT');
 const DEFAULT_LANGUAGE_ID = getEnv('REACT_APP_DEFAULT_LANGUAGE_ID');
 const DEFAULT_LANGUAGE_NAME = getEnv('REACT_APP_DEFAULT_LANGUAGE_NAME');
+const DEFAULT_RIGHT_TO_LEFT = getEnv('REACT_APP_DEFAULT_RIGHT_TO_LEFT', 'false') === 'true';
 
 // version config
 const BUILD_COMMIT_HASH = getEnv('REACT_APP_BUILD_COMMIT_HASH', 'dev');
@@ -45,6 +46,7 @@ export const AppConfig = {
     language: {
         defaultLanguageId: DEFAULT_LANGUAGE_ID || 'en',
         defaultLanguageName: DEFAULT_LANGUAGE_NAME || 'English',
+        defaultRightToLeft: DEFAULT_RIGHT_TO_LEFT || false,
     },
     version: {
         commit: BUILD_COMMIT_HASH,

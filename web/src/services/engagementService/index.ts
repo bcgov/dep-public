@@ -6,7 +6,7 @@ import { Language } from 'models/language';
 import { PatchEngagementRequest, PostEngagementRequest, PutEngagementRequest } from './types';
 import Endpoints from 'apiManager/endpoints';
 import { replaceUrl } from 'helper';
-import { Page } from 'services/type';
+import { Page, RequestHeaders } from 'services/type';
 import axios, { AxiosError } from 'axios';
 import { getLanguages } from 'services/languageService';
 
@@ -173,13 +173,14 @@ export const patchEngagementTranslation = async (
     engagementId: number,
     engagementTranslationId: number,
     data: Partial<EngagementTranslation>,
+    headers: RequestHeaders = {},
 ): Promise<EngagementTranslation> => {
     const url = replaceUrl(
         replaceUrl(Endpoints.EngagementTranslations.PATCH, 'engagement_id', String(engagementId)),
         'engagement_translation_id',
         String(engagementTranslationId),
     );
-    const response = await http.PatchRequest<EngagementTranslation>(url, data);
+    const response = await http.PatchRequest<EngagementTranslation>(url, data, headers);
     if (response.data) {
         return response.data;
     }
@@ -220,8 +221,11 @@ export const putEngagement = async (data: PutEngagementRequest): Promise<Engagem
     throw new Error('Failed to update engagement');
 };
 
-export const patchEngagement = async (data: PatchEngagementRequest): Promise<Engagement> => {
-    const response = await http.PatchRequest<Engagement>(Endpoints.Engagement.UPDATE, data);
+export const patchEngagement = async (
+    data: PatchEngagementRequest,
+    headers: RequestHeaders = {},
+): Promise<Engagement> => {
+    const response = await http.PatchRequest<Engagement>(Endpoints.Engagement.UPDATE, data, headers);
     if (response.data) {
         return response.data;
     }

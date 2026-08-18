@@ -1,7 +1,9 @@
 import Endpoints from 'apiManager/endpoints';
 import http from 'apiManager/httpRequestHandler';
 import { replaceUrl } from 'helper';
+import { Language } from 'models/language';
 import { getLanguages } from 'services/languageService';
+import { RequestHeaders } from 'services/type';
 
 export interface EngagementDetailsTabTranslation {
     id?: number;
@@ -88,8 +90,11 @@ const emptyContentTranslations = (): EngagementContentTranslations => ({
     image_widgets: [],
 });
 
-export const getLanguageIdByCode = async (languageCode: string): Promise<number> => {
-    const languages = await getLanguages();
+export const getLanguageIdByCode = async (
+    languageCode: string,
+    languagesPromise?: Promise<Language[]>,
+): Promise<number> => {
+    const languages = languagesPromise ? await languagesPromise : await getLanguages();
     const language = languages.find((lng) => lng.code === languageCode);
     if (!language) {
         throw new Error(`Invalid language code ${languageCode}`);
@@ -132,9 +137,10 @@ export const syncEngagementContentTranslationsByCode = async (
     engagementId: number,
     languageCode: string,
     data: SyncEngagementContentTranslationsRequest,
+    headers: RequestHeaders = {},
 ): Promise<unknown> => {
     const languageId = await getLanguageIdByCode(languageCode);
     const url = updateByLanguageIdUrl(engagementId, languageId);
-    const response = await http.PutRequest(url, data);
+    const response = await http.PutRequest(url, data, {}, headers);
     return response.data;
 };

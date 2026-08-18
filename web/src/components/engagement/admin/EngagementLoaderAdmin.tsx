@@ -11,9 +11,11 @@ import { getDetailsTabs } from 'services/engagementDetailsTabService';
 import { Language } from 'models/language';
 import { AppConfig } from 'config';
 import { ROUTES, getPath } from 'routes/routes';
+import { getEngagementLocks, ResourceLocksForEngagement } from 'services/resourceLockService';
 
 export type EngagementLoaderAdminData = {
     engagement: Promise<Engagement>;
+    locks: Promise<ResourceLocksForEngagement>;
     widgets: Promise<Widget[]>;
     details: Promise<EngagementDetailsTab[]>;
     metadata: Promise<EngagementMetadata[]>;
@@ -57,6 +59,7 @@ export const engagementLoaderAdmin = async ({ params }: LoaderFunctionArgs) => {
     });
     const widgets = engagement.then((response) => getWidgets(Number(response.id)));
     const details = engagement.then((response) => getDetailsTabs(response.id));
+    const locks = engagement.then((response) => getEngagementLocks(response.id));
     const engagementMetadata = engagement.then((response) => getEngagementMetadata(Number(response.id)));
     const taxaData = getMetadataTaxa();
     const teamMembers = engagement.then((response) => getTeamMembers({ engagement_id: response.id }).catch(() => []));
@@ -77,6 +80,7 @@ export const engagementLoaderAdmin = async ({ params }: LoaderFunctionArgs) => {
 
     return {
         engagement,
+        locks,
         widgets,
         details,
         metadata,

@@ -19,9 +19,11 @@ import ConfirmModal from 'components/common/Modals/ConfirmModal';
 import { AuthoringLoaderData } from './authoringLoader';
 import { defaultValuesObject, EngagementUpdateData } from './AuthoringContext';
 import { getEditorStateFromRaw } from 'components/common/RichTextEditor/utils';
+import { useAuthoringFormContext } from './AuthoringFormContext';
 
 const AuthoringDetails = () => {
     const { setDefaultValues, fetcher, pageName }: AuthoringTemplateOutletContext = useOutletContext();
+    const { setLockScopeWideningRequested } = useAuthoringFormContext();
     const {
         setValue,
         getValues,
@@ -184,6 +186,7 @@ const AuthoringDetails = () => {
         if (newTabs.length > 9) {
             return; // Maximum 10 tabs
         }
+        setLockScopeWideningRequested(true);
         const renumberedTabs = renumberTabs(newTabs);
         const newTab: FormDetailsTab = {
             id: -1,
@@ -250,6 +253,7 @@ const AuthoringDetails = () => {
     };
 
     const deleteConfirm = () => {
+        setLockScopeWideningRequested(true);
         const newTabs = [...getValues('details_tabs')];
         newTabs.splice(delTabIndex, 1);
         const renumberedTabs = renumberTabs(newTabs);
@@ -281,6 +285,7 @@ const AuthoringDetails = () => {
     };
 
     const noTabsConfirm = () => {
+        setLockScopeWideningRequested(true);
         setTabsEnabled(false);
         const newTabs = getValues('details_tabs');
         // Remove subsequent tabs when switching to no-tab mode. This action dirties the form.
