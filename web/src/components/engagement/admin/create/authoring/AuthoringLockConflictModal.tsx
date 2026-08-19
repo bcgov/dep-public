@@ -10,7 +10,7 @@ import { UserAvatar } from 'components/common/Layout/UserAvatar';
 import { EngagementLoaderAdminData } from 'engagements/admin/EngagementLoaderAdmin';
 import { useRouteLoaderData } from 'react-router';
 import { useAppSelector } from 'hooks';
-import { formatToPacific } from 'components/common/dateHelper';
+import { formatRelative } from 'components/common/dateHelper';
 
 export const AuthoringLockConflictModal = ({
     open,
@@ -42,9 +42,8 @@ export const AuthoringLockConflictModal = ({
     const isCurrentUserLock = Boolean(lock?.owner.user_sub === currentUserSub);
     const { languages } = useRouteLoaderData('single-engagement') as EngagementLoaderAdminData;
     const resolvedLanguages = React.use(languages);
-    const lockHeldSince = lock ? formatToPacific(lock?.acquired_at) : 'unknown';
-    const lockLastRenewed = lock?.heartbeat_at ? formatToPacific(lock?.heartbeat_at) : 'unknown';
-    const lockExpiresAt = lock?.expires_at ? formatToPacific(lock?.expires_at) : 'unknown';
+    const lockLastRenewed = lock?.heartbeat_at ? formatRelative(lock?.heartbeat_at) : 'unknown';
+    const lockExpiresAt = lock?.expires_at ? formatRelative(lock?.expires_at) : 'unknown';
 
     const languageLabel = (() => {
         if (lock?.language_id === null || lock?.language_id === undefined) {
@@ -85,10 +84,10 @@ export const AuthoringLockConflictModal = ({
                                 borderColor: isCurrentUserLock ? 'success.dark' : 'warning.dark',
                             }}
                         />
+
                         <BodyText component="span">
-                            {isCurrentUserLock
-                                ? `This lock belongs to another tab/session you opened.`
-                                : `This lock is currently held by ${ownerName}.`}
+                            This lock belongs to{' '}
+                            <b>{isCurrentUserLock ? 'another tab/session you opened' : ownerName}</b>.
                         </BodyText>
                     </Grid>
                     <Grid container direction="column" spacing={1}>
@@ -103,16 +102,12 @@ export const AuthoringLockConflictModal = ({
                             </Grid>
                         ) : null}
                         <Grid container spacing={1}>
-                            <BodyText bold>Lock held since:</BodyText>
-                            <BodyText>{lockHeldSince}</BodyText>
-                        </Grid>
-                        <Grid container spacing={1}>
-                            <BodyText bold>Last renewed:</BodyText>
+                            <BodyText bold>Lock renewed:</BodyText>
                             <BodyText>{lockLastRenewed}</BodyText>
                         </Grid>
                         <Grid container spacing={1}>
-                            <BodyText bold>Expires at:</BodyText>
-                            <BodyText>{lockExpiresAt}</BodyText>
+                            <BodyText bold>Expires:</BodyText>
+                            <BodyText>{lockExpiresAt} if not renewed</BodyText>
                         </Grid>
                     </Grid>
 
