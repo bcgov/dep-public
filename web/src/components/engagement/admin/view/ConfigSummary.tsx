@@ -21,13 +21,28 @@ import { useAppSelector } from 'hooks';
 import { RouterLinkRenderer } from 'components/common/Navigation/Link';
 import { Engagement } from 'models/engagement';
 import { convertToPacific } from 'components/common/dateHelper';
+import useAuthoringSectionLockNavigation from '../create/authoring/useAuthoringSectionLockNavigation';
+import { ResourceLockRecord, SECTION_CONFIG_GENERAL, findScopedSectionLock } from 'services/resourceLockService';
+import LockOwnerAvatar from '../create/authoring/LockOwnerAvatar';
 
 export const ConfigSummary = () => {
     const siteUrl = getBaseUrl();
     const engagementId = useParams().engagementId;
     const language: LanguageState = useAppSelector((state) => state.language);
     const loaderData = useRouteLoaderData('single-engagement') as EngagementLoaderAdminData;
+    const configSectionLock = Promise.all([loaderData.languages, loaderData.locks]).then(([languages, locks]) => {
+        const defaultLanguage = languages.some((lang) => lang.code === 'en');
+        if (!defaultLanguage) {
+            return null;
+        }
+        return findScopedSectionLock({
+            locks,
+            sectionKey: SECTION_CONFIG_GENERAL,
+            languageScoped: false,
+        });
+    });
     const [recentlyCopied, setRecentlyCopied] = React.useState(false);
+    const { resolveSectionLockState, requestNavigation } = useAuthoringSectionLockNavigation();
 
     useEffect(() => {
         if (recentlyCopied) {
@@ -327,13 +342,45 @@ export const ConfigSummary = () => {
                     </OutlineBox>
                 </Grid>
                 <Grid pt={3}>
-                    <Button
-                        href={getPath(ROUTES.ENGAGEMENT_DETAILS_CONFIG_EDIT, { engagementId: Number(engagementId) })}
-                        LinkComponent={RouterLinkRenderer}
-                        icon={<FontAwesomeIcon icon={faPen} />}
+                    <Suspense
+                        fallback={
+                            <Skeleton
+                                variant="rectangular"
+                                height={48}
+                                width={210}
+                                sx={{ borderRadius: '0.5rem' }}
+                            ></Skeleton>
+                        }
                     >
-                        Edit Configuration
-                    </Button>
+                        <Await resolve={configSectionLock}>
+                            {(resolvedLock: ResourceLockRecord | null) => {
+                                const { isDisabled } = resolveSectionLockState(resolvedLock);
+                                return (
+                                    <Button
+                                        href={getPath(ROUTES.ENGAGEMENT_DETAILS_CONFIG_EDIT, {
+                                            engagementId: Number(engagementId),
+                                        })}
+                                        LinkComponent={RouterLinkRenderer}
+                                        icon={<FontAwesomeIcon icon={faPen} />}
+                                        disabled={isDisabled}
+                                        onClick={(event) => {
+                                            event.preventDefault();
+                                            requestNavigation({
+                                                href: getPath(ROUTES.ENGAGEMENT_DETAILS_CONFIG_EDIT, {
+                                                    engagementId: Number(engagementId),
+                                                }),
+                                                sectionName: 'config',
+                                                lock: resolvedLock,
+                                            });
+                                        }}
+                                    >
+                                        Edit Configuration
+                                        <LockOwnerAvatar sx={{ ml: 1 }} lock={resolvedLock ?? undefined} />
+                                    </Button>
+                                );
+                            }}
+                        </Await>
+                    </Suspense>
                 </Grid>
             </Grid>
         </Grid>

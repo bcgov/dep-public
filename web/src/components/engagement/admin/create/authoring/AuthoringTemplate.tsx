@@ -1,5 +1,5 @@
 import React, { Suspense, useEffect, useLayoutEffect } from 'react';
-import { Form, useParams, Await, Outlet, useLocation, useMatch, useRouteLoaderData } from 'react-router';
+import { Form, useParams, Await, Outlet, useLocation, useMatch, useRouteLoaderData, useNavigate } from 'react-router';
 import AuthoringBottomNav from './AuthoringBottomNav';
 import type { EngagementUpdateData } from './AuthoringContext';
 import { useFormContext } from 'react-hook-form';
@@ -15,19 +15,29 @@ import Grid from '@mui/material/Grid2';
 import Collapse from '@mui/material/Collapse';
 import { StatusLabel } from './StatusLabel';
 import AuthoringMorePreform from './AuthoringMorePreform';
-import { ROUTES } from 'routes/routes';
-import { useAuthoringFormContext } from './AuthoringFormContext';
+import { ROUTES, getPath } from 'routes/routes';
+import { AuthoringFormContext, useAuthoringFormContext } from './AuthoringFormContext';
 import UnsavedWorkConfirmation from 'components/common/Navigation/UnsavedWorkConfirmation';
 import {
     AUTHORING_SECTION_NAMES,
+    REQUIRED_AUTHORING_SECTION_NAMES,
     AuthoringSectionName,
     useAuthoringSectionCompletion,
 } from 'components/engagement/admin/create/authoring/useAuthoringSectionCompletion';
 import { SystemMessage } from 'components/common/Layout/SystemMessage';
 import { AppConfig } from 'config';
+import { openNotification } from 'services/notificationService/notificationSlice';
+import useEngagementSectionEditLock from 'services/resourceLockService/useEngagementSectionEditLock';
+import { getLockConflictPayload } from 'services/resourceLockService';
+import { findSectionLock, getLockTargetBySectionName, getAuthoringSectionNameByPage } from './useAuthoringSectionLocks';
+import useAuthoringSectionLockNavigation from './useAuthoringSectionLockNavigation';
+import { AuthoringContextType } from './types';
 
 const DEFAULT_LANGUAGE_CODE = AppConfig.language.defaultLanguageId.toLowerCase();
 const DEFAULT_LANGUAGE_NAME = AppConfig.language.defaultLanguageName;
+const LOCK_HEARTBEAT_INTERVAL_MS = 30000;
+const AUTHORING_UNSAVED_CHANGES_KEY = 'authoring-unsaved-changes';
+const REQUIRED_AUTHORING_SECTION_NAME_SET = new Set<AuthoringSectionName>(REQUIRED_AUTHORING_SECTION_NAMES);
 
 export const getLanguageValue = (languageCode: string, languages: Language[]) => {
     if (languageCode === DEFAULT_LANGUAGE_CODE) {
@@ -41,42 +51,35 @@ const isAuthoringSectionName = (value: string | undefined): value is AuthoringSe
 };
 
 const AuthoringTemplate = () => {
-    const { onSubmit, defaultValues, setDefaultValues, fetcher } = useAuthoringFormContext();
+    const {
+        onSubmit,
+        defaultValues,
+        setDefaultValues,
+        fetcher,
+        setActiveLockLanguageId,
+        setActiveLockSectionKey,
+        setActiveLockToken,
+        lockScopeWideningRequested,
+        setLockScopeWideningRequested,
+    } = useAuthoringFormContext();
     const { engagementId, languageCode } = useParams() as { engagementId: string; languageCode: string };
+    const navigate = useNavigate();
     const activeLanguageCode = (languageCode ?? DEFAULT_LANGUAGE_CODE).toLowerCase();
     const location = useLocation();
     const { engagement, languages, details } = useRouteLoaderData('single-engagement') as EngagementLoaderAdminData;
     const dispatch = useAppDispatch();
     const currentLanguage = useAppSelector((state) => state.language);
-    const [selectedLanguages, setSelectedLanguages] = React.useState<Language[]>([]);
-    const [isLoadingSelectedLanguages, setIsLoadingSelectedLanguages] = React.useState(true);
+    const {
+        languageOptions,
+        isLoadingLanguageOptions: isLoadingSelectedLanguages,
+        locks,
+        languageId,
+        refreshLocks,
+    } = React.useContext(AuthoringFormContext as React.Context<AuthoringContextType>);
     const selectedLanguageCodes = React.useMemo(
-        () => selectedLanguages.map((language) => language.code),
-        [selectedLanguages],
+        () => languageOptions.map((language) => language.code),
+        [languageOptions],
     );
-
-    useEffect(() => {
-        let isMounted = true;
-        setIsLoadingSelectedLanguages(true);
-
-        void languages
-            .then((resolvedLanguages) => {
-                if (!isMounted) {
-                    return;
-                }
-                setSelectedLanguages(resolvedLanguages);
-            })
-            .finally(() => {
-                if (!isMounted) {
-                    return;
-                }
-                setIsLoadingSelectedLanguages(false);
-            });
-
-        return () => {
-            isMounted = false;
-        };
-    }, [languages]);
 
     // Sync Redux language state whenever the URL language code changes.
     useEffect(() => {
@@ -105,11 +108,10 @@ const AuthoringTemplate = () => {
         selectedLanguageCodes,
         engagementPromise: engagement,
         detailsTabsPromise: details,
-        refreshToken: fetcher.data,
     });
     const currentSectionName = isAuthoringSectionName(pageTitle) ? pageTitle : undefined;
     const isCurrentSectionRequired = currentSectionName
-        ? ['Hero Banner', 'Summary', 'Details', 'Provide Feedback'].includes(currentSectionName)
+        ? REQUIRED_AUTHORING_SECTION_NAME_SET.has(currentSectionName)
         : false;
     let currentSectionCompletion: boolean | undefined;
     let incompleteLanguagesForCurrentSection: Language[] = [];
@@ -117,9 +119,7 @@ const AuthoringTemplate = () => {
         currentSectionCompletion = completionBySection[currentSectionName];
 
         const incompleteCodes = new Set(incompleteLanguageCodesBySection[currentSectionName] ?? []);
-        incompleteLanguagesForCurrentSection = selectedLanguages.filter((language) =>
-            incompleteCodes.has(language.code),
-        );
+        incompleteLanguagesForCurrentSection = languageOptions.filter((language) => incompleteCodes.has(language.code));
     }
 
     const isLoadingBadgesAndMessages = isLoadingSectionCompletion || isLoadingSelectedLanguages;
@@ -144,8 +144,60 @@ const AuthoringTemplate = () => {
         formState: { isDirty, isSubmitting },
     } = useFormContext<EngagementUpdateData>();
     const [isUnsavedWorkPromptSuppressed, setUnsavedWorkPromptSuppressed] = React.useState(false);
-    const onSaveSection = handleSubmit(onSubmit);
     const outletKey = pageName ?? 'authoring';
+    const currentSectionFromPage = React.useMemo(() => {
+        return getAuthoringSectionNameByPage(pageName);
+    }, [pageName]);
+    const currentSectionLockContext = React.useMemo(() => {
+        if (!currentSectionFromPage) {
+            return null;
+        }
+
+        const target = getLockTargetBySectionName(currentSectionFromPage);
+        if (!target) {
+            return null;
+        }
+
+        return {
+            sectionKey: target.sectionKey,
+            useLanguageScope: target.languageScoped,
+        };
+    }, [currentSectionFromPage]);
+    const conflictingSectionLock = React.useMemo(() => {
+        if (!currentSectionFromPage) {
+            return null;
+        }
+
+        const sectionLock = findSectionLock({
+            locks,
+            languageId,
+            sectionName: currentSectionFromPage,
+        });
+
+        if (!sectionLock || sectionLock.is_mine) {
+            return null;
+        }
+
+        return sectionLock;
+    }, [currentSectionFromPage, languageId, locks]);
+
+    const handleBackToAuthoringTab = React.useCallback(() => {
+        navigate(getPath(ROUTES.ENGAGEMENT_DETAILS_AUTHORING, { engagementId: Number(engagementId) }));
+    }, [engagementId, navigate]);
+
+    const refreshConflictState = React.useCallback(async () => {
+        await refreshLocks();
+    }, [refreshLocks]);
+
+    const { conflictLockModal } = useAuthoringSectionLockNavigation({
+        conflictModal: {
+            lock: conflictingSectionLock,
+            sectionName: currentSectionFromPage ?? undefined,
+            onBack: handleBackToAuthoringTab,
+            onRetry: refreshConflictState,
+            onAfterBreakLock: refreshConflictState,
+        },
+    });
 
     useLayoutEffect(() => {
         if (typeof location.state !== 'object' || location.state === null || !('authoringScrollY' in location.state)) {
@@ -166,8 +218,74 @@ const AuthoringTemplate = () => {
         };
     }, [location.key, location.state]);
 
+    useEffect(() => {
+        sessionStorage.setItem(AUTHORING_UNSAVED_CHANGES_KEY, isDirty && !isSubmitting ? '1' : '0');
+
+        return () => {
+            sessionStorage.setItem(AUTHORING_UNSAVED_CHANGES_KEY, '0');
+        };
+    }, [isDirty, isSubmitting]);
+
+    // A structural (add/remove) change only applies to the section the user was on when they made it.
+    useEffect(() => {
+        setLockScopeWideningRequested(false);
+    }, [pageName, setLockScopeWideningRequested]);
+
+    const { activeLockScope, activeLockToken } = useEngagementSectionEditLock({
+        engagementId: Number(engagementId),
+        scope: currentSectionLockContext
+            ? {
+                  sectionKey: currentSectionLockContext.sectionKey,
+                  languageId:
+                      currentSectionLockContext.useLanguageScope && !lockScopeWideningRequested
+                          ? languageId
+                          : undefined,
+              }
+            : null,
+        enabled: Boolean(engagementId),
+        isDirty,
+        isSubmitting,
+        blockedByLock: conflictingSectionLock,
+        heartbeatIntervalMs: LOCK_HEARTBEAT_INTERVAL_MS,
+        onConflict: async (error) => {
+            const conflictPayload = getLockConflictPayload(error);
+            if (conflictPayload) {
+                await refreshConflictState();
+                return;
+            }
+
+            const message = error instanceof Error ? error.message : 'Unable to acquire edit lock for this section.';
+            dispatch(
+                openNotification({
+                    severity: 'error',
+                    text: message,
+                }),
+            );
+        },
+    });
+
+    useEffect(() => {
+        setActiveLockToken(activeLockToken);
+        setActiveLockSectionKey(activeLockScope?.sectionKey ?? null);
+        setActiveLockLanguageId(activeLockScope?.languageId);
+
+        return () => {
+            setActiveLockToken(null);
+            setActiveLockSectionKey(null);
+            setActiveLockLanguageId(undefined);
+        };
+    }, [
+        activeLockScope?.languageId,
+        activeLockScope?.sectionKey,
+        activeLockToken,
+        setActiveLockLanguageId,
+        setActiveLockSectionKey,
+        setActiveLockToken,
+    ]);
+
     return (
         <Grid container>
+            {conflictLockModal}
             <Grid container size={12} mt={2} alignItems="center" columnGap="0.5rem" minHeight="24px">
                 <Grid component="span" sx={{ display: 'inline-flex', alignItems: 'center', minHeight: '24px' }}>
                     <Suspense fallback={<StatusLabel isLoading />}>
@@ -240,15 +358,12 @@ const AuthoringTemplate = () => {
                         </Await>
                     </Suspense>
                     <AuthoringBottomNav
-                        currentLanguage={currentLanguage}
-                        languages={languages}
                         pageTitle={pageTitle || 'untitled'} // Full title
                         pageName={pageName || 'untitled'} // Slug
                         currentSectionIncompleteLanguageCodes={incompleteLanguagesForCurrentSection.map(
                             (language) => language.code,
                         )}
                         isSectionCompletionLoading={isLoadingBadgesAndMessages}
-                        onSaveSection={onSaveSection}
                         setUnsavedWorkPromptSuppressed={setUnsavedWorkPromptSuppressed}
                     />
                 </Form>

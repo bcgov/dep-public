@@ -13,9 +13,23 @@ import { EngagementDetailsTab } from 'models/engagementDetailsTab';
 import { getLanguages } from 'services/languageService';
 import {
     getEngagementContentTranslationsByCode,
+    getLanguageIdByCode,
     syncEngagementContentTranslationsByCode,
 } from 'services/engagementContentTranslationService';
 import { AppConfig } from 'config';
+import {
+    acquireEngagementSectionLock,
+    LOCK_TOKEN_HEADER,
+    SECTION_AUTHORING_BANNER,
+    SECTION_AUTHORING_DETAILS,
+    SECTION_AUTHORING_FEEDBACK,
+    SECTION_AUTHORING_MORE,
+    SECTION_AUTHORING_SUBSCRIBE,
+    SECTION_AUTHORING_SUMMARY,
+    SECTION_CONFIG_GENERAL,
+} from 'services/resourceLockService';
+
+type RequestHeaders = Record<string, string>;
 
 const ensureTranslation = async (engagementId: number, languageCode: string) => {
     let translation = await getEngagementTranslationByCode(engagementId, languageCode);
@@ -42,13 +56,15 @@ const patchTranslationForLanguage = async ({
     engagementId,
     languageCode,
     payload,
+    headers = {},
 }: {
     engagementId: number;
     languageCode: string;
     payload: Record<string, unknown>;
+    headers?: RequestHeaders;
 }) => {
     const translation = await ensureTranslation(engagementId, languageCode);
-    await patchEngagementTranslation(engagementId, translation.id, payload);
+    await patchEngagementTranslation(engagementId, translation.id, payload, headers);
 };
 
 const getOptionalFormText = (formData: FormData, key: string): string | undefined => {
@@ -58,6 +74,109 @@ const getOptionalFormText = (formData: FormData, key: string): string | undefine
     }
 
     return value || undefined;
+};
+
+const compactPayload = <T extends Record<string, unknown>>(payload: T): Partial<T> => {
+    return Object.fromEntries(Object.entries(payload).filter(([, value]) => value !== undefined)) as Partial<T>;
+};
+
+const lockHeaders = (lockToken: string): RequestHeaders => ({
+    [LOCK_TOKEN_HEADER]: lockToken,
+});
+
+type SubmittedAuthoringLockState = {
+    token?: string;
+    sectionKey?: string;
+    languageId?: number;
+};
+
+const getSubmittedAuthoringLockState = (formData: FormData): SubmittedAuthoringLockState => {
+    const token = formData.get('lock_token');
+    const sectionKey = formData.get('lock_section_key');
+    const rawLanguageId = formData.get('lock_language_id');
+    const parsedLanguageId = typeof rawLanguageId === 'string' && rawLanguageId ? Number(rawLanguageId) : undefined;
+
+    return {
+        token: typeof token === 'string' && token ? token : undefined,
+        sectionKey: typeof sectionKey === 'string' && sectionKey ? sectionKey : undefined,
+        languageId: Number.isFinite(parsedLanguageId) ? parsedLanguageId : undefined,
+    };
+};
+
+const matchesSubmittedLockScope = ({
+    submittedLock,
+    sectionKey,
+    languageScoped,
+}: {
+    submittedLock?: SubmittedAuthoringLockState;
+    sectionKey: string;
+    languageScoped: boolean;
+}) => {
+    if (!submittedLock?.token || submittedLock.sectionKey !== sectionKey) {
+        return false;
+    }
+
+    if (languageScoped) {
+        return submittedLock.languageId !== undefined;
+    }
+
+    return submittedLock.languageId === undefined;
+};
+
+const withSectionLock = async <T,>({
+    engagementId,
+    sectionKey,
+    languageCode,
+    submittedLock,
+    task,
+}: {
+    engagementId: number;
+    sectionKey: string;
+    languageCode?: string;
+    submittedLock?: SubmittedAuthoringLockState;
+    task: (headers: RequestHeaders) => Promise<T>;
+}): Promise<T> => {
+    const submittedLockToken = submittedLock?.token;
+    if (
+        submittedLockToken &&
+        matchesSubmittedLockScope({
+            submittedLock,
+            sectionKey,
+            languageScoped: languageCode !== undefined,
+        })
+    ) {
+        return await task(lockHeaders(submittedLockToken));
+    }
+
+    const languageId = languageCode ? await getLanguageIdByCode(languageCode) : undefined;
+    const lock = await acquireEngagementSectionLock({
+        engagementId,
+        sectionKey,
+        languageId,
+    });
+    return await task(lockHeaders(lock.lock_token));
+};
+
+// Binds engagementId/submittedLock so call sites only need to specify what varies: the section, task, and language.
+const createSectionLockRunner = (engagementId: number, submittedLock?: SubmittedAuthoringLockState) => {
+    return <T,>(sectionKey: string, task: (headers: RequestHeaders) => Promise<T>, languageCode?: string): Promise<T> =>
+        withSectionLock({ engagementId, sectionKey, languageCode, submittedLock, task });
+};
+
+const resolvePatchSectionForPayload = (payload: Record<string, unknown>): string => {
+    if ('selected_survey_id' in payload) {
+        return SECTION_AUTHORING_FEEDBACK;
+    }
+
+    if ('suggested_engagements' in payload || 'suggested_engagements_input' in payload) {
+        return SECTION_AUTHORING_MORE;
+    }
+
+    if ('status_block' in payload || 'banner_filename' in payload) {
+        return SECTION_AUTHORING_BANNER;
+    }
+
+    return SECTION_CONFIG_GENERAL;
 };
 
 const toBodyString = (body: unknown): string => {
@@ -94,12 +213,15 @@ const updateDetailsTabs = async ({
     languageCode,
     defaultLanguageCode,
     detailsTabsRaw,
+    submittedLock,
 }: {
     engagementId: number;
     languageCode: string;
     defaultLanguageCode: string;
     detailsTabsRaw: string;
+    submittedLock?: SubmittedAuthoringLockState;
 }) => {
+    const runWithLock = createSectionLockRunner(engagementId, submittedLock);
     const parsedTabs = JSON.parse(detailsTabsRaw) as EngagementDetailsTab[];
 
     const existingBaseTabs = await getDetailsTabs(engagementId);
@@ -131,7 +253,9 @@ const updateDetailsTabs = async ({
         };
     }) as unknown as EngagementDetailsTab[];
 
-    await patchDetailsTabs(engagementId, structuralTabs);
+    await runWithLock(SECTION_AUTHORING_DETAILS, async (headers) => {
+        await patchDetailsTabs(engagementId, structuralTabs, headers);
+    });
 
     if (languageCode === defaultLanguageCode) {
         return;
@@ -172,19 +296,30 @@ const updateDetailsTabs = async ({
         };
     });
 
-    await syncEngagementContentTranslationsByCode(engagementId, languageCode, {
-        details_tabs: translatedTabs,
-    });
+    await runWithLock(
+        SECTION_AUTHORING_DETAILS,
+        async (headers) => {
+            await syncEngagementContentTranslationsByCode(
+                engagementId,
+                languageCode,
+                { details_tabs: translatedTabs },
+                headers,
+            );
+        },
+        languageCode,
+    );
 };
 
 export const authoringUpdateAction: ActionFunction = async ({ request }) => {
     const formData = await request.formData();
     const errors: unknown[] = [];
+    const submittedLock = getSubmittedAuthoringLockState(formData);
     const requestType = formData.get('request_type') as string;
     const formSource = formData.get('form_source');
     const engagementId = Number(formData.get('id'));
     const defaultLanguageCode = AppConfig.language.defaultLanguageId.toLowerCase();
     const languageCode = ((formData.get('language_code') as string) || defaultLanguageCode).toLowerCase();
+    const runWithLock = createSectionLockRunner(engagementId, submittedLock);
     const statusBlock = [
         {
             survey_status: 'Open',
@@ -219,23 +354,51 @@ export const authoringUpdateAction: ActionFunction = async ({ request }) => {
             errors,
             task: async () => {
                 const sponsorName = getOptionalFormText(formData, 'eyebrow');
-                await patchTranslationForLanguage({
-                    engagementId,
-                    languageCode,
-                    payload: {
-                        name: getOptionalFormText(formData, 'name'),
-                        sponsor_name: sponsorName,
-                        description: getOptionalFormText(formData, 'description'),
-                        rich_description: getOptionalFormText(formData, 'rich_description'),
-                        description_title: getOptionalFormText(formData, 'description_title'),
-                        upcoming_status_block_text: getOptionalFormText(formData, 'upcoming_message'),
-                        closed_status_block_text: getOptionalFormText(formData, 'closed_message'),
-                        open_status_block_button_text: getOptionalFormText(formData, 'open_cta'),
-                        view_results_status_block_button_text: getOptionalFormText(formData, 'view_results_cta'),
-                    },
+                const bannerTranslationPayload = compactPayload({
+                    name: getOptionalFormText(formData, 'name'),
+                    sponsor_name: sponsorName,
+                    upcoming_status_block_text: getOptionalFormText(formData, 'upcoming_message'),
+                    closed_status_block_text: getOptionalFormText(formData, 'closed_message'),
+                    open_status_block_button_text: getOptionalFormText(formData, 'open_cta'),
+                    view_results_status_block_button_text: getOptionalFormText(formData, 'view_results_cta'),
                 });
+
+                const summaryTranslationPayload = compactPayload({
+                    description: getOptionalFormText(formData, 'description'),
+                    rich_description: getOptionalFormText(formData, 'rich_description'),
+                    description_title: getOptionalFormText(formData, 'description_title'),
+                });
+
+                if (formSource === 'banner' && Object.keys(bannerTranslationPayload).length > 0) {
+                    await runWithLock(
+                        SECTION_AUTHORING_BANNER,
+                        (headers) =>
+                            patchTranslationForLanguage({
+                                engagementId,
+                                languageCode,
+                                payload: bannerTranslationPayload,
+                                headers,
+                            }),
+                        languageCode,
+                    );
+                }
+
+                if (formSource === 'summary' && Object.keys(summaryTranslationPayload).length > 0) {
+                    await runWithLock(
+                        SECTION_AUTHORING_SUMMARY,
+                        (headers) =>
+                            patchTranslationForLanguage({
+                                engagementId,
+                                languageCode,
+                                payload: summaryTranslationPayload,
+                                headers,
+                            }),
+                        languageCode,
+                    );
+                }
+
                 // Structural fields always stay on base engagement.
-                await patchEngagement({
+                const engagementPatchPayload = {
                     id: Number(formData.get('id')),
                     start_date: (formData.get('start_date') as string) || undefined,
                     status_id: Number(formData.get('status_id')) || undefined,
@@ -243,7 +406,12 @@ export const authoringUpdateAction: ActionFunction = async ({ request }) => {
                     banner_filename: (formData.get('banner_filename') as string) || undefined,
                     sponsor_name: languageCode === defaultLanguageCode ? sponsorName : undefined,
                     status_block: statusBlock,
-                });
+                };
+
+                await runWithLock(
+                    resolvePatchSectionForPayload(engagementPatchPayload as Record<string, unknown>),
+                    (headers) => patchEngagement(engagementPatchPayload, headers),
+                );
             },
         });
     }
@@ -259,6 +427,7 @@ export const authoringUpdateAction: ActionFunction = async ({ request }) => {
                     languageCode,
                     defaultLanguageCode,
                     detailsTabsRaw: formData.get('details_tabs') as string,
+                    submittedLock,
                 });
             },
         });
@@ -272,18 +441,29 @@ export const authoringUpdateAction: ActionFunction = async ({ request }) => {
             task: async () => {
                 const selectedSurvey = formData.get('selected_survey_id');
                 const numericSelectedSurvey = selectedSurvey ? Number(selectedSurvey) : undefined;
-                await patchTranslationForLanguage({
-                    engagementId,
+                await runWithLock(
+                    SECTION_AUTHORING_FEEDBACK,
+                    (headers) =>
+                        patchTranslationForLanguage({
+                            engagementId,
+                            languageCode,
+                            payload: {
+                                feedback_heading: getOptionalFormText(formData, 'feedback_heading'),
+                                feedback_body: getOptionalFormText(formData, 'feedback_body'),
+                            },
+                            headers,
+                        }),
                     languageCode,
-                    payload: {
-                        feedback_heading: getOptionalFormText(formData, 'feedback_heading'),
-                        feedback_body: getOptionalFormText(formData, 'feedback_body'),
-                    },
-                });
-                await patchEngagement({
-                    id: engagementId,
-                    selected_survey_id: numericSelectedSurvey || undefined,
-                });
+                );
+                await runWithLock(SECTION_AUTHORING_FEEDBACK, (headers) =>
+                    patchEngagement(
+                        {
+                            id: engagementId,
+                            selected_survey_id: numericSelectedSurvey || undefined,
+                        },
+                        headers,
+                    ),
+                );
             },
         });
     }
@@ -309,17 +489,29 @@ export const authoringUpdateAction: ActionFunction = async ({ request }) => {
                     })
                     .filter((v) => v !== undefined);
 
-                await patchTranslationForLanguage({
-                    engagementId,
-                    languageCode,
-                    payload: {
-                        more_engagements_heading: moreEngagementsHeading || undefined,
+                await runWithLock(
+                    SECTION_AUTHORING_MORE,
+                    async (headers) => {
+                        await patchTranslationForLanguage({
+                            engagementId,
+                            languageCode,
+                            payload: {
+                                more_engagements_heading: moreEngagementsHeading || undefined,
+                            },
+                            headers,
+                        });
                     },
-                });
+                    languageCode,
+                );
                 // suggested_engagements is structural (cross-language), stays on base engagement.
-                await patchEngagement({
-                    id: engagementId,
-                    suggested_engagements: suggestions,
+                await runWithLock(SECTION_AUTHORING_MORE, async (headers) => {
+                    await patchEngagement(
+                        {
+                            id: engagementId,
+                            suggested_engagements: suggestions,
+                        },
+                        headers,
+                    );
                 });
             },
         });
@@ -331,15 +523,24 @@ export const authoringUpdateAction: ActionFunction = async ({ request }) => {
             label: 'Error updating engagement subscribe section',
             errors,
             task: async () => {
-                await patchTranslationForLanguage({
-                    engagementId,
+                await runWithLock(
+                    SECTION_AUTHORING_SUBSCRIBE,
+                    (headers) =>
+                        patchTranslationForLanguage({
+                            engagementId,
+                            languageCode,
+                            payload: {
+                                subscribe_section_heading: getOptionalFormText(formData, 'subscribe_section_heading'),
+                                subscribe_section_description: getOptionalFormText(
+                                    formData,
+                                    'subscribe_section_description',
+                                ),
+                                subscribe_consent_message: getOptionalFormText(formData, 'subscribe_consent_message'),
+                            },
+                            headers,
+                        }),
                     languageCode,
-                    payload: {
-                        subscribe_section_heading: getOptionalFormText(formData, 'subscribe_section_heading'),
-                        subscribe_section_description: getOptionalFormText(formData, 'subscribe_section_description'),
-                        subscribe_consent_message: getOptionalFormText(formData, 'subscribe_consent_message'),
-                    },
-                });
+                );
             },
         });
     }

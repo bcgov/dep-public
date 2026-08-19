@@ -1,9 +1,13 @@
-export interface AuthoringValue {
+import { ResourceLockRecord } from 'services/resourceLockService';
+import { AuthoringSectionName } from 'components/engagement/admin/create/authoring/useAuthoringSectionCompletion';
+
+export interface AuthoringTabValue {
     id: number;
-    title: string;
+    title: AuthoringSectionName;
     link: string;
     required: boolean;
     completed: boolean;
+    lock?: ResourceLockRecord;
 }
 
 export interface StatusCircleProps {
@@ -11,5 +15,5 @@ export interface StatusCircleProps {
 }
 
 export interface AuthoringButtonProps {
-    item: AuthoringValue;
+    item: AuthoringTabValue;
 }

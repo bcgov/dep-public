@@ -1,10 +1,16 @@
+## August 8, 2026
+
+- **Feature** Added engagement locking UX for Engagements [🎟️ DEP-284](https://citz-gdx.atlassian.net/browse/DEP-284)
+  - Implemented resource lock related routes, types, and services for components in the DEP web app to consume
+  - Updated navigation in the engagement config and authoring pages to check for active locks on the engagement resource before allowing navigation to other sections. If a lock is detected, the user is shown a modal informing them that the engagement is locked by another user and cannot be edited.
+
 ## August 7, 2026
 
 - **Feature** Added some fixes to prepare for the new search/filter system [🎟️ DEP-316](https://citz-gdx.atlassian.net/browse/DEP-316)
-    - Fixed metadata and engagement parsing logic in landing loader
-    - Removed unneeded revalidation hook that was causing double engagement results loading
-    - Fixed API logic for engagement status filter in engagement model
-    - Moved EngagementSearch components to a separate subfolder within landing folder for better organization
+  - Fixed metadata and engagement parsing logic in landing loader
+  - Removed unneeded revalidation hook that was causing double engagement results loading
+  - Fixed API logic for engagement status filter in engagement model
+  - Moved EngagementSearch components to a separate subfolder within landing folder for better organization
 
 ## August 5, 2026
 

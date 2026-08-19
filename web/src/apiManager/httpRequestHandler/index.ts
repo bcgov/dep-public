@@ -38,34 +38,37 @@ const PostRequest = <T>(url: string, data = {}, params = {}, headers = {}) => {
     });
 };
 
-const PutRequest = <T>(url: string, data = {}, params = {}) => {
+const PutRequest = <T>(url: string, data = {}, params = {}, headers = {}) => {
     return axios.put<T>(url, data, {
         params,
         headers: {
             'Content-type': 'application/json',
             Authorization: `Bearer ${UserService.getToken()}`,
             'tenant-id': `${sessionStorage.getItem('tenantId')}`,
+            ...headers,
         },
     });
 };
 
-const PatchRequest = <T>(url: string, data = {}) => {
+const PatchRequest = <T>(url: string, data = {}, headers = {}) => {
     return axios.patch<T>(url, data, {
         headers: {
             'Content-type': 'application/json',
             Authorization: `Bearer ${UserService.getToken()}`,
             'tenant-id': `${sessionStorage.getItem('tenantId')}`,
+            ...headers,
         },
     });
 };
 
-const DeleteRequest = <T>(url: string, params = {}) => {
+const DeleteRequest = <T>(url: string, params = {}, headers = {}) => {
     return axios.delete<T>(url, {
         params: params,
         headers: {
             'Content-type': 'application/json',
             Authorization: `Bearer ${UserService.getToken()}`,
             'tenant-id': `${sessionStorage.getItem('tenantId')}`,
+            ...headers,
         },
     });
 };
