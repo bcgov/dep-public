@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
-    acquireEngagementSectionLock,
+    acquireResourceLock,
     refreshLock,
     releaseLock,
+    RESOURCE_TYPE_ENGAGEMENT_SECTION,
     ResourceLockRecord,
 } from 'services/resourceLockService';
 
@@ -14,7 +15,8 @@ type LockScope = {
 };
 
 export const useEngagementSectionEditLock = ({
-    engagementId,
+    resourceId,
+    resourceType = RESOURCE_TYPE_ENGAGEMENT_SECTION,
     scope,
     enabled,
     isDirty,
@@ -23,7 +25,8 @@ export const useEngagementSectionEditLock = ({
     heartbeatIntervalMs = DEFAULT_LOCK_HEARTBEAT_INTERVAL_MS,
     onConflict,
 }: {
-    engagementId: number;
+    resourceId: number;
+    resourceType?: string;
     scope: LockScope | null;
     enabled: boolean;
     isDirty: boolean;
@@ -98,8 +101,9 @@ export const useEngagementSectionEditLock = ({
                     }
                 }
 
-                const lock = await acquireEngagementSectionLock({
-                    engagementId,
+                const lock = await acquireResourceLock({
+                    resourceType,
+                    resourceId,
                     sectionKey: scope.sectionKey,
                     languageId: scope.languageId,
                 });
@@ -125,7 +129,7 @@ export const useEngagementSectionEditLock = ({
         return () => {
             isCancelled = true;
         };
-    }, [blockedByLock, enabled, engagementId, isDirty, isSubmitting, onConflict, scope]);
+    }, [blockedByLock, enabled, resourceId, resourceType, isDirty, isSubmitting, onConflict, scope]);
 
     useEffect(() => {
         if (!lockToken || isSubmitting) {

@@ -12,13 +12,32 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCog, faPen } from '@fortawesome/pro-regular-svg-icons';
 import { ReactComponent as PagePreviewIcon } from 'assets/images/pagePreview.svg';
 import { SurveyBanner } from 'components/survey/common/SurveyBanner';
+import useResourceLocks from 'services/resourceLockService/useResourceLocks';
+import {
+    findScopedSectionLock,
+    SECTION_SURVEY_BUILDER,
+    SECTION_SURVEY_REPORT_SETTINGS,
+} from 'services/resourceLockService';
+import useResourceSectionLockNavigation from 'engagements/admin/create/authoring/useResourceSectionLockNavigation';
+import LockOwnerAvatar from 'engagements/admin/create/authoring/LockOwnerAvatar';
 
 const SurveyPreview = () => {
     const loaderData = useSurveyLoaderData();
-    const surveyId = useParams<{ surveyId: string }>().surveyId ?? 0;
+    const surveyId = Number(useParams<{ surveyId: string }>().surveyId ?? 0);
+    const { locks } = useResourceLocks({
+        resourceId: surveyId,
+        resourceType: 'survey',
+        initialLocksPromise: loaderData.locks,
+    });
+    const { resolveSectionLockState, requestNavigation, breakLockModal } = useResourceSectionLockNavigation();
+    const builderLock = findScopedSectionLock({ locks, sectionKey: SECTION_SURVEY_BUILDER });
+    const reportSettingsLock = findScopedSectionLock({ locks, sectionKey: SECTION_SURVEY_REPORT_SETTINGS });
+    const { isDisabled: isBuilderDisabled } = resolveSectionLockState(builderLock);
+    const { isDisabled: isReportSettingsDisabled } = resolveSectionLockState(reportSettingsLock);
 
     return (
         <Grid container direction="row" justifyContent="flex-start" alignItems="flex-start">
+            {breakLockModal}
             <Grid container size={12} maxWidth="1120px">
                 <SurveyBanner
                     loaderData={loaderData}
@@ -32,21 +51,38 @@ const SurveyPreview = () => {
                                     icon={<FontAwesomeIcon icon={faPen} />}
                                     LinkComponent={RouterLinkRenderer}
                                     variant="primary"
-                                    disabled={!surveyId}
+                                    disabled={!surveyId || isBuilderDisabled}
                                     href={getPath(ROUTES.SURVEY_BUILD, { surveyId })}
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        requestNavigation({
+                                            href: getPath(ROUTES.SURVEY_BUILD, { surveyId }),
+                                            sectionName: 'Survey Builder',
+                                            lock: builderLock,
+                                        });
+                                    }}
                                 >
                                     Edit Survey
+                                    <LockOwnerAvatar sx={{ ml: 1 }} lock={builderLock ?? undefined} />
                                 </Button>
                             </PermissionsGate>
                             <Button
                                 icon={<FontAwesomeIcon icon={faCog} />}
                                 href={getPath(ROUTES.SURVEY_REPORT, { surveyId })}
                                 LinkComponent={RouterLinkRenderer}
-                                disabled={!surveyId}
+                                disabled={!surveyId || isReportSettingsDisabled}
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    requestNavigation({
+                                        href: getPath(ROUTES.SURVEY_REPORT, { surveyId }),
+                                        sectionName: 'Survey Report Settings',
+                                        lock: reportSettingsLock,
+                                    });
+                                }}
                             >
                                 Survey Report Settings
                             </Button>
-                            <Suspense fallback={<Skeleton variant="rectangular" width={200} height={48} />}>
+                            <Suspense fallback={<Skeleton variant="rectangular" width={245} height={48} />}>
                                 <Await resolve={loaderData.engagement}>
                                     {(engagement) =>
                                         engagement && (

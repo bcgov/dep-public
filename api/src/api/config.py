@@ -23,12 +23,13 @@ and create an entry for it in the sample .env file.
 """
 
 import os
-
 from typing import Union
+
 from dotenv import find_dotenv, load_dotenv
 
 from api.utils.constants import TestKeyConfig
 from api.utils.util import is_truthy
+
 
 # Search in increasingly higher folders for a .env file, then load it,
 # appending any variables we find to the current environment.
@@ -179,15 +180,6 @@ class Config:  # pylint: disable=too-few-public-methods
         'SEND_EMAIL_INTERNAL_ONLY', default=False)
 
     DEFAULT_LANGUAGE = os.getenv('DEFAULT_LANGUAGE', 'en')
-
-    # Feature flag: when enabled, PATCH /engagements requires lock validation.
-    # Keep disabled until frontend lock UX is ready.
-    ENGAGEMENT_LOCK_VALIDATION_ENABLED = env_truthy(
-        'ENGAGEMENT_LOCK_VALIDATION_ENABLED', default=False)
-
-    # Feature flag: when enabled, survey builder/report-setting writes require lock validation.
-    SURVEY_LOCK_VALIDATION_ENABLED = env_truthy(
-        'SURVEY_LOCK_VALIDATION_ENABLED', default=False)
 
     EPIC_CONFIG = {
         'ENABLED': env_truthy('EPIC_INTEGRATION_ENABLED'),

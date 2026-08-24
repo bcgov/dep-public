@@ -29,8 +29,8 @@ import { AppConfig } from 'config';
 import { openNotification } from 'services/notificationService/notificationSlice';
 import useEngagementSectionEditLock from 'services/resourceLockService/useEngagementSectionEditLock';
 import { getLockConflictPayload } from 'services/resourceLockService';
-import { findSectionLock, getLockTargetBySectionName, getAuthoringSectionNameByPage } from './useAuthoringSectionLocks';
-import useAuthoringSectionLockNavigation from './useAuthoringSectionLockNavigation';
+import { findSectionLock, getLockTargetBySectionName, getAuthoringSectionNameByPage } from './useResourceSectionLocks';
+import useResourceSectionLockNavigation from './useResourceSectionLockNavigation';
 import { AuthoringContextType } from './types';
 
 const DEFAULT_LANGUAGE_CODE = AppConfig.language.defaultLanguageId.toLowerCase();
@@ -189,7 +189,7 @@ const AuthoringTemplate = () => {
         await refreshLocks();
     }, [refreshLocks]);
 
-    const { conflictLockModal } = useAuthoringSectionLockNavigation({
+    const { conflictLockModal } = useResourceSectionLockNavigation({
         conflictModal: {
             lock: conflictingSectionLock,
             sectionName: currentSectionFromPage ?? undefined,
@@ -232,7 +232,7 @@ const AuthoringTemplate = () => {
     }, [pageName, setLockScopeWideningRequested]);
 
     const { activeLockScope, activeLockToken } = useEngagementSectionEditLock({
-        engagementId: Number(engagementId),
+        resourceId: Number(engagementId),
         scope: currentSectionLockContext
             ? {
                   sectionKey: currentSectionLockContext.sectionKey,

@@ -79,8 +79,8 @@ interface PutSurveyRequest {
     is_hidden?: boolean;
     is_template?: boolean;
 }
-export const putSurvey = async (data: PutSurveyRequest): Promise<Survey> => {
-    const response = await http.PutRequest<Survey>(Endpoints.Survey.UPDATE, data);
+export const putSurvey = async (data: PutSurveyRequest, headers?: Record<string, string>): Promise<Survey> => {
+    const response = await http.PutRequest<Survey>(Endpoints.Survey.UPDATE, data, {}, headers);
     return response.data;
 };
 

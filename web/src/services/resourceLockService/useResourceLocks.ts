@@ -2,44 +2,58 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
     applyResourceLockEvent,
     getEngagementLocks,
-    ResourceLocksForEngagement,
+    getSurveyLocks,
+    RESOURCE_TYPE_ENGAGEMENT_SECTION,
+    RESOURCE_TYPE_SURVEY,
+    ResourceLocks,
     subscribeToResourceLockEvents,
 } from './index';
 
 const DEFAULT_LOCK_POLL_INTERVAL_MS = 15000;
 
-const EMPTY_LOCKS: ResourceLocksForEngagement = {
-    resource_type: 'engagement_section',
-    resource_id: 0,
-    locks: [],
+const RESOURCE_LOCK_FETCHERS: Record<string, (resourceId: number) => Promise<ResourceLocks>> = {
+    [RESOURCE_TYPE_ENGAGEMENT_SECTION]: getEngagementLocks,
+    [RESOURCE_TYPE_SURVEY]: getSurveyLocks,
 };
 
+const buildEmptyLocks = (resourceType: string): ResourceLocks => ({
+    resource_type: resourceType,
+    resource_id: 0,
+    locks: [],
+});
+
 type LockStoreSnapshot = {
-    locks: ResourceLocksForEngagement;
+    locks: ResourceLocks;
     isLoading: boolean;
 };
 
-type EngagementLockStore = {
+type ResourceLockStore = {
     getSnapshot: () => LockStoreSnapshot;
     subscribe: (listener: () => void) => () => void;
-    retain: (initialLocksPromise?: Promise<ResourceLocksForEngagement>) => void;
+    retain: (initialLocksPromise?: Promise<ResourceLocks>) => void;
     release: () => boolean;
-    refresh: () => Promise<ResourceLocksForEngagement>;
-    seed: (locks: ResourceLocksForEngagement) => void;
+    refresh: () => Promise<ResourceLocks>;
+    seed: (locks: ResourceLocks) => void;
     setPollIntervalMs: (pollIntervalMs: number) => void;
 };
 
-const engagementLockStores = new Map<number, EngagementLockStore>();
+const resourceLockStores = new Map<string, ResourceLockStore>();
 
-const createEngagementLockStore = ({
-    engagementId,
+const getStoreKey = (resourceType: string, resourceId: number) => `${resourceType}:${resourceId}`;
+
+const createResourceLockStore = ({
+    resourceType,
+    resourceId,
     pollIntervalMs,
 }: {
-    engagementId: number;
+    resourceType: string;
+    resourceId: number;
     pollIntervalMs: number;
-}): EngagementLockStore => {
+}): ResourceLockStore => {
+    const emptyLocks = buildEmptyLocks(resourceType);
+    const fetchLocks = RESOURCE_LOCK_FETCHERS[resourceType];
     let snapshot: LockStoreSnapshot = {
-        locks: EMPTY_LOCKS,
+        locks: emptyLocks,
         isLoading: true,
     };
     let referenceCount = 0;
@@ -47,7 +61,7 @@ const createEngagementLockStore = ({
     let currentPollIntervalMs = pollIntervalMs;
     let intervalId: ReturnType<typeof globalThis.setInterval> | null = null;
     let unsubscribeFromEvents: (() => void) | null = null;
-    let inFlightRefresh: Promise<ResourceLocksForEngagement> | null = null;
+    let inFlightRefresh: Promise<ResourceLocks> | null = null;
     let inFlightInitialize: Promise<void> | null = null;
     const listeners = new Set<() => void>();
 
@@ -63,12 +77,13 @@ const createEngagementLockStore = ({
     };
 
     const refresh = async () => {
-        if (!Number.isFinite(engagementId) || engagementId <= 0) {
+        if (!fetchLocks || !Number.isFinite(resourceId) || resourceId <= 0) {
+            console.warn('Invalid resource type or ID for lock refresh', resourceType, resourceId);
             updateSnapshot({
-                locks: EMPTY_LOCKS,
+                locks: emptyLocks,
                 isLoading: false,
             });
-            return EMPTY_LOCKS;
+            return emptyLocks;
         }
 
         const activeRefresh = inFlightRefresh;
@@ -78,7 +93,7 @@ const createEngagementLockStore = ({
 
         inFlightRefresh = (async () => {
             try {
-                const fetchedLocks = await getEngagementLocks(engagementId);
+                const fetchedLocks = await fetchLocks(resourceId);
                 updateSnapshot({
                     locks: fetchedLocks,
                     isLoading: false,
@@ -92,7 +107,7 @@ const createEngagementLockStore = ({
         return inFlightRefresh;
     };
 
-    const initialize = (initialLocksPromise?: Promise<ResourceLocksForEngagement>) => {
+    const initialize = (initialLocksPromise?: Promise<ResourceLocks>) => {
         if (hasInitialized) {
             return inFlightInitialize ?? Promise.resolve();
         }
@@ -137,7 +152,7 @@ const createEngagementLockStore = ({
     };
 
     const startPolling = () => {
-        if (intervalId || !Number.isFinite(engagementId) || engagementId <= 0) {
+        if (intervalId || !Number.isFinite(resourceId) || resourceId <= 0) {
             return;
         }
 
@@ -164,7 +179,10 @@ const createEngagementLockStore = ({
 
         unsubscribeFromEvents = subscribeToResourceLockEvents((event) => {
             updateSnapshot((current) => {
-                if (event.type === 'upsert' && event.lock.resource_id !== engagementId) {
+                if (
+                    event.type === 'upsert' &&
+                    (event.lock.resource_type !== resourceType || event.lock.resource_id !== resourceId)
+                ) {
                     return current;
                 }
 
@@ -231,33 +249,44 @@ const createEngagementLockStore = ({
     };
 };
 
-const getEngagementLockStore = ({ engagementId, pollIntervalMs }: { engagementId: number; pollIntervalMs: number }) => {
-    const existingStore = engagementLockStores.get(engagementId);
+const getEngagementLockStore = ({
+    resourceType,
+    resourceId,
+    pollIntervalMs,
+}: {
+    resourceType: string;
+    resourceId: number;
+    pollIntervalMs: number;
+}) => {
+    const key = getStoreKey(resourceType, resourceId);
+    const existingStore = resourceLockStores.get(key);
     if (existingStore) {
         existingStore.setPollIntervalMs(pollIntervalMs);
         return existingStore;
     }
 
-    const store = createEngagementLockStore({ engagementId, pollIntervalMs });
-    engagementLockStores.set(engagementId, store);
+    const store = createResourceLockStore({ resourceType, resourceId, pollIntervalMs });
+    resourceLockStores.set(key, store);
     return store;
 };
 
-export const useEngagementLocks = ({
-    engagementId,
+export const useResourceLocks = ({
+    resourceId,
+    resourceType = RESOURCE_TYPE_ENGAGEMENT_SECTION,
     initialLocksPromise,
     refreshToken,
     pollIntervalMs = DEFAULT_LOCK_POLL_INTERVAL_MS,
 }: {
-    engagementId: number;
-    initialLocksPromise?: Promise<ResourceLocksForEngagement>;
+    resourceId: number;
+    resourceType?: string;
+    initialLocksPromise?: Promise<ResourceLocks>;
     refreshToken?: unknown;
     pollIntervalMs?: number;
 }) => {
-    const normalizedEngagementId = Number(engagementId);
+    const normalizedResourceId = Number(resourceId);
     const store = useMemo(
-        () => getEngagementLockStore({ engagementId: normalizedEngagementId, pollIntervalMs }),
-        [normalizedEngagementId, pollIntervalMs],
+        () => getEngagementLockStore({ resourceType, resourceId: normalizedResourceId, pollIntervalMs }),
+        [resourceType, normalizedResourceId, pollIntervalMs],
     );
     const [storeSnapshot, setStoreSnapshot] = useState<LockStoreSnapshot>(() => store.getSnapshot());
 
@@ -277,10 +306,10 @@ export const useEngagementLocks = ({
 
         return () => {
             if (store.release()) {
-                engagementLockStores.delete(normalizedEngagementId);
+                resourceLockStores.delete(getStoreKey(resourceType, normalizedResourceId));
             }
         };
-    }, [initialLocksPromise, normalizedEngagementId, store]);
+    }, [initialLocksPromise, resourceType, normalizedResourceId, store]);
 
     useEffect(() => {
         let cancelled = false;
@@ -320,4 +349,4 @@ export const useEngagementLocks = ({
     };
 };
 
-export default useEngagementLocks;
+export default useResourceLocks;

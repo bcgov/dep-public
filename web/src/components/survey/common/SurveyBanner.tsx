@@ -46,7 +46,10 @@ export const SurveyBanner: React.FC<SurveyBannerProps> = ({
                 }
             >
                 <Await
-                    resolve={Promise.all([loaderData.survey, loaderData.engagement])}
+                    resolve={React.useMemo(
+                        () => Promise.all([loaderData.survey, loaderData.engagement]),
+                        [loaderData.survey, loaderData.engagement],
+                    )}
                     errorElement={<div>{errorText}</div>}
                 >
                     {([survey, engagement]) => (

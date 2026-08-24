@@ -5,6 +5,7 @@ import { replaceUrl } from 'helper';
 
 export const LOCK_TOKEN_HEADER = 'X-Resource-Lock-Token';
 export const RESOURCE_TYPE_ENGAGEMENT_SECTION = 'engagement_section';
+export const RESOURCE_TYPE_SURVEY = 'survey';
 
 export const SECTION_AUTHORING_BANNER = 'authoring.banner';
 export const SECTION_AUTHORING_SUMMARY = 'authoring.summary';
@@ -14,6 +15,8 @@ export const SECTION_AUTHORING_RESULTS = 'authoring.results';
 export const SECTION_AUTHORING_SUBSCRIBE = 'authoring.subscribe';
 export const SECTION_AUTHORING_MORE = 'authoring.more';
 export const SECTION_CONFIG_GENERAL = 'config.general';
+export const SECTION_SURVEY_BUILDER = 'survey.builder';
+export const SECTION_SURVEY_REPORT_SETTINGS = 'survey.report_settings';
 
 const LOCK_SESSION_ID_KEY = 'engagement-lock-session-id';
 
@@ -39,7 +42,7 @@ export interface ResourceLockRecord {
     is_mine: boolean;
 }
 
-export interface ResourceLocksForEngagement {
+export interface ResourceLocks {
     resource_type: string;
     resource_id: number;
     locks: ResourceLockRecord[];
@@ -85,10 +88,7 @@ export const subscribeToResourceLockEvents = (listener: ResourceLockListener) =>
     };
 };
 
-export const applyResourceLockEvent = (
-    currentLocks: ResourceLocksForEngagement,
-    event: ResourceLockEvent,
-): ResourceLocksForEngagement => {
+export const applyResourceLockEvent = (currentLocks: ResourceLocks, event: ResourceLockEvent): ResourceLocks => {
     if (event.type === 'release') {
         return {
             ...currentLocks,
@@ -146,30 +146,33 @@ export const getOrCreateLockSessionId = (): string => {
 };
 
 /**
- * Acquires a lock for a specific engagement section.
- * @param engagementId - The ID of the engagement.
+ * Acquires a lock for a section of any resource type (engagement, survey, etc).
+ * @param resourceType - The resource type (e.g. RESOURCE_TYPE_ENGAGEMENT_SECTION, RESOURCE_TYPE_SURVEY).
+ * @param resourceId - The ID of the resource.
  * @param sectionKey - The key of the section to lock.
  * @param languageId - Optional. The language ID for the section.
  * @param ownerDisplayName - Optional. The display name of the lock owner.
  * @param ttlSeconds - Optional. Time-to-live in seconds for the lock.
  * @returns A promise that resolves to the acquired ResourceLockRecord.
  */
-export const acquireEngagementSectionLock = async ({
-    engagementId,
+export const acquireResourceLock = async ({
+    resourceType,
+    resourceId,
     sectionKey,
     languageId,
     ownerDisplayName,
     ttlSeconds,
 }: {
-    engagementId: number;
+    resourceType: string;
+    resourceId: number;
     sectionKey: string;
     languageId?: number;
     ownerDisplayName?: string;
     ttlSeconds?: number;
 }): Promise<ResourceLockRecord> => {
     const payload: AcquireLockRequest = {
-        resource_type: RESOURCE_TYPE_ENGAGEMENT_SECTION,
-        resource_id: engagementId,
+        resource_type: resourceType,
+        resource_id: resourceId,
         section_key: sectionKey,
         owner_session_id: getOrCreateLockSessionId(),
         language_id: languageId,
@@ -184,6 +187,65 @@ export const acquireEngagementSectionLock = async ({
     emitResourceLockEvent({ type: 'upsert', lock: response.data });
     return response.data;
 };
+
+/**
+ * Acquires a lock for a specific engagement section.
+ * @param engagementId - The ID of the engagement.
+ * @param sectionKey - The key of the section to lock.
+ * @param languageId - Optional. The language ID for the section.
+ * @param ownerDisplayName - Optional. The display name of the lock owner.
+ * @param ttlSeconds - Optional. Time-to-live in seconds for the lock.
+ * @returns A promise that resolves to the acquired ResourceLockRecord.
+ */
+export const acquireEngagementSectionLock = ({
+    engagementId,
+    sectionKey,
+    languageId,
+    ownerDisplayName,
+    ttlSeconds,
+}: {
+    engagementId: number;
+    sectionKey: string;
+    languageId?: number;
+    ownerDisplayName?: string;
+    ttlSeconds?: number;
+}): Promise<ResourceLockRecord> =>
+    acquireResourceLock({
+        resourceType: RESOURCE_TYPE_ENGAGEMENT_SECTION,
+        resourceId: engagementId,
+        sectionKey,
+        languageId,
+        ownerDisplayName,
+        ttlSeconds,
+    });
+
+/**
+ * Acquires a lock for a survey section (the form builder or report settings).
+ * Survey sections are never language-scoped.
+ * @param surveyId - The ID of the survey.
+ * @param sectionKey - The key of the section to lock (SECTION_SURVEY_BUILDER or SECTION_SURVEY_REPORT_SETTINGS).
+ * @param ownerDisplayName - Optional. The display name of the lock owner.
+ * @param ttlSeconds - Optional. Time-to-live in seconds for the lock.
+ * @returns A promise that resolves to the acquired ResourceLockRecord.
+ */
+export const acquireSurveySectionLock = ({
+    surveyId,
+    sectionKey,
+    ownerDisplayName,
+    ttlSeconds,
+}: {
+    surveyId: number;
+    sectionKey: string;
+    ownerDisplayName?: string;
+    ttlSeconds?: number;
+}): Promise<ResourceLockRecord> =>
+    acquireResourceLock({
+        resourceType: RESOURCE_TYPE_SURVEY,
+        resourceId: surveyId,
+        sectionKey,
+        ownerDisplayName,
+        ttlSeconds,
+    });
 
 /**
  * Refreshes an existing lock.
@@ -235,19 +297,36 @@ export const releaseLock = async (
 };
 
 /**
+ * Gets all locks for a resource, given a URL that already has its id path segment filled in.
+ */
+const fetchResourceLocks = async (url: string): Promise<ResourceLocks> => {
+    const response = await http.GetRequest<ResourceLocks>(url, {
+        owner_session_id: getOrCreateLockSessionId(),
+    });
+    if (!response.data) {
+        throw new Error('Failed to fetch resource locks');
+    }
+    return response.data;
+};
+
+/**
  * Gets all locks for a specific engagement.
  * @param engagementId - The ID of the engagement.
  * @returns A promise that resolves to the resource locks for the engagement.
  */
-export const getEngagementLocks = async (engagementId: number): Promise<ResourceLocksForEngagement> => {
+export const getEngagementLocks = async (engagementId: number): Promise<ResourceLocks> => {
     const url = replaceUrl(Endpoints.Engagement.GET_LOCKS, 'engagement_id', String(engagementId));
-    const response = await http.GetRequest<ResourceLocksForEngagement>(url, {
-        owner_session_id: getOrCreateLockSessionId(),
-    });
-    if (!response.data) {
-        throw new Error('Failed to fetch engagement locks');
-    }
-    return response.data;
+    return fetchResourceLocks(url);
+};
+
+/**
+ * Gets all locks for a specific survey.
+ * @param surveyId - The ID of the survey.
+ * @returns A promise that resolves to the resource locks for the survey.
+ */
+export const getSurveyLocks = async (surveyId: number): Promise<ResourceLocks> => {
+    const url = replaceUrl(Endpoints.Survey.GET_LOCKS, 'survey_id', String(surveyId));
+    return fetchResourceLocks(url);
 };
 
 /**
@@ -263,7 +342,7 @@ export const isSectionLocked = ({
     sectionKey,
     by,
 }: {
-    locks: ResourceLocksForEngagement;
+    locks: ResourceLocks;
     sectionKey: string;
     by?: 'me' | 'other';
 }): boolean => {
@@ -316,7 +395,7 @@ export const findScopedSectionLock = ({
     languageId,
     languageScoped = true,
 }: {
-    locks?: ResourceLocksForEngagement | null;
+    locks?: ResourceLocks | null;
     sectionKey: string;
     languageId?: number;
     languageScoped?: boolean;

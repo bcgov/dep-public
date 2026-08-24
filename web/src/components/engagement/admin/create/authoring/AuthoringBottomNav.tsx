@@ -39,9 +39,9 @@ import { AppConfig } from 'config';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { EngagementLoaderAdminData } from 'engagements/admin/EngagementLoaderAdmin';
 import { AuthoringFormContext, useAuthoringFormContext } from './AuthoringFormContext';
-import { findSectionLock, getAuthoringSectionNameByPage } from './useAuthoringSectionLocks';
+import { findSectionLock, getAuthoringSectionNameByPage } from './useResourceSectionLocks';
 import { AUTHORING_SECTION } from './useAuthoringSectionCompletion';
-import useAuthoringSectionLockNavigation, { useSectionLockState } from './useAuthoringSectionLockNavigation';
+import useResourceSectionLockNavigation, { useSectionLockState } from './useResourceSectionLockNavigation';
 import LockOwnerAvatar from './LockOwnerAvatar';
 const PREVIEW_CLOSE_GRACE_MS = 800;
 
@@ -467,7 +467,8 @@ const LanguageSelector = ({
     const currentLanguage = useAppSelector((state) => state.language);
     const { languages } = useRouteLoaderData('single-engagement') as EngagementLoaderAdminData;
     const { locks } = React.useContext(AuthoringFormContext as React.Context<AuthoringContextType>);
-    const { breakLockModal, requestNavigation, resolveSectionLockState } = useAuthoringSectionLockNavigation();
+    const { breakLockModal, conflictLockModal, requestNavigation, resolveSectionLockState } =
+        useResourceSectionLockNavigation();
     const dispatch = useAppDispatch();
     const [languageModalOpen, setLanguageModalOpen] = useState(false);
     const [newLanguage, setNewLanguage] = useState('');
@@ -632,6 +633,7 @@ const LanguageSelector = ({
     return (
         <>
             {breakLockModal}
+            {conflictLockModal}
             {/* confirm that the user wants to switch languages */}
             <Modal open={languageModalOpen} aria-describedby="publish-modal-subtext">
                 <ConfirmModal

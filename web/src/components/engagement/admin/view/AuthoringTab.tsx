@@ -20,14 +20,14 @@ import {
     AUTHORING_SECTION_NAMES,
     useAuthoringSectionCompletion,
 } from 'components/engagement/admin/create/authoring/useAuthoringSectionCompletion';
-import { findSectionLock } from 'components/engagement/admin/create/authoring/useAuthoringSectionLocks';
+import { findSectionLock } from 'components/engagement/admin/create/authoring/useResourceSectionLocks';
 import LockOwnerAvatar from 'components/engagement/admin/create/authoring/LockOwnerAvatar';
 import { getPath, ROUTES } from 'routes/routes';
 import { saveLanguage } from 'reduxSlices/languageSlice';
-import useAuthoringSectionLockNavigation from 'components/engagement/admin/create/authoring/useAuthoringSectionLockNavigation';
+import useResourceSectionLockNavigation from 'components/engagement/admin/create/authoring/useResourceSectionLockNavigation';
 import { ResourceLockRecord } from 'services/resourceLockService';
 import { AppConfig } from 'config';
-import { useEngagementLocks } from 'services/resourceLockService/useEngagementLocks';
+import { useResourceLocks } from 'services/resourceLockService/useResourceLocks';
 
 export const StatusCircle = (props: StatusCircleProps) => {
     const statusCircleStyles = {
@@ -168,8 +168,8 @@ export const AuthoringTab = () => {
         selectedLanguageCodes,
         engagementPromise: engagement,
     });
-    const { locks: liveLocks } = useEngagementLocks({
-        engagementId: numericEngagementId,
+    const { locks: liveLocks } = useResourceLocks({
+        resourceId: numericEngagementId,
         initialLocksPromise: locks,
     });
     const selectedLanguageId = languageOptions.find((language) => language.code === selectedLanguageCode)?.id;
@@ -194,7 +194,7 @@ export const AuthoringTab = () => {
             ResourceLockRecord | null
         >;
     }, [linkedSurveyId, liveLocks, selectedLanguageId]);
-    const { breakLockModal, resolveSectionLockState, requestNavigation } = useAuthoringSectionLockNavigation();
+    const { breakLockModal, resolveSectionLockState, requestNavigation } = useResourceSectionLockNavigation();
 
     const sectionValues = useMemo(
         () =>

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
     ResourceLockRecord,
-    ResourceLocksForEngagement,
+    ResourceLocks,
     findScopedSectionLock,
     SECTION_AUTHORING_BANNER,
     SECTION_AUTHORING_DETAILS,
@@ -10,7 +10,7 @@ import {
     SECTION_AUTHORING_SUBSCRIBE,
     SECTION_AUTHORING_SUMMARY,
 } from 'services/resourceLockService';
-import { useEngagementLocks } from 'services/resourceLockService/useEngagementLocks';
+import { useResourceLocks } from 'services/resourceLockService/useResourceLocks';
 import { getLanguageIdByCode } from 'services/engagementContentTranslationService';
 import { Language } from 'models/language';
 import { AUTHORING_SECTION, AUTHORING_SECTION_NAMES, AuthoringSectionName } from './useAuthoringSectionCompletion';
@@ -66,7 +66,7 @@ export const findSectionLock = ({
     sectionName,
     languageId,
 }: {
-    locks?: ResourceLocksForEngagement | null;
+    locks?: ResourceLocks | null;
     sectionName: AuthoringSectionName;
     languageId?: number;
 }): ResourceLockRecord | null => {
@@ -87,7 +87,7 @@ export const findSectionLock = ({
     });
 };
 
-export const useAuthoringSectionLocks = ({
+export const useResourceSectionLocks = ({
     engagementId,
     languageCode,
     languageOptions,
@@ -98,13 +98,13 @@ export const useAuthoringSectionLocks = ({
     engagementId: number;
     languageCode: string;
     languageOptions?: Pick<Language, 'id' | 'code'>[];
-    initialLocksPromise?: Promise<ResourceLocksForEngagement>;
+    initialLocksPromise?: Promise<ResourceLocks>;
     surveyUsesDedicatedLock?: boolean;
     pollIntervalMs?: number;
 }) => {
     const [languageId, setLanguageId] = useState<number | undefined>(undefined);
-    const { locks, isLoading, refreshLocks } = useEngagementLocks({
-        engagementId,
+    const { locks, isLoading, refreshLocks } = useResourceLocks({
+        resourceId: engagementId,
         initialLocksPromise,
         pollIntervalMs,
     });

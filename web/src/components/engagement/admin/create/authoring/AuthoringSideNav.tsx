@@ -38,9 +38,9 @@ import { UserAvatar } from 'components/common/Layout/UserAvatar';
 import { AppConfig } from 'config';
 import { Language } from 'models/language';
 import LockOwnerAvatar from './LockOwnerAvatar';
-import { findSectionLock } from './useAuthoringSectionLocks';
-import useAuthoringSectionLockNavigation, { useSectionLockState } from './useAuthoringSectionLockNavigation';
-import { useEngagementLocks } from 'services/resourceLockService/useEngagementLocks';
+import { findSectionLock } from './useResourceSectionLocks';
+import useResourceSectionLockNavigation, { useSectionLockState } from './useResourceSectionLockNavigation';
+import { useResourceLocks } from 'services/resourceLockService/useResourceLocks';
 
 export const routeItemStyle = {
     padding: 0,
@@ -151,8 +151,8 @@ const DrawerBox = ({ isMediumScreenOrLarger, setOpen, engagementId }: DrawerBoxP
         engagementPromise: engagement,
         detailsTabsPromise: details,
     });
-    const { locks: liveLocks } = useEngagementLocks({
-        engagementId: Number(engagementId),
+    const { locks: liveLocks } = useResourceLocks({
+        resourceId: Number(engagementId),
         initialLocksPromise: locks,
     });
     const locksBySection = useMemo(() => {
@@ -171,7 +171,7 @@ const DrawerBox = ({ isMediumScreenOrLarger, setOpen, engagementId }: DrawerBoxP
 
         return Object.fromEntries(entries) as Record<AuthoringSectionName, ReturnType<typeof findSectionLock>>;
     }, [defaultLanguageCode, languageCode, liveLocks, selectedLanguages]);
-    const { breakLockModal, requestNavigation } = useAuthoringSectionLockNavigation();
+    const { breakLockModal, requestNavigation } = useResourceSectionLockNavigation();
 
     const authoringRoutes = getRoutes(Number(engagementId), languageCode ?? defaultLanguageCode);
     const matchingRoutePaths: string[] = authoringRoutes

@@ -47,7 +47,7 @@ type ConflictModalOptions = {
     breakButtonText?: string;
 };
 
-export const useAuthoringSectionLockNavigation = ({ conflictModal }: { conflictModal?: ConflictModalOptions } = {}) => {
+export const useResourceSectionLockNavigation = ({ conflictModal }: { conflictModal?: ConflictModalOptions } = {}) => {
     const navigate = useNavigate();
     const dispatch = useAppDispatch();
     const [pendingNavigation, setPendingNavigation] = useState<PendingNavigation | null>(null);
@@ -241,4 +241,4 @@ export const useAuthoringSectionLockNavigation = ({ conflictModal }: { conflictM
     };
 };
 
-export default useAuthoringSectionLockNavigation;
+export default useResourceSectionLockNavigation;

@@ -9,9 +9,11 @@ import { getEngagement, getEngagementBySlug } from 'services/engagementService';
 import { getSubmissionByToken } from 'services/submissionService';
 import { getSurvey } from 'services/surveyService';
 import { fetchSurveyReportSettings } from 'services/surveyService/reportSettingsService';
+import { getSurveyLocks, RESOURCE_TYPE_SURVEY, ResourceLocks } from 'services/resourceLockService';
 
 export type SurveyLoaderData = {
     engagement: Promise<Engagement | null>;
+    locks: Promise<ResourceLocks>;
     reportSettings: Promise<SurveyReportSetting[] | null>;
     submission: Promise<SurveySubmission | null>;
     survey: Promise<Survey>;
@@ -23,7 +25,8 @@ export const SurveyLoader = async ({ params, pattern }: LoaderFunctionArgs) => {
     const surveyId = Number(surveyIdParam);
     const engagementId = Number(engagementIdParam);
     if (Number.isNaN(surveyId) && !Number.isNaN(engagementId) && !slugParam) throw new Error('Invalid survey ID');
-    const shouldHaveToken = !pattern.startsWith('/manage'); //non-admin users should have a token
+    const isAdminRoute = pattern.startsWith('/manage');
+    const shouldHaveToken = !isAdminRoute; //non-admin users should have a token
     if (shouldHaveToken && !token) {
         throw new Error('Missing verification token');
     }
@@ -66,8 +69,20 @@ export const SurveyLoader = async ({ params, pattern }: LoaderFunctionArgs) => {
         if (!verif?.verification_token) return null;
         return getSubmissionByToken(verif.verification_token);
     });
+    // Lock data is only meaningful (and only fetchable, since it requires auth) for admins editing the survey.
+    const locks = survey?.then((s) => {
+        const emptyLocks: ResourceLocks = {
+            resource_type: RESOURCE_TYPE_SURVEY,
+            resource_id: s?.id ?? 0,
+            locks: [],
+        };
+        if (!isAdminRoute || !s) {
+            return emptyLocks;
+        }
+        return getSurveyLocks(s.id).catch(() => emptyLocks);
+    });
 
-    return { engagement, reportSettings, submission, survey, verification };
+    return { engagement, locks, reportSettings, submission, survey, verification };
 };
 
 export default SurveyLoader;
