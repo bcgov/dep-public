@@ -23,7 +23,7 @@ Werkzeug<4
 minio
 pyhumps
 sqlalchemy-utils
-Flask-Caching
+Flask-Caching == 2.4.1
 asyncio-nats-client
 asyncio-nats-streaming
 sqlalchemy==1.4.52
