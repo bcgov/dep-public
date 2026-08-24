@@ -397,7 +397,6 @@ class ResourceLockService:
         language_id: Optional[int] = None,
     ) -> Optional[ResourceLock]:
         """Validate a lock token for an engagement section scope."""
-
         expected_scope = cls.build_scope_key(
             cls.RESOURCE_TYPE_ENGAGEMENT_SECTION,
             engagement_id,
@@ -538,7 +537,6 @@ class ResourceLockService:
         owner_user_sub: str,
     ) -> Optional[ResourceLock]:
         """Validate lock ownership/scope for widget translation writes."""
-
         engagement_id, section_key = cls._resolve_widget_section(
             widget_id=widget_id)
         return cls.validate_engagement_section_lock(
@@ -965,7 +963,6 @@ class ResourceLockService:
         owner_user_sub: str,
     ) -> Optional[ResourceLock]:
         """Validate a lock token for a survey section scope."""
-
         expected_scope = cls.build_scope_key(
             cls.RESOURCE_TYPE_SURVEY,
             survey_id,
