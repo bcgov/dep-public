@@ -8,7 +8,6 @@ from http import HTTPStatus
 from typing import Any, NoReturn, Optional
 from uuid import UUID, uuid4
 
-from flask import current_app, has_app_context
 from sqlalchemy.exc import IntegrityError, ResourceClosedError
 
 from api.exceptions.business_exception import BusinessException
