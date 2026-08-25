@@ -1,7 +1,8 @@
 """Tests to verify the EngagementDetailsTabTranslation API endpoints."""
 
-from http import HTTPStatus
 import json
+from http import HTTPStatus
+from unittest.mock import patch
 
 from api.utils.enums import ContentType
 from tests.utilities.factory_scenarios import (
@@ -88,12 +89,13 @@ def test_create_engagement_details_tab_translation(client, jwt, session, setup_a
         )
     }
 
-    rv = client.post(
-        f'/api/engagement/{engagement.id}/details/translations/language/{data["language_id"]}',
-        json=data,
-        headers=headers,
-        content_type=ContentType.JSON.value,
-    )
+    with patch('api.services.resource_lock_service.ResourceLockService._validate_lock_for_scope'):
+        rv = client.post(
+            f'/api/engagement/{engagement.id}/details/translations/language/{data["language_id"]}',
+            json=data,
+            headers=headers,
+            content_type=ContentType.JSON.value,
+        )
     json_data = rv.get_json()
 
     assert rv.status_code == HTTPStatus.CREATED
@@ -131,12 +133,13 @@ def test_update_engagement_details_tab_translation(client, jwt, session, setup_a
         'heading': 'Updated Title',
         'body': translation.body,
     }
-    rv = client.put(
-        f'/api/engagement/{engagement.id}/details/translations/language/{updated_data["language_id"]}',
-        json=[updated_data],
-        headers=headers,
-        content_type=ContentType.JSON.value
-    )
+    with patch('api.services.resource_lock_service.ResourceLockService._validate_lock_for_scope'):
+        rv = client.put(
+            f'/api/engagement/{engagement.id}/details/translations/language/{updated_data["language_id"]}',
+            json=[updated_data],
+            headers=headers,
+            content_type=ContentType.JSON.value
+        )
     returned_data = rv.get_json()
 
     assert rv.status_code == HTTPStatus.OK
@@ -170,13 +173,14 @@ def test_delete_engagement_details_tab_translation(client, jwt, session, setup_a
     )
     session.commit()
 
-    rv = client.put(
-        f'/api/engagement/{engagement.id}/details/translations/language/{translation.language_id}',
-        json=[],
-        headers=headers,
-        content_type=ContentType.JSON.value
-    )
-    results = rv.get_json()
+    with patch('api.services.resource_lock_service.ResourceLockService._validate_lock_for_scope'):
+        rv = client.put(
+            f'/api/engagement/{engagement.id}/details/translations/language/{translation.language_id}',
+            json=[],
+            headers=headers,
+            content_type=ContentType.JSON.value
+        )
+        results = rv.get_json()
 
     assert results['summary']['deleted'] == 1
     assert results['summary']['created'] == 0

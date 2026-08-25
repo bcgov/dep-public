@@ -18,11 +18,11 @@ Test-Suite to ensure that the Engagement Translation endpoint is working as expe
 """
 import json
 from http import HTTPStatus
-from marshmallow import ValidationError
 from unittest.mock import patch
 
 import pytest
 from faker import Faker
+from marshmallow import ValidationError
 
 from api.exceptions.business_exception import BusinessException
 from api.services.engagement_translation_service import EngagementTranslationService
@@ -169,26 +169,27 @@ def test_patch_engagement_translation(client, jwt, session, engagement_translati
     data = {
         'name': fake.text(max_nb_chars=10),
     }
-    rv = client.patch(f'/api/engagement/{engagement.id}/translations/{engagement_translation.id}',
-                      data=json.dumps(data),
-                      headers=headers, content_type=ContentType.JSON.value)
-
-    assert rv.status_code == HTTPStatus.OK
-    assert rv.json.get('name') == data.get('name')
-
-    with patch.object(EngagementTranslationService, 'update_engagement_translation',
-                      side_effect=ValueError('Test error')):
+    with patch('api.services.resource_lock_service.ResourceLockService._validate_lock_for_scope'):
         rv = client.patch(f'/api/engagement/{engagement.id}/translations/{engagement_translation.id}',
-                          data=json.dumps(data),
-                          headers=headers, content_type=ContentType.JSON.value)
-    assert rv.status_code == HTTPStatus.NOT_FOUND
+                        data=json.dumps(data),
+                        headers=headers, content_type=ContentType.JSON.value)
 
-    with patch.object(EngagementTranslationService, 'update_engagement_translation',
-                      side_effect=ValidationError('Test error')):
-        rv = client.patch(f'/api/engagement/{engagement.id}/translations/{engagement_translation.id}',
-                          data=json.dumps(data),
-                          headers=headers, content_type=ContentType.JSON.value)
-    assert rv.status_code == HTTPStatus.BAD_REQUEST
+        assert rv.status_code == HTTPStatus.OK
+        assert rv.json.get('name') == data.get('name')
+
+        with patch.object(EngagementTranslationService, 'update_engagement_translation',
+                        side_effect=ValueError('Test error')):
+            rv = client.patch(f'/api/engagement/{engagement.id}/translations/{engagement_translation.id}',
+                            data=json.dumps(data),
+                            headers=headers, content_type=ContentType.JSON.value)
+        assert rv.status_code == HTTPStatus.NOT_FOUND
+
+        with patch.object(EngagementTranslationService, 'update_engagement_translation',
+                        side_effect=ValidationError('Test error')):
+            rv = client.patch(f'/api/engagement/{engagement.id}/translations/{engagement_translation.id}',
+                            data=json.dumps(data),
+                            headers=headers, content_type=ContentType.JSON.value)
+        assert rv.status_code == HTTPStatus.BAD_REQUEST
 
 
 @pytest.mark.parametrize('engagement_translation_info', [TestEngagementTranslationInfo.engagementtranslation1])
