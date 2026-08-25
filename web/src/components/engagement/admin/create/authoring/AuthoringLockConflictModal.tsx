@@ -66,7 +66,7 @@ export const AuthoringLockConflictModal = ({
                 '& .MuiBackdrop-root': {
                     zIndex: 10001, // to cover formio's absurd z-index of 10000 for its modal dialogs
                 },
-                '.MuiModal-root': {
+                '& > .MuiGrid2-root': {
                     zIndex: 10002, // ditto
                 },
             }}
