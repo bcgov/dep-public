@@ -455,7 +455,7 @@ def test_patch_engagement(client, jwt, session, engagement_info, side_effect, ex
 
     with patch('api.services.resource_lock_service.ResourceLockService._validate_lock_for_scope'):
         rv = client.patch('/api/engagements/', data=json.dumps(engagement_edits),
-                        headers=headers, content_type=ContentType.JSON.value)
+                          headers=headers, content_type=ContentType.JSON.value)
 
         assert rv.status_code == HTTPStatus.OK
 
@@ -466,16 +466,17 @@ def test_patch_engagement(client, jwt, session, engagement_info, side_effect, ex
         assert engagement_edits.get('start_date') in rv.json.get('start_date')
         assert engagement_edits.get('end_date') in rv.json.get('end_date')
         assert rv.json.get('description') is None
-        assert engagement_edits.get('created_date') in rv.json.get('created_date')
+        assert engagement_edits.get(
+            'created_date') in rv.json.get('created_date')
 
         with patch.object(EngagementService, 'edit_engagement', side_effect=side_effect):
             rv = client.patch('/api/engagements/', data=json.dumps(engagement_edits),
-                            headers=headers, content_type=ContentType.JSON.value)
+                              headers=headers, content_type=ContentType.JSON.value)
         assert rv.status_code == expected_status
 
         with patch.object(EngagementService, 'edit_engagement', side_effect=ValidationError('Test error')):
             rv = client.patch('/api/engagements/', data=json.dumps(engagement_edits),
-                            headers=headers, content_type=ContentType.JSON.value)
+                              headers=headers, content_type=ContentType.JSON.value)
         assert rv.status_code == HTTPStatus.BAD_REQUEST
 
 
@@ -504,14 +505,14 @@ def test_patch_engagement_by_member(client, jwt, session):  # pylint:disable=unu
     with patch('api.services.resource_lock_service.ResourceLockService._validate_lock_for_scope'):
 
         rv = client.patch('/api/engagements/', data=json.dumps(engagement_edits),
-                        headers=headers, content_type=ContentType.JSON.value)
+                          headers=headers, content_type=ContentType.JSON.value)
 
         assert rv.status_code == HTTPStatus.FORBIDDEN, 'Not a team member.So throws exception.'
 
         factory_membership_model(user_id=user.id, engagement_id=engagement_id)
 
         rv = client.patch('/api/engagements/', data=json.dumps(engagement_edits),
-                        headers=headers, content_type=ContentType.JSON.value)
+                          headers=headers, content_type=ContentType.JSON.value)
 
         assert rv.status_code == HTTPStatus.OK, 'Added as team member.So throws exception.'
 
@@ -576,7 +577,7 @@ def test_patch_new_survey_block_engagement(client, jwt, session,
 
     with patch('api.services.resource_lock_service.ResourceLockService._validate_lock_for_scope'):
         rv = client.patch('/api/engagements/', data=json.dumps(engagement_edits),
-                        headers=headers, content_type=ContentType.JSON.value)
+                          headers=headers, content_type=ContentType.JSON.value)
 
         assert rv.status_code == HTTPStatus.OK
 
@@ -614,7 +615,7 @@ def test_update_survey_block_engagement(client, jwt, session,
 
     with patch('api.services.resource_lock_service.ResourceLockService._validate_lock_for_scope'):
         rv = client.patch('/api/engagements/', data=json.dumps(engagement_edits),
-                        headers=headers, content_type=ContentType.JSON.value)
+                          headers=headers, content_type=ContentType.JSON.value)
 
         assert rv.status_code == HTTPStatus.OK
 

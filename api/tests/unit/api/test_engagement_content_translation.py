@@ -233,7 +233,8 @@ def test_put_engagement_content_translation_syncs_new_widget_translation_buckets
         ],
     }
 
-    with patch('api.services.resource_lock_service.ResourceLockService.validate_engagement_content_translation_lock') as mock_lock:
+    with patch('api.services.resource_lock_service.ResourceLockService.validate_engagement_content_translation_lock'
+               ) as mock_lock:
         mock_lock.return_value = lambda f: f
         rv = client.put(
             f'/api/engagement/{engagement.id}/content/translations/language/{49}',

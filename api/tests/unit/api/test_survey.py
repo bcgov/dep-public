@@ -157,7 +157,7 @@ def test_put_survey(client, jwt, session, survey_info, side_effect, expected_sta
         assert rv.status_code == expected_status
 
         with patch.object(SurveyService, 'update',
-                        side_effect=BusinessException('Test error', status_code=HTTPStatus.INTERNAL_SERVER_ERROR)):
+                          side_effect=BusinessException('Test error', status_code=HTTPStatus.INTERNAL_SERVER_ERROR)):
             rv = client.put(surveys_url, data=json.dumps({'id': survey_id, 'name': new_survey_name}),
                             headers=headers, content_type=ContentType.JSON.value)
         assert rv.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
