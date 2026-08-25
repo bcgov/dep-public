@@ -182,6 +182,105 @@ def test_acquire_lock_takes_over_expired_lock(session):  # pylint:disable=unused
     assert response.get('lock_token') != str(expired_lock.lock_token)
 
 
+def test_acquire_unscoped_lock_conflicts_with_language_scoped_lock(session):  # pylint:disable=unused-argument
+    """Assert acquiring an unscoped lock is blocked by another owner's per-language lock."""
+    ResourceLockService.acquire_lock(
+        resource_type=RESOURCE_TYPE,
+        resource_id=106,
+        section_key=SECTION_KEY,
+        language_id=1,
+        owner_user_sub='user-1',
+        owner_session_id=str(uuid4()),
+    )
+
+    with pytest.raises(BusinessException) as excinfo:
+        ResourceLockService.acquire_lock(
+            resource_type=RESOURCE_TYPE,
+            resource_id=106,
+            section_key=SECTION_KEY,
+            language_id=None,
+            owner_user_sub='user-2',
+            owner_session_id=str(uuid4()),
+        )
+
+    assert excinfo.value.status_code == HTTPStatus.LOCKED
+    assert excinfo.value.error.get('code') == 'lock_conflict'
+
+
+def test_acquire_language_scoped_lock_conflicts_with_unscoped_lock(session):  # pylint:disable=unused-argument
+    """Assert acquiring a per-language lock is blocked by another owner's unscoped lock."""
+    ResourceLockService.acquire_lock(
+        resource_type=RESOURCE_TYPE,
+        resource_id=107,
+        section_key=SECTION_KEY,
+        language_id=None,
+        owner_user_sub='user-1',
+        owner_session_id=str(uuid4()),
+    )
+
+    with pytest.raises(BusinessException) as excinfo:
+        ResourceLockService.acquire_lock(
+            resource_type=RESOURCE_TYPE,
+            resource_id=107,
+            section_key=SECTION_KEY,
+            language_id=2,
+            owner_user_sub='user-2',
+            owner_session_id=str(uuid4()),
+        )
+
+    assert excinfo.value.status_code == HTTPStatus.LOCKED
+    assert excinfo.value.error.get('code') == 'lock_conflict'
+
+
+def test_locks_for_different_languages_do_not_conflict(session):  # pylint:disable=unused-argument
+    """Assert per-language locks for different languages on the same section coexist."""
+    ResourceLockService.acquire_lock(
+        resource_type=RESOURCE_TYPE,
+        resource_id=108,
+        section_key=SECTION_KEY,
+        language_id=1,
+        owner_user_sub='user-1',
+        owner_session_id=str(uuid4()),
+    )
+
+    response = ResourceLockService.acquire_lock(
+        resource_type=RESOURCE_TYPE,
+        resource_id=108,
+        section_key=SECTION_KEY,
+        language_id=2,
+        owner_user_sub='user-2',
+        owner_session_id=str(uuid4()),
+    )
+
+    assert response.get('is_mine') is True
+    assert response.get('language_id') == 2
+
+
+def test_upgrade_lock_to_unscoped(session):  # pylint:disable=unused-argument
+    """Assert cross-scope conflict checks do not block the same owner's own overlapping lock."""
+    owner_session_id = str(uuid4())
+    ResourceLockService.acquire_lock(
+        resource_type=RESOURCE_TYPE,
+        resource_id=109,
+        section_key=SECTION_KEY,
+        language_id=1,
+        owner_user_sub='user-1',
+        owner_session_id=owner_session_id,
+    )
+
+    response = ResourceLockService.acquire_lock(
+        resource_type=RESOURCE_TYPE,
+        resource_id=109,
+        section_key=SECTION_KEY,
+        language_id=None,
+        owner_user_sub='user-1',
+        owner_session_id=owner_session_id,
+    )
+
+    assert response.get('is_mine') is True
+    assert response.get('language_id') is None
+
+
 def test_refresh_lock_success(session):  # pylint:disable=unused-argument
     """Assert refresh extends expiry for active owner/session lock."""
     owner_session_id = str(uuid4())
