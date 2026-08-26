@@ -27,13 +27,13 @@ This design is intended to support locking Engagements by section, non-authoring
   - [x] LockService for acquire/refresh/release and validation
   - [x] Validation on write for Engagement endpoints
   - [x] Validation on write for Survey endpoints
-- [-] Frontend updates
+- [x] Frontend updates
   - [x] Engagement
     - [x] Authoring sections
     - [x] Display in authoring tab overview cards
     - [x] Non-authoring config
-  - [ ] Survey builder
-  - [ ] Survey report settings
+  - [x] Survey builder
+  - [x] Survey report settings
 
 ### [Lock resource](/api/src/api/models/resource_lock.py)
 
