@@ -167,7 +167,7 @@ export const ActionsDropDown = ({ survey, loadSurveys }: { survey: Survey; loadS
                 value={0}
                 fullWidth
                 size="small"
-                sx={{ backgroundColor: 'var(--bcds-surface-background-white)' }}
+                sx={{ backgroundColor: 'Background' }}
             >
                 <MenuItem value={0} sx={{ fontStyle: 'italic', height: '2em' }} color="info" disabled>
                     {'(Select One)'}

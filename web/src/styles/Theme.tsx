@@ -393,6 +393,18 @@ export const BaseTheme = createTheme({
                 },
             },
         },
+        MuiTable: {
+            styleOverrides: {
+                root: {
+                    '& .MuiTableRow-root': {
+                        backgroundColor: colors.surface.white,
+                        '&.MuiTableRow-hover:hover, &.MuiTableRow-hover:has(:focus, [aria-expanded=true])': {
+                            backgroundColor: colors.surface.gray[10],
+                        },
+                    },
+                },
+            },
+        },
     },
     typography: {
         fontFamily: "'BCSans', 'Noto Sans', Verdana, Arial, sans-serif",

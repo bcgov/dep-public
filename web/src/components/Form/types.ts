@@ -1,6 +1,6 @@
 export interface FormSubmitterProps {
     handleFormChange: (form: FormSubmissionData) => void;
-    handleFormSubmit?: (data: unknown) => void;
+    handleFormSubmit?: (data: object) => void;
     handleFormCancel?: () => void;
     savedForm?: FormBuilderData;
     verificationToken?: string;
@@ -21,6 +21,6 @@ export interface FormBuilderData {
     components: Array<FormInfo>;
 }
 export interface FormSubmissionData {
-    data: unknown;
+    data: object;
     isValid: boolean;
 }

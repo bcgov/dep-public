@@ -9,6 +9,7 @@ import '@bcgov/bc-sans/css/BCSans.css';
 import { HelmetProvider } from 'react-helmet-async';
 import { AuthKeyCloakContextProvider } from 'components/auth/AuthKeycloakContext';
 import { LanguageProvider } from 'components/common/LanguageContext';
+import { CssBaseline } from '@mui/material';
 
 const root = ReactDOM.createRoot(document.getElementById('root')!);
 root.render(
@@ -18,6 +19,7 @@ root.render(
         <Provider store={store}>
             <AuthKeyCloakContextProvider>
                 <ThemeProvider theme={BaseTheme}>
+                    <CssBaseline />
                     <StyledEngineProvider injectFirst>
                         <LanguageProvider>
                             <App />

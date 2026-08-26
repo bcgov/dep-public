@@ -169,14 +169,8 @@
         "contact": {
             "header": "Still can’t find what you’re looking for?",
             "paragraph": "Please contact us, we are here to help.",
-            "telephone": {
-                "text": "Telephone",
-                "number": "250 123-4567"
-            },
-            "email": {
-                "text": "Email",
-                "address": "emailaddress@gov.bc.ca"
-            }
+            "telephone": "Telephone",
+            "email": "Email"
         }
     }
 }

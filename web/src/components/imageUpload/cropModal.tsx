@@ -83,7 +83,9 @@ export const CropModal = () => {
                             }}
                             style={{
                                 containerStyle: {
-                                    backgroundColor: 'var(--bcds-surface-background-white)',
+                                    backgroundImage: `repeating-linear-gradient(45deg, #f0f0f0 25%, transparent 25%, transparent 75%, #f0f0f0 75%, #f0f0f0), repeating-linear-gradient(45deg, #f0f0f0 25%, transparent 25%, transparent 75%, #f0f0f0 75%, #f0f0f0)`,
+                                    backgroundSize: '20px 20px',
+                                    backgroundPosition: '0 0, 10px 10px',
                                 },
                             }}
                         />

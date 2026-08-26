@@ -82,13 +82,7 @@ export const ActionsDropDown = ({ feedback, reload }: { feedback: Feedback; relo
     );
 
     return (
-        <Select
-            id={`action-drop-down-${feedback.id}`}
-            value={0}
-            fullWidth
-            size="small"
-            sx={{ backgroundColor: 'var(--bcds-surface-background-white)' }}
-        >
+        <Select id={`action-drop-down-${feedback.id}`} value={0} fullWidth size="small">
             <MenuItem value={0} sx={{ fontStyle: 'italic', height: '2em' }} color="info" disabled>
                 {'(Select One)'}
             </MenuItem>

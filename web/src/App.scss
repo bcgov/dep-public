@@ -1,39 +1,15 @@
 @charset "UTF-8";
 @use '../node_modules/@bcgov/design-tokens/css-prefixed/variables.css';
 
-html{
-  scrollbar-gutter: stable;
-}
-
-#main {
-  margin-top: 10px;
+html {
+    scrollbar-gutter: stable;
 }
 
 body {
-  margin: 0;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  font-family: 'BCSans', 'Noto Sans', Verdana, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
 code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
-}
-
-@media (max-width:576px){
-  .MuiContainer-root {
-    padding-left: 0;
-    padding-right: 0;
-  }  
-}
-
-
-/** Overriding table styles **/
-// set background color of tr to white
-.MuiTable-root tbody > tr.MuiTableRow {
-  background-color: var(--bcds-surface-background-white);
-}
-// set background color of tr on hover to light gray
-tbody.MuiTableBody-root > tr.MuiTableRow-hover:hover {
-  background-color: var(--bcds-surface-secondary-hover);
+    font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
 }

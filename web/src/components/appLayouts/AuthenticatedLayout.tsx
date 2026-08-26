@@ -52,7 +52,7 @@ export const AuthenticatedLayout = () => {
             </Box>
             <Box
                 sx={{
-                    backgroundColor: 'var(--bcds-surface-background-white)',
+                    backgroundColor: 'Background',
                     zIndex: ZIndex.footer,
                     position: 'relative',
                 }}

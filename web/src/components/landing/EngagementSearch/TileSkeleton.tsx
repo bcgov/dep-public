@@ -9,7 +9,7 @@ export const TileSkeleton = () => {
         <Card sx={{ borderRadius: '24px', width: '320px' }}>
             <CardActionArea sx={{ cursor: 'progress' }}>
                 <Skeleton height="172px" variant="rectangular" sx={{ bgcolor: colors.surface.blue[30] }} />
-                <CardContent sx={{ height: '180px', p: '40px 32px' }}>
+                <CardContent sx={{ height: '190px', p: '40px 32px', boxSizing: 'content-box' }}>
                     <Heading2
                         weight="thin"
                         component="p"

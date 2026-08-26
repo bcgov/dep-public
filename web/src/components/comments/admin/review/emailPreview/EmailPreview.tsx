@@ -23,7 +23,7 @@ export default function EmailPreview({
     const engagementName = survey.engagement?.name || '';
     return (
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <Box style={container}>
+            <Box sx={container}>
                 <Stack direction={'row'}>
                     <Box
                         component={BCLogo}
@@ -82,10 +82,11 @@ export default function EmailPreview({
 }
 
 const container = {
-    backgroundColor: 'var(--bcds-surface-background-white)',
-    border: '1px solid #eee',
+    backgroundColor: 'Background',
+    border: '1px solid',
+    borderColor: 'gray.30',
     borderRadius: '5px',
-    boxShadow: '0 5px 10px rgba(20,50,70,.2)',
+    boxShadow: 3,
     width: '80%',
     padding: '30px 20px 40px',
 };

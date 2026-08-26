@@ -235,16 +235,18 @@ const SideNav = ({ open, setOpen, isMediumScreen }: SideNavProps) => {
                 ModalProps={{
                     hideBackdrop: true,
                 }}
-                PaperProps={{
-                    id: 'sidenav-drawer',
-                    sx: {
-                        border: 'none',
-                        width: '300px',
-                        boxSizing: 'border-box',
-                        background: 'transparent',
-                        height: '49rem',
-                        position: sideNavOffset <= 0 ? 'absolute' : 'fixed',
-                        top: sideNavOffset <= 0 ? sideNavOffset + globalThis.scrollY : 'auto',
+                slotProps={{
+                    paper: {
+                        id: 'sidenav-drawer',
+                        sx: {
+                            border: 'none',
+                            width: '300px',
+                            boxSizing: 'border-box',
+                            background: 'transparent',
+                            height: '49rem',
+                            position: sideNavOffset <= 0 ? 'absolute' : 'fixed',
+                            top: sideNavOffset <= 0 ? sideNavOffset + globalThis.scrollY : 'auto',
+                        },
                     },
                 }}
                 hideBackdrop
@@ -268,7 +270,7 @@ const SideNav = ({ open, setOpen, isMediumScreen }: SideNavProps) => {
                         width: '100%',
                         height: '100%',
                         minHeight: 'calc(100vh)',
-                        background: colors.surface.blue[90],
+                        background: (theme) => theme.palette.primary.main,
                     },
                 },
             }}

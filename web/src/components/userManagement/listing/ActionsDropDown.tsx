@@ -89,13 +89,7 @@ export const ActionsDropDown = ({ selectedUser }: { selectedUser: User }) => {
     );
 
     return (
-        <Select
-            id={`action-drop-down-${selectedUser.id}`}
-            value={0}
-            fullWidth
-            size="small"
-            sx={{ backgroundColor: 'var(--bcds-surface-background-white)' }}
-        >
+        <Select size="small" id={`action-drop-down-${selectedUser.id}`} value={0} fullWidth>
             <MenuItem value={0} sx={{ fontStyle: 'italic', height: '2em' }} color="info" disabled>
                 {'(Select One)'}
             </MenuItem>

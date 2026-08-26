@@ -42,7 +42,7 @@ export const EngagementDescription = () => {
                     margin={0}
                     sx={{
                         background: colors.surface.blue[90],
-                        color: colors.surface.white,
+                        color: 'text.primary',
                         borderRadius: '0px 1.5rem 0px 0px' /* upper right corner */,
                         padding: { xs: '2rem 2rem 4rem 2rem', md: '2rem 5vw 4rem 5vw', lg: '2rem 10rem 4rem 10rem' },
                         marginTop: '-56px',
@@ -61,7 +61,7 @@ export const EngagementDescription = () => {
                         >
                             <FontAwesomeIcon
                                 icon={faArrowLeftLong}
-                                color={colors.surface.white}
+                                color={'inherit'}
                                 fontSize={'24px'}
                                 style={{ paddingRight: '8px' }}
                             />

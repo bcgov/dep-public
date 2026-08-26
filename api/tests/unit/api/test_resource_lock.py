@@ -155,7 +155,7 @@ def test_release_lock_post_force_takeover_forbidden(
     assert rv.status_code == HTTPStatus.FORBIDDEN
     assert rv.get_json() == {
         'code': 'forbidden',
-        'message': 'force_takeover release requires super admin privileges',
+        'message': 'force_takeover release requires additional privileges',
     }
     release_mock.assert_not_called()
 

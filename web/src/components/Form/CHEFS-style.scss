@@ -21,49 +21,6 @@ $bcgov-input-placeholder: #7a7876;
     overflow: clip;
 }
 
-h1 {
-    font-size: 1.9em;
-}
-h2 {
-    font-size: 1.7em;
-}
-h3 {
-    font-size: 1.3em;
-}
-h4 {
-    font-size: 1.05em;
-}
-
-h1,
-h2,
-h3,
-h4,
-h5 {
-    color: $bcgov-font;
-    line-height: 1.2;
-    font-weight: bold;
-}
-
-p {
-    color: $bcgov-font;
-    line-height: 1.7;
-}
-
-// links
-a,
-a.nav-link,
-a.nav-link:hover {
-    color: $bcgov-link;
-}
-
-// Horizontal Rule
-hr {
-    margin-bottom: 1em;
-    .orange {
-        border-top: 2px solid $bcgov-orange;
-    }
-}
-
 // General Transition Animation Behavior
 .component-fade-enter-active,
 .component-fade-leave-active {
@@ -72,22 +29,6 @@ hr {
 .component-fade-enter,
 .component-fade-leave-to {
     opacity: 0;
-}
-
-// Anchor and Tab Behavior
-a,
-a.nav-link:not(.active):not(.disabled),
-.formio-component-file .fileSelector a,
-.v-tab {
-    text-decoration-line: underline;
-    text-decoration-color: color-mix(in srgb, currentcolor 40%, transparent);
-    &:hover {
-        text-decoration-color: currentColor;
-        button,
-        .v-icon {
-            text-decoration: none;
-        }
-    }
 }
 
 .v-btn {
@@ -149,6 +90,68 @@ a.nav-link:not(.active):not(.disabled),
 /////////////////////////////////
 ///  override formio styles:
 /////////////////////////////////
+
+// 0-specificity selector to allow anything to override these styles
+:where(.gu-mirror, .form-designer, .formbuilder, .form-wrapper, .component-preview, .component-edit-tabs) {
+    h1 {
+        font-size: 1.9em;
+    }
+    h2 {
+        font-size: 1.7em;
+    }
+    h3 {
+        font-size: 1.3em;
+    }
+    h4 {
+        font-size: 1.05em;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5 {
+        color: $bcgov-font;
+        line-height: 1.2;
+        font-weight: bold;
+    }
+
+    p {
+        color: $bcgov-font;
+        line-height: 1.7;
+    }
+
+    // Horizontal Rule
+    hr {
+        margin-bottom: 1em;
+        .orange {
+            border-top: 2px solid $bcgov-orange;
+        }
+    }
+
+    // links
+    a,
+    a.nav-link,
+    a.nav-link:hover {
+        color: $bcgov-link;
+    }
+
+    // Anchor and Tab Behavior
+    a,
+    a.nav-link:not(.active):not(.disabled),
+    .formio-component-file .fileSelector a,
+    .v-tab {
+        text-decoration-line: underline;
+        text-decoration-color: color-mix(in srgb, currentcolor 40%, transparent);
+        &:hover {
+            text-decoration-color: currentColor;
+            button,
+            .v-icon {
+                text-decoration: none;
+            }
+        }
+    }
+}
 
 // override formio form designer
 :is(.gu-mirror,

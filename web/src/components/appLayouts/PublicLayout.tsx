@@ -10,7 +10,7 @@ import { FeedbackModal } from 'components/feedback/FeedbackModal';
 import Footer from 'components/layout/Footer';
 import DocumentTitle from 'DocumentTitle';
 import ScrollToTop from 'components/scrollToTop';
-import { Box } from '@mui/material';
+import Box from '@mui/material/Box/Box';
 import { colors } from 'components/common';
 import { AuthKeyCloakContext } from 'components/auth/AuthKeycloakContext';
 

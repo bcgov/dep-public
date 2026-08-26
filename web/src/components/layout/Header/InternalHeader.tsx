@@ -4,7 +4,6 @@ import {
     ButtonBase,
     Box,
     Collapse,
-    CssBaseline,
     Drawer,
     Grid2 as Grid,
     Grow,
@@ -45,10 +44,8 @@ import { UserAvatar } from 'components/common/Layout/UserAvatar';
 
 let fallbackMyTenantsPromise: Promise<Tenant[]> | null = null;
 
-const getFallbackMyTenants = (): Promise<Tenant[]> => {
-    if (!fallbackMyTenantsPromise) {
-        fallbackMyTenantsPromise = getMyTenants().catch(() => [] as Tenant[]);
-    }
+const getFallbackTenantPromise = (): Promise<Tenant[]> => {
+    fallbackMyTenantsPromise ??= getMyTenants().catch(() => [] as Tenant[]);
     return fallbackMyTenantsPromise;
 };
 
@@ -61,7 +58,7 @@ const InternalHeader = ({
 }) => {
     const isMediumScreenOrLarger = useMediaQuery((theme: Theme) => theme.breakpoints.up('md'));
     const isMobileScreen = !useMediaQuery((theme: Theme) => theme.breakpoints.up('sm'));
-    const [sideNavOpen, setSideNavOpen] = useState(false);
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [secondaryMenuOpen, setSecondaryMenuOpen] = useState(false);
     const user = useAppSelector((state) => state.user);
     const canNavigate = showSideNav && user.roles.length !== 0; // If user has no roles or side nav is disabled, don't show the side nav
@@ -72,7 +69,7 @@ const InternalHeader = ({
     };
 
     useEffect(() => {
-        if (isMediumScreenOrLarger || sideNavOpen) {
+        if (isMediumScreenOrLarger || mobileMenuOpen) {
             const timer = setTimeout(() => {
                 setSecondaryMenuOpen(true);
             }, 200); // Delay to allow the sidenav to open first
@@ -80,7 +77,7 @@ const InternalHeader = ({
         } else {
             setSecondaryMenuOpen(false);
         }
-    }, [isMediumScreenOrLarger, sideNavOpen]);
+    }, [isMediumScreenOrLarger, mobileMenuOpen]);
 
     // Get the authoring nav elements and current route so we can check their last two slugs against the current route's last two slugs.
     // This will be used to determine which sidenav menu is displayed.
@@ -98,10 +95,10 @@ const InternalHeader = ({
     const authenticatedRootLoaderData = useRouteLoaderData('authenticated-root') as
         | AuthenticatedRootLoaderData
         | undefined;
-    const myTenants = authenticatedRootLoaderData?.myTenants ?? getFallbackMyTenants();
+    const myTenants = authenticatedRootLoaderData?.myTenants ?? getFallbackTenantPromise();
     const navigation = useNavigation();
     const isPending = navigation.state === 'loading' || navigation.state === 'submitting';
-    const leftPositionSign = sideNavOpen ? -6 : 6;
+    const leftPositionSign = mobileMenuOpen ? -6 : 6;
     const leftPosition = isMobileScreen ? `${leftPositionSign}px` : '0px';
 
     // Add delayed state for user menu to prevent disappearing before collapse completes
@@ -121,7 +118,7 @@ const InternalHeader = ({
 
     return (
         // Keep focus within the app bar + sidenav when sidenav is open on mobile
-        <TrapFocus open={sideNavOpen && isMobileScreen}>
+        <TrapFocus open={mobileMenuOpen && isMobileScreen}>
             <Box
                 sx={{
                     '& div.PrivateSwipeArea-root': {
@@ -129,7 +126,6 @@ const InternalHeader = ({
                     },
                 }}
             >
-                <CssBaseline />
                 <Grow
                     in={!isMediumScreenOrLarger && canNavigate}
                     timeout={{
@@ -142,15 +138,15 @@ const InternalHeader = ({
                 >
                     <Button
                         onClick={() => {
-                            setSideNavOpen(!sideNavOpen);
+                            setMobileMenuOpen(!mobileMenuOpen);
                         }}
                         icon={
                             <FontAwesomeIcon
-                                icon={sideNavOpen ? faClose : faBars}
+                                icon={mobileMenuOpen ? faClose : faBars}
                                 fontSize={20}
                                 style={{
                                     width: '20px',
-                                    transform: `rotate(${sideNavOpen ? '180deg' : '0'})`,
+                                    transform: `rotate(${mobileMenuOpen ? '180deg' : '0'})`,
                                     transition:
                                         'transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), left 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
                                     position: 'relative',
@@ -158,7 +154,7 @@ const InternalHeader = ({
                                 }}
                             />
                         }
-                        iconPosition={sideNavOpen ? 'right' : 'left'}
+                        iconPosition={mobileMenuOpen ? 'right' : 'left'}
                         sx={{
                             zIndex: (theme: Theme) => theme.zIndex.drawer + 5, // render above PrivateSwipeArea
                             position: 'fixed',
@@ -183,7 +179,7 @@ const InternalHeader = ({
                     </Button>
                 </Grow>
                 <AppBar
-                    position="fixed"
+                    // position="fixed"
                     sx={{
                         zIndex: (theme: Theme) => theme.zIndex.drawer + 4, // render above sidenav
                         backgroundColor: 'transparent',
@@ -192,7 +188,7 @@ const InternalHeader = ({
                         overflow: 'hidden',
                         left: 0,
                         boxShadow: tenantDrawerOpen ? 'none' : elevations.default,
-                        borderRadius: isMobileScreen ? 0 : '0 0 1em 1em',
+                        borderRadius: '0 0 1em 1em',
                         transition: 'box-shadow 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
                         paddingRight: '0 !important',
                     }}
@@ -267,7 +263,6 @@ const InternalHeader = ({
                                 justifyContent: 'space-between',
                                 padding: `0 ${Layout.padding.default}`,
                                 transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
-                                borderRadius: '0 0 1em 1em',
                             }}
                         >
                             <Box
@@ -286,7 +281,7 @@ const InternalHeader = ({
                                         <Await resolve={myTenants}>
                                             {(tenants: Tenant[]) => (
                                                 <TenantSelector
-                                                    isVisible={isMediumScreenOrLarger || sideNavOpen}
+                                                    isVisible={isMediumScreenOrLarger || mobileMenuOpen}
                                                     onStateChange={handleTenantDrawerOpen}
                                                     tenants={tenants}
                                                 />
@@ -305,8 +300,8 @@ const InternalHeader = ({
                     <If condition={authoringRoutes.includes(currentAuthoringSlug)}>
                         <Then>
                             <AuthoringSideNav
-                                open={sideNavOpen}
-                                setOpen={setSideNavOpen}
+                                open={mobileMenuOpen}
+                                setOpen={setMobileMenuOpen}
                                 data-testid="authoringnav-header"
                                 isMediumScreen={isMediumScreenOrLarger}
                                 engagementId={engagementId}
@@ -314,8 +309,8 @@ const InternalHeader = ({
                         </Then>
                         <Else>
                             <SideNav
-                                open={sideNavOpen}
-                                setOpen={setSideNavOpen}
+                                open={mobileMenuOpen}
+                                setOpen={setMobileMenuOpen}
                                 data-testid="sidenav-header"
                                 isMediumScreen={isMediumScreenOrLarger}
                             />
@@ -413,8 +408,10 @@ const TenantSelector = ({
                     sx={{
                         zIndex: (theme: Theme) => theme.zIndex.drawer + 3, // render under app bar but above side nav
                         '& .MuiDrawer-paper': {
-                            padding: '1rem',
-                            top: '6.5rem',
+                            paddingX: Layout.padding.default,
+                            paddingTop: '2rem',
+                            paddingBottom: '1rem',
+                            top: '6rem',
                             backgroundImage: 'none',
                             transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.25s ease-out',
                         },

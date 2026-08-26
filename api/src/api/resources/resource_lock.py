@@ -83,14 +83,14 @@ class ReleaseLock(Resource):
             request_json = request.get_json() or {}
             owner_user_sub = TokenInfo.get_id()
             allow_force_takeover = authorization.check_auth(
-                one_of_roles=(Role.SUPER_ADMIN.value,),
+                one_of_roles=(Role.EDIT_MEMBERS.value,),
                 abort=False,
             )
             release_reason = request_json.get('release_reason') or 'explicit'
             if release_reason == 'force_takeover' and not allow_force_takeover:
                 return {
                     'code': 'forbidden',
-                    'message': 'force_takeover release requires super admin privileges',
+                    'message': 'force_takeover release requires additional privileges',
                 }, HTTPStatus.FORBIDDEN
 
             response = ResourceLockService.release_lock(

@@ -19,9 +19,9 @@ export const SurveyForm = () => {
     const dispatch = useAppDispatch();
     const params = useParams<{ token: string }>();
     const language = sessionStorage.getItem('languageId') ?? AppConfig.language.defaultLanguageId;
-    const [submissionData, setSubmissionData] = useState<unknown>(null);
+    const [submissionData, setSubmissionData] = useState<object>({});
 
-    const initialSet = useRef(false); // Track if the initial state has been set
+    const initialDataRef = useRef<object | null>(null);
     const [isValid, setIsValid] = useState(false);
     const [isChanged, setIsChanged] = useState(false);
     const isManagementRoute = useIsManagementRoute();
@@ -30,17 +30,25 @@ export const SurveyForm = () => {
     const token = params.token;
 
     const handleChange = (filledForm: FormSubmissionData) => {
-        if (initialSet.current) {
-            setIsChanged(true);
-        } else {
-            initialSet.current = true;
+        if (!initialDataRef.current) {
+            // First call – store a *copy* of the initial data
+            initialDataRef.current = { ...filledForm.data };
+            setSubmissionData(filledForm.data);
+            setIsValid(filledForm.isValid);
+            // isChanged remains false (initial load)
+            return;
         }
-        setSubmissionData(filledForm.data);
+        const currentData = filledForm.data;
+        // Stringify both objects for comparison; since we cannot use equality operators on objects directly
+        const isEqual = JSON.stringify(currentData) === JSON.stringify(initialDataRef.current);
+        setIsChanged(!isEqual);
+
+        setSubmissionData(currentData);
         setIsValid(filledForm.isValid);
     };
 
-    const navigateToEngagement = (open: boolean = true) => {
-        const engagement = React['use'](loaderData.engagement);
+    const navigateToEngagement = async (open: boolean = true) => {
+        const engagement = await loaderData.engagement;
         if (engagement) {
             navigate(
                 getPath(ROUTES.PUBLIC_ENGAGEMENT_BY_SLUG, {
@@ -49,20 +57,23 @@ export const SurveyForm = () => {
                 }),
                 { state: { open } },
             );
+        } else {
+            navigate(getPath(ROUTES.PUBLIC_LANDING));
         }
     };
 
-    const handleSubmit = async (submissionData: unknown) => {
-        const survey = React['use'](loaderData.survey);
+    const handleSubmit = async (submissionData: object) => {
         if (isManagementRoute) {
             return;
         }
+        const survey = await loaderData.survey;
         try {
             await submitSurvey({
                 survey_id: survey.id,
                 submission_json: submissionData,
                 verification_token: token ?? '',
             });
+            setIsChanged(false); // Clear the unsaved work flag so the prompt doesn't block us
 
             try {
                 globalThis.snowplow('trackSelfDescribingEvent', {
@@ -78,8 +89,9 @@ export const SurveyForm = () => {
                     text: translate('surveySubmit.surveySubmitNotification.success'),
                 }),
             );
-            navigateToEngagement();
-        } catch {
+            await navigateToEngagement();
+        } catch (error) {
+            console.error(error);
             dispatch(
                 openNotification({
                     severity: 'error',

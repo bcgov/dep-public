@@ -1,11 +1,11 @@
 import { Modal } from '@mui/material';
-import React, { useEffect } from 'react';
-import { useBlocker } from 'react-router';
+import React, { useEffect, useCallback } from 'react';
+import { BlockerFunction, useBlocker } from 'react-router';
 import ConfirmModal from '../Modals/ConfirmModal';
 import { faFileCircleQuestion } from '@fortawesome/pro-regular-svg-icons';
 
 interface UnsavedWorkConfirmationProps {
-    blockNavigationWhen: boolean;
+    blockNavigationWhen: boolean | BlockerFunction;
 }
 
 /**
@@ -22,10 +22,13 @@ interface UnsavedWorkConfirmationProps {
  * @see {@link useBlocker} for handling navigation blocking in React Router.
  */
 const UnsavedWorkConfirmation: React.FC<UnsavedWorkConfirmationProps> = ({ blockNavigationWhen }) => {
-    const blocker = useBlocker(
-        ({ currentLocation, nextLocation }) =>
-            blockNavigationWhen && nextLocation.pathname !== currentLocation.pathname,
+    const blockerFunction = useCallback<BlockerFunction>(
+        ({ currentLocation, nextLocation }) => {
+            return !!blockNavigationWhen && nextLocation.pathname !== currentLocation.pathname;
+        },
+        [blockNavigationWhen],
     );
+    const blocker = useBlocker(blockerFunction);
 
     // Prevent refresh/navigation at the browser level if there are unsaved changes
     useEffect(() => {

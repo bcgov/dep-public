@@ -17,7 +17,6 @@ const SurveySubmit = () => {
     const loaderData = useSurveyLoaderData();
     const language: LanguageState = useAppSelector((state) => state.language);
     const { t: translate } = useAppTranslation();
-
     return (
         <Grid container direction="row" justifyContent="flex-start" alignItems="flex-start" mt={isLoggedIn ? 13.5 : 0}>
             <SurveyBanner
@@ -60,9 +59,8 @@ const SurveySubmit = () => {
             >
                 <Grid container size={12} direction="row" justifyContent="center" alignItems="flex-start">
                     <Paper elevation={2} sx={{ maxWidth: '1120px' }}>
-                        <Suspense>
-                            <SurveyForm />
-                        </Suspense>
+                        <SurveyForm />
+
                         <Suspense>
                             <InvalidTokenModal />
                         </Suspense>
