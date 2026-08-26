@@ -570,7 +570,6 @@ export const useAuthoringSectionCompletion = ({
                     error.status === 302 &&
                     error.headers.get('Location') === '/manage/unauthorized'
                 ) {
-                    console.log('Got 302 redirect while processing section completion');
                     navigate('/manage/unauthorized', { replace: true });
                 }
                 console.debug('[AuthoringSectionCompletionDebug] compute failed', {
