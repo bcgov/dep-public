@@ -9,7 +9,7 @@ import {
     subscribeToResourceLockEvents,
 } from './index';
 
-const DEFAULT_LOCK_POLL_INTERVAL_MS = 15000;
+const DEFAULT_LOCK_POLL_INTERVAL_MS = 10000; //10 seconds
 
 const RESOURCE_LOCK_FETCHERS: Record<string, (resourceId: number) => Promise<ResourceLocks>> = {
     [RESOURCE_TYPE_ENGAGEMENT_SECTION]: getEngagementLocks,

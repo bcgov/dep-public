@@ -156,7 +156,7 @@ export const useResourceSectionLockNavigation = ({ conflictModal }: { conflictMo
                 isBusy={isBreakingLock}
                 backButtonText="Stay Here"
                 showRetry={false}
-                breakButtonText="Break Lock and Continue"
+                breakButtonText="Release Lock and Continue"
                 onBack={closeBreakLockModal}
                 onBreakLock={() => {
                     void confirmBreakAndNavigate();
