@@ -8,7 +8,6 @@ from http import HTTPStatus
 from typing import Any, NoReturn, Optional
 from uuid import UUID, uuid4
 
-from flask import current_app, has_app_context
 from sqlalchemy.exc import IntegrityError, ResourceClosedError
 
 from api.exceptions.business_exception import BusinessException
@@ -26,7 +25,6 @@ class ResourceLockService:
 
     LOCK_HEADER_NAME = 'X-Resource-Lock-Token'
     ENGAGEMENT_PATCH_VALIDATION_FLAG = 'ENGAGEMENT_LOCK_VALIDATION_ENABLED'
-    SURVEY_LOCK_VALIDATION_FLAG = 'SURVEY_LOCK_VALIDATION_ENABLED'
     DEFAULT_TTL_SECONDS = 90
     RESOURCE_LOCK_CONFLICT_MESSAGE = 'Resource section is locked by another editor'
 
@@ -399,9 +397,6 @@ class ResourceLockService:
         language_id: Optional[int] = None,
     ) -> Optional[ResourceLock]:
         """Validate a lock token for an engagement section scope."""
-        if not cls.is_engagement_lock_validation_enabled():
-            return None
-
         expected_scope = cls.build_scope_key(
             cls.RESOURCE_TYPE_ENGAGEMENT_SECTION,
             engagement_id,
@@ -542,9 +537,6 @@ class ResourceLockService:
         owner_user_sub: str,
     ) -> Optional[ResourceLock]:
         """Validate lock ownership/scope for widget translation writes."""
-        if not cls.is_engagement_lock_validation_enabled():
-            return None
-
         engagement_id, section_key = cls._resolve_widget_section(
             widget_id=widget_id)
         return cls.validate_engagement_section_lock(
@@ -621,9 +613,6 @@ class ResourceLockService:
         owner_user_sub: str,
     ) -> Optional[ResourceLock]:
         """Validate lock for engagement content translation sync requests."""
-        if not cls.is_engagement_lock_validation_enabled():
-            return None
-
         sections = cls._resolve_sections_for_content_translation_payload(
             engagement_id=engagement_id,
             payload=payload,
@@ -873,7 +862,7 @@ class ResourceLockService:
         if lock.owner_user_sub != owner_user_sub and not allow_force_takeover:
             cls._lock_error(
                 code='lock_not_owner',
-                message='Lock is owned by another user',
+                message='Lock is owned by another user!',
                 lock_scope=lock.lock_scope,
                 lock=lock,
             )
@@ -965,22 +954,6 @@ class ResourceLockService:
         )
 
     @classmethod
-    def is_engagement_lock_validation_enabled(cls) -> bool:
-        """Feature flag gate for engagement lock enforcement."""
-        if not has_app_context():
-            return False
-
-        return bool(current_app.config.get(cls.ENGAGEMENT_PATCH_VALIDATION_FLAG, False))
-
-    @classmethod
-    def is_survey_lock_validation_enabled(cls) -> bool:
-        """Feature flag gate for survey lock enforcement."""
-        if not has_app_context():
-            return False
-
-        return bool(current_app.config.get(cls.SURVEY_LOCK_VALIDATION_FLAG, False))
-
-    @classmethod
     def validate_survey_section_lock(  # pylint: disable=too-many-arguments
         cls,
         *,
@@ -990,9 +963,6 @@ class ResourceLockService:
         owner_user_sub: str,
     ) -> Optional[ResourceLock]:
         """Validate a lock token for a survey section scope."""
-        if not cls.is_survey_lock_validation_enabled():
-            return None
-
         expected_scope = cls.build_scope_key(
             cls.RESOURCE_TYPE_SURVEY,
             survey_id,

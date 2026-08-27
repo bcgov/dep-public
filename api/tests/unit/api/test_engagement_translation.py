@@ -18,11 +18,11 @@ Test-Suite to ensure that the Engagement Translation endpoint is working as expe
 """
 import json
 from http import HTTPStatus
-from marshmallow import ValidationError
 from unittest.mock import patch
 
 import pytest
 from faker import Faker
+from marshmallow import ValidationError
 
 from api.exceptions.business_exception import BusinessException
 from api.services.engagement_translation_service import EngagementTranslationService
@@ -33,6 +33,9 @@ from tests.utilities.factory_utils import (
 
 
 fake = Faker()
+
+# French ID from pre-populated database of languages.
+FRENCH_LANGUAGE_ID = 49
 
 
 @pytest.mark.parametrize('engagement_translation_info', [TestEngagementTranslationInfo.engagementtranslation1])
@@ -47,14 +50,14 @@ def test_create_engagement_translation(client, jwt, session, engagement_translat
     assert rv.status_code == 200
     engagement_id = rv.json.get('id')
     engagement_translation_info['engagement_id'] = engagement_id
-    engagement_translation_info['language_id'] = 49  # French ID from pre-populated database of languages.
+    engagement_translation_info['language_id'] = FRENCH_LANGUAGE_ID
 
     rv = client.post(f'/api/engagement/{engagement_id}/translations/',
                      data=json.dumps(engagement_translation_info),
                      headers=headers, content_type=ContentType.JSON.value)
     assert rv.status_code == HTTPStatus.OK
 
-    rv = client.get(f'/api/engagement/{engagement_id}/translations/language/{49}',
+    rv = client.get(f'/api/engagement/{engagement_id}/translations/language/{FRENCH_LANGUAGE_ID}',
                     headers=headers, content_type=ContentType.JSON.value)
     assert rv.status_code == HTTPStatus.OK
     assert rv.json[0].get('engagement_id') == engagement_id
@@ -100,27 +103,27 @@ def test_get_engagement_translation(client, jwt, session, engagement_translation
     assert rv.status_code == 200
     engagement_id = rv.json.get('id')
     engagement_translation_info['engagement_id'] = engagement_id
-    engagement_translation_info['language_id'] = 49  # French ID from pre-populated database of languages.
+    engagement_translation_info['language_id'] = FRENCH_LANGUAGE_ID
 
     rv = client.post(f'/api/engagement/{engagement_id}/translations/',
                      data=json.dumps(engagement_translation_info),
                      headers=headers, content_type=ContentType.JSON.value)
     assert rv.status_code == HTTPStatus.OK
 
-    rv = client.get(f'/api/engagement/{engagement_id}/translations/language/{49}',
+    rv = client.get(f'/api/engagement/{engagement_id}/translations/language/{FRENCH_LANGUAGE_ID}',
                     headers=headers, content_type=ContentType.JSON.value)
     assert rv.status_code == HTTPStatus.OK
     assert rv.json[0].get('engagement_id') == engagement_id
 
     with patch.object(EngagementTranslationService, 'get_translation_by_engagement_and_language',
                       side_effect=ValueError('Test error')):
-        rv = client.get(f'/api/engagement/{engagement_id}/translations/language/{49}',
+        rv = client.get(f'/api/engagement/{engagement_id}/translations/language/{FRENCH_LANGUAGE_ID}',
                         headers=headers, content_type=ContentType.JSON.value)
     assert rv.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
 
     with patch.object(EngagementTranslationService, 'get_translation_by_engagement_and_language',
                       side_effect=KeyError('Test error')):
-        rv = client.get(f'/api/engagement/{engagement_id}/translations/language/{49}',
+        rv = client.get(f'/api/engagement/{engagement_id}/translations/language/{FRENCH_LANGUAGE_ID}',
                         headers=headers, content_type=ContentType.JSON.value)
     assert rv.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
 
@@ -131,17 +134,19 @@ def test_delete_engagement_translation(client, jwt, session, engagement_translat
     """Assert that a engagement translation can be deleted."""
     engagement = factory_engagement_model()
     engagement_translation_info['engagement_id'] = engagement.id
-    engagement_translation_info['language_id'] = 49  # French ID from pre-populated database of languages.
+    engagement_translation_info['language_id'] = FRENCH_LANGUAGE_ID
     user, claims = setup_admin_user_and_claims
     headers = factory_auth_header(jwt=jwt, claims=claims)
-    engagement_translation = factory_engagement_translation_model(engagement_translation_info)
+    engagement_translation = factory_engagement_translation_model(
+        engagement_translation_info)
 
     rv = client.delete(f'/api/engagement/{engagement.id}/translations/{engagement_translation.id}',
                        headers=headers, content_type=ContentType.JSON.value)
 
     assert rv.status_code == HTTPStatus.OK
 
-    engagement_translation = factory_engagement_translation_model(engagement_translation_info)
+    engagement_translation = factory_engagement_translation_model(
+        engagement_translation_info)
     with patch.object(EngagementTranslationService, 'delete_engagement_translation',
                       side_effect=ValueError('Test error')):
         rv = client.delete(f'/api/engagement/{engagement.id}/translations/{engagement_translation.id}',
@@ -161,34 +166,36 @@ def test_patch_engagement_translation(client, jwt, session, engagement_translati
     """Assert that a engagement translation can be PATCHed."""
     engagement = factory_engagement_model()
     engagement_translation_info['engagement_id'] = engagement.id
-    engagement_translation_info['language_id'] = 49  # French ID from pre-populated database of languages.
+    engagement_translation_info['language_id'] = FRENCH_LANGUAGE_ID
     user, claims = setup_admin_user_and_claims
     headers = factory_auth_header(jwt=jwt, claims=claims)
-    engagement_translation = factory_engagement_translation_model(engagement_translation_info)
+    engagement_translation = factory_engagement_translation_model(
+        engagement_translation_info)
 
     data = {
         'name': fake.text(max_nb_chars=10),
     }
-    rv = client.patch(f'/api/engagement/{engagement.id}/translations/{engagement_translation.id}',
-                      data=json.dumps(data),
-                      headers=headers, content_type=ContentType.JSON.value)
-
-    assert rv.status_code == HTTPStatus.OK
-    assert rv.json.get('name') == data.get('name')
-
-    with patch.object(EngagementTranslationService, 'update_engagement_translation',
-                      side_effect=ValueError('Test error')):
+    with patch('api.services.resource_lock_service.ResourceLockService._validate_lock_for_scope'):
         rv = client.patch(f'/api/engagement/{engagement.id}/translations/{engagement_translation.id}',
                           data=json.dumps(data),
                           headers=headers, content_type=ContentType.JSON.value)
-    assert rv.status_code == HTTPStatus.NOT_FOUND
 
-    with patch.object(EngagementTranslationService, 'update_engagement_translation',
-                      side_effect=ValidationError('Test error')):
-        rv = client.patch(f'/api/engagement/{engagement.id}/translations/{engagement_translation.id}',
-                          data=json.dumps(data),
-                          headers=headers, content_type=ContentType.JSON.value)
-    assert rv.status_code == HTTPStatus.BAD_REQUEST
+        assert rv.status_code == HTTPStatus.OK
+        assert rv.json.get('name') == data.get('name')
+
+        with patch.object(EngagementTranslationService, 'update_engagement_translation',
+                          side_effect=ValueError('Test error')):
+            rv = client.patch(f'/api/engagement/{engagement.id}/translations/{engagement_translation.id}',
+                              data=json.dumps(data),
+                              headers=headers, content_type=ContentType.JSON.value)
+        assert rv.status_code == HTTPStatus.NOT_FOUND
+
+        with patch.object(EngagementTranslationService, 'update_engagement_translation',
+                          side_effect=ValidationError('Test error')):
+            rv = client.patch(f'/api/engagement/{engagement.id}/translations/{engagement_translation.id}',
+                              data=json.dumps(data),
+                              headers=headers, content_type=ContentType.JSON.value)
+        assert rv.status_code == HTTPStatus.BAD_REQUEST
 
 
 @pytest.mark.parametrize('engagement_translation_info', [TestEngagementTranslationInfo.engagementtranslation1])
@@ -197,10 +204,11 @@ def test_get_engagement_translation_by_id(client, jwt, session, engagement_trans
     """Assert that a engagement translation can be fetched by id."""
     engagement = factory_engagement_model()
     engagement_translation_info['engagement_id'] = engagement.id
-    engagement_translation_info['language_id'] = 49
+    engagement_translation_info['language_id'] = FRENCH_LANGUAGE_ID
     user, claims = setup_admin_user_and_claims
     headers = factory_auth_header(jwt=jwt, claims=claims)
-    engagement_translation = factory_engagement_translation_model(engagement_translation_info)
+    engagement_translation = factory_engagement_translation_model(
+        engagement_translation_info)
 
     rv = client.get(f'/api/engagement/{engagement.id}/translations/{engagement_translation.id}',
                     headers=headers, content_type=ContentType.JSON.value)
@@ -235,7 +243,7 @@ def test_get_available_engagement_translation_languages(client, jwt, session,
     assert json_data == []
 
     engagement_translation_info['engagement_id'] = engagement.id
-    engagement_translation_info['language_id'] = 49
+    engagement_translation_info['language_id'] = FRENCH_LANGUAGE_ID
     factory_engagement_translation_model(engagement_translation_info)
 
     """Assert that an engagement with a French translation returns

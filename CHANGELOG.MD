@@ -1,3 +1,9 @@
+## August 24, 2026
+
+- **Feature** Added locking UX for Surveys [🎟️ DEP-285](https://citz-gdx.atlassian.net/browse/DEP-285)
+  - Updated lock service to allow locks on Survey resources, including the Survey Builder and other settings sections.
+  - Updated survey preview page to disable navigation buttons if locks are held on the relevant survey resources, and to show a modal informing the user that the section is locked by another user and cannot be edited.
+
 ## August 8, 2026
 
 - **Feature** Added engagement locking UX for Engagements [🎟️ DEP-284](https://citz-gdx.atlassian.net/browse/DEP-284)

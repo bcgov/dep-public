@@ -7,7 +7,7 @@ import { EditorState } from 'draft-js';
 import { FetcherWithComponents } from 'react-router';
 import { EngagementDetailsTab } from 'models/engagementDetailsTab';
 import { EngagementStatus } from 'constants/engagementStatus';
-import { ResourceLockRecord, ResourceLocksForEngagement } from 'services/resourceLockService';
+import { ResourceLockRecord, ResourceLocks } from 'services/resourceLockService';
 
 export interface AuthoringNavProps {
     open: boolean;
@@ -40,7 +40,7 @@ export interface AuthoringContextType {
     activeLanguageCode: string;
     isLoadingLanguageOptions: boolean;
     languageOptions: Language[];
-    locks: ResourceLocksForEngagement;
+    locks: ResourceLocks;
     isLoading: boolean;
     languageId?: number;
     locksBySection: Record<
@@ -55,7 +55,7 @@ export interface AuthoringContextType {
         | '3rd Party Feedback Method Link',
         ResourceLockRecord | null
     >;
-    refreshLocks: () => Promise<ResourceLocksForEngagement>;
+    refreshLocks: () => Promise<ResourceLocks>;
 }
 
 export interface LanguageSelectorProps {

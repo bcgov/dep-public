@@ -10,8 +10,12 @@ export const fetchSurveyReportSettings = async (surveyId: string): Promise<Surve
     return responseData.data;
 };
 
-export const updateSurveyReportSettings = async (surveyId: string, settingData: SurveyReportSetting[]) => {
+export const updateSurveyReportSettings = async (
+    surveyId: string,
+    settingData: SurveyReportSetting[],
+    headers?: Record<string, string>,
+) => {
     const url = replaceUrl(Endpoints.SurveyReportSetting.UPDATE, 'survey_id', surveyId);
-    const responseData = await http.PatchRequest<SurveyReportSetting[]>(url, settingData);
+    const responseData = await http.PatchRequest<SurveyReportSetting[]>(url, settingData, headers);
     return responseData?.data || [];
 };

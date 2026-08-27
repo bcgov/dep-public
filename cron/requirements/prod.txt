@@ -18,7 +18,7 @@ bcrypt
 jaeger-client
 Werkzeug<4
 sqlalchemy-utils
-Flask-Caching
+Flask-Caching==2.4.1
 sqlalchemy==1.4.52
 secure
 python-dotenv

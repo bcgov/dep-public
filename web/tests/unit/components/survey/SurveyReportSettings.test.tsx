@@ -70,6 +70,16 @@ jest.mock('hooks', () => ({
     useAppDispatch: jest.fn(() => jest.fn()),
 }));
 
+jest.mock('services/userService', () => ({
+    ...jest.requireActual('services/userService'),
+    getToken: jest.fn(() => 'mock-token'),
+}));
+
+jest.mock('services/resourceLockService', () => ({
+    ...jest.requireActual('services/resourceLockService'),
+    getSurveyLocks: jest.fn(() => Promise.resolve([])),
+}));
+
 jest.mock('@mui/material', () => ({
     ...jest.requireActual('@mui/material'),
     useMediaQuery: jest.fn(() => true),
@@ -147,7 +157,7 @@ const { __TESTING__ }: { __TESTING__: { submitImplRef: SubmitImplRef } } = jest.
 describe('Survey report settings tests', () => {
     let updateSurveyReportSettingsMock: jest.SpyInstance<
         Promise<SurveyReportSetting[]>,
-        [string, SurveyReportSetting[]]
+        [surveyId: string, settingData: SurveyReportSetting[], headers?: Record<string, string>]
     >;
     let reactUseSpy: jest.SpyInstance;
 
@@ -270,6 +280,7 @@ describe('Survey report settings tests', () => {
             expect(updateSurveyReportSettingsMock).toHaveBeenCalledWith(
                 String(survey.id),
                 expect.arrayContaining([expect.objectContaining({ id: 2, display: true })]),
+                undefined,
             );
         });
     });

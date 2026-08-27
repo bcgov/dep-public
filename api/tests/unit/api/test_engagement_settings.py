@@ -19,10 +19,10 @@ is working as expected.
 """
 import json
 from http import HTTPStatus
-
-from faker import Faker
 from unittest.mock import patch
+
 import pytest
+from faker import Faker
 from marshmallow import ValidationError
 
 from api.constants.engagement_status import Status
@@ -70,7 +70,7 @@ def test_get_engagement_settings(client, jwt, session, side_effect, expected_sta
 
 def test_get_engagement_settings_for_draft_engagement(client, jwt, session,
                                                       setup_admin_user_and_claims):  # pylint:disable=unused-argument
-    """Assert that an engagement setting can not be fetched without authorization."""
+    """Assert that a draft engagement setting can not be fetched without authorization."""
     user, claims = setup_admin_user_and_claims
     engagement = factory_engagement_model(status=Status.Draft)
     factory_engagement_setting_model(engagement.id)
@@ -93,7 +93,8 @@ def test_get_engagement_settings_for_draft_engagement(client, jwt, session,
         content_type=ContentType.JSON.value
     )
 
-    assert rv.status_code == HTTPStatus.FORBIDDEN, 'Not a team member.So throws exception.'
+    assert rv.status_code == HTTPStatus.FORBIDDEN, \
+        'User without role should not be able to fetch draft engagement settings.'
 
 
 @pytest.mark.parametrize('side_effect, expected_status', [

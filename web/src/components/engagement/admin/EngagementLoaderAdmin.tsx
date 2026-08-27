@@ -11,11 +11,11 @@ import { getDetailsTabs } from 'services/engagementDetailsTabService';
 import { Language } from 'models/language';
 import { AppConfig } from 'config';
 import { ROUTES, getPath } from 'routes/routes';
-import { getEngagementLocks, ResourceLocksForEngagement } from 'services/resourceLockService';
+import { getEngagementLocks, ResourceLocks } from 'services/resourceLockService';
 
 export type EngagementLoaderAdminData = {
     engagement: Promise<Engagement>;
-    locks: Promise<ResourceLocksForEngagement>;
+    locks: Promise<ResourceLocks>;
     widgets: Promise<Widget[]>;
     details: Promise<EngagementDetailsTab[]>;
     metadata: Promise<EngagementMetadata[]>;

@@ -1,4 +1,4 @@
-import React, { Suspense, useState } from 'react';
+import React, { Suspense, useCallback, useMemo, useState } from 'react';
 import { useNavigate, useRevalidator, useParams } from 'react-router';
 import { ClickAwayListener, Grid2 as Grid, Stack, InputAdornment, Tooltip, Skeleton } from '@mui/material';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -18,6 +18,16 @@ import { RouterLinkRenderer } from 'components/common/Navigation/Link';
 import { AppConfig } from 'config';
 import { useSurveyLoaderData } from '../useSurveyLoaderData';
 import { Awaited } from 'utils';
+import {
+    getLockConflictPayload,
+    LOCK_TOKEN_HEADER,
+    RESOURCE_TYPE_SURVEY,
+    SECTION_SURVEY_REPORT_SETTINGS,
+    findScopedSectionLock,
+} from 'services/resourceLockService';
+import { useResourceLocks } from 'services/resourceLockService/useResourceLocks';
+import { useResourceSectionEditLock } from 'services/resourceLockService/useResourceSectionEditLock';
+import useResourceSectionLockNavigation from 'components/locking/useResourceSectionLockNavigation';
 
 const SettingsFormPage = () => {
     return (
@@ -36,15 +46,71 @@ const SettingsForm = () => {
     const survey = React.use(loaderData.survey) as Awaited<SurveyLoaderData>['survey'];
     const engagement = React.use(loaderData.engagement) as Awaited<SurveyLoaderData>['engagement'];
     const reportSettings = React.use(loaderData.reportSettings) as Awaited<SurveyLoaderData>['reportSettings'];
-    console.log('reportSettings', reportSettings);
     const [searchTerm, setSearchTerm] = useState<string>('');
     const engagementSlug = engagement?.slug;
     const [displayedSettings, setDisplayedSettings] = useState<{ [key: number]: boolean }>({});
     const [copyTooltip, setCopyTooltip] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
     const navigate = useNavigate();
     const dispatch = useAppDispatch();
     const { revalidate } = useRevalidator();
     const language = sessionStorage.getItem('languageId') ?? AppConfig.language.defaultLanguageId;
+
+    const { locks: liveLocks, refreshLocks } = useResourceLocks({
+        resourceId: survey?.id ?? 0,
+        resourceType: RESOURCE_TYPE_SURVEY,
+        initialLocksPromise: loaderData.locks,
+    });
+    const conflictingSettingsLock = useMemo(() => {
+        const lock = findScopedSectionLock({
+            locks: liveLocks,
+            sectionKey: SECTION_SURVEY_REPORT_SETTINGS,
+            languageScoped: false,
+        });
+        if (!lock || lock.is_mine) {
+            return null;
+        }
+        return lock;
+    }, [liveLocks]);
+    const refreshConflictState = useCallback(async () => {
+        await refreshLocks();
+    }, [refreshLocks]);
+    const handleBackFromLockConflict = useCallback(() => {
+        navigate(getPath(ROUTES.SURVEY_BUILD, { surveyId: survey?.id ?? surveyId }));
+    }, [navigate, survey?.id]);
+    const { conflictLockModal } = useResourceSectionLockNavigation({
+        conflictModal: {
+            lock: conflictingSettingsLock,
+            sectionName: 'Report Settings',
+            onBack: handleBackFromLockConflict,
+            onRetry: refreshConflictState,
+            onAfterBreakLock: refreshConflictState,
+        },
+    });
+    const { activeLockToken } = useResourceSectionEditLock({
+        resourceId: survey?.id ?? 0,
+        resourceType: RESOURCE_TYPE_SURVEY,
+        scope: { sectionKey: SECTION_SURVEY_REPORT_SETTINGS },
+        enabled: Boolean(survey?.id),
+        isDirty: true,
+        isSubmitting: isSaving,
+        blockedByLock: conflictingSettingsLock,
+        onConflict: async (error) => {
+            const conflictPayload = getLockConflictPayload(error);
+            if (conflictPayload) {
+                await refreshConflictState();
+                return;
+            }
+
+            const message = error instanceof Error ? error.message : 'Unable to acquire edit lock for report settings.';
+            dispatch(
+                openNotification({
+                    severity: 'error',
+                    text: message,
+                }),
+            );
+        },
+    });
 
     if (!reportSettings) navigate(-1);
 
@@ -73,7 +139,12 @@ const SettingsForm = () => {
         }
 
         try {
-            await updateSurveyReportSettings(String(survey?.id), updatedSettings);
+            setIsSaving(true);
+            await updateSurveyReportSettings(
+                String(survey?.id),
+                updatedSettings,
+                activeLockToken ? { [LOCK_TOKEN_HEADER]: activeLockToken } : undefined,
+            );
             revalidate();
             dispatch(
                 openNotification({
@@ -89,6 +160,8 @@ const SettingsForm = () => {
                     text: 'Error occurred while saving settings. Please try again.',
                 }),
             );
+        } finally {
+            setIsSaving(false);
         }
     };
 
@@ -109,6 +182,7 @@ const SettingsForm = () => {
 
     return (
         <Grid container spacing={2}>
+            {conflictLockModal}
             <Grid size={6}>
                 <FormField title="Link to Public Dashboard Report">
                     <Tooltip
@@ -180,7 +254,12 @@ const SettingsForm = () => {
             </Grid>
             <Grid>
                 <Stack direction="row" spacing={2}>
-                    <Button variant="primary" onClick={handleSaveSettings} data-testid="survey/report/save-button">
+                    <Button
+                        variant="primary"
+                        onClick={handleSaveSettings}
+                        disabled={isSaving || Boolean(conflictingSettingsLock)}
+                        data-testid="survey/report/save-button"
+                    >
                         Save
                     </Button>
                     <Button LinkComponent={RouterLinkRenderer} href={getPath(ROUTES.SURVEY_BUILD, { surveyId })}>

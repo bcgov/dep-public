@@ -19,8 +19,8 @@ Test-Suite to ensure that the /Engagement endpoint is working as expected.
 import copy
 import json
 from http import HTTPStatus
-
 from unittest.mock import patch
+
 import pytest
 from flask import current_app
 
@@ -139,27 +139,28 @@ def test_put_survey(client, jwt, session, survey_info, side_effect, expected_sta
     survey = factory_survey_model()
     survey_id = str(survey.id)
     new_survey_name = 'new_survey_name'
-    rv = client.put(surveys_url, data=json.dumps({'id': survey_id, 'name': new_survey_name}),
-                    headers=headers, content_type=ContentType.JSON.value)
-
-    assert rv.status_code == HTTPStatus.OK.value
-
-    rv = client.get(f'{surveys_url}{survey_id}',
-                    headers=headers, content_type=ContentType.JSON.value)
-    assert rv.status_code == HTTPStatus.OK.value
-    assert rv.json.get('form_json') == survey_info.get('form_json')
-    assert rv.json.get('name') == new_survey_name
-
-    with patch.object(SurveyService, 'update', side_effect=side_effect):
+    with patch('api.services.resource_lock_service.ResourceLockService._validate_lock_for_scope'):
         rv = client.put(surveys_url, data=json.dumps({'id': survey_id, 'name': new_survey_name}),
                         headers=headers, content_type=ContentType.JSON.value)
-    assert rv.status_code == expected_status
 
-    with patch.object(SurveyService, 'update',
-                      side_effect=BusinessException('Test error', status_code=HTTPStatus.INTERNAL_SERVER_ERROR)):
-        rv = client.put(surveys_url, data=json.dumps({'id': survey_id, 'name': new_survey_name}),
+        assert rv.status_code == HTTPStatus.OK.value
+
+        rv = client.get(f'{surveys_url}{survey_id}',
                         headers=headers, content_type=ContentType.JSON.value)
-    assert rv.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
+        assert rv.status_code == HTTPStatus.OK.value
+        assert rv.json.get('form_json') == survey_info.get('form_json')
+        assert rv.json.get('name') == new_survey_name
+
+        with patch.object(SurveyService, 'update', side_effect=side_effect):
+            rv = client.put(surveys_url, data=json.dumps({'id': survey_id, 'name': new_survey_name}),
+                            headers=headers, content_type=ContentType.JSON.value)
+        assert rv.status_code == expected_status
+
+        with patch.object(SurveyService, 'update',
+                          side_effect=BusinessException('Test error', status_code=HTTPStatus.INTERNAL_SERVER_ERROR)):
+            rv = client.put(surveys_url, data=json.dumps({'id': survey_id, 'name': new_survey_name}),
+                            headers=headers, content_type=ContentType.JSON.value)
+        assert rv.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
 
 
 @pytest.mark.parametrize('side_effect, expected_status', [
@@ -374,8 +375,9 @@ def test_edit_template_survey_for_admins(client, jwt, session,
     survey = factory_survey_model(TestSurveyInfo.survey_template)
     survey_id = str(survey.id)
     new_survey_name = 'new_survey_name'
-    rv = client.put(surveys_url, data=json.dumps({'id': survey_id, 'name': new_survey_name}),
-                    headers=headers, content_type=ContentType.JSON.value)
+    with patch('api.services.resource_lock_service.ResourceLockService._validate_lock_for_scope'):
+        rv = client.put(surveys_url, data=json.dumps({'id': survey_id, 'name': new_survey_name}),
+                        headers=headers, content_type=ContentType.JSON.value)
 
     assert rv.status_code == HTTPStatus.OK.value, 'Admins are able to edit template surveys'
 
@@ -386,13 +388,16 @@ def test_edit_template_survey_for_team_member(
     """Assert that a hidden survey cannot be fetched by team members."""
     _, claims = setup_team_member_and_claims
     headers = factory_auth_header(jwt=jwt, claims=claims)
-    survey = factory_survey_model(TestSurveyInfo.survey_template)
-    survey_id = str(survey.id)
-    new_survey_name = 'new_survey_name'
-    rv = client.put(surveys_url, data=json.dumps({'id': survey_id, 'name': new_survey_name}),
-                    headers=headers, content_type=ContentType.JSON.value)
+    # patch _validate_lock_for_scope to avoid lock validation for this test
+    with patch('api.services.resource_lock_service.ResourceLockService._validate_lock_for_scope'):
+        survey = factory_survey_model(TestSurveyInfo.survey_template)
+        survey_id = str(survey.id)
+        new_survey_name = 'new_survey_name'
+        rv = client.put(surveys_url, data=json.dumps({'id': survey_id, 'name': new_survey_name}),
+                        headers=headers, content_type=ContentType.JSON.value)
 
-    assert rv.status_code == 403, 'Team members are not able to edit template surveys, so throws exception.'
+    assert rv.status_code == 403, \
+        'Team members are not able to edit template surveys; they should receive a 403 Forbidden response'
 
 
 @pytest.mark.parametrize('survey_info', [TestSurveyInfo.survey2])

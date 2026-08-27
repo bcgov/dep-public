@@ -43,6 +43,16 @@ import UnsavedWorkConfirmation from 'components/common/Navigation/UnsavedWorkCon
 import { fetchSurveyReportSettings } from 'services/surveyService/reportSettingsService';
 import { ROUTES, getPath } from 'routes/routes';
 import { useSurveyLoaderData } from '../useSurveyLoaderData';
+import {
+    getLockConflictPayload,
+    LOCK_TOKEN_HEADER,
+    RESOURCE_TYPE_SURVEY,
+    SECTION_SURVEY_BUILDER,
+    findScopedSectionLock,
+} from 'services/resourceLockService';
+import { useResourceLocks } from 'services/resourceLockService/useResourceLocks';
+import useResourceSectionEditLock from 'services/resourceLockService/useResourceSectionEditLock';
+import useResourceSectionLockNavigation from 'components/locking/useResourceSectionLockNavigation';
 
 interface SurveyForm {
     id: string;
@@ -68,6 +78,7 @@ export const FormBuilderPage = () => {
     const [isFormDirty, setIsFormDirty] = useState(false);
     const [hasChanged, setHasChanged] = useState(false);
     const [saveError, setSaveError] = useState(false);
+    const [isRecentlyChanged, setIsRecentlyChanged] = useState(false);
 
     const {
         control,
@@ -84,19 +95,86 @@ export const FormBuilderPage = () => {
         },
     });
 
-    useEffect(() => {
-        const subscription = watch((value, { name, type }) => {
-            // Auto save form when any field changes
-            if (type === 'change') {
-                setHasChanged(true);
-                debounceAutoSaveForm(formDefinition);
-            }
-        });
-        return () => subscription.unsubscribe();
-    }, [watch]);
-
     const name = watch('name');
     const hasUnsavedWork = (isDirty || isFormDirty) && !isSubmitting;
+
+    useEffect(() => {
+        // Update immediately when hasUnsavedWork changes to true...
+        if (hasUnsavedWork) {
+            setIsRecentlyChanged(true);
+        } else {
+            // But only reset after a delay when it changes to false,
+            // so we don't release the lock too quickly if the user is actively editing.
+            const timer = setTimeout(() => {
+                setIsRecentlyChanged(false);
+            }, 60000); // Reset after 1 minute
+            return () => clearTimeout(timer);
+        }
+    }, [hasUnsavedWork]);
+
+    const { locks: liveLocks, refreshLocks } = useResourceLocks({
+        resourceId: survey.id,
+        resourceType: RESOURCE_TYPE_SURVEY,
+        initialLocksPromise: surveyLoaderData.locks,
+    });
+    const conflictingBuilderLock = React.useMemo(() => {
+        const lock = findScopedSectionLock({
+            locks: liveLocks,
+            sectionKey: SECTION_SURVEY_BUILDER,
+            languageScoped: false,
+        });
+        if (!lock || lock.is_mine) {
+            return null;
+        }
+        return lock;
+    }, [liveLocks]);
+    const refreshConflictState = React.useCallback(async () => {
+        await refreshLocks();
+    }, [refreshLocks]);
+    const handleBackFromLockConflict = React.useCallback(() => {
+        navigate(getPath(ROUTES.SURVEY_PREVIEW, { surveyId: survey?.id ?? 0 }));
+    }, [engagement, navigate]);
+    const { conflictLockModal } = useResourceSectionLockNavigation({
+        conflictModal: {
+            lock: conflictingBuilderLock,
+            sectionName: 'Survey Builder',
+            backButtonText: 'Back to Survey Preview',
+            onBack: handleBackFromLockConflict,
+            onRetry: refreshConflictState,
+            onAfterBreakLock: refreshConflictState,
+        },
+    });
+    const { activeLockToken } = useResourceSectionEditLock({
+        resourceId: survey.id,
+        resourceType: RESOURCE_TYPE_SURVEY,
+        scope: { sectionKey: SECTION_SURVEY_BUILDER },
+        isDirty: isRecentlyChanged,
+        isSubmitting,
+        blockedByLock: conflictingBuilderLock,
+        onConflict: async (error) => {
+            const conflictPayload = getLockConflictPayload(error);
+            if (conflictPayload) {
+                await refreshConflictState();
+                return;
+            }
+
+            const message =
+                error instanceof Error ? error.message : 'Unable to acquire edit lock for the survey builder.';
+            dispatch(
+                openNotification({
+                    severity: 'error',
+                    text: message,
+                }),
+            );
+        },
+    });
+    const lockHeaders = activeLockToken ? { [LOCK_TOKEN_HEADER]: activeLockToken } : undefined;
+    // debounceAutoSaveForm below is created once and freezes its closure, so autoSaveForm can't
+    // rely on the plain activeLockToken/lockHeaders variables staying fresh; use a ref instead.
+    const activeLockTokenRef = useRef(activeLockToken);
+    useEffect(() => {
+        activeLockTokenRef.current = activeLockToken;
+    }, [activeLockToken]);
 
     const hasEngagement = Boolean(survey?.engagement_id);
     const isEngagementDraft = engagement?.status_id === EngagementStatus.Draft;
@@ -122,10 +200,13 @@ export const FormBuilderPage = () => {
     const autoSaveForm = async (formDef: FormBuilderData) => {
         try {
             await handleSubmit(async (data: Omit<SurveyForm, 'form_json'>) => {
-                const result = await putSurvey({
-                    ...data,
-                    form_json: formDef,
-                });
+                const result = await putSurvey(
+                    {
+                        ...data,
+                        form_json: formDef,
+                    },
+                    activeLockTokenRef.current ? { [LOCK_TOKEN_HEADER]: activeLockTokenRef.current } : undefined,
+                );
                 // Synchronize survey report settings
                 if (formDef?.display === 'wizard' && formDef.components?.length > 0) {
                     try {
@@ -169,11 +250,14 @@ export const FormBuilderPage = () => {
     const formSubmitHandler = async (data: Omit<SurveyForm, 'form_json'>) => {
         try {
             if (hasUnsavedWork) {
-                await putSurvey({
-                    ...data,
-                    id: survey.id.toString(),
-                    form_json: formDefinition,
-                });
+                await putSurvey(
+                    {
+                        ...data,
+                        id: survey.id.toString(),
+                        form_json: formDefinition,
+                    },
+                    lockHeaders,
+                );
                 dispatch(
                     openNotification({
                         severity: 'success',
@@ -206,6 +290,7 @@ export const FormBuilderPage = () => {
 
     return (
         <Grid container direction="row" alignItems="flex-start" justifyContent="flex-start" size={12} spacing={4}>
+            {conflictLockModal}
             <UnsavedWorkConfirmation blockNavigationWhen={hasUnsavedWork} />
             <Grid size={12}>
                 <Stack direction="row" justifyContent="flex-start" alignItems="center">
@@ -379,7 +464,13 @@ export const FormBuilderPage = () => {
                 <Stack direction="row" spacing={2}>
                     <Button
                         variant="primary"
-                        disabled={!formDefinition || !isMultiPage || !Array.isArray(settings) || settings?.length < 1}
+                        disabled={
+                            !formDefinition ||
+                            !isMultiPage ||
+                            !Array.isArray(settings) ||
+                            settings?.length < 1 ||
+                            Boolean(conflictingBuilderLock)
+                        }
                         onClick={handleSubmit(formSubmitHandler)}
                     >
                         Report Settings

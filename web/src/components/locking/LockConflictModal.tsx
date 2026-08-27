@@ -12,7 +12,7 @@ import { useRouteLoaderData } from 'react-router';
 import { useAppSelector } from 'hooks';
 import { formatRelative } from 'components/common/dateHelper';
 
-export const AuthoringLockConflictModal = ({
+export const LockConflictModal = ({
     open,
     lock,
     isBusy,
@@ -40,8 +40,7 @@ export const AuthoringLockConflictModal = ({
     const currentUserSub = useAppSelector((state) => state.user.userDetail?.sub);
     const ownerName = getLockOwnerDisplayName(lock?.owner) ?? 'another editor';
     const isCurrentUserLock = Boolean(lock?.owner.user_sub === currentUserSub);
-    const { languages } = useRouteLoaderData('single-engagement') as EngagementLoaderAdminData;
-    const resolvedLanguages = React.use(languages);
+    const engagementLoaderData = useRouteLoaderData('single-engagement') as EngagementLoaderAdminData | undefined;
     const lockLastRenewed = lock?.heartbeat_at ? formatRelative(lock?.heartbeat_at) : 'unknown';
     const lockExpiresAt = lock?.expires_at ? formatRelative(lock?.expires_at) : 'unknown';
 
@@ -50,12 +49,28 @@ export const AuthoringLockConflictModal = ({
             return 'all';
         }
 
+        if (!engagementLoaderData?.languages) {
+            return `Language #${lock.language_id}`;
+        }
+
+        const resolvedLanguages = React.use(engagementLoaderData.languages);
         const language = resolvedLanguages.find((item) => item.id === lock?.language_id);
         return language ? language.name : `Unknown Language - ID ${lock?.language_id}`;
     })();
 
     return (
-        <Modal open={open} aria-labelledby="authoring-lock-conflict-title">
+        <Modal
+            open={open}
+            aria-labelledby="authoring-lock-conflict-title"
+            sx={{
+                '& .MuiBackdrop-root': {
+                    zIndex: 10001, // to cover formio's absurd z-index of 10000 for its modal dialogs
+                },
+                '& > .MuiGrid2-root': {
+                    zIndex: 10002, // ditto
+                },
+            }}
+        >
             <Grid
                 container
                 direction="column"
@@ -95,7 +110,7 @@ export const AuthoringLockConflictModal = ({
                             <BodyText bold>Section:</BodyText>
                             <BodyText>{sectionName ?? 'Unknown'}</BodyText>
                         </Grid>
-                        {languageLabel ? (
+                        {languageLabel && languageLabel !== 'all' ? (
                             <Grid container spacing={1}>
                                 <BodyText bold>Language:</BodyText>
                                 <BodyText>{languageLabel}</BodyText>
@@ -114,7 +129,7 @@ export const AuthoringLockConflictModal = ({
                     <BodyText>
                         {isCurrentUserLock
                             ? 'You can save from that other tab, then try again here. If needed, you can also break that lock from this tab.'
-                            : 'Please return to the authoring overview and try again later.'}
+                            : 'Please return to the main page and try again later.'}
                     </BodyText>
                 </Grid>
                 <Grid>
@@ -146,4 +161,4 @@ export const AuthoringLockConflictModal = ({
     );
 };
 
-export default AuthoringLockConflictModal;
+export default LockConflictModal;

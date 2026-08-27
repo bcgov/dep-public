@@ -294,4 +294,5 @@ def test_get_comments_spreadsheet_without_role(mocker, client, jwt, session):  #
     headers = factory_auth_header(jwt=jwt, claims=TestJwtClaims.public_user_role)
     rv = client.get(f'/api/comments/survey/{survey.id}/sheet/staff',
                     headers=headers, content_type=ContentType.JSON.value)
-    assert rv.status_code == HTTPStatus.UNAUTHORIZED, 'Not a team member.So throws exception.'
+    assert rv.status_code == HTTPStatus.UNAUTHORIZED, \
+        'User without role should not be able to access staff comments sheet'

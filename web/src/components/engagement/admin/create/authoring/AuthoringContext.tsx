@@ -17,7 +17,7 @@ import { AuthoringFormContext } from './AuthoringFormContext';
 import { AppConfig } from 'config';
 import { EngagementLoaderAdminData } from 'engagements/admin/EngagementLoaderAdmin';
 import { Language } from 'models/language';
-import { useAuthoringSectionLocks } from './useAuthoringSectionLocks';
+import { useResourceSectionLocks } from 'components/locking/useResourceSectionLocks';
 
 const tabSchema = yup.object({
     id: yup.number().required(),
@@ -322,7 +322,7 @@ export const AuthoringContext = () => {
         };
     }, [languages]);
 
-    const lockState = useAuthoringSectionLocks({
+    const lockState = useResourceSectionLocks({
         engagementId: Number(engagementId),
         languageCode: activeLanguageCode,
         languageOptions,

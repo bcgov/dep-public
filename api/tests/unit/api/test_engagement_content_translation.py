@@ -1,6 +1,7 @@
 """Tests for aggregated engagement content translation API endpoint."""
 
 from http import HTTPStatus
+from unittest.mock import patch
 
 from api.models.widget_image import WidgetImage
 from api.models.widget_image_translation import WidgetImageTranslation
@@ -232,12 +233,15 @@ def test_put_engagement_content_translation_syncs_new_widget_translation_buckets
         ],
     }
 
-    rv = client.put(
-        f'/api/engagement/{engagement.id}/content/translations/language/{49}',
-        json=payload,
-        headers=headers,
-        content_type=ContentType.JSON.value,
-    )
+    with patch('api.services.resource_lock_service.ResourceLockService.validate_engagement_content_translation_lock'
+               ) as mock_lock:
+        mock_lock.return_value = lambda f: f
+        rv = client.put(
+            f'/api/engagement/{engagement.id}/content/translations/language/{49}',
+            json=payload,
+            headers=headers,
+            content_type=ContentType.JSON.value,
+        )
 
     assert rv.status_code == HTTPStatus.OK
     response = rv.get_json()

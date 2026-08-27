@@ -26,6 +26,7 @@ from api.models.pagination_options import PaginationOptions
 from api.models.survey_search_options import SurveySearchOptions
 from api.resources.lock_validation_decorators import require_survey_builder_lock
 from api.schemas.survey import SurveySchema
+from api.services.resource_lock_service import ResourceLockService
 from api.services.survey_service import SurveyService
 from api.utils.roles import Role
 from api.utils.tenant_validator import require_role
@@ -62,6 +63,30 @@ class Survey(Resource):
             return 'Survey was not found', HTTPStatus.INTERNAL_SERVER_ERROR
         except ValueError as err:
             return str(err), HTTPStatus.INTERNAL_SERVER_ERROR
+
+
+@cors_preflight('GET,OPTIONS')
+@API.route('/<int:survey_id>/locks')
+class SurveyLocks(Resource):
+    """Resource for lock status on a single survey."""
+
+    @staticmethod
+    @cross_origin(origins=allowedorigins())
+    @_jwt.requires_auth
+    def get(survey_id: int):
+        """Fetch active locks for a survey."""
+        try:
+            owner_user_sub = TokenInfo.get_id()
+            owner_session_id = request.args.get('owner_session_id')
+            response = ResourceLockService.get_active_locks_for_resource(
+                resource_type=ResourceLockService.RESOURCE_TYPE_SURVEY,
+                resource_id=survey_id,
+                requester_user_sub=owner_user_sub,
+                requester_session_id=owner_session_id,
+            )
+            return response, HTTPStatus.OK
+        except BusinessException as err:
+            return err.error, err.status_code
 
 
 @cors_preflight('GET, POST, PUT, OPTIONS')

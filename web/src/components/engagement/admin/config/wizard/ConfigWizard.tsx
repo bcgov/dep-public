@@ -13,9 +13,9 @@ import { formatToUTC, convertToPacific } from 'components/common/dateHelper';
 import { useAppDispatch } from 'hooks';
 import { openNotification } from 'services/notificationService/notificationSlice';
 import { SECTION_CONFIG_GENERAL, findScopedSectionLock, getLockConflictPayload } from 'services/resourceLockService';
-import useEngagementSectionEditLock from 'services/resourceLockService/useEngagementSectionEditLock';
-import { useEngagementLocks } from 'services/resourceLockService/useEngagementLocks';
-import useAuthoringSectionLockNavigation from 'components/engagement/admin/create/authoring/useAuthoringSectionLockNavigation';
+import useResourceSectionEditLock from 'services/resourceLockService/useResourceSectionEditLock';
+import { useResourceLocks } from 'services/resourceLockService/useResourceLocks';
+import useResourceSectionLockNavigation from 'components/locking/useResourceSectionLockNavigation';
 
 const EngagementConfigurationWizard = () => {
     const loaderData = useRouteLoaderData('single-engagement') as EngagementLoaderAdminData;
@@ -109,8 +109,8 @@ const ConfigForm = ({
         reset,
         formState: { defaultValues, isDirty, isSubmitting },
     } = engagementConfigForm;
-    const { locks, refreshLocks } = useEngagementLocks({
-        engagementId: engagement.id,
+    const { locks, refreshLocks } = useResourceLocks({
+        resourceId: engagement.id,
         initialLocksPromise: (useRouteLoaderData('single-engagement') as EngagementLoaderAdminData).locks,
     });
     const conflictingConfigLock = React.useMemo(() => {
@@ -127,8 +127,8 @@ const ConfigForm = ({
         return configLock;
     }, [locks]);
 
-    const { activeLockToken } = useEngagementSectionEditLock({
-        engagementId: engagement.id,
+    const { activeLockToken } = useResourceSectionEditLock({
+        resourceId: engagement.id,
         scope: { sectionKey: SECTION_CONFIG_GENERAL },
         enabled: true,
         isDirty,
@@ -159,7 +159,7 @@ const ConfigForm = ({
         await refreshLocks();
     }, [refreshLocks]);
 
-    const { conflictLockModal } = useAuthoringSectionLockNavigation({
+    const { conflictLockModal, breakLockModal } = useResourceSectionLockNavigation({
         conflictModal: {
             lock: conflictingConfigLock,
             sectionName: 'Configuration',
@@ -180,6 +180,7 @@ const ConfigForm = ({
     return (
         <FormProvider {...engagementConfigForm}>
             {conflictLockModal}
+            {breakLockModal}
             <EngagementForm engagement={engagement} onSubmit={onSubmit} />
         </FormProvider>
     );

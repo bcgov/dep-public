@@ -18,10 +18,10 @@ Test-Suite to ensure that the /Engagement endpoint is working as expected.
 """
 import copy
 import json
-import pytest
 from http import HTTPStatus
 from unittest.mock import patch
 
+import pytest
 from faker import Faker
 from flask import current_app
 from marshmallow import ValidationError
@@ -453,29 +453,31 @@ def test_patch_engagement(client, jwt, session, engagement_info, side_effect, ex
         'created_date': fake.date(),
     }
 
-    rv = client.patch('/api/engagements/', data=json.dumps(engagement_edits),
-                      headers=headers, content_type=ContentType.JSON.value)
-
-    assert rv.status_code == HTTPStatus.OK
-
-    rv = client.get(f'/api/engagements/{engagement_id}',
-                    headers=headers, content_type=ContentType.JSON.value)
-    assert rv.status_code == HTTPStatus.OK
-    assert rv.json.get('name') == engagement_edits.get('name')
-    assert engagement_edits.get('start_date') in rv.json.get('start_date')
-    assert engagement_edits.get('end_date') in rv.json.get('end_date')
-    assert rv.json.get('description') is None
-    assert engagement_edits.get('created_date') in rv.json.get('created_date')
-
-    with patch.object(EngagementService, 'edit_engagement', side_effect=side_effect):
+    with patch('api.services.resource_lock_service.ResourceLockService._validate_lock_for_scope'):
         rv = client.patch('/api/engagements/', data=json.dumps(engagement_edits),
                           headers=headers, content_type=ContentType.JSON.value)
-    assert rv.status_code == expected_status
 
-    with patch.object(EngagementService, 'edit_engagement', side_effect=ValidationError('Test error')):
-        rv = client.patch('/api/engagements/', data=json.dumps(engagement_edits),
-                          headers=headers, content_type=ContentType.JSON.value)
-    assert rv.status_code == HTTPStatus.BAD_REQUEST
+        assert rv.status_code == HTTPStatus.OK
+
+        rv = client.get(f'/api/engagements/{engagement_id}',
+                        headers=headers, content_type=ContentType.JSON.value)
+        assert rv.status_code == HTTPStatus.OK
+        assert rv.json.get('name') == engagement_edits.get('name')
+        assert engagement_edits.get('start_date') in rv.json.get('start_date')
+        assert engagement_edits.get('end_date') in rv.json.get('end_date')
+        assert rv.json.get('description') is None
+        assert engagement_edits.get(
+            'created_date') in rv.json.get('created_date')
+
+        with patch.object(EngagementService, 'edit_engagement', side_effect=side_effect):
+            rv = client.patch('/api/engagements/', data=json.dumps(engagement_edits),
+                              headers=headers, content_type=ContentType.JSON.value)
+        assert rv.status_code == expected_status
+
+        with patch.object(EngagementService, 'edit_engagement', side_effect=ValidationError('Test error')):
+            rv = client.patch('/api/engagements/', data=json.dumps(engagement_edits),
+                              headers=headers, content_type=ContentType.JSON.value)
+        assert rv.status_code == HTTPStatus.BAD_REQUEST
 
 
 def test_patch_engagement_by_member(client, jwt, session):  # pylint:disable=unused-argument
@@ -500,22 +502,24 @@ def test_patch_engagement_by_member(client, jwt, session):  # pylint:disable=unu
     claims['sub'] = str(user.external_id)
     headers = factory_auth_header(jwt=jwt, claims=claims)
 
-    rv = client.patch('/api/engagements/', data=json.dumps(engagement_edits),
-                      headers=headers, content_type=ContentType.JSON.value)
+    with patch('api.services.resource_lock_service.ResourceLockService._validate_lock_for_scope'):
 
-    assert rv.status_code == HTTPStatus.FORBIDDEN, 'Not a team member.So throws exception.'
+        rv = client.patch('/api/engagements/', data=json.dumps(engagement_edits),
+                          headers=headers, content_type=ContentType.JSON.value)
 
-    factory_membership_model(user_id=user.id, engagement_id=engagement_id)
+        assert rv.status_code == HTTPStatus.FORBIDDEN, 'User without role should not be able to update engagement'
 
-    rv = client.patch('/api/engagements/', data=json.dumps(engagement_edits),
-                      headers=headers, content_type=ContentType.JSON.value)
+        factory_membership_model(user_id=user.id, engagement_id=engagement_id)
 
-    assert rv.status_code == HTTPStatus.OK, 'Added as team member.So throws exception.'
+        rv = client.patch('/api/engagements/', data=json.dumps(engagement_edits),
+                          headers=headers, content_type=ContentType.JSON.value)
 
-    rv = client.get(f'/api/engagements/{engagement_id}',
-                    headers=headers, content_type=ContentType.JSON.value)
-    assert rv.status_code == HTTPStatus.OK
-    assert rv.json.get('name') == engagement_edits.get('name')
+        assert rv.status_code == HTTPStatus.OK, 'User with role should be able to update engagement'
+
+        rv = client.get(f'/api/engagements/{engagement_id}',
+                        headers=headers, content_type=ContentType.JSON.value)
+        assert rv.status_code == HTTPStatus.OK
+        assert rv.json.get('name') == engagement_edits.get('name')
 
 
 def test_patch_engagement_persists_and_returns_suggested_engagements(
@@ -539,12 +543,13 @@ def test_patch_engagement_persists_and_returns_suggested_engagements(
         ],
     }
 
-    rv = client.patch(
-        '/api/engagements/',
-        data=json.dumps(payload),
-        headers=headers,
-        content_type=ContentType.JSON.value,
-    )
+    with patch('api.services.resource_lock_service.ResourceLockService._validate_lock_for_scope'):
+        rv = client.patch(
+            '/api/engagements/',
+            data=json.dumps(payload),
+            headers=headers,
+            content_type=ContentType.JSON.value,
+        )
 
     assert rv.status_code == HTTPStatus.OK
     assert 'suggested_engagements' in rv.json
@@ -569,13 +574,15 @@ def test_patch_new_survey_block_engagement(client, jwt, session,
             'survey_status': SubmissionStatus.Upcoming.name,
             'link_type': 'none',
         }]}
-    rv = client.patch('/api/engagements/', data=json.dumps(engagement_edits),
-                      headers=headers, content_type=ContentType.JSON.value)
 
-    assert rv.status_code == HTTPStatus.OK
+    with patch('api.services.resource_lock_service.ResourceLockService._validate_lock_for_scope'):
+        rv = client.patch('/api/engagements/', data=json.dumps(engagement_edits),
+                          headers=headers, content_type=ContentType.JSON.value)
 
-    rv = client.get(f'/api/engagements/{engagement_id}',
-                    headers=headers, content_type=ContentType.JSON.value)
+        assert rv.status_code == HTTPStatus.OK
+
+        rv = client.get(f'/api/engagements/{engagement_id}',
+                        headers=headers, content_type=ContentType.JSON.value)
     assert rv.status_code == HTTPStatus.OK
     actual_status_blocks = rv.json.get('status_block')
     assert len(actual_status_blocks) == 1
@@ -605,13 +612,15 @@ def test_update_survey_block_engagement(client, jwt, session,
             'survey_status': SubmissionStatus.Open.name,
             'link_type': 'none',
         }]}
-    rv = client.patch('/api/engagements/', data=json.dumps(engagement_edits),
-                      headers=headers, content_type=ContentType.JSON.value)
 
-    assert rv.status_code == HTTPStatus.OK
+    with patch('api.services.resource_lock_service.ResourceLockService._validate_lock_for_scope'):
+        rv = client.patch('/api/engagements/', data=json.dumps(engagement_edits),
+                          headers=headers, content_type=ContentType.JSON.value)
 
-    rv = client.get(f'/api/engagements/{engagement_id}',
-                    headers=headers, content_type=ContentType.JSON.value)
+        assert rv.status_code == HTTPStatus.OK
+
+        rv = client.get(f'/api/engagements/{engagement_id}',
+                        headers=headers, content_type=ContentType.JSON.value)
     assert rv.status_code == HTTPStatus.OK
     actual_status_blocks = rv.json.get('status_block')
     assert len(actual_status_blocks) == 2

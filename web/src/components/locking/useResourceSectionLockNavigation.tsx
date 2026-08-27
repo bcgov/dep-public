@@ -4,7 +4,7 @@ import type { NavigateOptions } from 'react-router';
 import { useAppDispatch, useAppSelector } from 'hooks';
 import { openNotification } from 'services/notificationService/notificationSlice';
 import { releaseLock, ResourceLockRecord } from 'services/resourceLockService';
-import AuthoringLockConflictModal from './AuthoringLockConflictModal';
+import LockConflictModal from './LockConflictModal';
 import { USER_ROLES } from 'services/userService/constants';
 
 const AUTHORING_UNSAVED_CHANGES_KEY = 'authoring-unsaved-changes';
@@ -47,7 +47,7 @@ type ConflictModalOptions = {
     breakButtonText?: string;
 };
 
-export const useAuthoringSectionLockNavigation = ({ conflictModal }: { conflictModal?: ConflictModalOptions } = {}) => {
+export const useResourceSectionLockNavigation = ({ conflictModal }: { conflictModal?: ConflictModalOptions } = {}) => {
     const navigate = useNavigate();
     const dispatch = useAppDispatch();
     const [pendingNavigation, setPendingNavigation] = useState<PendingNavigation | null>(null);
@@ -149,14 +149,14 @@ export const useAuthoringSectionLockNavigation = ({ conflictModal }: { conflictM
     const breakLockModal = useMemo(() => {
         const pendingLock = pendingNavigation?.lock;
         return (
-            <AuthoringLockConflictModal
+            <LockConflictModal
                 open={Boolean(pendingNavigation)}
                 lock={pendingLock}
                 sectionName={pendingNavigation?.sectionName}
                 isBusy={isBreakingLock}
                 backButtonText="Stay Here"
                 showRetry={false}
-                breakButtonText="Break Lock and Continue"
+                breakButtonText="Release Lock and Continue"
                 onBack={closeBreakLockModal}
                 onBreakLock={() => {
                     void confirmBreakAndNavigate();
@@ -199,7 +199,7 @@ export const useAuthoringSectionLockNavigation = ({ conflictModal }: { conflictM
             : undefined;
 
         return (
-            <AuthoringLockConflictModal
+            <LockConflictModal
                 open={Boolean(currentLock)}
                 lock={currentLock}
                 sectionName={conflictModal.sectionName}
@@ -241,4 +241,4 @@ export const useAuthoringSectionLockNavigation = ({ conflictModal }: { conflictM
     };
 };
 
-export default useAuthoringSectionLockNavigation;
+export default useResourceSectionLockNavigation;

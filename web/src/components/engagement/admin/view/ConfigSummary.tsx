@@ -21,9 +21,9 @@ import { useAppSelector } from 'hooks';
 import { RouterLinkRenderer } from 'components/common/Navigation/Link';
 import { Engagement } from 'models/engagement';
 import { convertToPacific } from 'components/common/dateHelper';
-import useAuthoringSectionLockNavigation from '../create/authoring/useAuthoringSectionLockNavigation';
+import useResourceSectionLockNavigation from 'components/locking/useResourceSectionLockNavigation';
 import { ResourceLockRecord, SECTION_CONFIG_GENERAL, findScopedSectionLock } from 'services/resourceLockService';
-import LockOwnerAvatar from '../create/authoring/LockOwnerAvatar';
+import LockOwnerAvatar from 'components/locking/LockOwnerAvatar';
 
 export const ConfigSummary = () => {
     const siteUrl = getBaseUrl();
@@ -42,7 +42,7 @@ export const ConfigSummary = () => {
         });
     });
     const [recentlyCopied, setRecentlyCopied] = React.useState(false);
-    const { resolveSectionLockState, requestNavigation } = useAuthoringSectionLockNavigation();
+    const { breakLockModal, resolveSectionLockState, requestNavigation } = useResourceSectionLockNavigation();
 
     useEffect(() => {
         if (recentlyCopied) {
@@ -65,6 +65,7 @@ export const ConfigSummary = () => {
 
     return (
         <Grid container direction="column" spacing={1}>
+            {breakLockModal}
             <Heading2 decorated>Configuration</Heading2>
             <Grid container spacing={2} width="624px" maxWidth="100%" direction="column">
                 <Grid>

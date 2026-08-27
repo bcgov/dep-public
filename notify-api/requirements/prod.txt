@@ -7,7 +7,7 @@ python-dotenv
 jsonschema
 requests
 Werkzeug<4
-Flask-Caching
+Flask-Caching==2.4.1
 secure
 python-dotenv
 requests
