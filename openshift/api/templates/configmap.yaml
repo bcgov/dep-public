@@ -9,7 +9,7 @@ metadata:
 data:
     # Engagement API configuration
     ENV: {{ .Values.environment | quote }}
-    CORS_ORIGINS: {{ .Values.site.url }}
+    CORS_ORIGINS: {{ .Values.site.domain }}
     DEFAULT_TENANT_SHORT_NAME: {{ .Values.tenant.shortName }}
     ACCESS_REQUEST_EMAIL_TEMPLATE_ID: {{ .Values.email.templateID.accessRequest }}
     CORS_MAX_AGE: {{ .Values.cors.maxAge | quote }}
@@ -22,7 +22,7 @@ data:
     PUBLISH_EMAIL_TEMPLATE_ID: {{ .Values.email.templateID.publish }}
     REJECTED_EMAIL_TEMPLATE_ID: {{ .Values.email.templateID.rejected }}
     SEND_EMAIL_INTERNAL_ONLY: {{ .Values.email.sendInternalOnly | quote }}
-    SITE_URL: https://{{ .Values.site.url }}/
+    SITE_URL: https://{{ .Values.site.domain }}
     SUBMISSION_RESPONSE_EMAIL_TEMPLATE_ID: {{ .Values.email.templateID.submissionResponse }}
     SUBSCRIBE_EMAIL_TEMPLATE_ID: {{ .Values.email.templateID.subscribe }}
     VERIFICATION_EMAIL_TEMPLATE_ID: {{ .Values.email.templateID.verification }}

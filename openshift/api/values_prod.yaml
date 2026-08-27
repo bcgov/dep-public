@@ -4,7 +4,7 @@ deployment:
   maxReplicas: 5
 
 site:
-  url: dep-web-demo.apps.gold.devops.gov.bc.ca
+  domain: dep-web-demo.apps.gold.devops.gov.bc.ca
 
 keycloak:
   baseUrl: 'loginproxy.gov.bc.ca'

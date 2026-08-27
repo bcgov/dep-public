@@ -1,7 +1,7 @@
 environment: test
 
 site:
-  url: dep-web-test.apps.gold.devops.gov.bc.ca
+  domain: dep-web-test.apps.gold.devops.gov.bc.ca
 
 keycloak:
   baseUrl: 'test.loginproxy.gov.bc.ca'
