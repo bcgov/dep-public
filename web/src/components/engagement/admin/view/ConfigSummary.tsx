@@ -21,9 +21,9 @@ import { useAppSelector } from 'hooks';
 import { RouterLinkRenderer } from 'components/common/Navigation/Link';
 import { Engagement } from 'models/engagement';
 import { convertToPacific } from 'components/common/dateHelper';
-import useResourceSectionLockNavigation from '../create/authoring/useResourceSectionLockNavigation';
+import useResourceSectionLockNavigation from 'components/locking/useResourceSectionLockNavigation';
 import { ResourceLockRecord, SECTION_CONFIG_GENERAL, findScopedSectionLock } from 'services/resourceLockService';
-import LockOwnerAvatar from '../create/authoring/LockOwnerAvatar';
+import LockOwnerAvatar from 'components/locking/LockOwnerAvatar';
 
 export const ConfigSummary = () => {
     const siteUrl = getBaseUrl();

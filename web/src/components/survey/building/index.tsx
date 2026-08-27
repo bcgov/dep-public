@@ -51,8 +51,8 @@ import {
     findScopedSectionLock,
 } from 'services/resourceLockService';
 import { useResourceLocks } from 'services/resourceLockService/useResourceLocks';
-import { useEngagementSectionEditLock } from 'services/resourceLockService/useEngagementSectionEditLock';
-import useResourceSectionLockNavigation from 'engagements/admin/create/authoring/useResourceSectionLockNavigation';
+import useResourceSectionEditLock from 'services/resourceLockService/useResourceSectionEditLock';
+import useResourceSectionLockNavigation from 'components/locking/useResourceSectionLockNavigation';
 
 interface SurveyForm {
     id: string;
@@ -144,11 +144,10 @@ export const FormBuilderPage = () => {
             onAfterBreakLock: refreshConflictState,
         },
     });
-    const { activeLockToken } = useEngagementSectionEditLock({
+    const { activeLockToken } = useResourceSectionEditLock({
         resourceId: survey.id,
         resourceType: RESOURCE_TYPE_SURVEY,
         scope: { sectionKey: SECTION_SURVEY_BUILDER },
-        enabled: true,
         isDirty: isRecentlyChanged,
         isSubmitting,
         blockedByLock: conflictingBuilderLock,

@@ -396,7 +396,8 @@ def test_edit_template_survey_for_team_member(
         rv = client.put(surveys_url, data=json.dumps({'id': survey_id, 'name': new_survey_name}),
                         headers=headers, content_type=ContentType.JSON.value)
 
-    assert rv.status_code == 403, 'Team members are not able to edit template surveys, so throws exception.'
+    assert rv.status_code == 403, \
+        'Team members are not able to edit template surveys; they should receive a 403 Forbidden response'
 
 
 @pytest.mark.parametrize('survey_info', [TestSurveyInfo.survey2])

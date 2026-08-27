@@ -13,7 +13,11 @@ import {
 import { useResourceLocks } from 'services/resourceLockService/useResourceLocks';
 import { getLanguageIdByCode } from 'services/engagementContentTranslationService';
 import { Language } from 'models/language';
-import { AUTHORING_SECTION, AUTHORING_SECTION_NAMES, AuthoringSectionName } from './useAuthoringSectionCompletion';
+import {
+    AUTHORING_SECTION,
+    AUTHORING_SECTION_NAMES,
+    AuthoringSectionName,
+} from 'components/engagement/admin/create/authoring/useAuthoringSectionCompletion';
 
 const LOCK_POLL_INTERVAL_MS = 15000;
 

@@ -14,11 +14,11 @@ type LockScope = {
     languageId?: number;
 };
 
-export const useEngagementSectionEditLock = ({
+export const useResourceSectionEditLock = ({
     resourceId,
     resourceType = RESOURCE_TYPE_ENGAGEMENT_SECTION,
     scope,
-    enabled,
+    enabled = true,
     isDirty,
     isSubmitting,
     blockedByLock,
@@ -28,7 +28,7 @@ export const useEngagementSectionEditLock = ({
     resourceId: number;
     resourceType?: string;
     scope: LockScope | null;
-    enabled: boolean;
+    enabled?: boolean;
     isDirty: boolean;
     isSubmitting: boolean;
     blockedByLock?: ResourceLockRecord | null;
@@ -205,4 +205,4 @@ export const useEngagementSectionEditLock = ({
     };
 };
 
-export default useEngagementSectionEditLock;
+export default useResourceSectionEditLock;

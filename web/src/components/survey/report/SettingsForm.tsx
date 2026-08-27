@@ -26,8 +26,8 @@ import {
     findScopedSectionLock,
 } from 'services/resourceLockService';
 import { useResourceLocks } from 'services/resourceLockService/useResourceLocks';
-import { useEngagementSectionEditLock } from 'services/resourceLockService/useEngagementSectionEditLock';
-import useResourceSectionLockNavigation from 'components/engagement/admin/create/authoring/useResourceSectionLockNavigation';
+import { useResourceSectionEditLock } from 'services/resourceLockService/useResourceSectionEditLock';
+import useResourceSectionLockNavigation from 'components/locking/useResourceSectionLockNavigation';
 
 const SettingsFormPage = () => {
     return (
@@ -87,7 +87,7 @@ const SettingsForm = () => {
             onAfterBreakLock: refreshConflictState,
         },
     });
-    const { activeLockToken } = useEngagementSectionEditLock({
+    const { activeLockToken } = useResourceSectionEditLock({
         resourceId: survey?.id ?? 0,
         resourceType: RESOURCE_TYPE_SURVEY,
         scope: { sectionKey: SECTION_SURVEY_REPORT_SETTINGS },

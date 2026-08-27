@@ -507,14 +507,14 @@ def test_patch_engagement_by_member(client, jwt, session):  # pylint:disable=unu
         rv = client.patch('/api/engagements/', data=json.dumps(engagement_edits),
                           headers=headers, content_type=ContentType.JSON.value)
 
-        assert rv.status_code == HTTPStatus.FORBIDDEN, 'Not a team member.So throws exception.'
+        assert rv.status_code == HTTPStatus.FORBIDDEN, 'User without role should not be able to update engagement'
 
         factory_membership_model(user_id=user.id, engagement_id=engagement_id)
 
         rv = client.patch('/api/engagements/', data=json.dumps(engagement_edits),
                           headers=headers, content_type=ContentType.JSON.value)
 
-        assert rv.status_code == HTTPStatus.OK, 'Added as team member.So throws exception.'
+        assert rv.status_code == HTTPStatus.OK, 'User with role should be able to update engagement'
 
         rv = client.get(f'/api/engagements/{engagement_id}',
                         headers=headers, content_type=ContentType.JSON.value)

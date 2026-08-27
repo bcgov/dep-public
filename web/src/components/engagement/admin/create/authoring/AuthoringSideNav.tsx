@@ -37,9 +37,11 @@ import { EngagementLoaderAdminData } from 'components/engagement/admin/Engagemen
 import { UserAvatar } from 'components/common/Layout/UserAvatar';
 import { AppConfig } from 'config';
 import { Language } from 'models/language';
-import LockOwnerAvatar from './LockOwnerAvatar';
-import { findSectionLock } from './useResourceSectionLocks';
-import useResourceSectionLockNavigation, { useSectionLockState } from './useResourceSectionLockNavigation';
+import LockOwnerAvatar from 'components/locking/LockOwnerAvatar';
+import { findSectionLock } from 'components/locking/useResourceSectionLocks';
+import useResourceSectionLockNavigation, {
+    useSectionLockState,
+} from 'components/locking/useResourceSectionLockNavigation';
 import { useResourceLocks } from 'services/resourceLockService/useResourceLocks';
 
 export const routeItemStyle = {

@@ -39,10 +39,12 @@ import { AppConfig } from 'config';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { EngagementLoaderAdminData } from 'engagements/admin/EngagementLoaderAdmin';
 import { AuthoringFormContext, useAuthoringFormContext } from './AuthoringFormContext';
-import { findSectionLock, getAuthoringSectionNameByPage } from './useResourceSectionLocks';
+import { findSectionLock, getAuthoringSectionNameByPage } from 'components/locking/useResourceSectionLocks';
 import { AUTHORING_SECTION } from './useAuthoringSectionCompletion';
-import useResourceSectionLockNavigation, { useSectionLockState } from './useResourceSectionLockNavigation';
-import LockOwnerAvatar from './LockOwnerAvatar';
+import useResourceSectionLockNavigation, {
+    useSectionLockState,
+} from 'components/locking/useResourceSectionLockNavigation';
+import LockOwnerAvatar from 'components/locking/LockOwnerAvatar';
 const PREVIEW_CLOSE_GRACE_MS = 800;
 
 const useCurrentSectionLock = (pageName?: string) => {

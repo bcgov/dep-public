@@ -20,11 +20,11 @@ import {
     AUTHORING_SECTION_NAMES,
     useAuthoringSectionCompletion,
 } from 'components/engagement/admin/create/authoring/useAuthoringSectionCompletion';
-import { findSectionLock } from 'components/engagement/admin/create/authoring/useResourceSectionLocks';
-import LockOwnerAvatar from 'components/engagement/admin/create/authoring/LockOwnerAvatar';
+import { findSectionLock } from 'components/locking/useResourceSectionLocks';
+import LockOwnerAvatar from 'components/locking/LockOwnerAvatar';
 import { getPath, ROUTES } from 'routes/routes';
 import { saveLanguage } from 'reduxSlices/languageSlice';
-import useResourceSectionLockNavigation from 'components/engagement/admin/create/authoring/useResourceSectionLockNavigation';
+import useResourceSectionLockNavigation from 'components/locking/useResourceSectionLockNavigation';
 import { ResourceLockRecord } from 'services/resourceLockService';
 import { AppConfig } from 'config';
 import { useResourceLocks } from 'services/resourceLockService/useResourceLocks';

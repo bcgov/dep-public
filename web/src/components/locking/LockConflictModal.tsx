@@ -12,7 +12,7 @@ import { useRouteLoaderData } from 'react-router';
 import { useAppSelector } from 'hooks';
 import { formatRelative } from 'components/common/dateHelper';
 
-export const AuthoringLockConflictModal = ({
+export const LockConflictModal = ({
     open,
     lock,
     isBusy,
@@ -161,4 +161,4 @@ export const AuthoringLockConflictModal = ({
     );
 };
 
-export default AuthoringLockConflictModal;
+export default LockConflictModal;

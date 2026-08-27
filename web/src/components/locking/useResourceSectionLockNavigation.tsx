@@ -4,7 +4,7 @@ import type { NavigateOptions } from 'react-router';
 import { useAppDispatch, useAppSelector } from 'hooks';
 import { openNotification } from 'services/notificationService/notificationSlice';
 import { releaseLock, ResourceLockRecord } from 'services/resourceLockService';
-import AuthoringLockConflictModal from './AuthoringLockConflictModal';
+import LockConflictModal from './LockConflictModal';
 import { USER_ROLES } from 'services/userService/constants';
 
 const AUTHORING_UNSAVED_CHANGES_KEY = 'authoring-unsaved-changes';
@@ -149,7 +149,7 @@ export const useResourceSectionLockNavigation = ({ conflictModal }: { conflictMo
     const breakLockModal = useMemo(() => {
         const pendingLock = pendingNavigation?.lock;
         return (
-            <AuthoringLockConflictModal
+            <LockConflictModal
                 open={Boolean(pendingNavigation)}
                 lock={pendingLock}
                 sectionName={pendingNavigation?.sectionName}
@@ -199,7 +199,7 @@ export const useResourceSectionLockNavigation = ({ conflictModal }: { conflictMo
             : undefined;
 
         return (
-            <AuthoringLockConflictModal
+            <LockConflictModal
                 open={Boolean(currentLock)}
                 lock={currentLock}
                 sectionName={conflictModal.sectionName}

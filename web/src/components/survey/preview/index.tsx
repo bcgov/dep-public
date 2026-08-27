@@ -18,8 +18,8 @@ import {
     SECTION_SURVEY_BUILDER,
     SECTION_SURVEY_REPORT_SETTINGS,
 } from 'services/resourceLockService';
-import useResourceSectionLockNavigation from 'engagements/admin/create/authoring/useResourceSectionLockNavigation';
-import LockOwnerAvatar from 'engagements/admin/create/authoring/LockOwnerAvatar';
+import useResourceSectionLockNavigation from 'components/locking/useResourceSectionLockNavigation';
+import LockOwnerAvatar from 'components/locking/LockOwnerAvatar';
 
 const SurveyPreview = () => {
     const loaderData = useSurveyLoaderData();

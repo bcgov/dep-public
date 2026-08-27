@@ -27,10 +27,14 @@ import {
 import { SystemMessage } from 'components/common/Layout/SystemMessage';
 import { AppConfig } from 'config';
 import { openNotification } from 'services/notificationService/notificationSlice';
-import useEngagementSectionEditLock from 'services/resourceLockService/useEngagementSectionEditLock';
+import useResourceSectionEditLock from 'services/resourceLockService/useResourceSectionEditLock';
 import { getLockConflictPayload } from 'services/resourceLockService';
-import { findSectionLock, getLockTargetBySectionName, getAuthoringSectionNameByPage } from './useResourceSectionLocks';
-import useResourceSectionLockNavigation from './useResourceSectionLockNavigation';
+import {
+    findSectionLock,
+    getLockTargetBySectionName,
+    getAuthoringSectionNameByPage,
+} from 'components/locking/useResourceSectionLocks';
+import useResourceSectionLockNavigation from 'components/locking/useResourceSectionLockNavigation';
 import { AuthoringContextType } from './types';
 
 const DEFAULT_LANGUAGE_CODE = AppConfig.language.defaultLanguageId.toLowerCase();
@@ -231,7 +235,7 @@ const AuthoringTemplate = () => {
         setLockScopeWideningRequested(false);
     }, [pageName, setLockScopeWideningRequested]);
 
-    const { activeLockScope, activeLockToken } = useEngagementSectionEditLock({
+    const { activeLockScope, activeLockToken } = useResourceSectionEditLock({
         resourceId: Number(engagementId),
         scope: currentSectionLockContext
             ? {
