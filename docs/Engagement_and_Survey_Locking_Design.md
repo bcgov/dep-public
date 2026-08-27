@@ -22,16 +22,16 @@ This design is intended to support locking Engagements by section, non-authoring
 
 ## Current implementation state
 
-- [-] API updates
+- [x] API updates
   - [x] resource_lock table
   - [x] LockService for acquire/refresh/release and validation
   - [x] Validation on write for Engagement endpoints
-  - [ ] Validation on write for Survey endpoints
-- [ ] Frontend updates
-  - [ ] Engagement
-    - [ ] Authoring sections
-    - [ ] Display in authoring tab overview cards
-    - [ ] Non-authoring config
+  - [x] Validation on write for Survey endpoints
+- [-] Frontend updates
+  - [x] Engagement
+    - [x] Authoring sections
+    - [x] Display in authoring tab overview cards
+    - [x] Non-authoring config
   - [ ] Survey builder
   - [ ] Survey report settings
 

@@ -1,59 +1,60 @@
-import { AuthoringValue } from './types';
+import { AuthoringTabValue } from './types';
 import { getPath, ROUTES } from 'routes/routes';
+import { AUTHORING_SECTION } from 'components/engagement/admin/create/authoring/useAuthoringSectionCompletion';
 
 export const getDefaultAuthoringTabValues = (
-    type: string,
+    type: 'sections' | 'feedback',
     engagementId: number | string,
     languageCode: string = 'en',
-): AuthoringValue[] => {
+): AuthoringTabValue[] => {
     if ('sections' === type) {
         // Return the default "section" items
         return [
             {
                 id: 1,
-                title: 'Hero Banner',
+                title: AUTHORING_SECTION.HERO_BANNER,
                 link: getPath(ROUTES.AUTHORING_BANNER, { engagementId, languageCode }),
                 required: true,
                 completed: false,
             },
             {
                 id: 2,
-                title: 'Summary',
+                title: AUTHORING_SECTION.SUMMARY,
                 link: getPath(ROUTES.AUTHORING_SUMMARY, { engagementId, languageCode }),
                 required: true,
                 completed: false,
             },
             {
                 id: 3,
-                title: 'Details',
+                title: AUTHORING_SECTION.DETAILS,
                 link: getPath(ROUTES.AUTHORING_DETAILS, { engagementId, languageCode }),
                 required: true,
                 completed: false,
             },
             {
                 id: 4,
-                title: 'Provide Feedback',
+                title: AUTHORING_SECTION.PROVIDE_FEEDBACK,
                 link: getPath(ROUTES.AUTHORING_FEEDBACK, { engagementId, languageCode }),
                 required: true,
                 completed: false,
             },
             {
                 id: 5,
-                title: 'View Results',
+                title: AUTHORING_SECTION.VIEW_RESULTS,
                 link: getPath(ROUTES.AUTHORING_RESULTS, { engagementId, languageCode }),
                 required: false,
                 completed: false,
             },
             {
                 id: 6,
-                title: 'Subscribe',
+                title: AUTHORING_SECTION.SUBSCRIBE,
                 link: getPath(ROUTES.AUTHORING_SUBSCRIBE, { engagementId, languageCode }),
                 required: false,
                 completed: false,
             },
             {
                 id: 7,
-                title: 'More Engagements',
+                title: AUTHORING_SECTION.MORE_ENGAGEMENTS,
                 link: getPath(ROUTES.AUTHORING_MORE, { engagementId, languageCode }),
                 required: false,
                 completed: false,
@@ -64,15 +65,15 @@ export const getDefaultAuthoringTabValues = (
         return [
             {
                 id: 101,
-                title: 'Survey',
-                link: `#`,
+                title: AUTHORING_SECTION.SURVEY,
+                link: getPath(ROUTES.AUTHORING_FEEDBACK, { engagementId, languageCode }) + '#survey',
                 required: true,
                 completed: false,
             },
             {
                 id: 102,
-                title: '3rd Party Feedback Method Link',
-                link: `#`,
+                title: AUTHORING_SECTION.THIRD_PARTY_FEEDBACK_METHOD_LINK,
+                link: getPath(ROUTES.AUTHORING_FEEDBACK, { engagementId, languageCode }) + '#third-party-feedback',
                 required: true,
                 completed: false,
             },

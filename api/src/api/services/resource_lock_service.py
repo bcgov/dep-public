@@ -1,4 +1,5 @@
 """Service for resource lock management."""
+# pylint: disable=too-many-lines
 
 from __future__ import annotations
 
@@ -8,12 +9,13 @@ from typing import Any, NoReturn, Optional
 from uuid import UUID, uuid4
 
 from flask import current_app, has_app_context
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.exc import IntegrityError, ResourceClosedError
 
 from api.exceptions.business_exception import BusinessException
 from api.models.db import db
 from api.models.engagement_translation import EngagementTranslation as EngagementTranslationModel
 from api.models.resource_lock import ResourceLock
+from api.models.staff_user import StaffUser
 from api.models.widget import Widget as WidgetModel
 from api.models.widget_translation import WidgetTranslation as WidgetTranslationModel
 from api.utils.datetime import utc_now
@@ -26,6 +28,7 @@ class ResourceLockService:
     ENGAGEMENT_PATCH_VALIDATION_FLAG = 'ENGAGEMENT_LOCK_VALIDATION_ENABLED'
     SURVEY_LOCK_VALIDATION_FLAG = 'SURVEY_LOCK_VALIDATION_ENABLED'
     DEFAULT_TTL_SECONDS = 90
+    RESOURCE_LOCK_CONFLICT_MESSAGE = 'Resource section is locked by another editor'
 
     RESOURCE_TYPE_ENGAGEMENT_SECTION = 'engagement_section'
     RESOURCE_TYPE_SURVEY = 'survey'
@@ -34,6 +37,7 @@ class ResourceLockService:
     SECTION_AUTHORING_SUMMARY = 'authoring.summary'
     SECTION_AUTHORING_DETAILS = 'authoring.details'
     SECTION_AUTHORING_FEEDBACK = 'authoring.feedback'
+    SECTION_AUTHORING_RESULTS = 'authoring.results'
     SECTION_AUTHORING_SUBSCRIBE = 'authoring.subscribe'
     SECTION_AUTHORING_MORE = 'authoring.more'
     SECTION_CONFIG_GENERAL = 'config.general'
@@ -63,6 +67,7 @@ class ResourceLockService:
     PATCH_SECTION_FIELDS = {
         SECTION_AUTHORING_BANNER: {
             'status_block',
+            'sponsor_name',
             'banner_filename',
         },
         SECTION_AUTHORING_FEEDBACK: {
@@ -111,6 +116,8 @@ class ResourceLockService:
             'feedback_heading',
             'feedback_body',
         },
+        SECTION_AUTHORING_RESULTS: {
+        },
         SECTION_AUTHORING_SUBSCRIBE: {
             'subscribe_section_heading',
             'subscribe_section_description',
@@ -158,13 +165,52 @@ class ResourceLockService:
         if lock_scope:
             error['lock_scope'] = lock_scope
         if lock:
-            error['owner'] = {
-                'user_sub': lock.owner_user_sub,
-                'display_name': lock.owner_display_name,
-            }
+            error['owner'] = cls._serialize_owner(
+                user_sub=lock.owner_user_sub,
+                owner_display_name=lock.owner_display_name,
+            )
             error['expires_at'] = lock.expires_at.isoformat(
             ) if lock.expires_at else None
         raise BusinessException(error=error, status_code=status_code)
+
+    @classmethod
+    def _resolve_owner_name_parts(
+        cls,
+        *,
+        user_sub: Optional[str],
+    ) -> tuple[Optional[str], Optional[str]]:
+        if not user_sub:
+            return None, None
+        try:
+            staff_user = StaffUser.get_user_by_external_id(
+                user_sub,
+                include_inactive=True,
+            )
+        except ResourceClosedError:
+            return None, None
+        if not staff_user:
+            return None, None
+        return staff_user.first_name, staff_user.last_name
+
+    @classmethod
+    def _serialize_owner(
+        cls,
+        *,
+        user_sub: Optional[str],
+        owner_display_name: Optional[str],
+    ) -> dict[str, Optional[str]]:
+        first, last = cls._resolve_owner_name_parts(user_sub=user_sub)
+        resolved_display_name = owner_display_name
+        if not resolved_display_name:
+            full_name = ' '.join(part for part in [first, last] if part)
+            resolved_display_name = full_name or None
+
+        return {
+            'user_sub': user_sub,
+            'display_name': resolved_display_name,
+            'first_name': first,
+            'last_name': last,
+        }
 
     @classmethod
     def _business_error(
@@ -599,6 +645,34 @@ class ResourceLockService:
         )
 
     @classmethod
+    def _find_cross_scope_conflict(  # pylint: disable=too-many-arguments
+        cls,
+        *,
+        resource_type: str,
+        resource_id: int,
+        section_key: Optional[str],
+        language_id: Optional[int],
+        owner_user_sub: str,
+    ) -> Optional[ResourceLock]:
+        """Find another editor's lock on the same section that should block this acquisition.
+
+        An unscoped (whole-section) lock and a per-language lock have distinct scope keys, so they
+        would not otherwise conflict. An unscoped lock must still be mutually exclusive with every
+        per-language lock for that section (and vice versa), since it represents structural changes
+        that affect all languages.
+        """
+        if not section_key:
+            return None
+
+        for lock in ResourceLock.find_active_by_section(resource_type, resource_id, section_key):
+            if lock.owner_user_sub == owner_user_sub:
+                continue
+            if language_id is None or lock.language_id is None:
+                return lock
+
+        return None
+
+    @classmethod
     def acquire_lock(  # pylint: disable=too-many-arguments,too-many-locals
         cls,
         *,
@@ -627,6 +701,21 @@ class ResourceLockService:
         expires_at = now + timedelta(seconds=ttl)
         lock_scope = cls.build_scope_key(
             resource_type, resource_id, section_key, language_id)
+
+        cross_scope_conflict = cls._find_cross_scope_conflict(
+            resource_type=resource_type,
+            resource_id=resource_id,
+            section_key=section_key,
+            language_id=language_id,
+            owner_user_sub=owner_user_sub,
+        )
+        if cross_scope_conflict:
+            cls._lock_error(
+                code='lock_conflict',
+                message=cls.RESOURCE_LOCK_CONFLICT_MESSAGE,
+                lock_scope=lock_scope,
+                lock=cross_scope_conflict,
+            )
 
         active = ResourceLock.find_active_by_scope(lock_scope)
         existing_lock_response = cls._handle_existing_lock_on_acquire(
@@ -667,7 +756,7 @@ class ResourceLockService:
                 return cls._serialize_lock(conflict, is_mine=True)
             cls._lock_error(
                 code='lock_conflict',
-                message='Resource section is locked by another editor',
+                message=cls.RESOURCE_LOCK_CONFLICT_MESSAGE,
                 lock_scope=lock_scope,
                 lock=conflict,
             )
@@ -697,7 +786,7 @@ class ResourceLockService:
 
             cls._lock_error(
                 code='lock_conflict',
-                message='Resource section is locked by another editor',
+                message=cls.RESOURCE_LOCK_CONFLICT_MESSAGE,
                 lock_scope=lock_scope,
                 lock=active,
             )
@@ -924,10 +1013,10 @@ class ResourceLockService:
             'resource_id': lock.resource_id,
             'section_key': lock.section_key,
             'language_id': lock.language_id,
-            'owner': {
-                'user_sub': lock.owner_user_sub,
-                'display_name': lock.owner_display_name,
-            },
+            'owner': cls._serialize_owner(
+                user_sub=lock.owner_user_sub,
+                owner_display_name=lock.owner_display_name,
+            ),
             'owner_session_id': str(lock.owner_session_id),
             'acquired_at': lock.acquired_at.isoformat() if lock.acquired_at else None,
             'heartbeat_at': lock.heartbeat_at.isoformat() if lock.heartbeat_at else None,

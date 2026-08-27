@@ -11,14 +11,28 @@ import { EngagementDetailsTab } from 'models/engagementDetailsTab';
 import { AppConfig } from 'config';
 import { useNavigate } from 'react-router';
 
+export const AUTHORING_SECTION = {
+    HERO_BANNER: 'Hero Banner',
+    SUMMARY: 'Summary',
+    DETAILS: 'Details',
+    PROVIDE_FEEDBACK: 'Provide Feedback',
+    VIEW_RESULTS: 'View Results',
+    SUBSCRIBE: 'Subscribe',
+    MORE_ENGAGEMENTS: 'More Engagements',
+    SURVEY: 'Survey',
+    THIRD_PARTY_FEEDBACK_METHOD_LINK: '3rd Party Feedback Method Link',
+} as const;
+
 export const AUTHORING_SECTION_NAMES = [
-    'Hero Banner',
-    'Summary',
-    'Details',
-    'Provide Feedback',
-    'View Results',
-    'Subscribe',
-    'More Engagements',
+    AUTHORING_SECTION.HERO_BANNER,
+    AUTHORING_SECTION.SUMMARY,
+    AUTHORING_SECTION.DETAILS,
+    AUTHORING_SECTION.PROVIDE_FEEDBACK,
+    AUTHORING_SECTION.VIEW_RESULTS,
+    AUTHORING_SECTION.SUBSCRIBE,
+    AUTHORING_SECTION.MORE_ENGAGEMENTS,
+    AUTHORING_SECTION.SURVEY,
+    AUTHORING_SECTION.THIRD_PARTY_FEEDBACK_METHOD_LINK,
 ] as const;
 
 export type AuthoringSectionName = (typeof AUTHORING_SECTION_NAMES)[number];
@@ -51,37 +65,57 @@ interface CompletionComputationResult {
 
 type PerLanguageCompletion = Record<string, AuthoringSectionCompletion>;
 
-const REQUIRED_SECTION_NAMES: AuthoringSectionName[] = ['Hero Banner', 'Summary', 'Details', 'Provide Feedback'];
-const REQUIRED_SECTION_NAME_SET = new Set<AuthoringSectionName>(REQUIRED_SECTION_NAMES);
+export const REQUIRED_AUTHORING_SECTION_NAMES: readonly AuthoringSectionName[] = [
+    AUTHORING_SECTION.HERO_BANNER,
+    AUTHORING_SECTION.SUMMARY,
+    AUTHORING_SECTION.DETAILS,
+    AUTHORING_SECTION.PROVIDE_FEEDBACK,
+];
+const REQUIRED_SECTION_NAME_SET = new Set<AuthoringSectionName>(REQUIRED_AUTHORING_SECTION_NAMES);
 
 const DEFAULT_SECTION_INCOMPLETE_LANGUAGES: AuthoringSectionIncompleteLanguages = {
-    'Hero Banner': [],
-    Summary: [],
-    Details: [],
-    'Provide Feedback': [],
-    'View Results': [],
-    Subscribe: [],
-    'More Engagements': [],
+    [AUTHORING_SECTION.HERO_BANNER]: [],
+    [AUTHORING_SECTION.SUMMARY]: [],
+    [AUTHORING_SECTION.DETAILS]: [],
+    [AUTHORING_SECTION.PROVIDE_FEEDBACK]: [],
+    [AUTHORING_SECTION.VIEW_RESULTS]: [],
+    [AUTHORING_SECTION.SUBSCRIBE]: [],
+    [AUTHORING_SECTION.MORE_ENGAGEMENTS]: [],
+    [AUTHORING_SECTION.SURVEY]: [],
+    [AUTHORING_SECTION.THIRD_PARTY_FEEDBACK_METHOD_LINK]: [],
 };
 
 const DEFAULT_SECTION_COMPLETION: AuthoringSectionCompletion = {
-    'Hero Banner': false,
-    Summary: false,
-    Details: false,
-    'Provide Feedback': false,
-    'View Results': false,
-    Subscribe: false,
-    'More Engagements': false,
+    [AUTHORING_SECTION.HERO_BANNER]: false,
+    [AUTHORING_SECTION.SUMMARY]: false,
+    [AUTHORING_SECTION.DETAILS]: false,
+    [AUTHORING_SECTION.PROVIDE_FEEDBACK]: false,
+    [AUTHORING_SECTION.VIEW_RESULTS]: false,
+    [AUTHORING_SECTION.SUBSCRIBE]: false,
+    [AUTHORING_SECTION.MORE_ENGAGEMENTS]: false,
+    [AUTHORING_SECTION.SURVEY]: false,
+    [AUTHORING_SECTION.THIRD_PARTY_FEEDBACK_METHOD_LINK]: false,
 };
 
 const DEFAULT_EXPECTED_FIELDS: Record<AuthoringSectionName, string[]> = {
-    'Hero Banner': ['name', 'banner_url', 'open_link'],
-    Summary: ['description_title', 'rich_description'],
-    Details: ['details_tabs.length', 'details_tabs[n].label', 'details_tabs[n].heading', 'details_tabs[n].body'],
-    'Provide Feedback': ['feedback_heading', 'feedback_body'],
-    'View Results': ['view_results_status_block_button_text', 'view_results_link'],
-    Subscribe: ['subscribe_section_heading', 'subscribe_section_description', 'subscribe_consent_message'],
-    'More Engagements': ['more_engagements_heading'],
+    [AUTHORING_SECTION.HERO_BANNER]: ['name', 'banner_url', 'open_link'],
+    [AUTHORING_SECTION.SUMMARY]: ['description_title', 'rich_description'],
+    [AUTHORING_SECTION.DETAILS]: [
+        'details_tabs.length',
+        'details_tabs[n].label',
+        'details_tabs[n].heading',
+        'details_tabs[n].body',
+    ],
+    [AUTHORING_SECTION.PROVIDE_FEEDBACK]: ['feedback_heading', 'feedback_body'],
+    [AUTHORING_SECTION.VIEW_RESULTS]: ['view_results_status_block_button_text', 'view_results_link'],
+    [AUTHORING_SECTION.SUBSCRIBE]: [
+        'subscribe_section_heading',
+        'subscribe_section_description',
+        'subscribe_consent_message',
+    ],
+    [AUTHORING_SECTION.MORE_ENGAGEMENTS]: ['more_engagements_heading'],
+    [AUTHORING_SECTION.SURVEY]: ['survey'],
+    [AUTHORING_SECTION.THIRD_PARTY_FEEDBACK_METHOD_LINK]: ['3rd_party_feedback_method_link'],
 };
 
 const DEFAULT_SECTION_DEBUG = AUTHORING_SECTION_NAMES.reduce((acc, sectionName) => {
@@ -245,8 +279,8 @@ const computeSectionCompletion = async (
 
     const localizedDetails = getDetailsForLanguage(detailsTabs, contentTranslations, normalizedLanguageCode);
 
-    const sectionFields = {
-        'Hero Banner': [
+    const sectionFields: Record<AuthoringSectionName, SectionFieldStatus[]> = {
+        [AUTHORING_SECTION.HERO_BANNER]: [
             {
                 key: 'name',
                 complete: hasText(getLocalizedField(engagement.name, translation, 'name')),
@@ -260,7 +294,7 @@ const computeSectionCompletion = async (
                 complete: isBlockLinkComplete(openBlock?.link_type, openBlock?.internal_link, openBlock?.external_link),
             },
         ],
-        Summary: [
+        [AUTHORING_SECTION.SUMMARY]: [
             {
                 key: 'description_title',
                 complete: hasText(getLocalizedField(engagement.description_title, translation, 'description_title')),
@@ -270,7 +304,7 @@ const computeSectionCompletion = async (
                 complete: hasText(getLocalizedField(engagement.rich_description, translation, 'rich_description')),
             },
         ],
-        Details:
+        [AUTHORING_SECTION.DETAILS]:
             localizedDetails.length > 0
                 ? localizedDetails.flatMap((tab, index) => [
                       {
@@ -292,7 +326,7 @@ const computeSectionCompletion = async (
                           complete: false,
                       },
                   ],
-        'Provide Feedback': [
+        [AUTHORING_SECTION.PROVIDE_FEEDBACK]: [
             {
                 key: 'feedback_heading',
                 complete: hasText(getLocalizedField(engagement.feedback_heading, translation, 'feedback_heading')),
@@ -302,7 +336,7 @@ const computeSectionCompletion = async (
                 complete: hasText(getLocalizedField(engagement.feedback_body, translation, 'feedback_body')),
             },
         ],
-        'View Results': [
+        [AUTHORING_SECTION.VIEW_RESULTS]: [
             {
                 key: 'view_results_status_block_button_text',
                 complete: hasText(
@@ -322,7 +356,7 @@ const computeSectionCompletion = async (
                 ),
             },
         ],
-        Subscribe: [
+        [AUTHORING_SECTION.SUBSCRIBE]: [
             {
                 key: 'subscribe_section_heading',
                 complete: hasText(
@@ -355,7 +389,7 @@ const computeSectionCompletion = async (
                 ),
             },
         ],
-        'More Engagements': [
+        [AUTHORING_SECTION.MORE_ENGAGEMENTS]: [
             {
                 key: 'more_engagements_heading',
                 complete: hasText(
@@ -363,38 +397,37 @@ const computeSectionCompletion = async (
                 ),
             },
         ],
+        [AUTHORING_SECTION.SURVEY]: [
+            {
+                key: 'survey',
+                complete: engagement.surveys.length > 0,
+            },
+        ],
+        [AUTHORING_SECTION.THIRD_PARTY_FEEDBACK_METHOD_LINK]: [
+            {
+                key: '3rd_party_feedback_method_link',
+                complete: false,
+            },
+        ],
     };
 
-    const sectionComputation: Record<AuthoringSectionName, SectionComputationResult> = {
-        'Hero Banner': {
-            complete: sectionFields['Hero Banner'].every((field) => field.complete),
-            fields: sectionFields['Hero Banner'],
+    const sectionComputation: Record<AuthoringSectionName, SectionComputationResult> = AUTHORING_SECTION_NAMES.reduce(
+        (acc, sectionName) => {
+            const fields = sectionFields[sectionName];
+            const complete =
+                sectionName === AUTHORING_SECTION.DETAILS
+                    ? localizedDetails.length > 0 && fields.every((field) => field.complete)
+                    : fields.every((field) => field.complete);
+
+            acc[sectionName] = {
+                complete,
+                fields,
+            };
+
+            return acc;
         },
-        Summary: {
-            complete: sectionFields['Summary'].every((field) => field.complete),
-            fields: sectionFields['Summary'],
-        },
-        Details: {
-            complete: localizedDetails.length > 0 && sectionFields['Details'].every((field) => field.complete),
-            fields: sectionFields['Details'],
-        },
-        'Provide Feedback': {
-            complete: sectionFields['Provide Feedback'].every((field) => field.complete),
-            fields: sectionFields['Provide Feedback'],
-        },
-        'View Results': {
-            complete: sectionFields['View Results'].every((field) => field.complete),
-            fields: sectionFields['View Results'],
-        },
-        Subscribe: {
-            complete: sectionFields['Subscribe'].every((field) => field.complete),
-            fields: sectionFields['Subscribe'],
-        },
-        'More Engagements': {
-            complete: sectionFields['More Engagements'].every((field) => field.complete),
-            fields: sectionFields['More Engagements'],
-        },
-    };
+        {} as Record<AuthoringSectionName, SectionComputationResult>,
+    );
 
     const completionBySection: AuthoringSectionCompletion = AUTHORING_SECTION_NAMES.reduce((acc, sectionName) => {
         acc[sectionName] = sectionComputation[sectionName].complete;
@@ -569,7 +602,7 @@ export const useAuthoringSectionCompletion = ({
     ]);
 
     const requiredSectionsComplete = useMemo(
-        () => REQUIRED_SECTION_NAMES.every((sectionName) => completionBySection[sectionName]),
+        () => REQUIRED_AUTHORING_SECTION_NAMES.every((sectionName) => completionBySection[sectionName]),
         [completionBySection],
     );
 

@@ -6,8 +6,14 @@ const Endpoints = {
         CREATE: `${AppConfig.apiUrl}/engagements/`,
         UPDATE: `${AppConfig.apiUrl}/engagements/`,
         GET: `${AppConfig.apiUrl}/engagements/engagement_id`,
+        GET_LOCKS: `${AppConfig.apiUrl}/engagements/engagement_id/locks`,
         GET_BY_SLUG: `${AppConfig.apiUrl}/engagements/slug/eng_slug`,
         DELETE: `${AppConfig.apiUrl}/engagements/engagement_id/delete`,
+    },
+    ResourceLocks: {
+        ACQUIRE: `${AppConfig.apiUrl}/locks/acquire`,
+        REFRESH: `${AppConfig.apiUrl}/locks/refresh`,
+        RELEASE: `${AppConfig.apiUrl}/locks/release`,
     },
     EngagementTranslations: {
         GET_TRANSLATION_LANGUAGES: `${AppConfig.apiUrl}/engagement/engagement_id/translations/languages`,

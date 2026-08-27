@@ -2,6 +2,7 @@ import http from 'apiManager/httpRequestHandler';
 import Endpoints from 'apiManager/endpoints';
 import { replaceAllInURL, replaceUrl } from 'helper';
 import { EngagementDetailsTab } from 'models/engagementDetailsTab';
+import { RequestHeaders } from 'services/type';
 
 export const getDetailsTabs = async (engagementId: number): Promise<EngagementDetailsTab[]> => {
     const url = replaceUrl(Endpoints.EngagementDetailsTab.GET_LIST, 'engagement_id', String(engagementId));
@@ -30,6 +31,7 @@ export const postDetailsTabs = async (
 export const patchDetailsTabs = async (
     engagementId: number,
     tabs: EngagementDetailsTab[],
+    headers: RequestHeaders = {},
 ): Promise<EngagementDetailsTab[]> => {
     const url = replaceAllInURL({
         URL: Endpoints.EngagementDetailsTab.UPDATE,
@@ -37,7 +39,7 @@ export const patchDetailsTabs = async (
             engagement_id: String(engagementId),
         },
     });
-    const response = await http.PutRequest<EngagementDetailsTab[]>(url, tabs);
+    const response = await http.PutRequest<EngagementDetailsTab[]>(url, tabs, {}, headers);
     if (response.data) {
         return response.data;
     }

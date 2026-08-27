@@ -20,10 +20,10 @@ import { elevations } from 'components/common';
 import { Button } from 'components/common/Input/Button';
 import { StatusCircle } from '../../view/AuthoringTab';
 import { ReactComponent as PagePreviewIcon } from 'assets/images/pagePreview.svg';
-import { AuthoringBottomNavProps, LanguageSelectorProps } from './types';
+import { AuthoringBottomNavProps, AuthoringContextType, LanguageSelectorProps } from './types';
 import { useFormContext } from 'react-hook-form';
 import { EngagementUpdateData } from './AuthoringContext';
-import { Await, useMatch, useNavigate, useParams } from 'react-router';
+import { Await, useMatch, useNavigate, useParams, useRouteLoaderData } from 'react-router';
 import ConfirmModal from 'components/common/Modals/ConfirmModal';
 import { Language } from 'models/language';
 import { RouterLinkRenderer } from 'components/common/Navigation/Link';
@@ -31,28 +31,45 @@ import { faArrowUpRightFromSquare } from '@fortawesome/free-solid-svg-icons';
 import { EngagementViewSections } from 'components/engagement/public/view';
 import { useAuthoringPreviewWindow } from './AuthoringPreviewWindowContext';
 import { getPath, ROUTES } from 'routes/routes';
-import { useAppDispatch } from 'hooks';
+import { useAppDispatch, useAppSelector } from 'hooks';
 import { openNotification } from 'services/notificationService/notificationSlice';
 import { createEngagementTranslation, getEngagementTranslationByLanguage } from 'services/engagementService';
 import axios from 'axios';
 import { AppConfig } from 'config';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { EngagementLoaderAdminData } from 'engagements/admin/EngagementLoaderAdmin';
+import { AuthoringFormContext, useAuthoringFormContext } from './AuthoringFormContext';
+import { findSectionLock, getAuthoringSectionNameByPage } from './useAuthoringSectionLocks';
+import { AUTHORING_SECTION } from './useAuthoringSectionCompletion';
+import useAuthoringSectionLockNavigation, { useSectionLockState } from './useAuthoringSectionLockNavigation';
+import LockOwnerAvatar from './LockOwnerAvatar';
 const PREVIEW_CLOSE_GRACE_MS = 800;
 
+const useCurrentSectionLock = (pageName?: string) => {
+    const { languageId, locks } = React.useContext(AuthoringFormContext as React.Context<AuthoringContextType>);
+    const currentSectionName = getAuthoringSectionNameByPage(pageName) ?? AUTHORING_SECTION.HERO_BANNER;
+
+    return findSectionLock({
+        locks,
+        sectionName: currentSectionName,
+        languageId,
+    });
+};
+
 const AuthoringBottomNav = ({
-    currentLanguage,
-    languages,
     pageTitle,
     pageName,
     currentSectionIncompleteLanguageCodes,
     isSectionCompletionLoading,
-    onSaveSection,
     setUnsavedWorkPromptSuppressed,
-}: Omit<AuthoringBottomNavProps, 'setCurrentLanguage'>) => {
+}: AuthoringBottomNavProps) => {
     const {
         setValue,
         formState: { isDirty, isSubmitting },
     } = useFormContext<EngagementUpdateData>();
+    const { handleSubmit } = useFormContext<EngagementUpdateData>();
+    const { onSubmit } = useAuthoringFormContext();
+    const onSaveSection = handleSubmit(onSubmit);
     const { engagementId, languageCode } = useParams();
     const isMediumScreenOrLarger = useMediaQuery((theme: Theme) => theme.breakpoints.up('md'));
     const [portalEl, setPortalEl] = useState<HTMLElement | null>(null);
@@ -65,7 +82,10 @@ const AuthoringBottomNav = ({
         schedulePreviewClose,
         closePreviewWindow,
     } = useAuthoringPreviewWindow();
+    const currentLanguage = useAppSelector((state) => state.language);
     const defaultLanguageCode = AppConfig.language.defaultLanguageId.toLowerCase();
+    const currentSectionLock = useCurrentSectionLock(pageName);
+    const sectionLockState = useSectionLockState({ lock: currentSectionLock });
 
     const getBasePathPrefix = () => {
         const basename = sessionStorage.getItem('basename');
@@ -344,8 +364,6 @@ const AuthoringBottomNav = ({
                         <Grid className="button-container" container flexWrap="nowrap" size={12} gap="1rem">
                             <ThemeProvider theme={AdminTheme}>
                                 <LanguageSelector
-                                    currentLanguage={currentLanguage}
-                                    languages={languages}
                                     isDirty={isDirty}
                                     isSubmitting={isSubmitting}
                                     currentSectionIncompleteLanguageCodes={currentSectionIncompleteLanguageCodes}
@@ -354,7 +372,7 @@ const AuthoringBottomNav = ({
                                 />
                             </ThemeProvider>
                             <Button
-                                disabled={!isDirty || isSubmitting}
+                                disabled={!isDirty || isSubmitting || sectionLockState.isDisabled}
                                 type="button"
                                 onClick={handleSaveSection}
                                 variant="primary"
@@ -380,6 +398,7 @@ const AuthoringBottomNav = ({
                                     variant="primary"
                                     size="small"
                                     type="button"
+                                    disabled={sectionLockState.isDisabled}
                                     href={`${getTargetPreviewBasePath()}${getPreviewSectionHash(pageName)}`}
                                     icon={<PagePreviewIcon aria-hidden="true" />}
                                     onClick={(e) => {
@@ -435,8 +454,6 @@ const AuthoringBottomNav = ({
 };
 
 const LanguageSelector = ({
-    currentLanguage,
-    languages,
     isDirty,
     isSubmitting,
     currentSectionIncompleteLanguageCodes,
@@ -447,14 +464,20 @@ const LanguageSelector = ({
     const { engagementId, languageCode: urlLanguageCode } = useParams();
     const navigate = useNavigate();
     const pageName = useMatch(ROUTES.AUTHORING_PAGE)?.params.page;
+    const currentLanguage = useAppSelector((state) => state.language);
+    const { languages } = useRouteLoaderData('single-engagement') as EngagementLoaderAdminData;
+    const { locks } = React.useContext(AuthoringFormContext as React.Context<AuthoringContextType>);
+    const { breakLockModal, requestNavigation, resolveSectionLockState } = useAuthoringSectionLockNavigation();
     const dispatch = useAppDispatch();
     const [languageModalOpen, setLanguageModalOpen] = useState(false);
     const [newLanguage, setNewLanguage] = useState('');
     const [languageList, setLanguageList] = useState<Language[]>([]);
     const [languagesLoaded, setLanguagesLoaded] = useState(false);
     const [isSwitchingLanguage, setIsSwitchingLanguage] = useState(false);
+    const newLanguageName = languageList.find((language) => language.code === newLanguage)?.name;
 
     const isEnglishOnly = languagesLoaded && languageList.length <= 1;
+    const currentSectionName = getAuthoringSectionNameByPage(pageName) ?? AUTHORING_SECTION.HERO_BANNER;
     const normalizedIncompleteLanguageCodes = React.useMemo(
         () =>
             [...currentSectionIncompleteLanguageCodes]
@@ -553,20 +576,31 @@ const LanguageSelector = ({
         setIsSwitchingLanguage(true);
         const ready = await ensureTranslationResources(languageCode);
         if (ready) {
-            navigate(
-                getPath(ROUTES.AUTHORING_PAGE, {
+            const language = languageList.find((item) => item.code.toLowerCase() === languageCode.toLowerCase());
+            const languageLock = findSectionLock({
+                locks,
+                sectionName: currentSectionName,
+                languageId: language?.id,
+            });
+            const navigationResult = requestNavigation({
+                href: getPath(ROUTES.AUTHORING_PAGE, {
                     engagementId: engagementId ?? '',
                     languageCode,
                     page: pageName ?? 'banner',
                 }),
-                {
+                sectionName: currentSectionName,
+                lock: languageLock,
+                navigationOptions: {
                     state: {
                         preserveScroll: true,
                         authoringScrollY: globalThis.scrollY,
                     },
                 },
-            );
-            return true;
+            });
+            if (navigationResult !== 'blocked') {
+                setIsSwitchingLanguage(false);
+                return true;
+            }
         }
         setUnsavedWorkPromptSuppressed(false);
         setIsSwitchingLanguage(false);
@@ -597,11 +631,12 @@ const LanguageSelector = ({
 
     return (
         <>
+            {breakLockModal}
             {/* confirm that the user wants to switch languages */}
             <Modal open={languageModalOpen} aria-describedby="publish-modal-subtext">
                 <ConfirmModal
                     style="warning"
-                    header={`Are you sure you want to switch to ${currentLanguage.name || 'another language'}?`}
+                    header={`Are you sure you want to switch to ${newLanguageName || 'another language'}?`}
                     subHeader={`You have unsaved changes for the ${currentLanguage.name || 'current'} language.`}
                     subTextId="publish-modal-subtext"
                     subText={[
@@ -686,14 +721,26 @@ const LanguageSelector = ({
                                         const isIncomplete = effectiveIncompleteLanguageCodeSet.has(
                                             language.code.toLowerCase(),
                                         );
+                                        const languageLock = findSectionLock({
+                                            locks,
+                                            sectionName: currentSectionName,
+                                            languageId: language.id,
+                                        });
+                                        const isDisabled = resolveSectionLockState(languageLock).isDisabled;
                                         return (
-                                            <MenuItem value={language.code} key={language.code}>
+                                            <MenuItem value={language.code} key={language.code} disabled={isDisabled}>
                                                 <span style={{ display: 'inline-flex', alignItems: 'center' }}>
                                                     {language.name}
                                                     <When condition={isIncomplete}>
                                                         <span style={{ marginLeft: '0.3rem', display: 'inline-flex' }}>
                                                             <StatusCircle required={true} />
                                                         </span>
+                                                    </When>
+                                                    <When condition={Boolean(languageLock)}>
+                                                        <LockOwnerAvatar
+                                                            sx={{ ml: 1 }}
+                                                            lock={languageLock ?? undefined}
+                                                        />
                                                     </When>
                                                 </span>
                                             </MenuItem>

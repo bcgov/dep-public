@@ -18,17 +18,18 @@ import { defaultValuesObject, EngagementUpdateData } from './AuthoringContext';
 import { Engagement } from 'models/engagement';
 import { getEngagementTranslationByCode } from 'services/engagementService';
 import { AppConfig } from 'config';
+import { AUTHORING_SECTION } from './useAuthoringSectionCompletion';
 
 const ENGAGEMENT_UPLOADER_HEIGHT = '360px';
 const ENGAGEMENT_CROPPER_ASPECT_RATIO = 1920 / 700;
 const DEFAULT_LANGUAGE_CODE = AppConfig.language.defaultLanguageId.toLowerCase();
 
 const sectionOptions = [
-    ['Summary', Sections.DESCRIPTION],
-    ['Details', Sections.DETAILS_TABS],
-    ['Provide Feedback', Sections.PROVIDE_FEEDBACK],
-    ['Results', Sections.VIEW_RESULTS],
-    ['Subscribe', Sections.SUBSCRIBE],
+    [AUTHORING_SECTION.SUMMARY, Sections.DESCRIPTION],
+    [AUTHORING_SECTION.DETAILS, Sections.DETAILS_TABS],
+    [AUTHORING_SECTION.PROVIDE_FEEDBACK, Sections.PROVIDE_FEEDBACK],
+    [AUTHORING_SECTION.VIEW_RESULTS, Sections.VIEW_RESULTS],
+    [AUTHORING_SECTION.SUBSCRIBE, Sections.SUBSCRIBE],
 ].map((section) => (
     <MenuItem value={section[1]} key={section[1]}>
         {section[0]} Section

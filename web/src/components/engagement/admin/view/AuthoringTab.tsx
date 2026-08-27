@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { AuthoringButtonProps, StatusCircleProps } from './types';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowRightLong } from '@fortawesome/pro-light-svg-icons';
@@ -10,15 +10,24 @@ import { Collapse, Grid2 as Grid, MenuItem, Select, SelectChangeEvent, Skeleton 
 import { colors } from 'styles/Theme';
 import { Link } from 'components/common/Navigation';
 import { getDefaultAuthoringTabValues } from './AuthoringTabElements';
-import { useAppSelector } from 'hooks';
+import { useAppDispatch, useAppSelector } from 'hooks';
 import { useParams, useRouteLoaderData } from 'react-router';
 import { EngagementLoaderAdminData } from '../EngagementLoaderAdmin';
 import { Language } from 'models/language';
 import { faGlobe } from '@fortawesome/pro-regular-svg-icons';
 import {
-    AuthoringSectionName,
+    AUTHORING_SECTION,
+    AUTHORING_SECTION_NAMES,
     useAuthoringSectionCompletion,
 } from 'components/engagement/admin/create/authoring/useAuthoringSectionCompletion';
+import { findSectionLock } from 'components/engagement/admin/create/authoring/useAuthoringSectionLocks';
+import LockOwnerAvatar from 'components/engagement/admin/create/authoring/LockOwnerAvatar';
+import { getPath, ROUTES } from 'routes/routes';
+import { saveLanguage } from 'reduxSlices/languageSlice';
+import useAuthoringSectionLockNavigation from 'components/engagement/admin/create/authoring/useAuthoringSectionLockNavigation';
+import { ResourceLockRecord } from 'services/resourceLockService';
+import { AppConfig } from 'config';
+import { useEngagementLocks } from 'services/resourceLockService/useEngagementLocks';
 
 export const StatusCircle = (props: StatusCircleProps) => {
     const statusCircleStyles = {
@@ -34,31 +43,43 @@ export const StatusCircle = (props: StatusCircleProps) => {
     return <span style={statusCircleStyles}> </span>;
 };
 
-const AuthoringButton = (props: AuthoringButtonProps & { isLoading?: boolean }) => {
+const AuthoringButton = (
+    props: AuthoringButtonProps & {
+        isLoading?: boolean;
+        onNavigate: (item: AuthoringButtonProps['item']) => void;
+        isDisabled: boolean;
+    },
+) => {
+    // Mix with white instead of altering opacity - ensure child avatar is not dimmed
+    const fadeWhenDisabled = (color: string) => {
+        if (!props.isDisabled) return color;
+        return `color-mix(in srgb, ${color} 60%, white)`;
+    };
+
+    const bgColor = props.item.required ? colors.surface.blue[10] : colors.surface.gray[10];
+
     const buttonStyles = {
         display: 'flex',
         width: '100%',
         height: '3rem',
-        backgroundColor: props.item.required ? colors.surface.blue[10] : colors.surface.gray[10],
+        backgroundColor: fadeWhenDisabled(bgColor),
         borderRadius: '8px',
         border: 'none',
         padding: '0 1rem 0 2.5rem',
         margin: '0 0 0.5rem',
         alignItems: 'center',
         justifyContent: 'flex-start',
-        cursor: 'pointer',
-    };
-    const textStyles = {
-        fontSize: '1rem',
-        color: colors.type.regular.primary,
+        cursor: props.isDisabled ? 'not-allowed' : 'pointer',
+        color: fadeWhenDisabled(colors.type.regular.primary),
+        position: 'relative' as const,
     };
     const arrowStyles = {
-        color: colors.surface.blue[90],
+        color: fadeWhenDisabled(colors.surface.blue[90]),
         fontSize: '1.3rem',
         marginLeft: 'auto',
     };
     const checkStyles = {
-        color: colors.type.regular.primary,
+        color: 'inherit',
         fontSize: '1rem',
         fontWeight: 'bold',
         paddingRight: '0.4rem',
@@ -68,12 +89,28 @@ const AuthoringButton = (props: AuthoringButtonProps & { isLoading?: boolean }) 
         return <Skeleton variant="rounded" height={48} width="100%" sx={{ mb: '0.5rem', borderRadius: '8px' }} />;
     }
 
+    const lock = props.item.lock;
+
     return (
-        <Link underline="none" style={{ ...buttonStyles }} to={props.item.link}>
+        <Link
+            underline="none"
+            sx={{ ...buttonStyles }}
+            to={props.isDisabled ? '#' : props.item.link}
+            aria-disabled={props.isDisabled}
+            onClick={
+                props.onNavigate
+                    ? (event) => {
+                          event.preventDefault();
+                          props.onNavigate(props.item);
+                      }
+                    : undefined
+            }
+        >
+            <LockOwnerAvatar sx={{ position: 'absolute', left: '0.5rem', cursor: 'default' }} lock={lock} size={20} />
             <When condition={props.item.completed}>
                 <FontAwesomeIcon style={checkStyles} icon={faCheck} />
             </When>
-            <span style={textStyles}>{props.item.title}</span>
+            <BodyText color="inherit">{props.item.title}</BodyText>
             <Unless condition={props.item.completed}>
                 <StatusCircle required={props.item.required} />
             </Unless>
@@ -83,12 +120,36 @@ const AuthoringButton = (props: AuthoringButtonProps & { isLoading?: boolean }) 
 };
 
 export const AuthoringTab = () => {
-    // Set useStates. When data is imported, it will be set with setSectionValues and setFeedbackMethods.
     const { engagementId } = useParams();
-    const { engagement, languages } = useRouteLoaderData('single-engagement') as EngagementLoaderAdminData;
-    const currentLanguageCode = useAppSelector((state) => state.language.id) || 'en';
-    const [selectedLanguageCode, setSelectedLanguageCode] = useState(currentLanguageCode);
-    const [languageOptions, setLanguageOptions] = useState<Language[]>([]);
+    const { engagement, languages, locks } = useRouteLoaderData('single-engagement') as EngagementLoaderAdminData;
+    const resolvedEngagement = React.use(engagement);
+    const resolvedLanguages = React.use(languages);
+    const defaultLanguage = useMemo(
+        () => ({
+            id: 0,
+            code: AppConfig.language.defaultLanguageId,
+            name: AppConfig.language.defaultLanguageName,
+            right_to_left: AppConfig.language.defaultRightToLeft,
+        }),
+        [],
+    );
+    const selectedLanguage = useAppSelector((state) => state.language);
+    const selectedLanguageCode = selectedLanguage?.id ?? defaultLanguage.code;
+    const dispatch = useAppDispatch();
+    const setSelectedLanguage = (language: Language) => {
+        if (!language?.id) return;
+        dispatch(saveLanguage({ id: language.code, name: language.name }));
+    };
+    const languageOptions = resolvedLanguages;
+    const linkedSurveyId = useMemo(() => {
+        const selectedSurveyId = Number(resolvedEngagement.selected_survey_id);
+        if (Number.isFinite(selectedSurveyId) && selectedSurveyId > 0) {
+            return selectedSurveyId;
+        }
+
+        const firstSurveyId = Number(resolvedEngagement.surveys?.[0]?.id);
+        return Number.isFinite(firstSurveyId) && firstSurveyId > 0 ? firstSurveyId : null;
+    }, [resolvedEngagement]);
     const selectedLanguageCodes = useMemo(() => {
         if (languageOptions.length > 0) {
             return languageOptions.map((language) => language.code);
@@ -107,30 +168,64 @@ export const AuthoringTab = () => {
         selectedLanguageCodes,
         engagementPromise: engagement,
     });
+    const { locks: liveLocks } = useEngagementLocks({
+        engagementId: numericEngagementId,
+        initialLocksPromise: locks,
+    });
+    const selectedLanguageId = languageOptions.find((language) => language.code === selectedLanguageCode)?.id;
+    const locksBySection = useMemo(() => {
+        const entries = AUTHORING_SECTION_NAMES.map((sectionName) => {
+            if (sectionName === AUTHORING_SECTION.SURVEY && linkedSurveyId) {
+                return [sectionName, null] as const;
+            }
+
+            return [
+                sectionName,
+                findSectionLock({
+                    locks: liveLocks,
+                    sectionName,
+                    languageId: selectedLanguageId,
+                }),
+            ] as const;
+        });
+
+        return Object.fromEntries(entries) as Record<
+            (typeof AUTHORING_SECTION_NAMES)[number],
+            ResourceLockRecord | null
+        >;
+    }, [linkedSurveyId, liveLocks, selectedLanguageId]);
+    const { breakLockModal, resolveSectionLockState, requestNavigation } = useAuthoringSectionLockNavigation();
 
     const sectionValues = useMemo(
         () =>
             getDefaultAuthoringTabValues('sections', engagementId ?? '', selectedLanguageCode).map((section) => ({
                 ...section,
-                completed: completionBySection[section.title as AuthoringSectionName] ?? false,
+                completed: completionBySection[section.title] ?? false,
+                lock: locksBySection[section.title] ?? undefined,
             })),
-        [completionBySection, engagementId, selectedLanguageCode],
+        [completionBySection, engagementId, locksBySection, selectedLanguage],
     );
-    const feedbackCompleted = completionBySection['Provide Feedback'];
+
     const feedbackMethods = useMemo(
         () =>
             getDefaultAuthoringTabValues('feedback', engagementId ?? '', selectedLanguageCode).map((method) => ({
                 ...method,
-                completed: feedbackCompleted,
+                link:
+                    method.title === AUTHORING_SECTION.SURVEY && linkedSurveyId
+                        ? getPath(ROUTES.SURVEY_PREVIEW, { surveyId: linkedSurveyId })
+                        : method.link,
+                completed: completionBySection[method.title] ?? false,
+                lock:
+                    method.title === AUTHORING_SECTION.SURVEY && linkedSurveyId
+                        ? undefined
+                        : (locksBySection[method.title] ?? undefined),
             })),
-        [engagementId, feedbackCompleted, selectedLanguageCode],
+        [engagementId, completionBySection, linkedSurveyId, locksBySection, selectedLanguage],
     );
+    const feedbackCompleted = feedbackMethods.some((method) => method.completed);
     const optionalSectionValues = useMemo(() => sectionValues.filter((section) => !section.required), [sectionValues]);
 
-    const availableLanguageOptions =
-        languageOptions.length > 0
-            ? languageOptions
-            : [{ id: 0, code: 'en', name: 'English', right_to_left: false } as Language];
+    const availableLanguageOptions = languageOptions.length > 0 ? languageOptions : [defaultLanguage as Language];
 
     const languageSelectWidthCh = useMemo(() => {
         const longestOptionLength = availableLanguageOptions.reduce((maxLength, language) => {
@@ -157,33 +252,21 @@ export const AuthoringTab = () => {
     };
 
     useEffect(() => {
-        let isMounted = true;
-        void languages.then((resolvedLanguages) => {
-            if (!isMounted) {
-                return;
-            }
-            setLanguageOptions(resolvedLanguages);
-            const hasCurrentSelection = resolvedLanguages.some((language) => language.code === selectedLanguageCode);
-            if (!hasCurrentSelection) {
-                setSelectedLanguageCode('en');
-            }
-        });
-
-        return () => {
-            isMounted = false;
-        };
-    }, [languages, selectedLanguageCode]);
-
-    useEffect(() => {
-        setSelectedLanguageCode(currentLanguageCode);
-    }, [currentLanguageCode]);
+        const hasCurrentSelection = resolvedLanguages.some((language) => language.code === selectedLanguageCode);
+        if (!hasCurrentSelection) {
+            setSelectedLanguage(defaultLanguage);
+        }
+    }, [defaultLanguage, resolvedLanguages, selectedLanguageCode]);
 
     const handleLanguageSelectionChange = (event: SelectChangeEvent<string>) => {
-        setSelectedLanguageCode(event.target.value);
+        setSelectedLanguage(
+            availableLanguageOptions.find((language) => language.code === event.target.value) ?? defaultLanguage,
+        );
     };
 
     return (
         <Grid container id="admin-authoring-section" direction="column" maxWidth={'700px'}>
+            {breakLockModal}
             <Grid container direction="row" justifyContent="space-between" mb="1.5rem" rowGap={1}>
                 <Grid>
                     <Heading2 decorated>Authoring</Heading2>
@@ -264,7 +347,19 @@ export const AuthoringTab = () => {
                     </BodyText>
                     {sectionValues.map((section) =>
                         section.required ? (
-                            <AuthoringButton key={section.id} item={section} isLoading={isLoadingSectionCompletion} />
+                            <AuthoringButton
+                                key={section.id}
+                                item={section}
+                                isLoading={isLoadingSectionCompletion}
+                                isDisabled={resolveSectionLockState(section.lock).isDisabled}
+                                onNavigate={(item) => {
+                                    requestNavigation({
+                                        href: item.link,
+                                        sectionName: item.title,
+                                        lock: item.lock,
+                                    });
+                                }}
+                            />
                         ) : null,
                     )}
                 </Grid>
@@ -273,7 +368,19 @@ export const AuthoringTab = () => {
                         Optional Sections
                     </BodyText>
                     {optionalSectionValues.map((section) => (
-                        <AuthoringButton key={section.id} item={section} isLoading={isLoadingSectionCompletion} />
+                        <AuthoringButton
+                            key={section.id}
+                            item={section}
+                            isLoading={isLoadingSectionCompletion}
+                            isDisabled={resolveSectionLockState(section.lock).isDisabled}
+                            onNavigate={(item) => {
+                                requestNavigation({
+                                    href: item.link,
+                                    sectionName: item.title,
+                                    lock: item.lock,
+                                });
+                            }}
+                        />
                     ))}
                 </Grid>
             </Grid>
@@ -292,7 +399,19 @@ export const AuthoringTab = () => {
                 </BodyText>
                 <Grid size={12} sx={{ width: '100%' }}>
                     {feedbackMethods.map((method) => (
-                        <AuthoringButton item={method} key={method.id} isLoading={isLoadingSectionCompletion} />
+                        <AuthoringButton
+                            item={method}
+                            key={method.id}
+                            isLoading={isLoadingSectionCompletion}
+                            isDisabled={resolveSectionLockState(method.lock).isDisabled}
+                            onNavigate={(item) => {
+                                requestNavigation({
+                                    href: item.link,
+                                    sectionName: item.title,
+                                    lock: item.lock,
+                                });
+                            }}
+                        />
                     ))}
                 </Grid>
             </Grid>
