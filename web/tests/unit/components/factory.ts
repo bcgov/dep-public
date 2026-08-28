@@ -294,6 +294,7 @@ const engagementSlugData = {
 
 const engagementDetailsTabData: EngagementDetailsTab = {
     id: 1,
+    tempId: crypto.randomUUID(),
     engagement_id: 1,
     label: 'Tab 1',
     slug: 'tab_1',

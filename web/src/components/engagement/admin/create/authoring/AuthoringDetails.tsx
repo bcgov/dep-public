@@ -77,6 +77,7 @@ const AuthoringDetails = () => {
     const defaultDetailsTabValues = useMemo(
         () => ({
             id: -1,
+            tempId: crypto.randomUUID(),
             engagement_id: engagementId,
             label: 'Tab 1',
             slug: 'tab_1',
@@ -146,6 +147,7 @@ const AuthoringDetails = () => {
                     }
                     return {
                         id: t.id || -1,
+                        tempId: crypto.randomUUID(),
                         engagement_id: t.engagement_id || engagementId,
                         label: t.label || '',
                         slug: t.slug || '',
@@ -190,6 +192,7 @@ const AuthoringDetails = () => {
         const renumberedTabs = renumberTabs(newTabs);
         const newTab: FormDetailsTab = {
             id: -1,
+            tempId: crypto.randomUUID(),
             engagement_id: engagementId,
             label: `Tab ${newTabs.length + 1}`,
             slug: `tab_${newTabs.length + 1}`,
@@ -482,13 +485,6 @@ const AuthoringDetails = () => {
         top: '1px',
     };
 
-    const getTabReactKey = (tab: FormDetailsTab, index: number) => {
-        if (tab.id && tab.id > 0) {
-            return `tab-${tab.id}`;
-        }
-        return `tab-new-${tab.slug || 'tab'}-${index}`;
-    };
-
     return (
         <>
             {/* prevent user from accidentally deleting a tab */}
@@ -616,7 +612,7 @@ const AuthoringDetails = () => {
                                     <Tab
                                         component="button"
                                         aria-label={`${displayLabel} is selected. Press the delete key to remove.`}
-                                        key={getTabReactKey(value, key)}
+                                        key={value.tempId}
                                         value={String(key)}
                                         onKeyDown={(event) => {
                                             tabKeyDown(event, 'tab', key);
@@ -689,7 +685,7 @@ const AuthoringDetails = () => {
 
                     {/* Tab contents */}
                     {authoringDetailsTabs.map((tab, key) => (
-                        <TabPanel sx={tabPanelStyles} value={String(key)} key={getTabReactKey(tab, key)}>
+                        <TabPanel sx={tabPanelStyles} value={String(key)} key={tab.tempId}>
                             <AuthoringFormContainer pt="2rem" pb="2.5rem" isHydrating={isHydrating}>
                                 <AuthoringFormSection
                                     name={`Tab ${key + 1} Label`}
