@@ -1,5 +1,6 @@
 export interface EngagementDetailsTab {
     id: number;
+    tempId: `${string}-${string}-${string}-${string}-${string}`;
     engagement_id: number;
     label: string;
     slug: string;
@@ -11,6 +12,7 @@ export interface EngagementDetailsTab {
 export const createDefaultDetailsTab = (): EngagementDetailsTab => {
     return {
         id: -1,
+        tempId: crypto.randomUUID(),
         engagement_id: -1,
         label: 'Tab 1',
         slug: 'tab_1',

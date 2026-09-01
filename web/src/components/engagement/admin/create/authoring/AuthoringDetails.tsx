@@ -20,6 +20,7 @@ import { AuthoringLoaderData } from './authoringLoader';
 import { defaultValuesObject, EngagementUpdateData } from './AuthoringContext';
 import { getEditorStateFromRaw } from 'components/common/RichTextEditor/utils';
 import { useAuthoringFormContext } from './AuthoringFormContext';
+import { createDefaultDetailsTab } from 'models/engagementDetailsTab';
 
 const AuthoringDetails = () => {
     const { setDefaultValues, fetcher, pageName }: AuthoringTemplateOutletContext = useOutletContext();
@@ -76,13 +77,9 @@ const AuthoringDetails = () => {
     const authoringDetailsTabs = watch('details_tabs');
     const defaultDetailsTabValues = useMemo(
         () => ({
-            id: -1,
+            ...createDefaultDetailsTab(),
             engagement_id: engagementId,
-            label: 'Tab 1',
-            slug: 'tab_1',
-            heading: '',
             body: EditorState.createEmpty(),
-            sort_index: 1,
         }),
         [engagementId],
     );
@@ -138,20 +135,16 @@ const AuthoringDetails = () => {
             if (Array.isArray(tabs) && tabs.length > 0 && tabs[0].engagement_id === engagementId) {
                 const parsedTabs: FormDetailsTab[] = tabs.map((t) => {
                     // t.body may be a string (from API) or object (from form state)
-                    let bodyString = '';
-                    if (typeof t.body === 'string') {
-                        bodyString = t.body;
-                    } else if (t.body) {
-                        bodyString = JSON.stringify(t.body);
-                    }
+                    const bodyString = typeof t.body === 'string' ? t.body : JSON.stringify(t.body);
                     return {
-                        id: t.id || -1,
+                        id: t.id || defaultDetailsTabValues.id,
+                        tempId: crypto.randomUUID(), // Each tab must receive a new unique ID
                         engagement_id: t.engagement_id || engagementId,
-                        label: t.label || '',
-                        slug: t.slug || '',
-                        heading: t.heading || '',
+                        label: t.label || defaultDetailsTabValues.label,
+                        slug: t.slug || defaultDetailsTabValues.slug,
+                        heading: t.heading || defaultDetailsTabValues.heading,
                         body: getEditorStateFromRaw(bodyString),
-                        sort_index: t.sort_index || -1,
+                        sort_index: t.sort_index || defaultDetailsTabValues.sort_index,
                     };
                 });
                 nextTabs = [...parsedTabs].sort((a, b) => a.sort_index - b.sort_index);
@@ -189,11 +182,10 @@ const AuthoringDetails = () => {
         setLockScopeWideningRequested(true);
         const renumberedTabs = renumberTabs(newTabs);
         const newTab: FormDetailsTab = {
-            id: -1,
+            ...createDefaultDetailsTab(),
             engagement_id: engagementId,
             label: `Tab ${newTabs.length + 1}`,
             slug: `tab_${newTabs.length + 1}`,
-            heading: '',
             body: getEditorStateFromRaw(''),
             sort_index: newTabs.length + 1,
         };
@@ -482,13 +474,6 @@ const AuthoringDetails = () => {
         top: '1px',
     };
 
-    const getTabReactKey = (tab: FormDetailsTab, index: number) => {
-        if (tab.id && tab.id > 0) {
-            return `tab-${tab.id}`;
-        }
-        return `tab-new-${tab.slug || 'tab'}-${index}`;
-    };
-
     return (
         <>
             {/* prevent user from accidentally deleting a tab */}
@@ -616,7 +601,7 @@ const AuthoringDetails = () => {
                                     <Tab
                                         component="button"
                                         aria-label={`${displayLabel} is selected. Press the delete key to remove.`}
-                                        key={getTabReactKey(value, key)}
+                                        key={value.tempId}
                                         value={String(key)}
                                         onKeyDown={(event) => {
                                             tabKeyDown(event, 'tab', key);
@@ -689,7 +674,7 @@ const AuthoringDetails = () => {
 
                     {/* Tab contents */}
                     {authoringDetailsTabs.map((tab, key) => (
-                        <TabPanel sx={tabPanelStyles} value={String(key)} key={getTabReactKey(tab, key)}>
+                        <TabPanel sx={tabPanelStyles} value={String(key)} key={tab.tempId}>
                             <AuthoringFormContainer pt="2rem" pb="2.5rem" isHydrating={isHydrating}>
                                 <AuthoringFormSection
                                     name={`Tab ${key + 1} Label`}

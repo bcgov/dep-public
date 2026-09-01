@@ -1,3 +1,7 @@
+## August 28, 2026
+
+- **Bugfix** Fixed tab label input for details tabs in authoring section of admin. [🎟️ DEP-333](https://citz-gdx.atlassian.net/browse/DEP-333)
+
 ## August 24, 2026
 
 - **Feature** Added locking UX for Surveys [🎟️ DEP-285](https://citz-gdx.atlassian.net/browse/DEP-285)
