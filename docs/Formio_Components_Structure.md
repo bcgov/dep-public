@@ -34,7 +34,7 @@ We currently use a combination of:
 - CHEFS components (https://github.com/bcgov/common-hosted-form-service/tree/main/components)
 - Components from the "met-formio" package (https://www.npmjs.com/package/met-formio)
 
-### Example Form Structures
+### Example Form Structures (`survey.form_json`)
 
 ```json
 {
@@ -96,7 +96,32 @@ We currently use a combination of:
 }
 ```
 
-### Example Submission Structures
+### Example Submission Structures `(submission.submission_json)`
+
+```json
+{
+  "firstName": "John",
+  "lastName": "Doe",
+  "email": "john.doe@example.com"
+}
+
+{
+  "firstName": "Jane",
+  "fileUpload": [
+    {
+      "data": {
+        "id": "https://object-storage.gov.bc.ca/file/12345"
+      },
+      "name": "example.txt",
+      "originalName": "example.txt",
+      "size": 1234,
+      "type": "text/plain",
+      "url": "/files/https://object-storage.gov.bc.ca/file/12345"
+    }
+  ]
+}
+
+```
 
 ### Component List
 
