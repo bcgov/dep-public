@@ -14,6 +14,10 @@
   - Rewrote Formio data parser on API side to allow pulling comment data out of nested components, etc. Updated several endpoints to use the new parser. These endpoints previously used a few different flawed checks to determine whether a submission was considered to have comments or not.
   - On the survey submission details page, added a new "Form Submission Data" section that shows the raw submission data in a read-only Formio form. This allows reviewers to see the full context of the submission, including any fields that are not counted as comments.
 
+## August 28, 2026
+
+- **Bugfix** Fixed tab label input for details tabs in authoring section of admin. [🎟️ DEP-333](https://citz-gdx.atlassian.net/browse/DEP-333)
+
 ## August 24, 2026
 
 - **Feature** Added locking UX for Surveys [🎟️ DEP-285](https://citz-gdx.atlassian.net/browse/DEP-285)

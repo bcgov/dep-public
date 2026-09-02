@@ -19,7 +19,7 @@ import { Tenant } from 'models/tenant';
 import { UserState } from 'services/userService/types';
 import { USER_ROLES } from 'services/userService/constants';
 import { ImageWidget } from 'models/imageWidget';
-import { EngagementDetailsTab } from 'models/engagementDetailsTab';
+import { createDefaultDetailsTab, EngagementDetailsTab } from 'models/engagementDetailsTab';
 
 const tenant: Tenant = {
     name: 'Tenant 1',
@@ -293,13 +293,9 @@ const engagementSlugData = {
 };
 
 const engagementDetailsTabData: EngagementDetailsTab = {
+    ...createDefaultDetailsTab(),
     id: 1,
     engagement_id: 1,
-    label: 'Tab 1',
-    slug: 'tab_1',
-    heading: '',
-    body: '',
-    sort_index: 1,
 };
 
 const staffUserState: Partial<UserState> = {
