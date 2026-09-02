@@ -137,7 +137,7 @@ def test_review_comment(client, jwt, session, monkeypatch):  # pylint:disable=un
 
 def test_auto_approval_of_submissions_without_comment(session):  # pylint:disable=unused-argument
     """Assert that a submission without comment is auto approved."""
-    survey, eng = factory_survey_and_eng_model({**TestSurveyInfo.survey1, "form_json": {
+    survey, eng = factory_survey_and_eng_model({**TestSurveyInfo.survey1, 'form_json': {
         'components': [
             {
                 'id': 'approval-choice',
@@ -165,7 +165,7 @@ def test_auto_approval_of_submissions_without_comment(session):  # pylint:disabl
 
 def test_submissions_with_comment_are_not_auto_approved(session):  # pylint:disable=unused-argument
     """Assert that a submission with comment is not auto approved."""
-    survey, eng = factory_survey_and_eng_model({**TestSurveyInfo.survey1, "form_json": {
+    survey, eng = factory_survey_and_eng_model({**TestSurveyInfo.survey1, 'form_json': {
         'components': [
             {
                 'type': 'textfield',

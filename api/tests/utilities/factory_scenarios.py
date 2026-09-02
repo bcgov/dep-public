@@ -25,8 +25,8 @@ from api.config import get_named_config
 from api.constants.comment_status import Status as CommentStatus
 from api.constants.engagement_status import Status as EngagementStatus
 from api.constants.engagement_status import SubmissionStatus
-from api.constants.timeline_event_status import TimelineEventStatus
 from api.constants.feedback import CommentType, FeedbackSourceType, FeedbackStatusType, RatingType
+from api.constants.timeline_event_status import TimelineEventStatus
 from api.constants.widget import WidgetType
 from api.utils.enums import LoginSource, UserStatus
 
