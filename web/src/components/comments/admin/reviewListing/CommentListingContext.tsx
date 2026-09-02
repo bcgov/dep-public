@@ -1,4 +1,4 @@
-import React, { createContext, useEffect, useState } from 'react';
+import React, { createContext, useEffect, useMemo, useState } from 'react';
 import { PageInfo, PaginationOptions } from 'components/common/Table/types';
 import { CommentStatus } from 'constants/commentStatus';
 import { useAppDispatch } from 'hooks';
@@ -40,7 +40,7 @@ export interface CommentListingContextState {
     survey: Survey;
     submissions: SurveySubmission[];
     paginationOptions: PaginationOptions<SurveySubmission>;
-    setPagination: (value: PaginationOptions<SurveySubmission>) => void;
+    setPaginationOptions: (value: PaginationOptions<SurveySubmission>) => void;
     pageInfo: PageInfo;
     setPageInfo: (value: PageInfo) => void;
     loading: boolean;
@@ -72,8 +72,8 @@ export const CommentListingContext = createContext<CommentListingContextState>({
         nested_sort_key: 'submission.id',
         sort_order: 'desc',
     },
-    setPagination: () => {
-        throw new Error('setPagination not implemented');
+    setPaginationOptions: () => {
+        throw new Error('setPaginationOptions not implemented');
     },
     pageInfo: {
         total: 0,
@@ -106,7 +106,7 @@ export const CommentListingContextProvider = ({ children }: CommentListingContex
     const [searchText, setSearchText] = useState('');
     const [survey, setSurvey] = useState<Survey>(createDefaultSurvey());
     const [submissions, setSubmissions] = useState<SurveySubmission[]>([]);
-    const [paginationOptions, setPagination] = useState<PaginationOptions<SurveySubmission>>({
+    const [paginationOptions, setPaginationOptions] = useState<PaginationOptions<SurveySubmission>>({
         page: Number(pageFromURL) || 1,
         size: Number(sizeFromURL) || 10,
         sort_key: 'id',
@@ -141,6 +141,7 @@ export const CommentListingContextProvider = ({ children }: CommentListingContex
                 size,
                 sort_key: nested_sort_key || sort_key,
                 sort_order,
+                include_autoapproved: true,
                 search_text: searchFilter.value,
                 status: advancedSearchFilters.status || undefined,
                 comment_date_from: advancedSearchFilters.commentDateFrom,
@@ -179,26 +180,29 @@ export const CommentListingContextProvider = ({ children }: CommentListingContex
         updateURLWithPagination(paginationOptions);
     }, [surveyId, paginationOptions, searchFilter, advancedSearchFilters]);
 
-    return (
-        <CommentListingContext.Provider
-            value={{
-                searchFilter,
-                setSearchFilter,
-                advancedSearchFilters,
-                setAdvancedSearchFilters,
-                searchText,
-                setSearchText,
-                survey,
-                submissions,
-                paginationOptions,
-                setPagination,
-                pageInfo,
-                setPageInfo,
-                loading,
-                loadSubmissions,
-            }}
-        >
-            {children}
-        </CommentListingContext.Provider>
+    return useMemo(
+        () => (
+            <CommentListingContext.Provider
+                value={{
+                    searchFilter,
+                    setSearchFilter,
+                    advancedSearchFilters,
+                    setAdvancedSearchFilters,
+                    searchText,
+                    setSearchText,
+                    survey,
+                    submissions,
+                    paginationOptions,
+                    setPaginationOptions,
+                    pageInfo,
+                    setPageInfo,
+                    loading,
+                    loadSubmissions,
+                }}
+            >
+                {children}
+            </CommentListingContext.Provider>
+        ),
+        [searchFilter, advancedSearchFilters, searchText, survey, submissions, paginationOptions, pageInfo, loading],
     );
 };

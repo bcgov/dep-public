@@ -10,7 +10,7 @@ import { faMagnifyingGlass } from '@fortawesome/pro-regular-svg-icons/faMagnifyi
 import { faChevronDown } from '@fortawesome/pro-solid-svg-icons/faChevronDown';
 import Stack from '@mui/material/Stack';
 import { SurveySubmission } from 'models/surveySubmission';
-import { COMMENTS_STATUS, CommentStatus } from 'constants/commentStatus';
+import { CommentStatus } from 'constants/commentStatus';
 import { AdvancedSearch } from './AdvancedSearch';
 import { CommentListingContext } from './CommentListingContext';
 import { useAppSelector } from 'hooks';
@@ -21,6 +21,7 @@ import { Button } from 'components/common/Input/Button';
 import { RouterLinkRenderer } from 'components/common/Navigation/Link';
 import { ROUTES, getPath } from 'routes/routes';
 import { TextInput } from 'components/common/Input';
+import { AuthorChip, CommentStatusChip } from 'components/comments/status';
 
 const Submissions = () => {
     const {
@@ -31,7 +32,7 @@ const Submissions = () => {
         survey,
         submissions,
         paginationOptions,
-        setPagination,
+        setPaginationOptions,
         pageInfo,
         loading,
     } = useContext(CommentListingContext);
@@ -70,7 +71,7 @@ const Submissions = () => {
                                 submissionId: row.id,
                             })}
                         >
-                            {row.id}
+                            Submission {row.id}
                         </Link>
                     );
                 }
@@ -81,17 +82,9 @@ const Submissions = () => {
             key: 'created_date',
             numeric: true,
             disablePadding: false,
-            label: 'Comment Date',
+            label: 'Submission Date',
             allowSort: true,
             renderCell: (row) => formatToPacific(row.created_date || '', 'YYYY-MM-DD'),
-        },
-        {
-            key: 'reviewed_by',
-            numeric: true,
-            disablePadding: false,
-            label: 'Reviewed By',
-            allowSort: true,
-            renderCell: (row) => row.reviewed_by,
         },
         {
             key: 'review_date',
@@ -99,7 +92,15 @@ const Submissions = () => {
             disablePadding: false,
             label: 'Date Reviewed',
             allowSort: true,
-            renderCell: (row) => formatToPacific(row.review_date || '', 'YYYY-MM-DD'),
+            renderCell: (row) => formatToPacific(row.review_date || '', 'YYYY-MM-DD') || <i>N/A</i>,
+        },
+        {
+            key: 'reviewed_by',
+            numeric: true,
+            disablePadding: false,
+            label: 'Reviewed By',
+            allowSort: true,
+            renderCell: (row) => <AuthorChip author={row.reviewed_by} />,
         },
         {
             key: 'comment_status_id',
@@ -107,7 +108,11 @@ const Submissions = () => {
             disablePadding: true,
             label: 'Status',
             allowSort: true,
-            renderCell: (row) => COMMENTS_STATUS[row.comment_status_id as CommentStatus] || '',
+            renderCell: (row) => {
+                const auto =
+                    row.reviewed_by?.toLowerCase() === 'system' && row.comment_status_id === CommentStatus.Approved;
+                return <CommentStatusChip commentStatus={row.comment_status_id} isAuto={auto} />;
+            },
         },
     ];
 
@@ -195,14 +200,12 @@ const Submissions = () => {
             </Grid>
 
             <Grid size={12}>
-                <Heading1>
-                    <strong>{`${survey.name} Comments`}</strong>
-                </Heading1>
+                <Heading1 bold>{survey.name} Submissions</Heading1>
                 <CustomTable
                     headCells={headCells}
                     rows={submissions}
                     handleChangePagination={(pagination: PaginationOptions<SurveySubmission>) =>
-                        setPagination(pagination)
+                        setPaginationOptions(pagination)
                     }
                     paginationOptions={paginationOptions}
                     pageInfo={pageInfo}

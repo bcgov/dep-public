@@ -1,3 +1,19 @@
+## September 1, 2026
+
+- **Feature** Add ability to review individual survey submissions [🎟️ DEP-328](https://citz-gdx.atlassian.net/browse/DEP-328)
+  - Reorganized the survey submission route hierarchy:
+    - `/manage/surveys/:surveyId/comments` -> `/manage/surveys/:surveyId/submissions`
+      Now shows a list of all submissions for the survey, including those with no comments.
+    - `/manage/surveys/:surveyId/comments/all` -> `/manage/surveys/:surveyId/submissions/all-comments`
+      No content change, but is a sub-route of the new submissions route
+    - `/manage/surveys/:surveyId/comments/:submissionId` -> `/manage/surveys/:surveyId/submissions/:submissionId`
+      Now shows the details of a single submission, including all comments for that submission if applicable.
+      Controls for approving/rejecting comments, etc are still available on this page.
+    - Added breadcrumbs to the survey submission pages to allow for easier navigation between the list of submissions and individual submission details.
+      - (Pending UX review) Added navigation cards within the survey preview page to navigate to a survey's submissions list or various filtered views, similar to the route and engagement listing pages. This is so that users navigating "back" to the survey page using the breadcrumbs have a way to navigate "forward" again and not get stuck.
+  - Rewrote Formio data parser on API side to allow pulling comment data out of nested components, etc. Updated several endpoints to use the new parser. These endpoints previously used a few different flawed checks to determine whether a submission was considered to have comments or not.
+  - On the survey submission details page, added a new "Form Submission Data" section that shows the raw submission data in a read-only Formio form. This allows reviewers to see the full context of the submission, including any fields that are not counted as comments.
+
 ## August 28, 2026
 
 - **Bugfix** Fixed tab label input for details tabs in authoring section of admin. [🎟️ DEP-333](https://citz-gdx.atlassian.net/browse/DEP-333)

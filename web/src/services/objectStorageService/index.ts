@@ -9,7 +9,7 @@ const getOSSHeaderDetails = async (data: ObjectStorageFileDetails) => {
 };
 
 const getObject = async (headerDetails: ObjectStorageHeaderDetails) => {
-    return await http.OSSGetRequest(headerDetails.filepath, {
+    return await http.OSSGetRequest<Blob>(headerDetails.filename, {
         amzDate: headerDetails.amzdate,
         authHeader: headerDetails.authheader,
     });
@@ -20,7 +20,10 @@ export const downloadObject = async (file: ObjectStorageFileDetails) => {
     if (!response.data) {
         throw new Error('Error occurred while fetching a document from object storage');
     }
-    return await getObject(response.data[0]);
+    const blobResponse = await getObject(response.data[0]);
+    const fallbackFileName = file.filename.split('/').pop() || 'download';
+    console.log('Downloading file with filename:', fallbackFileName);
+    downloadFile(blobResponse, fallbackFileName);
 };
 
 const doSaveObjectRequest = async (headerDetails: ObjectStorageHeaderDetails, file: File) => {

@@ -10,6 +10,7 @@ from api.constants.engagement_status import Status as EngagementStatus
 from api.constants.engagement_status import SubmissionStatus
 from api.constants.membership_type import MembershipType
 from api.constants.staff_note_type import StaffNoteType
+from api.constants.user import SYSTEM_REVIEWER
 from api.exceptions.business_exception import BusinessException
 from api.models import Engagement as EngagementModel
 from api.models import EngagementSettingsModel
@@ -29,6 +30,7 @@ from api.services.email_verification_service import EmailVerificationService
 from api.services.staff_user_service import StaffUserService
 from api.services.survey_service import SurveyService
 from api.utils import notification
+from api.utils.datetime import utc_now
 from api.utils.roles import Role
 from api.utils.template import Template
 
@@ -39,11 +41,19 @@ class SubmissionService:
     otherdateformat = '%Y-%m-%d'
 
     @classmethod
+    def get_with_submission_json(cls, submission_id):
+        """Get a submission with submission json by id."""
+        submission: SubmissionModel = SubmissionModel.find_by_id(submission_id)
+        if submission.comment_status_id != Status.Approved.value:
+            cls._check_comment_auth(submission)
+        return SubmissionSchema().dump(submission)
+
+    @classmethod
     def get(cls, submission_id):
-        """Get submission by the id."""
+        """Get a submission by id."""
         submission: SubmissionModel = SubmissionModel.find_by_id(submission_id)
 
-        # if submission is approved , anyone can see .No need to do auth
+        # if submission is approved, anyone can see; no need to do auth
         if submission.comment_status_id != Status.Approved.value:
             cls._check_comment_auth(submission)
 
@@ -82,6 +92,8 @@ class SubmissionService:
         survey_id = submission.get('survey_id')
         survey = SurveyService.get(survey_id)
         engagement_id = survey.get('engagement_id')
+        if not survey or not engagement_id:
+            raise ValueError('Survey not found')
         # Restrict submission on unpublished engagement
         if SubmissionService.is_unpublished(engagement_id):
             return {}
@@ -93,18 +105,34 @@ class SubmissionService:
         submission['created_by'] = participant_id
         submission['engagement_id'] = engagement_id
 
-        submission_result = SubmissionModel.create(submission, db.session)
+        comment_components = list(SurveyService.extract_components(survey['form_json'], input_types=['text']))
+        comment_component_keys = [component.get('key') for component in comment_components]
+        has_comments = any(submission.get('submission_json', {}).get(key, '').strip() for key in comment_component_keys)
+
+        submission_result = SubmissionModel(
+            submission_json=submission.get('submission_json', None),
+            engagement_id=engagement_id,
+            survey_id=submission.get('survey_id', None),
+            participant_id=participant_id,
+            created_date=utc_now(),
+            updated_date=None,
+            created_by=participant_id,
+            updated_by=submission.get('updated_by', None),
+            comment_status_id=Status.Pending.value if has_comments else Status.Approved.value,
+            reviewed_by=SYSTEM_REVIEWER if not has_comments else None,
+            review_date=utc_now() if not has_comments else None,
+        )
+        db.session.add(submission_result)
+        db.session.flush()  # update submission_result.id with its generated value
         submission['id'] = submission_result.id
-        comments = CommentService.extract_comments_from_survey(
-            submission, survey)
+        comments = CommentService.extract_comments_from_survey(submission, survey)
         CommentService().create_comments(comments, db.session)
 
         engagement_settings: EngagementSettingsModel =\
             EngagementSettingsModel.find_by_id(engagement_id)
-        if engagement_settings:
-            if engagement_settings.send_report:
-                SubmissionService._send_submission_response_email(
-                    participant_id, engagement_id, lang_code)
+        if engagement_settings and engagement_settings.send_report:
+            SubmissionService._send_submission_response_email(
+                participant_id, engagement_id, lang_code)
         return submission_result
 
     @classmethod
@@ -300,9 +328,10 @@ class SubmissionService:
             survey_id,
             pagination_options: PaginationOptions,
             search_text: str,
-            advanced_search_filters: dict
+            **kwargs,
     ):
         """Get submissions by survey id paginated."""
+        advanced_search_filters = kwargs.get('advanced_search_filters', {})
         if not CommentService.can_view_unapproved_comments(survey_id):
             if 'status' in advanced_search_filters:
                 if advanced_search_filters['status'] in (Status.Rejected.value, Status.Pending.value):
@@ -316,8 +345,7 @@ class SubmissionService:
             survey_id,
             pagination_options,
             search_text,
-            advanced_search_filters if any(
-                advanced_search_filters.values()) else None
+            **kwargs,
         )
         return {
             'items': SubmissionSchema(many=True, exclude=['submission_json']).dump(items),
@@ -351,7 +379,6 @@ class SubmissionService:
     def _render_email_template(staff_review_details: dict, submission: SubmissionModel, review_note, token, lang_code):
         engagement: EngagementModel = EngagementModel.find_by_id(
             submission.engagement_id)
-        templates = current_app.config['EMAIL_TEMPLATES']
         paths = current_app.config['PATH_CONFIG']
         engagement_name = engagement.name
         templates = current_app.config.get('EMAIL_TEMPLATES')

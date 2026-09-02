@@ -1,9 +1,10 @@
 import React, { useContext } from 'react';
 import Grid from '@mui/material/Grid2';
 import { Heading1, Heading3 } from 'components/common/Typography';
-import { Accordion, AccordionDetails, AccordionSummary, accordionSummaryClasses, Skeleton } from '@mui/material';
+import { AccordionDetails, AccordionSummary, Skeleton } from '@mui/material';
+import { EngagementAccordion } from 'components/common/Layout';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faChevronRight } from '@fortawesome/pro-solid-svg-icons/faChevronRight';
+import { faChevronDown } from '@fortawesome/pro-solid-svg-icons/faChevronDown';
 import EngagementAccordionContent from './AccordionContent';
 import { SubmissionStatus } from 'constants/engagementStatus';
 import { DashboardContext } from './DashboardContext';
@@ -48,31 +49,6 @@ const EngagementList = () => {
         </Grid>
     );
 
-    const EngagementAccordion = ({
-        children,
-        ...props
-    }: { children: React.ReactNode } & React.ComponentProps<typeof Accordion>) => (
-        <Accordion
-            elevation={0}
-            {...props}
-            sx={{
-                boxShadow: '0 0 3px rgba(0, 0, 0, 0.1)',
-                border: '1px solid',
-                borderColor: 'gray.50',
-                borderRadius: '1rem !important',
-                [`& .${accordionSummaryClasses.expandIconWrapper}.${accordionSummaryClasses.expanded}`]: {
-                    transform: 'rotate(90deg)',
-                },
-                [`& .${accordionSummaryClasses.root}`]: {
-                    display: 'flex',
-                    columnGap: '0.5rem',
-                },
-            }}
-        >
-            {children}
-        </Accordion>
-    );
-
     if (isLoading) {
         return <EngagementDashboardSkeleton />;
     }
@@ -92,7 +68,7 @@ const EngagementList = () => {
             <Grid size={12}>
                 <EngagementAccordion defaultExpanded={true}>
                     <AccordionSummary
-                        expandIcon={<FontAwesomeIcon icon={faChevronRight} style={{ margin: '0 6px' }} />}
+                        expandIcon={<FontAwesomeIcon icon={faChevronDown} style={{ margin: '0 6px' }} />}
                         sx={{ flexDirection: 'row-reverse' }}
                     >
                         <Heading3 bold>Upcoming Engagements</Heading3>
@@ -110,7 +86,7 @@ const EngagementList = () => {
             <Grid size={12}>
                 <EngagementAccordion defaultExpanded={true}>
                     <AccordionSummary
-                        expandIcon={<FontAwesomeIcon icon={faChevronRight} style={{ margin: '0 6px' }} />}
+                        expandIcon={<FontAwesomeIcon icon={faChevronDown} style={{ margin: '0 6px' }} />}
                         sx={{ flexDirection: 'row-reverse' }}
                     >
                         <Heading3 bold>Open Engagements</Heading3>
@@ -127,7 +103,7 @@ const EngagementList = () => {
             <Grid size={12}>
                 <EngagementAccordion>
                     <AccordionSummary
-                        expandIcon={<FontAwesomeIcon icon={faChevronRight} style={{ margin: '0 6px' }} />}
+                        expandIcon={<FontAwesomeIcon icon={faChevronDown} style={{ margin: '0 6px' }} />}
                         sx={{ flexDirection: 'row-reverse' }}
                     >
                         <Heading3 bold>Recently Closed Engagements (last 30 days)</Heading3>
@@ -144,7 +120,7 @@ const EngagementList = () => {
             <Grid size={12}>
                 <EngagementAccordion>
                     <AccordionSummary
-                        expandIcon={<FontAwesomeIcon icon={faChevronRight} style={{ margin: '0 6px' }} />}
+                        expandIcon={<FontAwesomeIcon icon={faChevronDown} style={{ margin: '0 6px' }} />}
                         sx={{ flexDirection: 'row-reverse' }}
                     >
                         <Heading3 bold>Closed Engagements (over 30 days ago)</Heading3>

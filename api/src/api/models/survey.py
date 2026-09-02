@@ -176,7 +176,7 @@ class Survey(BaseModel):  # pylint: disable=too-few-public-methods
         return new_survey
 
     @classmethod
-    def update_survey(cls, survey: SurveySchema) -> Optional[Survey or None]:
+    def update_survey(cls, survey: SurveySchema) -> Optional[Survey]:
         """Update survey."""
         survey_id = survey.get('id', None)
         query = Survey.query.filter_by(id=survey_id)
@@ -197,7 +197,7 @@ class Survey(BaseModel):  # pylint: disable=too-few-public-methods
         return record
 
     @classmethod
-    def link_survey(cls, survey_id, engagement_id) -> Optional[Survey or None]:
+    def link_survey(cls, survey_id, engagement_id) -> Optional[Survey]:
         """Link survey to engagement."""
         query = Survey.query.filter_by(id=survey_id)
         survey = query.first()

@@ -2,7 +2,7 @@ import { Breadcrumbs, Skeleton } from '@mui/material';
 import React, { Suspense, useEffect, useState } from 'react';
 import { BodyText } from '../Typography';
 import { Link } from '.';
-import { Await, UIMatch, useLocation, useMatches } from 'react-router';
+import { Await, Params, UIMatch, useLocation, useMatches } from 'react-router';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faHome } from '@fortawesome/pro-regular-svg-icons';
 
@@ -70,7 +70,7 @@ export const BreadcrumbTrail: React.FC<{ crumbs: BreadcrumbProps[]; smallScreenO
     );
 };
 
-export type UICrumbFunction = (data: unknown) => Promise<BreadcrumbProps> | BreadcrumbProps;
+export type UICrumbFunction = (data: unknown, params?: Params<string>) => Promise<BreadcrumbProps> | BreadcrumbProps;
 
 export interface UIRouteHandle {
     crumb?: UICrumbFunction;
@@ -101,7 +101,7 @@ export const AutoBreadcrumbs: React.FC<{ smallScreenOnly?: boolean }> = ({ small
                         newCache[match.pathname] = cachedCrumb;
                     } else {
                         newCache[match.pathname] = {
-                            breadcrumb: match.handle.crumb(match.loaderData),
+                            breadcrumb: match.handle.crumb(match.loaderData, match.params),
                             loaderData: match.loaderData,
                         };
                     }

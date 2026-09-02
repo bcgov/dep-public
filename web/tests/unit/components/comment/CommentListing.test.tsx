@@ -85,6 +85,10 @@ jest.mock('react-redux', () => ({
                     USER_ROLES.EXPORT_INTERNAL_COMMENT_SHEET,
                     USER_ROLES.EXPORT_PROPONENT_COMMENT_SHEET,
                 ],
+                userDetail: {
+                    first_name: 'Mock first name',
+                    last_name: 'Mock last name',
+                },
             },
             assignedEngagements: [mockSurveyOne.engagement_id],
         }),
@@ -120,7 +124,7 @@ describe('Comment listing tests', () => {
 
         await waitFor(() => {
             expect(screen.getByText(mockSubmission1.reviewed_by)).toBeVisible();
-            expect(screen.getByText(`${mockSurveyOne.name} Comments`)).toBeVisible();
+            expect(screen.getByText(`${mockSurveyOne.name} Submissions`)).toBeVisible();
         });
     });
 
@@ -152,7 +156,7 @@ describe('Comment listing tests', () => {
         render(<SubmissionListing />);
 
         await waitFor(() => {
-            expect(screen.getByText(`${mockSurveyOne.name} Comments`)).toBeVisible();
+            expect(screen.getByText(`${mockSurveyOne.name} Submissions`)).toBeVisible();
             expect(screen.getByText(mockSubmission1.reviewed_by)).toBeVisible();
         });
 

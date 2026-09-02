@@ -18,8 +18,8 @@ from http import HTTPStatus
 from flask import request
 from flask_cors import cross_origin
 from flask_restx import Namespace, Resource
-from api.auth import jwt as _jwt
 
+from api.auth import jwt as _jwt
 from api.models.pagination_options import PaginationOptions
 from api.schemas import utils as schema_utils
 from api.schemas.submission import SubmissionSchema
@@ -44,7 +44,7 @@ class Submission(Resource):
     def get(submission_id):
         """Fetch a single submission."""
         try:
-            submission = SubmissionService().get(submission_id)
+            submission = SubmissionService().get_with_submission_json(submission_id)
             return submission, HTTPStatus.OK
         except KeyError:
             return 'Submission not found', HTTPStatus.INTERNAL_SERVER_ERROR
@@ -70,7 +70,7 @@ class Submission(Resource):
 @cors_preflight('GET,PUT,POST,OPTIONS')
 @API.route('/public/<verification_token>')
 class PublicSubmission(Resource):
-    """Resource for managing public submission."""
+    """Resource for managing public submissions."""
 
     @staticmethod
     # @TRACER.trace()
@@ -130,8 +130,8 @@ class SurveySubmissions(Resource):
             args = request.args
 
             pagination_options = PaginationOptions(
-                page=args.get('page', None, int),
-                size=args.get('size', None, int),
+                page=args.get('page', 1, int),
+                size=args.get('size', 10, int),
                 sort_key=args.get('sort_key', 'submission.id', str),
                 sort_order=args.get('sort_order', 'asc', str),
             )
@@ -148,7 +148,9 @@ class SurveySubmissions(Resource):
                     survey_id,
                     pagination_options,
                     args.get('search_text', '', str),
-                    advanced_search_filters
+                    advanced_search_filters=advanced_search_filters,
+                    include_autoapproved=args.get('include_autoapproved', False, bool),
+                    exclude_commentless=args.get('exclude_commentless', False, bool),
             )
             return submission_page, HTTPStatus.OK
         except ValueError as err:

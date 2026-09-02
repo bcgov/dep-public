@@ -74,28 +74,39 @@ const AuthenticatedRoutes = resolveLazyRouteTree(
                         ComponentLazy={() => import('components/survey/building')}
                         handle={{ crumb: () => ({ name: 'Form Designer' }) }}
                     />
-                    <LazyRoute path="report" ComponentLazy={() => import('components/survey/report')} />
                     <LazyRoute
+                        handle={{ crumb: () => ({ name: 'Report Settings' }) }}
+                        path="report"
+                        ComponentLazy={() => import('components/survey/report')}
+                    />
+                    <LazyRoute
+                        path="submissions"
                         ComponentLazy={() => import('routes/AuthGateRoute')}
-                        handle={{ allowedRoles: [USER_ROLES.VIEW_APPROVED_COMMENTS] }}
+                        handle={{
+                            allowedRoles: [USER_ROLES.VIEW_APPROVED_COMMENTS],
+                            crumb: () => ({ name: 'Submissions' }),
+                        }}
                     >
+                        <LazyRoute index ComponentLazy={() => import('components/comments/admin/reviewListing')} />
                         <LazyRoute
-                            path="comments"
-                            ComponentLazy={() => import('components/comments/admin/reviewListing')}
-                        />
-                        <LazyRoute
-                            path="comments/all"
+                            path="all-comments"
+                            handle={{ crumb: () => ({ name: 'All Comments' }) }}
                             ComponentLazy={() => import('components/comments/admin/textListing')}
                         />
-                    </LazyRoute>
-                    <LazyRoute
-                        ComponentLazy={() => import('routes/AuthGateRoute')}
-                        handle={{ allowedRoles: [USER_ROLES.REVIEW_COMMENTS] }}
-                    >
                         <LazyRoute
-                            path="submissions/:submissionId/review"
-                            ComponentLazy={() => import('components/comments/admin/review/CommentReview')}
-                        />
+                            ComponentLazy={() => import('routes/AuthGateRoute')}
+                            handle={{ allowedRoles: [USER_ROLES.REVIEW_COMMENTS] }}
+                        >
+                            <LazyRoute
+                                path=":submissionId/review"
+                                handle={{
+                                    crumb: (_: unknown, params: { submissionId: string }) => ({
+                                        name: `Submission #${params.submissionId}`,
+                                    }),
+                                }}
+                                ComponentLazy={() => import('components/comments/admin/review/CommentReview')}
+                            />
+                        </LazyRoute>
                     </LazyRoute>
                 </LazyRoute>
             </Route>

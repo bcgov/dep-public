@@ -3,24 +3,26 @@
 Manages the comment
 """
 from __future__ import annotations
+
 from operator import or_
 
 from sqlalchemy import and_, asc, desc
+from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.sql import text
 from sqlalchemy.sql.expression import true
 from sqlalchemy.sql.schema import ForeignKey
-from sqlalchemy.ext.hybrid import hybrid_property
 
-from api.utils.datetime import utc_now
 from api.constants.comment_status import Status as CommentStatus
 from api.constants.engagement_status import Status as EngagementStatus
-from api.models.pagination_options import PaginationOptions
+from api.constants.user import SYSTEM_REVIEWER
 from api.models.engagement import Engagement
+from api.models.pagination_options import PaginationOptions
 from api.models.report_setting import ReportSetting
 from api.models.submission import Submission
 from api.models.survey import Survey
 from api.schemas.comment import CommentSchema
 from api.schemas.submission import SubmissionSchema
+from api.utils.datetime import utc_now
 
 from .base_model import BaseModel
 from .comment_status import CommentStatus as CommentStatusModel
@@ -129,19 +131,21 @@ class Comment(BaseModel):
         survey_id,
         pagination_options: PaginationOptions,
         search_text='',
-        advanced_search_filters=None
+        **kwargs,
     ):
         """Get submissions by survey id paginated."""
-        null_value = None
-        query = db.session.query(Submission)\
-            .filter(and_(Submission.survey_id == survey_id,
-                         or_(Submission.reviewed_by != 'System', Submission.reviewed_by == null_value)))
+        query = Submission.query.filter(Submission.survey_id == survey_id)
+
+        if not kwargs.get('include_autoapproved', False):
+            query = query.filter((Submission.reviewed_by != SYSTEM_REVIEWER) | (Submission.reviewed_by is None))
+
+        if kwargs.get('exclude_commentless', False):
+            query = query.filter(Submission.comments.any())
 
         if search_text:
-            # Remove all non-digit characters from search text
             query = query.filter(Submission.comments.any(Comment.text.ilike('%' + search_text + '%')))
 
-        if advanced_search_filters:
+        if advanced_search_filters := kwargs.get('advanced_search_filters'):
             query = cls._filter_by_advanced_filters(query, advanced_search_filters)
 
         sort = asc(text(pagination_options.sort_key)) if pagination_options.sort_order == 'asc'\

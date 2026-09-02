@@ -10,9 +10,9 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faMagnifyingGlass } from '@fortawesome/pro-regular-svg-icons/faMagnifyingGlass';
 import { useAppDispatch, useAppSelector } from 'hooks';
 import { openNotification } from 'services/notificationService/notificationSlice';
-import { CommentStatusChip } from '../../status';
+import { AuthorChip, CommentStatusChip } from '../../status';
 import { CommentStatus } from 'constants/commentStatus';
-import { If, Then, Else, When } from 'react-if';
+import { When } from 'react-if';
 import { getSubmissionPage } from 'services/submissionService';
 import { SurveySubmission } from 'models/surveySubmission';
 import { formatToPacific, formatToUTC } from 'components/common/dateHelper';
@@ -140,6 +140,8 @@ const CommentTextListing = () => {
                 sort_key: nested_sort_key || sort_key,
                 sort_order,
                 search_text: searchFilter.value,
+                include_autoapproved: true,
+                exclude_commentless: true,
             };
             const response = await getSubmissionPage({
                 survey_id: Number(surveyId),
@@ -209,50 +211,25 @@ const CommentTextListing = () => {
                 <Grid container size={12} rowSpacing={2} sx={{ pt: 1.5 }}>
                     {row.comments?.map((comment) => {
                         return (
-                            <Grid key={comment.id} size={12}>
-                                <Grid container direction="row" alignItems={'flex-start'} justifyContent="flex-start">
-                                    <Grid size={1} paddingTop={1}>
-                                        <If condition={comment.is_displayed}>
-                                            <Then>
-                                                <Grid size={12}>
-                                                    <Tooltip
-                                                        disableInteractive
-                                                        title={'Displayed to the public'}
-                                                        placement="top"
-                                                        arrow
-                                                    >
-                                                        <span>
-                                                            <FontAwesomeIcon
-                                                                icon={faMessageCheck}
-                                                                style={{ fontSize: '24px', color: '#757575' }}
-                                                            />
-                                                        </span>
-                                                    </Tooltip>
-                                                </Grid>
-                                            </Then>
-                                            <Else>
-                                                <Grid size={12}>
-                                                    <Tooltip
-                                                        disableInteractive
-                                                        title={'Not displayed to the public'}
-                                                        placement="top"
-                                                        arrow
-                                                    >
-                                                        <span>
-                                                            <FontAwesomeIcon
-                                                                icon={faMessageSlash}
-                                                                style={{ fontSize: '24px', color: '#757575' }}
-                                                            />
-                                                        </span>
-                                                    </Tooltip>
-                                                </Grid>
-                                            </Else>
-                                        </If>
-                                    </Grid>
-                                    <Grid size={11}>
-                                        <BodyText bold>{comment.label ?? 'Label not available.'} </BodyText>
-                                        <BodyText>{' ' + comment.text}</BodyText>
-                                    </Grid>
+                            <Grid container key={comment.id} size={12} spacing={1}>
+                                <Grid container size="auto" paddingTop={1}>
+                                    <Tooltip
+                                        disableInteractive
+                                        title={`${comment.is_displayed ? 'Displayed' : 'Not displayed'} to the public`}
+                                        placement="top"
+                                        arrow
+                                    >
+                                        <span>
+                                            <FontAwesomeIcon
+                                                icon={comment.is_displayed ? faMessageCheck : faMessageSlash}
+                                                style={{ fontSize: '24px', color: '#757575' }}
+                                            />
+                                        </span>
+                                    </Tooltip>
+                                </Grid>
+                                <Grid size="grow">
+                                    <BodyText bold>{comment.label ?? 'Label not available.'} </BodyText>
+                                    <BodyText>{' ' + comment.text}</BodyText>
                                 </Grid>
                             </Grid>
                         );
@@ -269,66 +246,25 @@ const CommentTextListing = () => {
             align: 'right',
             customStyle: badgeStyle,
             renderCell: (row: SurveySubmission) => (
-                <Grid container>
-                    <Grid
-                        container
-                        sx={{
-                            pb: '0.1em',
-                            alignItems: 'flex-start',
-                            justifyContent: 'flex-start',
-                        }}
-                    >
-                        <Grid
-                            size={12}
-                            sx={{
-                                display: 'flex',
-                                alignItems: 'flex-start',
-                                justifyContent: 'flex-start',
-                            }}
-                        >
-                            <Stack
-                                sx={{
-                                    display: 'flex',
-                                    alignItems: 'flex-start',
-                                    justifyContent: 'flex-start',
-                                }}
-                            >
-                                <BodyText bold pb="0.1em">
-                                    Comment Date:
-                                </BodyText>
-                                <BodyText>{formatToPacific(row.created_date, 'YYYY-MM-DD')}</BodyText>
-                            </Stack>
+                <Grid container key={row.id} direction="column" spacing={1} py={1}>
+                    <Grid size={12} container alignItems="center" spacing={1}>
+                        <BodyText bold pb="0.1em">
+                            Comment Date:
+                        </BodyText>
+                        <BodyText>{formatToPacific(row.created_date, 'YYYY-MM-DD')}</BodyText>
+                    </Grid>
+                    <Grid container size={12} alignItems="flex-start" justifyContent="flex-start">
+                        <CommentStatusChip
+                            isAuto={row.reviewed_by?.toLowerCase() === 'system'}
+                            commentStatus={row.comment_status_id}
+                        />
+                    </Grid>
+                    <When condition={row.comment_status_id !== CommentStatus.Pending}>
+                        <Grid container size={12} alignItems="center" spacing={1}>
+                            <BodyText bold>Reviewed By</BodyText>
+                            <AuthorChip author={row.reviewed_by || 'N/A'} />
                         </Grid>
-                        <When condition={row.comment_status_id !== CommentStatus.Pending}>
-                            <Grid
-                                size={12}
-                                sx={{
-                                    display: 'flex',
-                                    alignItems: 'flex-start',
-                                    justifyContent: 'flex-start',
-                                }}
-                            >
-                                <Stack
-                                    sx={{
-                                        alignItems: 'flex-start',
-                                        justifyContent: 'flex-start',
-                                    }}
-                                >
-                                    <BodyText
-                                        sx={{
-                                            pb: '0.1em',
-                                        }}
-                                    >
-                                        <BodyText bold>Reviewed By: </BodyText>
-                                    </BodyText>
-                                    <BodyText>{row.reviewed_by}</BodyText>
-                                </Stack>
-                            </Grid>
-                        </When>
-                    </Grid>
-                    <Grid container size={12} alignItems={'flex-start'} justifyContent={'flex-start'}>
-                        <CommentStatusChip commentStatus={row.comment_status_id} />
-                    </Grid>
+                    </When>
                 </Grid>
             ),
         },
@@ -406,7 +342,7 @@ const CommentTextListing = () => {
                             LinkComponent={RouterLinkRenderer}
                             href={surveyId ? getPath(ROUTES.SURVEY_COMMENTS, { surveyId }) : '#'}
                         >
-                            Return to Comments List
+                            Return to Submission List
                         </Button>
                         <Menu
                             id="simple-menu"

@@ -4,7 +4,7 @@ import { StaffNote } from './staffNote';
 export interface SurveySubmission {
     id: number;
     survey_id: number;
-    submission_json: unknown;
+    submission_json: object;
     created_date: string;
     reviewed_by: string;
     review_date: string;

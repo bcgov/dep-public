@@ -19,8 +19,8 @@ Test-Suite to ensure that the /Submission endpoint is working as expected.
 import copy
 import json
 from http import HTTPStatus
-
 from unittest.mock import patch
+
 import pytest
 from faker import Faker
 
@@ -29,7 +29,7 @@ from api.constants.email_verification import EmailVerificationType
 from api.constants.membership_type import MembershipType
 from api.services.submission_service import SubmissionService
 from api.utils.enums import CompositeRoleId, ContentType
-from tests.utilities.factory_scenarios import TestJwtClaims, TestSubmissionInfo
+from tests.utilities.factory_scenarios import TestJwtClaims, TestSubmissionInfo, TestSurveyInfo
 from tests.utilities.factory_utils import (
     factory_auth_header, factory_comment_model, factory_email_verification, factory_engagement_setting_model,
     factory_membership_model, factory_participant_model, factory_staff_user_model, factory_submission_model,
@@ -45,7 +45,7 @@ fake = Faker()
     (ValueError('Test error'), HTTPStatus.INTERNAL_SERVER_ERROR),
 ])
 def test_valid_submission(client, jwt, session, side_effect, expected_status):  # pylint:disable=unused-argument
-    """Assert that an engagement can be POSTed."""
+    """Assert that a submission can be POSTed."""
     claims = TestJwtClaims.public_user_role
 
     survey, eng = factory_survey_and_eng_model()
@@ -69,7 +69,7 @@ def test_valid_submission(client, jwt, session, side_effect, expected_status):  
 
 
 def test_edit_rejected_submission(client, jwt, session):  # pylint:disable=unused-argument
-    """Assert that an engagement can updated after rejection."""
+    """Assert that a submission can be updated after rejection."""
     claims = TestJwtClaims.public_user_role
 
     survey, eng = factory_survey_and_eng_model()
@@ -101,28 +101,27 @@ def test_edit_rejected_submission(client, jwt, session):  # pylint:disable=unuse
 @pytest.mark.parametrize('submission_info', [TestSubmissionInfo.submission1])
 def test_get_submission_by_id(client, jwt, session, submission_info,
                               setup_admin_user_and_claims):  # pylint:disable=unused-argument
-    """Assert that an engagement can be fetched."""
+    """Assert that a submission can be fetched."""
     user, claims = setup_admin_user_and_claims
 
     participant = factory_participant_model()
-    survey, eng = factory_survey_and_eng_model()
+    survey, eng = factory_survey_and_eng_model(TestSurveyInfo.comment_survey)
     submission = factory_submission_model(
         survey.id, eng.id, participant.id, submission_info)
     headers = factory_auth_header(jwt=jwt, claims=claims)
     rv = client.get(f'/api/submissions/{submission.id}',
                     headers=headers, content_type=ContentType.JSON.value)
     assert rv.status_code == HTTPStatus.OK
-    assert rv.json.get('submission_json', None) is None
 
 
 @pytest.mark.parametrize('submission_info', [TestSubmissionInfo.submission1])
 def test_get_submission_page(client, jwt, session, submission_info,
                              setup_admin_user_and_claims):  # pylint:disable=unused-argument
-    """Assert that an engagement page can be fetched."""
+    """Assert that a submission page can be fetched."""
     user, claims = setup_admin_user_and_claims
 
     participant = factory_participant_model()
-    survey, eng = factory_survey_and_eng_model()
+    survey, eng = factory_survey_and_eng_model(TestSurveyInfo.comment_survey)
     submission = factory_submission_model(
         survey.id, eng.id, participant.id, submission_info)
     factory_comment_model(survey.id, submission.id)
@@ -130,7 +129,6 @@ def test_get_submission_page(client, jwt, session, submission_info,
     rv = client.get(f'/api/submissions/survey/{survey.id}',
                     headers=headers, content_type=ContentType.JSON.value)
     assert rv.status_code == HTTPStatus.OK
-    assert rv.json.get('items', [])[0].get('submission_json', None) is None
 
 
 def test_get_comment_filtering(client, jwt, session,
@@ -138,7 +136,7 @@ def test_get_comment_filtering(client, jwt, session,
                                setup_reviewer_and_claims):  # pylint:disable=unused-argument
     """Assert comments filtering works for different users."""
     participant = factory_participant_model()
-    survey, eng = factory_survey_and_eng_model()
+    survey, eng = factory_survey_and_eng_model(TestSurveyInfo.comment_survey)
     submission_info = TestSubmissionInfo.submission1
     submission = factory_submission_model(
         survey.id, eng.id, participant.id, submission_info)
@@ -239,7 +237,7 @@ def test_advanced_search_submission(client, jwt, session, submission_info):  # p
     claims = TestJwtClaims.public_user_role
 
     participant = factory_participant_model()
-    survey, eng = factory_survey_and_eng_model()
+    survey, eng = factory_survey_and_eng_model(TestSurveyInfo.comment_survey)
     submission_approved = factory_submission_model(
         survey.id, eng.id, participant.id, submission_info)
     factory_comment_model(survey.id, submission_approved.id)

@@ -21,6 +21,12 @@ class FormIoComponentType(Enum):
     RADIO = 'simpleradios'
     CHECKBOX = 'simplecheckboxes'
     SELECTLIST = 'simpleselect'
-    SURVEY = 'simplesurvey'
+    SURVEY = 'simplesurveyadvanced'
     TEXTAREA = 'simpletextarea'
     TEXTFIELD = 'simpletextfield'
+
+    RADIO_ADVANCED = 'simpleradioadvanced'
+    CHECKBOX_ADVANCED = 'simplecheckboxadvanced'
+    SELECTLIST_ADVANCED = 'simpleselectadvanced'
+    TEXTAREA_ADVANCED = 'simpletextareaadvanced'
+    TEXTFIELD_ADVANCED = 'simpletextfieldadvanced'

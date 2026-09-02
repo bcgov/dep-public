@@ -1,6 +1,6 @@
 import React, { Suspense } from 'react';
-import { Await, useParams } from 'react-router';
-import { Grid2 as Grid, Paper, Skeleton } from '@mui/material';
+import { Await, useNavigate, useParams } from 'react-router';
+import { Card, CardActionArea, CardContent, Grid2 as Grid, Paper, Skeleton } from '@mui/material';
 import { ROUTES, getPath } from 'routes/routes';
 import { useSurveyLoaderData } from 'components/survey/useSurveyLoaderData';
 import { SurveyForm } from 'components/survey/submit/SurveyForm';
@@ -20,6 +20,10 @@ import {
 } from 'services/resourceLockService';
 import useResourceSectionLockNavigation from 'components/locking/useResourceSectionLockNavigation';
 import LockOwnerAvatar from 'components/locking/LockOwnerAvatar';
+import { BodyText, Heading3 } from 'components/common/Typography';
+import { Survey } from 'models/survey';
+import { CommentStatus } from 'constants/commentStatus';
+import { SubmissionStatus } from 'constants/engagementStatus';
 
 const SurveyPreview = () => {
     const loaderData = useSurveyLoaderData();
@@ -101,13 +105,104 @@ const SurveyPreview = () => {
                         </>
                     }
                 />
+                <Suspense>
+                    <Await resolve={loaderData.survey}>
+                        {(survey) => (
+                            <Grid
+                                mb={2}
+                                size={12}
+                                hidden={
+                                    ![SubmissionStatus.Open, SubmissionStatus.Closed].includes(
+                                        survey.engagement?.submission_status ?? SubmissionStatus.Upcoming,
+                                    )
+                                }
+                            >
+                                <Heading3 my={1}>Survey Responses</Heading3>
+                                <CommentNavigation survey={survey} />
+                            </Grid>
+                        )}
+                    </Await>
+                </Suspense>
                 <Grid size={12}>
+                    <Heading3 my={1}>Survey Preview</Heading3>
                     <Paper elevation={2}>
                         <Suspense fallback={<SurveyFormSkeleton />}>
                             <SurveyForm />
                         </Suspense>
                     </Paper>
                 </Grid>
+            </Grid>
+        </Grid>
+    );
+};
+
+const CommentNavigation = ({ survey }: { survey: Survey }) => {
+    const navigate = useNavigate();
+    const { total, approved, rejected, pending, needs_further_review } = survey.comments_meta_data;
+    const byStatus = [
+        { label: 'New', value: pending, color: 'info' as const, status: CommentStatus.Pending },
+        { label: 'Approved', value: approved, color: 'success' as const, status: CommentStatus.Approved },
+        { label: 'Rejected', value: rejected, color: 'error' as const, status: CommentStatus.Rejected },
+        {
+            label: 'Needs Review',
+            value: needs_further_review,
+            color: 'warning' as const,
+            status: CommentStatus.NeedsFurtherReview,
+        },
+    ];
+    return (
+        <Grid size={12}>
+            <Grid container size={12} direction="row" justifyContent="flex-start" alignItems="flex-start" spacing={2}>
+                <Grid size={12}>
+                    <Grid component={Card} size={{ xs: 12, md: 8, lg: 6 }} sx={{ minWidth: '200px', flex: 1 }}>
+                        <CardActionArea
+                            LinkComponent={RouterLinkRenderer}
+                            href={getPath(ROUTES.SURVEY_COMMENTS, { surveyId: survey.id })}
+                        >
+                            <CardContent sx={{}}>
+                                <Grid container direction="row" justifyContent="space-between" alignItems="center">
+                                    <Heading3 sx={{ fontSize: '2rem' }}>Total Responses</Heading3>
+                                    <BodyText bold sx={{ fontSize: '3rem' }}>
+                                        {total.toLocaleString() /* Format with commas */}
+                                    </BodyText>
+                                </Grid>
+                            </CardContent>
+                        </CardActionArea>
+                    </Grid>
+                </Grid>
+                {byStatus.map((status) => (
+                    <Grid
+                        component={Card}
+                        size={{ xs: 12, md: 6, lg: 3 }}
+                        spacing={2}
+                        key={status.label}
+                        sx={{
+                            minWidth: '200px',
+                            flex: 1,
+                            backgroundColor: (theme) => theme.palette[status.color].light,
+                        }}
+                    >
+                        <CardActionArea
+                            LinkComponent={RouterLinkRenderer}
+                            href={getPath(ROUTES.SURVEY_COMMENTS, { surveyId: survey.id })}
+                            onClick={(e) => {
+                                e.preventDefault();
+                                navigate(getPath(ROUTES.SURVEY_COMMENTS, { surveyId: survey.id }), {
+                                    state: {
+                                        status: status.status,
+                                    },
+                                });
+                            }}
+                        >
+                            <CardContent sx={{ opacity: status.value === 0 ? 0.5 : 1 }}>
+                                <Heading3>{status.label}</Heading3>
+                                <BodyText bold sx={{ fontSize: '2rem' }}>
+                                    {status.value.toLocaleString()}
+                                </BodyText>
+                            </CardContent>
+                        </CardActionArea>
+                    </Grid>
+                ))}
             </Grid>
         </Grid>
     );
