@@ -1,5 +1,5 @@
 import React, { Suspense, useCallback, useMemo, useState } from 'react';
-import { useNavigate, useRevalidator, useParams } from 'react-router';
+import { useNavigate, useRevalidator, useParams, Await } from 'react-router';
 import { ClickAwayListener, Grid2 as Grid, Stack, InputAdornment, Tooltip, Skeleton } from '@mui/material';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCopy } from '@fortawesome/pro-regular-svg-icons/faCopy';
@@ -11,13 +11,11 @@ import { updateSurveyReportSettings } from 'services/surveyService/reportSetting
 import { useAppDispatch } from 'hooks';
 import { openNotification } from 'services/notificationService/notificationSlice';
 import { updatedDiff } from 'deep-object-diff';
-import { SurveyLoaderData } from '../building/SurveyLoader';
 import { BodyText, Heading3 } from 'components/common/Typography';
 import { ROUTES, getPath } from 'routes/routes';
 import { RouterLinkRenderer } from 'components/common/Navigation/Link';
 import { AppConfig } from 'config';
 import { useSurveyLoaderData } from '../useSurveyLoaderData';
-import { Awaited } from 'utils';
 import {
     getLockConflictPayload,
     LOCK_TOKEN_HEADER,
@@ -41,13 +39,9 @@ const SettingsFormPage = () => {
 };
 
 const SettingsForm = () => {
-    const surveyId = useParams<{ surveyId: string }>().surveyId ?? 0;
+    const surveyId = Number(useParams<{ surveyId: string }>().surveyId) || 0;
     const loaderData = useSurveyLoaderData();
-    const survey = React.use(loaderData.survey) as Awaited<SurveyLoaderData>['survey'];
-    const engagement = React.use(loaderData.engagement) as Awaited<SurveyLoaderData>['engagement'];
-    const reportSettings = React.use(loaderData.reportSettings) as Awaited<SurveyLoaderData>['reportSettings'];
     const [searchTerm, setSearchTerm] = useState<string>('');
-    const engagementSlug = engagement?.slug;
     const [displayedSettings, setDisplayedSettings] = useState<{ [key: number]: boolean }>({});
     const [copyTooltip, setCopyTooltip] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
@@ -57,7 +51,7 @@ const SettingsForm = () => {
     const language = sessionStorage.getItem('languageId') ?? AppConfig.language.defaultLanguageId;
 
     const { locks: liveLocks, refreshLocks } = useResourceLocks({
-        resourceId: survey?.id ?? 0,
+        resourceId: surveyId,
         resourceType: RESOURCE_TYPE_SURVEY,
         initialLocksPromise: loaderData.locks,
     });
@@ -76,8 +70,8 @@ const SettingsForm = () => {
         await refreshLocks();
     }, [refreshLocks]);
     const handleBackFromLockConflict = useCallback(() => {
-        navigate(getPath(ROUTES.SURVEY_BUILD, { surveyId: survey?.id ?? surveyId }));
-    }, [navigate, survey?.id]);
+        navigate(getPath(ROUTES.SURVEY_BUILD, { surveyId }));
+    }, [navigate, surveyId]);
     const { conflictLockModal } = useResourceSectionLockNavigation({
         conflictModal: {
             lock: conflictingSettingsLock,
@@ -88,10 +82,10 @@ const SettingsForm = () => {
         },
     });
     const { activeLockToken } = useResourceSectionEditLock({
-        resourceId: survey?.id ?? 0,
+        resourceId: surveyId,
         resourceType: RESOURCE_TYPE_SURVEY,
         scope: { sectionKey: SECTION_SURVEY_REPORT_SETTINGS },
-        enabled: Boolean(survey?.id),
+        enabled: Boolean(surveyId),
         isDirty: true,
         isSubmitting: isSaving,
         blockedByLock: conflictingSettingsLock,
@@ -112,10 +106,8 @@ const SettingsForm = () => {
         },
     });
 
-    if (!reportSettings) navigate(-1);
-
-    const handleNavigateOnSave = () => {
-        if (survey?.engagement_id) {
+    const handleNavigateOnSave = async () => {
+        if ((await loaderData.survey)?.engagement_id) {
             navigate(-1);
             return;
         }
@@ -123,6 +115,7 @@ const SettingsForm = () => {
     };
 
     const handleSaveSettings = async () => {
+        const reportSettings = await loaderData.reportSettings;
         if (!reportSettings || !Array.isArray(reportSettings) || reportSettings.length === 0) return;
         const currentSettings = reportSettings.map((setting) => {
             return {
@@ -141,7 +134,7 @@ const SettingsForm = () => {
         try {
             setIsSaving(true);
             await updateSurveyReportSettings(
-                String(survey?.id),
+                String(surveyId),
                 updatedSettings,
                 activeLockToken ? { [LOCK_TOKEN_HEADER]: activeLockToken } : undefined,
             );
@@ -166,16 +159,12 @@ const SettingsForm = () => {
     };
 
     const baseUrl = getBaseUrl();
-    const engagementUrl = !engagementSlug
-        ? 'Link will appear when the survey is linked to an engagement'
-        : `${baseUrl}${getPath(ROUTES.PUBLIC_DASHBOARD_BY_SLUG, { slug: engagementSlug, dashboardType: 'report', language })}`;
 
     const handleTooltipClose = () => {
         setCopyTooltip(false);
     };
 
-    const handleCopyUrl = () => {
-        if (!engagementSlug) return;
+    const handleCopyUrl = (engagementUrl: string) => {
         setCopyTooltip(true);
         navigator.clipboard.writeText(engagementUrl);
     };
@@ -200,38 +189,63 @@ const SettingsForm = () => {
                         placement="top-end"
                     >
                         <div style={{ width: '100%' }}>
-                            <TextInput
-                                fullWidth
-                                id="engagement-name"
-                                disabled
-                                value={engagementUrl}
-                                sx={{
-                                    pt: 0,
-                                    pb: 0,
-                                    '.MuiInputBase-input': {
-                                        marginRight: 0,
-                                    },
-                                    '.MuiInputBase-root': {
-                                        padding: 0,
-                                    },
-                                }}
-                                size="small"
-                                endAdornment={
-                                    engagementSlug && (
-                                        <ClickAwayListener onClickAway={handleTooltipClose}>
-                                            <InputAdornment position="end" sx={{ height: '100%', maxHeight: '100%' }}>
-                                                <Button
-                                                    sx={{ borderRadius: '0 8px 8px 0px', marginRight: '-1rem' }}
-                                                    disableElevation
-                                                    onClick={handleCopyUrl}
-                                                >
-                                                    <FontAwesomeIcon icon={faCopy} style={{ fontSize: '20px' }} />
-                                                </Button>
-                                            </InputAdornment>
-                                        </ClickAwayListener>
-                                    )
-                                }
-                            />
+                            <Suspense>
+                                <Await resolve={loaderData.engagement}>
+                                    {(engagement) => {
+                                        const engagementSlug = engagement?.slug;
+                                        const engagementUrl = !engagementSlug
+                                            ? 'Link will appear when the survey is linked to an engagement'
+                                            : `${baseUrl}${getPath(ROUTES.PUBLIC_DASHBOARD_BY_SLUG, {
+                                                  slug: engagementSlug,
+                                                  dashboardType: 'report',
+                                                  language,
+                                              })}`;
+                                        return (
+                                            <TextInput
+                                                fullWidth
+                                                id="engagement-name"
+                                                disabled
+                                                value={engagementUrl}
+                                                sx={{
+                                                    pt: 0,
+                                                    pb: 0,
+                                                    '.MuiInputBase-input': {
+                                                        marginRight: 0,
+                                                    },
+                                                    '.MuiInputBase-root': {
+                                                        padding: 0,
+                                                    },
+                                                }}
+                                                size="small"
+                                                endAdornment={
+                                                    engagementSlug && (
+                                                        <ClickAwayListener onClickAway={handleTooltipClose}>
+                                                            <InputAdornment
+                                                                position="end"
+                                                                sx={{ height: '100%', maxHeight: '100%' }}
+                                                            >
+                                                                <Button
+                                                                    sx={{
+                                                                        borderRadius: '0 8px 8px 0px',
+                                                                        marginRight: '-1rem',
+                                                                    }}
+                                                                    disableElevation
+                                                                    onClick={() => handleCopyUrl(engagementUrl)}
+                                                                >
+                                                                    <FontAwesomeIcon
+                                                                        icon={faCopy}
+                                                                        style={{ fontSize: '20px' }}
+                                                                    />
+                                                                </Button>
+                                                            </InputAdornment>
+                                                        </ClickAwayListener>
+                                                    )
+                                                }
+                                            />
+                                        );
+                                    }}
+                                </Await>
+                            </Suspense>
                         </div>
                     </Tooltip>
                 </FormField>
@@ -244,12 +258,16 @@ const SettingsForm = () => {
             </Grid>
             <Grid size={12}>
                 <Suspense fallback={<Skeleton variant="rectangular" height="10em" width="100%" />}>
-                    <SettingsTable
-                        displayedMap={displayedSettings}
-                        setDisplayedMap={setDisplayedSettings}
-                        searchTerm={searchTerm}
-                        surveyReportSettings={reportSettings ?? []}
-                    />
+                    <Await resolve={loaderData.reportSettings}>
+                        {(reportSettings) => (
+                            <SettingsTable
+                                displayedMap={displayedSettings}
+                                setDisplayedMap={setDisplayedSettings}
+                                searchTerm={searchTerm}
+                                surveyReportSettings={reportSettings ?? []}
+                            />
+                        )}
+                    </Await>
                 </Suspense>
             </Grid>
             <Grid>

@@ -210,33 +210,28 @@ const CommentReview = () => {
     const threatEmailContact = tenant.contact_email;
     const threatConactName = tenant.contact_name;
     return (
-        <Grid
-            container
-            size={12}
-            direction="row"
-            justifyContent="flex-start"
-            alignItems="flex-start"
-            rowSpacing={4}
-            maxWidth="1120px"
-        >
+        <Grid container size={12} justifyContent="flex-start" alignItems="flex-start" rowSpacing={4} maxWidth="1120px">
             <EmailPreviewModal
                 open={emailPreviewOpen}
                 handleClose={() => setEmailPreviewOpen(false)}
                 header={'Your comment on (Engagement name) needs to be edited'}
                 renderEmail={getEmailPreview()}
             />
-            <Grid container direction="row" spacing={2}>
-                <Grid container alignItems="center" direction="row" size={'auto'} spacing={1}>
+            <Grid container spacing={2}>
+                <Grid container alignItems="center" size={'auto'} spacing={1}>
                     <Heading2 my={0} bold>
                         Submission #{id}
                     </Heading2>
                 </Grid>
 
-                <Grid container alignItems="center" direction="row" size={'grow'} spacing={1}>
-                    <CommentStatusChip commentStatus={comment_status_id} />
+                <Grid container alignItems="center" size={'grow'} spacing={1}>
+                    <CommentStatusChip
+                        isAuto={reviewed_by?.toLowerCase() === 'system'}
+                        commentStatus={comment_status_id}
+                    />
                 </Grid>
-                <Grid container direction="row" size={12}>
-                    <Grid container direction="row" size={6} spacing={1}>
+                <Grid container size={12}>
+                    <Grid container size={6} spacing={1}>
                         <Grid alignItems="center" justifyContent="center">
                             <BodyText bold>Comment Date:</BodyText>
                         </Grid>

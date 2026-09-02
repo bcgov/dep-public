@@ -105,7 +105,9 @@ class SubmissionService:
         submission['created_by'] = participant_id
         submission['engagement_id'] = engagement_id
 
-        has_comments = list(SurveyService.extract_components(survey['form_json'], input_types=['text']))
+        comment_components = list(SurveyService.extract_components(survey['form_json'], input_types=['text']))
+        comment_component_keys = [component.get('key') for component in comment_components]
+        has_comments = any(submission.get('submission_json', {}).get(key, '').strip() for key in comment_component_keys)
 
         submission_result = SubmissionModel(
             submission_json=submission.get('submission_json', None),
@@ -128,10 +130,9 @@ class SubmissionService:
 
         engagement_settings: EngagementSettingsModel =\
             EngagementSettingsModel.find_by_id(engagement_id)
-        if engagement_settings:
-            if engagement_settings.send_report:
-                SubmissionService._send_submission_response_email(
-                    participant_id, engagement_id, lang_code)
+        if engagement_settings and engagement_settings.send_report:
+            SubmissionService._send_submission_response_email(
+                participant_id, engagement_id, lang_code)
         return submission_result
 
     @classmethod

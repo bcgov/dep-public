@@ -139,7 +139,7 @@ def factory_subscription_model():
     return subscription
 
 
-def factory_email_verification(survey_id, type=None, submission_id=None):
+def factory_email_verification(survey_id, type=None, submission_id=None, participant_id=None):
     """Produce a EmailVerification model."""
     email_verification = EmailVerificationModel(
         verification_token=fake.uuid4(),
@@ -155,6 +155,9 @@ def factory_email_verification(survey_id, type=None, submission_id=None):
 
     if submission_id:
         email_verification.submission_id = submission_id
+
+    if participant_id:
+        email_verification.participant_id = participant_id
 
     email_verification.save()
     return email_verification
@@ -401,7 +404,6 @@ def factory_submission_model(
     submission_info: dict = TestSubmissionInfo.submission1,
 ):
     """Produce a submission model."""
-    review_by = submission_info.get('reviewed_by', submission_info.get('review_by'))
     submission = SubmissionModel(
         survey_id=survey_id,
         engagement_id=engagement_id,
@@ -412,7 +414,7 @@ def factory_submission_model(
         created_date=submission_info.get('created_date'),
         updated_date=submission_info.get('updated_date'),
         comment_status_id=submission_info.get('comment_status_id'),
-        reviewed_by=review_by,
+        reviewed_by=submission_info.get('reviewed_by'),
         review_date=submission_info.get('review_date'),
     )
     submission.save()

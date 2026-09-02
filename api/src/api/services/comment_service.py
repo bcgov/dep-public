@@ -98,11 +98,12 @@ class CommentService:
     @staticmethod
     def validate_fields(data):
         """Validate all fields."""
-        # Will empty text return False
-        empty_fields = [not data[field] for field in ['text', 'survey_id', 'participant_id']]
-
-        if any(empty_fields):
-            raise ValueError('Some required fields for comments are missing')
+        if not data['text']:
+            raise ValueError('Comment text is required')
+        if not data['survey_id']:
+            raise ValueError('Survey id is required')
+        if not data['participant_id']:
+            raise ValueError('Participant id is required')
 
     @staticmethod
     def __form_comment(component_id, comment_text, survey_submission: SubmissionSchema, survey: SurveySchema):
@@ -124,12 +125,12 @@ class CommentService:
         current_app.logger.debug(f'Extracted components from survey form: {text_components}')
         if len(text_components) == 0:
             return []
-        # get the 'id' for each component
+        # get the key of each component
         text_component_keys = [component.get('key', None) for component in text_components]
         submission = survey_submission.get('submission_json', {})
+        # Create a comment by indexing the submission data with the component key and checking if the value is not empty
         comments = [cls.__form_comment(key, submission.get(key, ''), survey_submission, survey)
-                    for key in text_component_keys if submission.get(key, '') != '']
-        current_app.logger.debug(f'Extracted comments from survey submission: {comments}')
+                    for key in text_component_keys if submission.get(key, '').strip() != '']
         return comments
 
     @classmethod

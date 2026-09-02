@@ -98,11 +98,11 @@ def test_update_submission(session):  # pylint:disable=unused-argument
 def test_create_submission_rollback(session):  # pylint:disable=unused-argument
     """Assert that a submission failure will rollback changes to email verification."""
     survey, _ = factory_survey_and_eng_model()
-    email_verification = factory_email_verification(survey.id)
     participant = factory_participant_model()
+    email_verification = factory_email_verification(survey.id, participant_id=participant.id)
 
     submission_request: SubmissionSchema = {
-        'submission_json': '{ "test_question": "test answer"}',
+        'submission_json': {'test_question': 'test answer'},
         'survey_id': survey.id,
         'participant_id': participant.id,
         'verification_token': email_verification.verification_token,
@@ -168,25 +168,27 @@ def test_submissions_with_comment_are_not_auto_approved(session):  # pylint:disa
     survey, eng = factory_survey_and_eng_model({**TestSurveyInfo.survey1, 'form_json': {
         'components': [
             {
-                'type': 'textfield',
+                'type': 'simpletextfield',
                 'key': 'simpletextfield',
                 'inputType': 'text',
                 'label': 'Simple Text Field'
             },
             {
-                'type': 'textarea',
+                'type': 'simpletextarea',
                 'key': 'simpletextarea',
+                'inputType': 'text',
                 'label': 'Simple Text Area'
             },
             {
-                'type': 'textarea',
+                'type': 'simpletextarea',
                 'key': 'simpletextarea1',
+                'inputType': 'text',
                 'label': 'Simple Text Area 1'
             }
         ]
     }})
-    email_verification = factory_email_verification(survey.id)
     participant = factory_participant_model()
+    email_verification = factory_email_verification(survey.id, participant_id=participant.id)
     factory_engagement_setting_model(eng.id)
     submission_request: SubmissionSchema = {
         'submission_json': {'simplepostalcode': 'abc', 'simpletextarea': 'Test Comment',
@@ -205,8 +207,8 @@ def test_submissions_with_comment_are_not_auto_approved(session):  # pylint:disa
 def test_check_if_submission_can_handle_multiple_comments(session):
     """Assert that submissions can handle multiple comments."""
     survey, eng = factory_survey_and_eng_model()
-    email_verification = factory_email_verification(survey.id)
     participant = factory_participant_model()
+    email_verification = factory_email_verification(survey.id, participant_id=participant.id)
     factory_engagement_setting_model(eng.id)
     # Create a sample submission with a comment in a text field that starts with 'simpletextarea'
     submission_request: SubmissionSchema = {

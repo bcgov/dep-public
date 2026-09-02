@@ -134,7 +134,7 @@ class Comment(BaseModel):
         **kwargs,
     ):
         """Get submissions by survey id paginated."""
-        query = db.session.query(Submission).filter(Submission.survey_id == survey_id)
+        query = Submission.query.filter(Submission.survey_id == survey_id)
 
         if not kwargs.get('include_autoapproved', False):
             query = query.filter((Submission.reviewed_by != SYSTEM_REVIEWER) | (Submission.reviewed_by is None))

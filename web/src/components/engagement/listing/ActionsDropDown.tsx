@@ -134,7 +134,7 @@ export const ActionsDropDown = ({ engagement }: { engagement: Engagement }) => {
             },
             {
                 value: 5,
-                label: 'View All Comments',
+                label: 'View Responses',
                 href: getPath(ROUTES.SURVEY_COMMENTS, { surveyId: engagement.surveys[0]?.id ?? '' }),
                 condition:
                     submissionHasBeenOpened &&

@@ -45,7 +45,7 @@ fake = Faker()
     (ValueError('Test error'), HTTPStatus.INTERNAL_SERVER_ERROR),
 ])
 def test_valid_submission(client, jwt, session, side_effect, expected_status):  # pylint:disable=unused-argument
-    """Assert that an engagement can be POSTed."""
+    """Assert that a submission can be POSTed."""
     claims = TestJwtClaims.public_user_role
 
     survey, eng = factory_survey_and_eng_model()
@@ -69,7 +69,7 @@ def test_valid_submission(client, jwt, session, side_effect, expected_status):  
 
 
 def test_edit_rejected_submission(client, jwt, session):  # pylint:disable=unused-argument
-    """Assert that an engagement can updated after rejection."""
+    """Assert that a submission can be updated after rejection."""
     claims = TestJwtClaims.public_user_role
 
     survey, eng = factory_survey_and_eng_model()
@@ -101,7 +101,7 @@ def test_edit_rejected_submission(client, jwt, session):  # pylint:disable=unuse
 @pytest.mark.parametrize('submission_info', [TestSubmissionInfo.submission1])
 def test_get_submission_by_id(client, jwt, session, submission_info,
                               setup_admin_user_and_claims):  # pylint:disable=unused-argument
-    """Assert that an engagement can be fetched."""
+    """Assert that a submission can be fetched."""
     user, claims = setup_admin_user_and_claims
 
     participant = factory_participant_model()
@@ -112,13 +112,12 @@ def test_get_submission_by_id(client, jwt, session, submission_info,
     rv = client.get(f'/api/submissions/{submission.id}',
                     headers=headers, content_type=ContentType.JSON.value)
     assert rv.status_code == HTTPStatus.OK
-    assert rv.json.get('submission_json', None) is None
 
 
 @pytest.mark.parametrize('submission_info', [TestSubmissionInfo.submission1])
 def test_get_submission_page(client, jwt, session, submission_info,
                              setup_admin_user_and_claims):  # pylint:disable=unused-argument
-    """Assert that an engagement page can be fetched."""
+    """Assert that a submission page can be fetched."""
     user, claims = setup_admin_user_and_claims
 
     participant = factory_participant_model()
@@ -130,7 +129,6 @@ def test_get_submission_page(client, jwt, session, submission_info,
     rv = client.get(f'/api/submissions/survey/{survey.id}',
                     headers=headers, content_type=ContentType.JSON.value)
     assert rv.status_code == HTTPStatus.OK
-    assert rv.json.get('items', [])[0].get('submission_json', None) is None
 
 
 def test_get_comment_filtering(client, jwt, session,

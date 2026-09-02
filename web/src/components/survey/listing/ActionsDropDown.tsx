@@ -117,7 +117,7 @@ export const ActionsDropDown = ({ survey, loadSurveys }: { survey: Survey; loadS
             },
             {
                 value: 4,
-                label: 'View All Comments',
+                label: 'View Responses',
                 href: getPath(ROUTES.SURVEY_COMMENTS, { surveyId: survey.id }),
                 condition: canViewAllComments(),
             },
