@@ -36,7 +36,7 @@ We currently use a combination of:
 
 ### Example Form Structures
 
-```
+```json
 {
   "display": "form",
   "components": [
@@ -63,36 +63,36 @@ We currently use a combination of:
 
 
 {
-    "display": "wizard",
-    "components": [
+  "display": "wizard",
+  "components": [
+    {
+      "type": "panel",
+      "key": "page1",
+      "components": [
         {
-            "type": "panel",
-            "key": "page1",
-            "components": [
-                {
-                    "type": "textfield",
-                    "key": "firstName",
-                    "label": "First Name"
-                },
-                {
-                    "type": "textfield",
-                    "key": "lastName",
-                    "label": "Last Name"
-                }
-            ]
+            "type": "textfield",
+            "key": "firstName",
+            "label": "First Name"
         },
         {
-            "type": "panel",
-            "key": "page2",
-            "components": [
-                {
-                    "type": "email",
-                    "key": "email",
-                    "label": "Email"
-                }
-            ]
+            "type": "textfield",
+            "key": "lastName",
+            "label": "Last Name"
         }
-    ]
+      ]
+    },
+    {
+      "type": "panel",
+      "key": "page2",
+      "components": [
+        {
+            "type": "email",
+            "key": "email",
+            "label": "Email"
+        }
+      ]
+    }
+  ]
 }
 ```
 

@@ -82,7 +82,6 @@ export const OSSGetRequest = <T>(url: string, requestOptions: OSSRequestOptions)
         headers: {
             'X-Amz-Date': requestOptions.amzDate,
             Authorization: requestOptions.authHeader,
-            'tenant-id': `${sessionStorage.getItem('tenantId')}`,
         },
         responseType: 'blob',
     });

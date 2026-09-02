@@ -42,6 +42,9 @@ export const formioOptions = {
         layout: {
             title: 'Advanced Layout',
             weight: 30,
+            components: {
+                simplehtmlelement: false,
+            },
         },
         advanced: {
             title: 'Advanced Fields',

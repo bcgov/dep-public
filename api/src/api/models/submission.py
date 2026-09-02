@@ -9,8 +9,6 @@ from typing import List, Optional
 from sqlalchemy import ForeignKey
 from sqlalchemy.dialects import postgresql
 
-from api.constants.comment_status import Status
-from api.constants.user import SYSTEM_REVIEWER
 from api.models.participant import Participant
 from api.models.survey import Survey
 from api.schemas.submission import SubmissionSchema
@@ -52,57 +50,6 @@ class Submission(BaseModel):  # pylint: disable=too-few-public-methods
     def get_by_survey_id(cls, survey_id) -> List[SubmissionSchema]:
         """Get submissions by survey id."""
         return db.session.query(Submission).filter_by(survey_id=survey_id).all()
-
-    @classmethod
-    def create(cls, submission: SubmissionSchema, session=None) -> Submission:
-        """Save submission.
-
-        Submissions for a survey with comments field blank will be auto approved.
-        Submissions for a survey without a comment input field will be auto approved.
-        This removes the dependency for a user to approve a submission without a comment as no review is required.
-        """
-        has_comments = cls.__check_if_submission_has_comments(submission)
-        if has_comments:
-            const_comment_status = Status.Pending.value
-            const_reviewed_by = None
-            const_review_date = None
-        else:
-            const_comment_status = Status.Approved.value
-            const_reviewed_by = SYSTEM_REVIEWER
-            const_review_date = utc_now()
-
-        new_submission = Submission(
-            submission_json=submission.get('submission_json', None),
-            engagement_id=submission.get('engagement_id', None),
-            survey_id=submission.get('survey_id', None),
-            participant_id=submission.get('participant_id', None),
-            created_date=utc_now(),
-            updated_date=None,
-            created_by=submission.get('created_by', None),
-            updated_by=submission.get('updated_by', None),
-            comment_status_id=const_comment_status,
-            reviewed_by=const_reviewed_by,
-            review_date=const_review_date,
-        )
-        if session is None:
-            db.session.add(new_submission)
-            db.session.commit()
-        else:
-            session.add(new_submission)
-            session.flush()
-        return new_submission
-
-    @staticmethod
-    def __check_if_submission_has_comments(submission: SubmissionSchema):
-        """Check if comment exists."""
-        submission_json = submission.get('submission_json', {})
-        text_fields = ['simpletextarea', 'simpletextfield']
-
-        for field in submission_json:
-            if any(field.startswith(prefix) for prefix in text_fields) and len(submission_json[field]) > 0:
-                return True
-
-        return False
 
     @classmethod
     def update(cls, submission: SubmissionSchema, session=None) -> Submission:
