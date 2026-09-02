@@ -1,9 +1,19 @@
 """Service for report setting management."""
 
+from api.constants.report_setting_type import FormIoComponentType as ComponentType
 from api.models.report_setting import ReportSetting as ReportSettingModel
 from api.models.survey import Survey as SurveyModel
 from api.schemas.report_setting import ReportSettingSchema
-from api.constants.report_setting_type import FormIoComponentType
+
+
+REPORT_COMPONENT_TYPES = [
+    ComponentType.RADIO, ComponentType.RADIO_ADVANCED,
+    ComponentType.CHECKBOX, ComponentType.CHECKBOX_ADVANCED,
+    ComponentType.SELECTLIST, ComponentType.SELECTLIST_ADVANCED,
+    ComponentType.TEXTAREA, ComponentType.TEXTAREA_ADVANCED,
+    ComponentType.TEXTFIELD, ComponentType.TEXTFIELD_ADVANCED,
+    ComponentType.SURVEY,
+]
 
 
 class ReportSettingService:
@@ -17,68 +27,27 @@ class ReportSettingService:
         return settings
 
     @classmethod
-    def refresh_report_setting(cls, report_setting_data):
+    def refresh_report_setting(cls, survey_id, form_components):
         """Refresh report setting."""
-        if report_setting_data.get('form_json', None) is None:
+        if form_components == []:
             raise ValueError('No question available on survey to access settings')
 
-        survey_id = report_setting_data.get('id', None)
-
-        form_json = report_setting_data.get('form_json', None)
-        form_type = form_json.get('display', None)
-
-        is_single_page_survey = form_type == 'form'
-        is_multi_page_survey = form_type == 'wizard'
         survey_question_keys = []
 
-        if is_single_page_survey:
-            form_components = form_json.get('components', None)
-            cls._extract_form_component(survey_id, form_components, survey_question_keys)
-
-        if is_multi_page_survey:
-            pages = form_json.get('components', None)
-            for page in pages:
-                form_components = page.get('components', None)
-                cls._extract_form_component(survey_id, form_components, survey_question_keys)
+        for component in form_components:
+            if component['type'] == ComponentType.SURVEY:
+                questions = component['questions']
+                if not questions:
+                    continue
+                for question in questions:
+                    cls._create_or_update_data_for_survey_type(survey_id, component, question,
+                                                               survey_question_keys)
+            else:
+                cls._create_or_update_data(survey_id, component, survey_question_keys)
 
         cls._delete_questions_removed_from_form(survey_id, survey_question_keys)
 
-        return report_setting_data
-
-    @classmethod
-    def _extract_form_component(cls, survey_id, form_components, survey_question_keys):
-        """Loop through the form json to extract each form component."""
-        for component in form_components:
-            component_type = component.get('type', None)
-            has_valid_question_type = cls._validate_component_type(component_type)
-            if has_valid_question_type:
-                cls._check_for_survey_type_component(survey_id, component, survey_question_keys)
-
-    @staticmethod
-    def _validate_component_type(component_type):
-        """Check if the component type is among the type that will be displayed on the dashboard."""
-        component_type = component_type.lower()
-
-        if component_type in (FormIoComponentType.RADIO.value, FormIoComponentType.CHECKBOX.value,
-                              FormIoComponentType.SELECTLIST.value, FormIoComponentType.SURVEY.value,
-                              FormIoComponentType.TEXTAREA.value, FormIoComponentType.TEXTFIELD.value):
-            return True
-
-        return False
-
-    @classmethod
-    def _check_for_survey_type_component(cls, survey_id, component, survey_question_keys):
-        # Check if the component type is SURVEY then loop through each question to extract the survey questions
-        if component['type'] == FormIoComponentType.SURVEY.value:
-            questions = component['questions']
-            if not questions:
-                return
-
-            for question in questions:
-                cls._create_or_update_data_for_survey_type(survey_id, component, question,
-                                                           survey_question_keys)
-        else:
-            cls._create_or_update_data(survey_id, component, survey_question_keys)
+        return form_components
 
     @staticmethod
     def _create_or_update_data(survey_id, component, survey_question_keys) -> ReportSettingModel:

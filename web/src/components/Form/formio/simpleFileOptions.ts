@@ -1,6 +1,11 @@
 import { Options } from '@formio/react/lib/components/Form';
 import { AxiosRequestConfig } from 'axios';
-import { deletePublicObject, downloadPublicObject, savePublicObject } from 'services/objectStorageService';
+import {
+    deletePublicObject,
+    downloadObject,
+    downloadPublicObject,
+    savePublicObject,
+} from 'services/objectStorageService';
 
 type UploadConfig = AxiosRequestConfig & {
     onUploadProgress?: (event: ProgressEvent) => void;
@@ -8,6 +13,7 @@ type UploadConfig = AxiosRequestConfig & {
 
 interface SimpleFileOptionsConfig extends Options {
     verificationToken?: string;
+    allowDownloadWithoutToken?: boolean;
 }
 
 const createPublicUploadResponse = (
@@ -26,7 +32,11 @@ const createPublicUploadResponse = (
     },
 });
 
-export const createSimpleFileOptions = ({ verificationToken, ...rest }: SimpleFileOptionsConfig = {}) => ({
+export const createSimpleFileOptions = ({
+    verificationToken,
+    allowDownloadWithoutToken,
+    ...rest
+}: SimpleFileOptionsConfig = {}) => ({
     ...rest,
     componentOptions: {
         simplefile: {
@@ -55,11 +65,13 @@ export const createSimpleFileOptions = ({ verificationToken, ...rest }: SimpleFi
                 );
             },
             getFile: async (fileId: string, _config?: AxiosRequestConfig) => {
-                if (!verificationToken) {
+                if (allowDownloadWithoutToken) {
+                    await downloadObject({ filename: fileId });
+                } else if (!verificationToken) {
                     throw new Error('Verification token is required for public file downloads.');
+                } else {
+                    await downloadPublicObject(fileId, verificationToken);
                 }
-
-                await downloadPublicObject(fileId, verificationToken);
             },
             deleteFile: async (fileInfo: { data?: { id?: string }; id?: string }, _config?: AxiosRequestConfig) => {
                 if (!verificationToken) {

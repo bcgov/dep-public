@@ -141,6 +141,7 @@ export const CommentListingContextProvider = ({ children }: CommentListingContex
                 size,
                 sort_key: nested_sort_key || sort_key,
                 sort_order,
+                include_autoapproved: true,
                 search_text: searchFilter.value,
                 status: advancedSearchFilters.status || undefined,
                 comment_date_from: advancedSearchFilters.commentDateFrom,

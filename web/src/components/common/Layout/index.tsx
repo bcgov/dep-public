@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, BoxProps } from '@mui/material';
+import { Accordion, accordionSummaryClasses, Box, BoxProps } from '@mui/material';
 
 /**
  * A styled Box component that pads and outlines its content with the primary color of the theme.
@@ -22,6 +22,28 @@ export const OutlineBox = (props: BoxProps) => {
         </Box>
     );
 };
+
+export const EngagementAccordion = ({
+    children,
+    ...props
+}: { children: React.ReactNode } & React.ComponentProps<typeof Accordion>) => (
+    <Accordion
+        elevation={0}
+        {...props}
+        sx={{
+            boxShadow: '0 0 3px rgba(0, 0, 0, 0.1)',
+            border: '1px solid',
+            borderColor: 'gray.50',
+            borderRadius: '1rem !important',
+            [`& .${accordionSummaryClasses.root}`]: {
+                display: 'flex',
+                columnGap: '0.5rem',
+            },
+        }}
+    >
+        {children}
+    </Accordion>
+);
 
 export { Table, TableHead, TableHeadRow, TableHeadCell, TableBody, TableRow, TableCell, TableContainer } from './Table';
 export { DetailsContainer, Detail } from './Details';

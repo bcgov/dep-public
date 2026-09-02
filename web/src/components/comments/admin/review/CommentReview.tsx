@@ -13,12 +13,14 @@ import {
     FormHelperText,
     Link,
     Tooltip,
+    AccordionSummary,
+    AccordionDetails,
 } from '@mui/material';
 import { getSubmission, reviewComments } from 'services/submissionService';
 import { useAppDispatch, useAppTranslation, useAppSelector } from 'hooks';
 import { useParams, useNavigate } from 'react-router';
 import { openNotification } from 'services/notificationService/notificationSlice';
-import { BodyText, Heading3, Heading4 } from 'components/common/Typography';
+import { BodyText, Heading2, Heading3, Heading4 } from 'components/common/Typography';
 import { Button } from 'components/common/Input/Button';
 import { CommentStatus } from 'constants/commentStatus';
 import { StaffNoteType } from 'constants/staffNoteType';
@@ -38,6 +40,11 @@ import { faMessageSlash } from '@fortawesome/pro-solid-svg-icons/faMessageSlash'
 import { LanguageState } from 'reduxSlices/languageSlice';
 import { TenantState } from 'reduxSlices/tenantSlice';
 import { ROUTES, getPath } from 'routes/routes';
+import { Form } from 'components/Form/formio/setup';
+import { faChevronDown, faBoxBallot } from '@fortawesome/pro-regular-svg-icons';
+import { EngagementAccordion } from 'components/common/Layout';
+import { createSimpleFileOptions } from 'components/Form/formio/simpleFileOptions';
+import { AuthorChip, CommentStatusChip } from 'components/comments/status';
 
 const CommentReview = () => {
     const [submission, setSubmission] = useState<SurveySubmission>(createDefaultSubmission());
@@ -203,64 +210,97 @@ const CommentReview = () => {
     const threatEmailContact = tenant.contact_email;
     const threatConactName = tenant.contact_name;
     return (
-        <Grid container direction="row" justifyContent="flex-start" alignItems="flex-start" rowSpacing={4}>
+        <Grid
+            container
+            size={12}
+            direction="row"
+            justifyContent="flex-start"
+            alignItems="flex-start"
+            rowSpacing={4}
+            maxWidth="1120px"
+        >
             <EmailPreviewModal
                 open={emailPreviewOpen}
                 handleClose={() => setEmailPreviewOpen(false)}
                 header={'Your comment on (Engagement name) needs to be edited'}
                 renderEmail={getEmailPreview()}
             />
-            <Grid container direction="row" rowSpacing={2}>
-                <Grid container direction="row" size={6} spacing={1}>
-                    <Grid>
-                        <BodyText bold>Comment ID:</BodyText>
-                    </Grid>
-                    <Grid>
-                        <BodyText sx={{ pl: 2 }}>{id}</BodyText>
-                    </Grid>
+            <Grid container direction="row" spacing={2}>
+                <Grid container alignItems="center" direction="row" size={'auto'} spacing={1}>
+                    <Heading2 my={0} bold>
+                        Submission #{id}
+                    </Heading2>
                 </Grid>
 
-                <Grid container direction="row" size={6} spacing={1}>
-                    <Grid>
-                        <BodyText bold>Status:</BodyText>
-                    </Grid>
-                    <Grid>
-                        <BodyText sx={{ pl: 2 }}>{CommentStatus[comment_status_id]}</BodyText>
+                <Grid container alignItems="center" direction="row" size={'grow'} spacing={1}>
+                    <CommentStatusChip commentStatus={comment_status_id} />
+                </Grid>
+                <Grid container direction="row" size={12}>
+                    <Grid container direction="row" size={6} spacing={1}>
+                        <Grid alignItems="center" justifyContent="center">
+                            <BodyText bold>Comment Date:</BodyText>
+                        </Grid>
+                        <Grid alignItems="center" justifyContent="center">
+                            <BodyText>{formatToPacific(created_date, 'YYYY-MM-DD')}</BodyText>
+                        </Grid>
                     </Grid>
                 </Grid>
-
-                <Grid container direction="row" size={6} spacing={1}>
-                    <Grid>
-                        <BodyText bold>Comment Date:</BodyText>
-                    </Grid>
-                    <Grid>
-                        <BodyText sx={{ pl: 2 }}>{formatToPacific(created_date, 'YYYY-MM-DD')}</BodyText>
-                    </Grid>
-                </Grid>
-
-                <Grid container direction="row" size={6} spacing={1}>
+                <Grid
+                    container
+                    display={!reviewed_by && !review_date ? 'none' : 'flex'}
+                    spacing={1}
+                    alignItems="center"
+                >
                     <Grid>
                         <BodyText bold>Reviewed by:</BodyText>
                     </Grid>
                     <Grid>
-                        <BodyText sx={{ pl: 2 }}>{reviewed_by}</BodyText>
+                        <AuthorChip author={reviewed_by || ''} />
                     </Grid>
                 </Grid>
-                <Grid container direction="row" size={6} spacing={1}></Grid>
-                <Grid container direction="row" size={6} spacing={1}>
+                <Grid
+                    container
+                    display={!reviewed_by && !review_date ? 'none' : 'flex'}
+                    spacing={1}
+                    alignItems="center"
+                >
                     <Grid>
                         <BodyText bold>Date Reviewed:</BodyText>
                     </Grid>
                     <Grid>
-                        <BodyText sx={{ pl: 2 }}>{formatToPacific(review_date, 'YYYY-MM-DD')}</BodyText>
+                        <BodyText>{formatToPacific(review_date, 'YYYY-MM-DD') || <i>N/A</i>}</BodyText>
                     </Grid>
                 </Grid>
             </Grid>
+            <Grid container size={12} direction="row" rowSpacing={2} className="formio multipageform form-wrapper">
+                <EngagementAccordion sx={{ width: '100%' }}>
+                    <AccordionSummary
+                        sx={{ flexDirection: 'row-reverse' }}
+                        expandIcon={<FontAwesomeIcon icon={faChevronDown} />}
+                        aria-controls="form-submission-content"
+                    >
+                        <FontAwesomeIcon
+                            icon={faBoxBallot}
+                            style={{ marginRight: '0.5rem', fontSize: '1.25rem', padding: '5px' }}
+                        />
+                        <Heading3 bold>Form Submission Data</Heading3>
+                    </AccordionSummary>
+                    <AccordionDetails>
+                        <Form
+                            options={{
+                                readOnly: true,
+                                noAlerts: true,
+                                ...createSimpleFileOptions({ allowDownloadWithoutToken: true }),
+                            }}
+                            form={survey.form_json}
+                            submission={{ data: submission.submission_json }}
+                        />
+                    </AccordionDetails>
+                </EngagementAccordion>
+            </Grid>
             <Grid container rowSpacing={2}>
                 <Grid size={12}>
-                    <Grid size={12}>
-                        <Heading3 bold>Comment(s)</Heading3>
-                    </Grid>
+                    <Heading3 bold>Comments</Heading3>
                 </Grid>
                 {submission.comments?.map((comment) => {
                     return (
@@ -307,7 +347,7 @@ const CommentReview = () => {
                                 </Grid>
                                 <Grid size={11}>
                                     <Grid size={12} paddingTop={2}>
-                                        <BodyText>{comment.label ?? 'Label not available.'}</BodyText>
+                                        <BodyText bold>{comment.label ?? <i>Label not available</i>}:</BodyText>
                                     </Grid>
                                     <Grid size={12}>
                                         <BodyText>{comment.text}</BodyText>
@@ -358,7 +398,7 @@ const CommentReview = () => {
                         </FormControl>
                     </Grid>
                     <When condition={review == CommentStatus.Rejected}>
-                        <Grid size={12}>
+                        <Grid size={12} maxWidth="800px">
                             <FormControl>
                                 <FormLabel id="controlled-checkbox-group">
                                     <Heading4 sx={{ color: '#494949' }}>Reason for Rejection</Heading4>
@@ -476,7 +516,7 @@ const CommentReview = () => {
                                             fullWidth
                                             multiline={true}
                                             rows={4}
-                                            FormHelperTextProps={{ error: true }}
+                                            slotProps={{ formHelperText: { error: true } }}
                                             onChange={(event) => {
                                                 handleNoteChange(event.target.value, staffNote.note_type, staffNote.id);
                                             }}
@@ -509,7 +549,7 @@ const CommentReview = () => {
                         </Grid>
                     </When>
                     <When condition={review !== CommentStatus.Rejected}>
-                        <Grid size={12}>
+                        <Grid size={12} maxWidth="800px">
                             <BodyText bold>Internal Note</BodyText>
                             {internalNotes.map((staffNote) => {
                                 return (
@@ -519,7 +559,7 @@ const CommentReview = () => {
                                         fullWidth
                                         multiline={true}
                                         rows={4}
-                                        FormHelperTextProps={{ error: true }}
+                                        slotProps={{ formHelperText: { error: true } }}
                                         onChange={(event) => {
                                             handleNoteChange(event.target.value, staffNote.note_type, staffNote.id);
                                         }}

@@ -18,8 +18,8 @@ from http import HTTPStatus
 from flask import request
 from flask_cors import cross_origin
 from flask_restx import Namespace, Resource
-from api.auth import jwt as _jwt
 
+from api.auth import jwt as _jwt
 from api.models.pagination_options import PaginationOptions
 from api.schemas import utils as schema_utils
 from api.schemas.submission import SubmissionSchema
@@ -148,7 +148,9 @@ class SurveySubmissions(Resource):
                     survey_id,
                     pagination_options,
                     args.get('search_text', '', str),
-                    advanced_search_filters
+                    advanced_search_filters=advanced_search_filters,
+                    include_autoapproved=args.get('include_autoapproved', False, bool),
+                    exclude_commentless=args.get('exclude_commentless', False, bool),
             )
             return submission_page, HTTPStatus.OK
         except ValueError as err:

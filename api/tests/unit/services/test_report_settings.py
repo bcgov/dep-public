@@ -23,12 +23,8 @@ from tests.utilities.factory_utils import factory_survey_and_eng_model
 def test_refresh_report_setting(session):  # pylint:disable=unused-argument
     """Assert report settings are refreshed."""
     survey, _ = factory_survey_and_eng_model(TestSurveyInfo.survey3)
-    survey_data = {
-        'id': survey.id,
-        'form_json': survey.form_json,
-    }
-    result = ReportSettingService.refresh_report_setting(survey_data)
-    assert result == survey_data
+    result = ReportSettingService.refresh_report_setting(survey.id, survey.form_json.get('components'))
+    assert result == survey.form_json.get('components')
 
     report_settings = ReportSettingService.get_report_setting(survey.id)
     assert len(report_settings) == 1

@@ -1,43 +1,40 @@
 """Service for comment management."""
-import itertools
+
+from flask import current_app
 
 from api.constants.comment_status import Status
-from api.constants.membership_type import MembershipType
 from api.constants.export_comments import RejectionReason
+from api.constants.membership_type import MembershipType
 from api.models import Survey as SurveyModel
 from api.models.comment import Comment
 from api.models.membership import Membership as MembershipModel
 from api.models.pagination_options import PaginationOptions
-from api.models.submission import Submission as SubmissionModel
 from api.models.staff_user import StaffUser as StaffUserModel
+from api.models.submission import Submission as SubmissionModel
 from api.schemas.comment import CommentSchema
 from api.schemas.submission import SubmissionSchema
 from api.schemas.survey import SurveySchema
 from api.services import authorization
 from api.services.document_generation_service import DocumentGenerationService
+from api.services.survey_service import SurveyService
+from api.utils.enums import GeneratedDocumentTypes, MembershipStatus
 from api.utils.roles import Role
 from api.utils.token_info import TokenInfo
-from api.utils.enums import GeneratedDocumentTypes, MembershipStatus
 
 
 class CommentService:
     """Comment management service."""
 
-    otherdateformat = '%Y-%m-%d'
-
-    wizard_display = 'wizard'
-    form_display = 'form'
-
     @staticmethod
     def get_comment(comment_id) -> CommentSchema:
-        """Get Comment by the id."""
+        """Get a comment by its id."""
         comment = Comment.find_by_id(comment_id)
         comment_schema = CommentSchema()
         return comment_schema.dump(comment)
 
     @staticmethod
     def get_comments_by_submission(submission_id) -> CommentSchema:
-        """Get Comment by the id."""
+        """Get comments by their submission id."""
         comments = Comment.get_by_submission(submission_id)
         submission = SubmissionModel.find_by_id(submission_id)
         if submission.comment_status_id != Status.Approved.value:
@@ -49,7 +46,7 @@ class CommentService:
 
     @staticmethod
     def can_view_unapproved_comments(survey_id: int) -> bool:
-        """Return if the current user can see the comments in the survey."""
+        """Return whether the current user can see the comments in the survey."""
         if not survey_id:
             return False
 
@@ -119,33 +116,20 @@ class CommentService:
         }
 
     @classmethod
-    def extract_components(cls, survey_form: dict):
-        """Extract components from survey form."""
-        components = list(survey_form.get('components', []))
-
-        is_comments_from_form_survey = survey_form.get('display') == cls.form_display
-        if is_comments_from_form_survey:
-            return components
-
-        is_comments_from_wizard_survey = survey_form.get('display') == cls.wizard_display
-        if is_comments_from_wizard_survey:
-            return list(itertools.chain.from_iterable([page.get('components', []) for page in components]))
-        return []
-
-    @classmethod
     def extract_comments_from_survey(cls, survey_submission: SubmissionSchema, survey: SurveySchema):
         """Extract comments from survey submission."""
         survey_form = survey.get('form_json', {})
-        components = cls.extract_components(survey_form)
-        if len(components) == 0:
+        # Get components with inputType 'text' from the survey form
+        text_components = SurveyService.extract_components(survey_form, input_types=['text'])
+        current_app.logger.debug(f'Extracted components from survey form: {text_components}')
+        if len(text_components) == 0:
             return []
-        # get the 'id' for each component that has 'inputType' text and filter out the rest.
-        text_component_keys = [
-            component.get('key', None) for component in components
-            if component.get('inputType', None) == 'text']
+        # get the 'id' for each component
+        text_component_keys = [component.get('key', None) for component in text_components]
         submission = survey_submission.get('submission_json', {})
         comments = [cls.__form_comment(key, submission.get(key, ''), survey_submission, survey)
                     for key in text_component_keys if submission.get(key, '') != '']
+        current_app.logger.debug(f'Extracted comments from survey submission: {comments}')
         return comments
 
     @classmethod
@@ -164,9 +148,9 @@ class CommentService:
             'comments': data_rows
         }
         document_options = {
-            'document_type': GeneratedDocumentTypes.COMMENT_SHEET_STAFF.value,
             'template_name': 'staff_comments_sheet.xlsx',
             'convert_to': 'csv',
+            'document_type': GeneratedDocumentTypes.COMMENT_SHEET_STAFF.value,
             'report_name': 'comments_sheet'
         }
         return DocumentGenerationService().generate_document(data=formatted_comments, options=document_options)
@@ -177,13 +161,12 @@ class CommentService:
         # Title could be dynamic based on the number of comment type questions on the survey
         survey_form = survey.form_json
         labels = []
-        components = cls.extract_components(survey_form)
+        components = SurveyService.extract_components(survey_form)
         if len(components) == 0:
             return []
         for component in components:
-            if component.get('inputType', None) == 'text':
-                if 'label' in component:
-                    labels.append(component['label'])
+            if 'label' in component:
+                labels.append(component['label'])
 
         return [{'label': label} for label in labels if label is not None]
 
@@ -284,17 +267,6 @@ class CommentService:
                 grouped_comments.append(new_group)
 
         return grouped_comments
-
-    @classmethod
-    def get_visible_titles(cls, survey, comments):
-        """Add unique labels to titles list in order of appearance."""
-        visible_titles = []
-        for comment in comments:
-            label = comment['label']
-            if label not in [title['label'] for title in visible_titles]:
-                visible_titles.append({'label': label})
-
-        return [title for title in cls.get_titles(survey) if title in visible_titles]
 
     @classmethod
     def sort_comments_by_titles(cls, titles, grouped_comments):

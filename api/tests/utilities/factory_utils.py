@@ -92,7 +92,7 @@ def set_global_tenant(tenant_id=1):
     g.tenant_id = tenant_id
 
 
-def factory_survey_model(survey_info: dict = TestSurveyInfo.survey1):
+def factory_survey_model(survey_info: dict = TestSurveyInfo.comment_survey):
     """Produce a survey model."""
     survey = SurveyModel(
         name=fake.name(),
@@ -101,14 +101,14 @@ def factory_survey_model(survey_info: dict = TestSurveyInfo.survey1):
         updated_by=survey_info.get('updated_by'),
         created_date=survey_info.get('created_date'),
         updated_date=survey_info.get('updated_date'),
-        is_hidden=survey_info.get('is_hidden'),
-        is_template=survey_info.get('is_template'),
+        is_hidden=survey_info.get('is_hidden', False),
+        is_template=survey_info.get('is_template', False),
     )
     survey.save()
     return survey
 
 
-def factory_survey_and_eng_model(survey_info: dict = TestSurveyInfo.survey1):
+def factory_survey_and_eng_model(survey_info: dict = TestSurveyInfo.comment_survey):
     """Produce a survey model."""
     eng = factory_engagement_model(status=Status.Published.value)
     survey = SurveyModel(
@@ -118,8 +118,8 @@ def factory_survey_and_eng_model(survey_info: dict = TestSurveyInfo.survey1):
         updated_by=survey_info.get('updated_by'),
         created_date=survey_info.get('created_date'),
         updated_date=survey_info.get('updated_date'),
-        is_hidden=survey_info.get('is_hidden'),
-        is_template=survey_info.get('is_template'),
+        is_hidden=survey_info.get('is_hidden', False),
+        is_template=survey_info.get('is_template', False),
         engagement_id=eng.id,
     )
     survey.save()
@@ -401,6 +401,7 @@ def factory_submission_model(
     submission_info: dict = TestSubmissionInfo.submission1,
 ):
     """Produce a submission model."""
+    review_by = submission_info.get('reviewed_by', submission_info.get('review_by'))
     submission = SubmissionModel(
         survey_id=survey_id,
         engagement_id=engagement_id,
@@ -411,7 +412,7 @@ def factory_submission_model(
         created_date=submission_info.get('created_date'),
         updated_date=submission_info.get('updated_date'),
         comment_status_id=submission_info.get('comment_status_id'),
-        reviewed_by=submission_info.get('reviewed_by'),
+        reviewed_by=review_by,
         review_date=submission_info.get('review_date'),
     )
     submission.save()

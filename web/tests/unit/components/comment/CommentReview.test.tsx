@@ -39,6 +39,16 @@ jest.mock('react-router', () => ({
     })),
 }));
 
+jest.mock('met-formio', () => ({
+    __esModule: true,
+    default: { name: 'met-formio-components' },
+}));
+
+jest.mock('@bcgov/formio', () => ({
+    __esModule: true,
+    default: { name: 'bcgov-formio-components' },
+}));
+
 jest.mock('react-redux', () => ({
     ...jest.requireActual('react-redux'),
     useSelector: jest.fn((callback) =>
@@ -150,7 +160,7 @@ describe('CommentReview Component', () => {
     test('loads and displays submission and comment details', async () => {
         render(<CommentReview />);
         await waitFor(() => {
-            expect(screen.getByText('Comment ID:')).toBeInTheDocument();
+            expect(screen.getByText('Submission #1')).toBeInTheDocument();
             expect(screen.getByText('Comment Date:')).toBeInTheDocument();
             expect(screen.getByText(mockComment1.text)).toBeInTheDocument();
         });

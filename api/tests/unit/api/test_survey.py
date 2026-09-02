@@ -126,7 +126,7 @@ def test_create_survey_with_tenant(client, jwt, session,
     assert survey_tenant_id == str(tenant_2.id)
 
 
-@pytest.mark.parametrize('survey_info', [TestSurveyInfo.survey2])
+@pytest.mark.parametrize('survey_info', [TestSurveyInfo.comment_survey])
 @pytest.mark.parametrize('side_effect, expected_status', [
     (KeyError('Test error'), HTTPStatus.INTERNAL_SERVER_ERROR),
     (ValueError('Test error'), HTTPStatus.INTERNAL_SERVER_ERROR),
@@ -405,7 +405,7 @@ def test_surveys_clone_admin(mocker, client, jwt, session, survey_info,
                              setup_admin_user_and_claims):
     """Assert that a survey can be cloned."""
     user, claims = setup_admin_user_and_claims
-    survey = factory_survey_model()
+    survey = factory_survey_model(survey_info)
     headers = factory_auth_header(jwt=jwt, claims=claims)
 
     # Prepare test data
@@ -435,7 +435,7 @@ def test_surveys_clone_team_member(mocker, client, jwt, session, survey_info,
                                    setup_team_member_and_claims):
     """Assert that a survey can be cloned."""
     _, claims = setup_team_member_and_claims
-    survey = factory_survey_model()
+    survey = factory_survey_model(survey_info)
     headers = factory_auth_header(jwt=jwt, claims=claims)
 
     # Prepare test data

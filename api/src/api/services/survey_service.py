@@ -1,5 +1,5 @@
 """Service for survey management."""
-from typing import List
+from typing import Any, List, Optional
 
 from sqlalchemy.exc import SQLAlchemyError
 
@@ -17,7 +17,7 @@ from api.schemas.survey import SurveySchema
 from api.services import authorization
 from api.services.membership_service import MembershipService
 from api.services.object_storage_service import ObjectStorageService
-from api.services.report_setting_service import ReportSettingService
+from api.services.report_setting_service import REPORT_COMPONENT_TYPES, ReportSettingService
 from api.utils.roles import Role
 
 
@@ -126,6 +126,27 @@ class SurveyService:
         ], abort=False)
 
     @classmethod
+    def extract_components(cls,
+                           form_structure: dict[str, Any],
+                           types: Optional[List[str]] = None,
+                           input_types: Optional[List[str]] = None) -> List[dict[str, Any]]:
+        """Flatten nested form components to extract all components."""
+        components = []
+
+        def recursive_extract(components_list):
+            for component in components_list:
+                if (types is None or component.get('type') in types) and \
+                   (input_types is None or component.get('inputType') in input_types):
+                    component_copy = {**component}
+                    component_copy.pop('components', None)  # Remove nested components to avoid duplication
+                    components.append(component_copy)
+                if 'components' in component:
+                    recursive_extract(component['components'])
+
+        recursive_extract(form_structure.get('components', []))
+        return components
+
+    @classmethod
     def create(cls, survey_data: dict):
         """Create survey."""
         cls.validate_create_fields(survey_data)
@@ -198,10 +219,10 @@ class SurveyService:
             raise ValueError('Engagement already published')
 
         updated_survey = SurveyModel.update_survey(data)
-        ReportSettingService.refresh_report_setting({
-            'id': updated_survey.id,
-            'form_json': updated_survey.form_json,
-        })
+        form_json = updated_survey.form_json
+        form_components = cls.extract_components(form_json, types=[t.value for t in REPORT_COMPONENT_TYPES])
+
+        ReportSettingService.refresh_report_setting(updated_survey.id, form_components)
 
         return updated_survey
 

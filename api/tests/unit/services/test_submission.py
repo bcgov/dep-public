@@ -18,16 +18,16 @@ Test suite to ensure that the Submission service routines are working as expecte
 from typing import List
 from unittest.mock import patch
 
+from api.constants.comment_status import Status
 from api.constants.email_verification import EmailVerificationType
 from api.models.comment import Comment
 from api.schemas.comment import CommentSchema
-from api.services import authorization
-from api.constants.comment_status import Status
 from api.schemas.submission import SubmissionSchema
+from api.services import authorization
 from api.services.comment_service import CommentService
 from api.services.email_verification_service import EmailVerificationService
 from api.services.submission_service import SubmissionService
-
+from tests.utilities.factory_scenarios import TestSurveyInfo
 from tests.utilities.factory_utils import (
     factory_comment_model, factory_email_verification, factory_engagement_setting_model, factory_participant_model,
     factory_staff_user_model, factory_submission_model, factory_survey_and_eng_model)
@@ -40,7 +40,7 @@ def test_create_submission(session):  # pylint:disable=unused-argument
     participant = factory_participant_model()
     factory_engagement_setting_model(eng.id)
     submission_request: SubmissionSchema = {
-        'submission_json': '{ "test_question": "test answer"}',
+        'submission_json': {'test_question': 'test answer'},
         'survey_id': survey.id,
         'participant_id': participant.id,
         'verification_token': email_verification.verification_token,
@@ -137,12 +137,21 @@ def test_review_comment(client, jwt, session, monkeypatch):  # pylint:disable=un
 
 def test_auto_approval_of_submissions_without_comment(session):  # pylint:disable=unused-argument
     """Assert that a submission without comment is auto approved."""
-    survey, eng = factory_survey_and_eng_model()
+    survey, eng = factory_survey_and_eng_model({**TestSurveyInfo.survey1, "form_json": {
+        'components': [
+            {
+                'id': 'approval-choice',
+                'type': 'simplecheckboxes',
+                'key': 'approvalchoice',
+                'label': 'Approval Choice'
+            }
+        ]
+    }})
     email_verification = factory_email_verification(survey.id)
     participant = factory_participant_model()
     factory_engagement_setting_model(eng.id)
     submission_request: SubmissionSchema = {
-        'submission_json': {'simplepostalcode': 'abc', 'simpletextarea': '', 'simpletextarea1': ''},
+        'submission_json': {'simplepostalcode': 'abc', 'approvalchoice': []},
         'survey_id': survey.id,
         'participant_id': participant.id,
         'verification_token': email_verification.verification_token,
@@ -156,7 +165,26 @@ def test_auto_approval_of_submissions_without_comment(session):  # pylint:disabl
 
 def test_submissions_with_comment_are_not_auto_approved(session):  # pylint:disable=unused-argument
     """Assert that a submission with comment is not auto approved."""
-    survey, eng = factory_survey_and_eng_model()
+    survey, eng = factory_survey_and_eng_model({**TestSurveyInfo.survey1, "form_json": {
+        'components': [
+            {
+                'type': 'textfield',
+                'key': 'simpletextfield',
+                'inputType': 'text',
+                'label': 'Simple Text Field'
+            },
+            {
+                'type': 'textarea',
+                'key': 'simpletextarea',
+                'label': 'Simple Text Area'
+            },
+            {
+                'type': 'textarea',
+                'key': 'simpletextarea1',
+                'label': 'Simple Text Area 1'
+            }
+        ]
+    }})
     email_verification = factory_email_verification(survey.id)
     participant = factory_participant_model()
     factory_engagement_setting_model(eng.id)
