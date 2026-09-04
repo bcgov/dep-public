@@ -5,7 +5,7 @@ image:
   namespace: e903c2-tools
 
 cors:
-  origins: 'https://dep-analytics-api-dev.apps.gold.devops.gov.bc.ca'
+  origins: 'https://dep-web-dev.apps.gold.devops.gov.bc.ca'
 
 route:
   host: dep-analytics-api-dev.apps.gold.devops.gov.bc.ca

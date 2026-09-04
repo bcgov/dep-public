@@ -14,7 +14,7 @@ data:
     REACT_APP_PUBLIC_URL: "{{ .Values.site.url }}"
       # These URLS should not have a trailing slash
     REACT_APP_API_URL: "{{ .Values.site.url }}/api"
-    REACT_APP_ANALYTICS_API_URL: "https://analytics-api-{{ .Values.environment }}.apps.gold.devops.gov.bc.ca/api"
+    REACT_APP_ANALYTICS_API_URL: "https://dep-analytics-api-{{ .Values.environment }}.apps.gold.devops.gov.bc.ca/api"
     # Tenant
     REACT_APP_DEFAULT_TENANT: {{ .Values.tenants.default }}
     REACT_APP_DEFAULT_LANGUAGE: "en"
