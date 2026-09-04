@@ -10,6 +10,7 @@ from api.models.engagement import Engagement as EngagementModel
 from api.models.engagement_status import \
     EngagementStatus as EngagementStatusModel
 from api.models.widget_map import WidgetMap
+from api.utils.datetime import utc_now
 
 
 # get the last run cycle id for engagement etl
@@ -58,35 +59,31 @@ def get_engagement_last_run_cycle_time(context, flag_to_run_step_after_user):
 def extract_engagement(context, eng_last_run_cycle_time, eng_new_runcycleid):
     session = context.resources.engagement_db_session
     default_datetime = datetime(1900, 1, 1, 0, 0, 0, 0)
-    new_engagements = []
+    last_run = max(eng_last_run_cycle_time) if eng_last_run_cycle_time else default_datetime
+
+    context.log.info("started extracting new data from engagement table")
+    new_engagements = session.query(EngagementModel).filter(
+        EngagementModel.created_date > last_run,
+        EngagementModel.status_id != EngagementStatus.Draft.value
+    ).all()
+    context.log.info(f"last_run={last_run}, new count={len(new_engagements)}")
+
     updated_engagements = []
+    if last_run > default_datetime:
+        updated_engagements = session.query(EngagementModel).filter(
+            EngagementModel.updated_date > last_run,
+            EngagementModel.status_id != EngagementStatus.Draft.value
+        ).all()
+    context.log.info(f"updated count={len(updated_engagements)}")
 
-    for last_run_cycle_time in eng_last_run_cycle_time:
-        context.log.info("started extracting new data from engagement table")
-        new_engagements = session.query(EngagementModel).filter(
-            EngagementModel.created_date > last_run_cycle_time,
-            EngagementModel.status_id != EngagementStatus.Draft.value).all()
-
-        context.log.info(last_run_cycle_time)
-        context.log.info(len(new_engagements))
-
-        if last_run_cycle_time > default_datetime:
-            updated_engagements = session.query(EngagementModel).filter(
-                EngagementModel.updated_date > last_run_cycle_time,
-                EngagementModel.status_id != EngagementStatus.Draft.value).all()
-
-        context.log.info(len(updated_engagements))
+    # Compute a new cycle ID – e.g., current UTC time
+    new_cycle_id = utc_now()   # import from your utils
 
     yield Output(new_engagements, "new_engagements")
-
     yield Output(updated_engagements, "updated_engagements")
-
-    yield Output(eng_new_runcycleid, "eng_new_runcycleid")
-
-    context.log.info("completed extracting data from engagement table")
+    yield Output(new_cycle_id, "eng_new_runcycleid")
 
     session.commit()
-
     session.close()
 
 
