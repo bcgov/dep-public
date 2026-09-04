@@ -32,16 +32,6 @@ from .engagement_metadata import EngagementMetadata as EngagementMetadataModel
 from .engagement_status import EngagementStatus
 
 
-def _suggested_engagement_order_by():
-    # Importing here to avoid circular import between engagement and
-    # suggested engagement models as the sort index for suggested engagement is defined in
-    # the suggested engagement model while the relationship is defined in the engagement model
-    from .suggested_engagement import SuggestedEngagement   # pylint: disable=import-outside-toplevel
-    # noqa: E501, E261, I005
-
-    return SuggestedEngagement.sort_index
-
-
 class Engagement(BaseModel):
     """Definition of the Engagement entity."""
 
@@ -80,7 +70,7 @@ class Engagement(BaseModel):
         back_populates='source_engagement',
         primaryjoin='SuggestedEngagement.engagement_id == Engagement.id',
         foreign_keys='SuggestedEngagement.engagement_id',
-        order_by=_suggested_engagement_order_by,
+        order_by='SuggestedEngagement.sort_index',
         collection_class=ordering_list('sort_index', count_from=1),
         cascade='all, delete-orphan',
         passive_deletes=True,
