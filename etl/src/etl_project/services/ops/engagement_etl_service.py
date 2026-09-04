@@ -1,12 +1,16 @@
+from datetime import datetime, timezone
+
+from analytics_api.models.engagement import Engagement as EtlEngagementModel
+from analytics_api.models.etlruncycle import EtlRunCycle as EtlRunCycleModel
 from dagster import Out, Output, op
+from sqlalchemy import func
+from sqlalchemy.orm import load_only
+
 from api.constants.engagement_status import Status as EngagementStatus
 from api.models.engagement import Engagement as EngagementModel
-from api.models.engagement_status import EngagementStatus as EngagementStatusModel
+from api.models.engagement_status import \
+    EngagementStatus as EngagementStatusModel
 from api.models.widget_map import WidgetMap
-from analytics_api.models.engagement import Engagement as EtlEngagementModel
-from sqlalchemy import func
-from datetime import datetime, timezone
-from analytics_api.models.etlruncycle import EtlRunCycle as EtlRunCycleModel
 
 
 # get the last run cycle id for engagement etl
@@ -60,7 +64,7 @@ def extract_engagement(context, eng_last_run_cycle_time, eng_new_runcycleid):
 
     for last_run_cycle_time in eng_last_run_cycle_time:
         context.log.info("started extracting new data from engagement table")
-        new_engagements = session.query(EngagementModel).filter(
+        new_engagements = session.query(EngagementModel).options(load_only("id", "created_date", "status_id", "updated_date", "published_date", "name", "start_date", "end_date")).filter(
             EngagementModel.created_date > last_run_cycle_time,
             EngagementModel.status_id != EngagementStatus.Draft.value).all()
 
