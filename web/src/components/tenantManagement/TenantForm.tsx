@@ -289,7 +289,7 @@ export const TenantForm = ({
                         If you do not add a hero banner image, a default image will be used.
                     </BodyText>
                     <br />
-                    <BodyText bold sx={{ color: '#464341' }}>
+                    <BodyText bold color="text.secondary">
                         Image Guidance
                     </BodyText>
                     <BodyText size="small">

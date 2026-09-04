@@ -10,6 +10,7 @@ export interface ObjectStorageHeaderDetails {
 
 export interface ObjectStorageFileDetails {
     filename: string;
+    s3sourceuri?: string;
 }
 
 export interface PublicObjectStorageUploadRequest {

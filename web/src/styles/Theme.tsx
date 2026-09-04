@@ -178,13 +178,11 @@ export const Palette = {
     error: {
         main: colors.notification.error.shade,
         light: colors.notification.error.tint,
-        dark: colors.notification.error.icon,
         contrastText: colors.type.inverted.primary,
     },
     success: {
         main: colors.notification.success.shade,
         light: colors.notification.success.tint,
-        dark: colors.notification.success.icon,
         contrastText: colors.type.inverted.primary,
     },
     warning: {
@@ -196,7 +194,6 @@ export const Palette = {
     info: {
         main: colors.notification.info.shade,
         light: colors.notification.info.tint,
-        dark: colors.notification.info.icon,
         contrastText: colors.type.inverted.primary,
     },
     background: {

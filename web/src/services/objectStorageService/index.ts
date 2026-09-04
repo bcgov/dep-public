@@ -22,7 +22,6 @@ export const downloadObject = async (file: ObjectStorageFileDetails) => {
     }
     const blobResponse = await getObject(response.data[0]);
     const fallbackFileName = file.filename.split('/').pop() || 'download';
-    console.log('Downloading file with filename:', fallbackFileName);
     downloadFile(blobResponse, fallbackFileName);
 };
 

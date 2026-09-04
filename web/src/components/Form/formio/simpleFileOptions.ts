@@ -66,7 +66,7 @@ export const createSimpleFileOptions = ({
             },
             getFile: async (fileId: string, _config?: AxiosRequestConfig) => {
                 if (allowDownloadWithoutToken) {
-                    await downloadObject({ filename: fileId });
+                    await downloadObject({ s3sourceuri: fileId, filename: fileId });
                 } else if (!verificationToken) {
                     throw new Error('Verification token is required for public file downloads.');
                 } else {
