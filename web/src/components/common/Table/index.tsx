@@ -46,7 +46,7 @@ function CustomTableHead<T>({
     headCells,
     loading,
     nestedSortKey,
-}: CustomTableHeadProps<T>) {
+}: Readonly<CustomTableHeadProps<T>>) {
     const createSortHandler = (property: keyof T, headCellIndex: number) => (event: React.MouseEvent<unknown>) => {
         onRequestSort(event, property, headCellIndex);
     };
