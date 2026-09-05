@@ -42,7 +42,7 @@ const iconSize = '20px';
 const folderSize = '24px';
 const chevronSize = '14px';
 
-const getFileIcon = (url: string, isFile: boolean) => {
+export const getFileIcon = (url: string, isFile: boolean) => {
     if (!isFile) {
         return url ? faLink : faChainBroken;
     }

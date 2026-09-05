@@ -177,6 +177,11 @@ const AuthenticatedRoutes = resolveLazyRouteTree(
                             ComponentLazy={() => import('engagements/admin/view/AuthoringTab')}
                         />
                         <LazyRoute
+                            path="files"
+                            handle={{ crumb: () => ({ name: 'Files' }) }}
+                            ComponentLazy={() => import('engagements/admin/view/FilesTab')}
+                        />
+                        <LazyRoute
                             path="activity"
                             handle={{ crumb: () => ({ name: 'Activity' }) }}
                             ComponentLazy={() => import('routes/UnderConstruction')}
