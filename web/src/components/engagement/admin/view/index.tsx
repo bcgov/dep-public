@@ -16,6 +16,7 @@ const AdminEngagementView = () => {
     const EngagementViewTabs = {
         config: 'Configuration',
         authoring: 'Authoring',
+        metadata: 'Metadata',
         activity: 'Activity',
         results: 'Results',
         publish: 'Publishing',
@@ -24,6 +25,7 @@ const AdminEngagementView = () => {
     const EngagementViewLinks = {
         config: ROUTES.ENGAGEMENT_DETAILS_CONFIG,
         authoring: ROUTES.ENGAGEMENT_DETAILS_AUTHORING,
+        metadata: ROUTES.ENGAGEMENT_DETAILS_METADATA,
         activity: ROUTES.ENGAGEMENT_DETAILS_ACTIVITY,
         results: ROUTES.ENGAGEMENT_DETAILS_RESULTS,
         publish: ROUTES.ENGAGEMENT_DETAILS_PUBLISH,

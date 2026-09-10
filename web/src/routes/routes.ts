@@ -38,6 +38,7 @@ export const ROUTES = {
     ENGAGEMENT_DETAILS_CONFIG: '/manage/engagements/:engagementId/config',
     ENGAGEMENT_DETAILS_AUTHORING: '/manage/engagements/:engagementId/authoring',
     ENGAGEMENT_DETAILS_ACTIVITY: '/manage/engagements/:engagementId/activity',
+    ENGAGEMENT_DETAILS_METADATA: '/manage/engagements/:engagementId/metadata',
     ENGAGEMENT_DETAILS_RESULTS: '/manage/engagements/:engagementId/results',
     ENGAGEMENT_DETAILS_PUBLISH: '/manage/engagements/:engagementId/publish',
     AUTHORING_BANNER: '/manage/engagements/:engagementId/authoring/:languageCode/banner',
