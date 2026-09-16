@@ -75,7 +75,7 @@
     "jspdf": "^4.2.1",
     "keycloak-js": "^26.2.1",
     "lodash-es": "^4.18.1",
-    "maplibre-gl": "^5.14.0",
+    "maplibre-gl": "^6.8.0",
     "met-formio": "^1.0.16-rc.2",
     "mini-css-extract-plugin": "^2.4.5",
     "mui-sx": "^1.0.0",
