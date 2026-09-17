@@ -43,6 +43,7 @@ export const FilesLightbox = ({ open, onClose, files }: FilesLightboxProps) => {
     const currentFile = files[currentFileIndex];
     const oneFile = files.length <= 1;
     const hiddenWhenOneFile = oneFile ? 'none' : 'inline-flex';
+    const matchButtonPadding = oneFile ? 3 : 12.875; // 12.875rem corresponds to the width of the side navigation after padding
     const downloadIcon = isDownloading ? (
         <CircularProgress sx={{ color: 'inherit' }} size="20px" />
     ) : (
@@ -105,7 +106,7 @@ export const FilesLightbox = ({ open, onClose, files }: FilesLightboxProps) => {
                 container
                 justifyContent="space-between"
                 spacing={1}
-                px={{ xs: 2, sm: 3, md: oneFile ? 3 : 12.875 }} // 12.875rem corresponds to the width of the side navigation after padding
+                px={{ xs: 2, sm: 3, md: matchButtonPadding }}
             >
                 <Grid size="auto" display={{ xs: 'flex', md: 'none' }}>
                     <Button
@@ -275,7 +276,7 @@ export const FilesLightbox = ({ open, onClose, files }: FilesLightboxProps) => {
                     </Grid>
                 </Grid>
             </DialogContent>
-            <DialogActions sx={{ display: { xs: 'none', md: 'flex' }, px: oneFile ? 3 : 12.875 }}>
+            <DialogActions sx={{ display: { xs: 'none', md: 'flex' }, px: matchButtonPadding }}>
                 <Button size="small" icon={<FontAwesomeIcon icon={faCheck} />} onClick={handleClose}>
                     Done
                 </Button>
