@@ -33,7 +33,7 @@ API = Namespace('widget_images',
 image_creation_model = API.model(
     'ImageCreation',
     {
-        'image_url': fields.String(description='The URL of the image', required=True),
+        'file_id': fields.String(description='The ID of the image file', required=True),
         'alt_text': fields.String(description='The alt text for the image'),
         'description': fields.String(description='The description of the image'),
     },
@@ -42,7 +42,7 @@ image_creation_model = API.model(
 image_update_model = API.model(
     'ImageUpdate',
     {
-        'image_url': fields.String(description='The URL of the image'),
+        'file_id': fields.String(description='The ID of the image file'),
         'alt_text': fields.String(description='The alt text for the image'),
         'description': fields.String(description='The description of the image'),
     },

@@ -43,9 +43,7 @@ def test_get_document_by_widget_id(session):  # pylint:disable=unused-argument
         'widget_id': widget.id,
     })
 
-    documents_root = WidgetDocumentService.get_documents_by_widget_id(widget.id)
-
-    documents = documents_root.get('children')
+    documents = WidgetDocumentService.get_documents_by_widget_id(widget.id)
 
     assert len(documents) == 2
 
@@ -56,9 +54,9 @@ def test_create_document(session):  # pylint:disable=unused-argument
     TestWidgetInfo.widget1['engagement_id'] = engagement.id
     widget = factory_widget_model(TestWidgetInfo.widget1)
 
-    document = WidgetDocumentService.create_document(widget.id, TestWidgetDocumentInfo.document1)
-    documents_root = WidgetDocumentService.get_documents_by_widget_id(widget.id)
-    documents = documents_root.get('children')
+    document = WidgetDocumentService.create_document(
+        widget.id, TestWidgetDocumentInfo.document1)
+    documents = WidgetDocumentService.get_documents_by_widget_id(widget.id)
     document_fetched = documents[0]
 
     assert document is not None
@@ -88,14 +86,17 @@ def test_patch_document(session):  # pylint:disable=unused-argument
         'url': None,
     }
 
-    updated_document_record = WidgetDocumentService().edit_document(widget.id, document.id, document_edits)
+    updated_document_record = WidgetDocumentService().edit_document(
+        widget.id, document.id, document_edits)
 
     # Assert that only edited fields have changed
     assert updated_document_record.title == document_edits.get('title')
     assert updated_document_record.type == saved_document_dict.get('type')
-    assert updated_document_record.parent_document_id == saved_document_dict.get('parent_document_id')
+    assert updated_document_record.parent_document_id == saved_document_dict.get(
+        'parent_document_id')
     assert updated_document_record.url == document_edits.get('url')
-    assert updated_document_record.sort_index == saved_document_dict.get('sort_index')
+    assert updated_document_record.sort_index == saved_document_dict.get(
+        'sort_index')
 
 
 def test_delete_document(session):  # pylint:disable=unused-argument
@@ -108,7 +109,8 @@ def test_delete_document(session):  # pylint:disable=unused-argument
 
     WidgetDocumentService().delete_document(widget.id, document.id)
 
-    documents_root = WidgetDocumentService.get_documents_by_widget_id(widget.id)
+    documents_root = WidgetDocumentService.get_documents_by_widget_id(
+        widget.id)
 
     documents = documents_root.get('children')
 

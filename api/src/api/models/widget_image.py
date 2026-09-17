@@ -5,6 +5,7 @@ Manages the image widget
 
 from __future__ import annotations
 
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.sql.schema import ForeignKey
 
 from .base_model import BaseModel
@@ -24,9 +25,12 @@ class WidgetImage(
     engagement_id = db.Column(
         db.Integer, ForeignKey('engagement.id', ondelete='CASCADE'), nullable=True
     )
-    image_url = db.Column(db.String(255), nullable=False)
+    file_id = db.Column(UUID(as_uuid=True), db.ForeignKey(
+        'uploaded_files.id'), nullable=False)
     alt_text = db.Column(db.String(255))
     description = db.Column(db.Text())
+    file = db.relationship('UploadedFile', foreign_keys=[
+                           file_id], backref='image_widgets')
 
     @classmethod
     def get_image(cls, widget_id) -> list[WidgetImage]:

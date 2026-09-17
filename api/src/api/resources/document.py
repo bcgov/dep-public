@@ -20,11 +20,17 @@ from flask import jsonify, request
 from flask_cors import cross_origin
 from flask_restx import Namespace, Resource
 
+from api.exceptions.business_exception import BusinessException
 from api.models import Engagement as EngagementModel
 from api.models import Survey as SurveyModel
+from api.models.db import db
+from api.models.tenant import Tenant
+from api.resources.metadata_taxon import ensure_tenant_access
 from api.schemas.document import Document
 from api.schemas.public_upload import PublicObjectAccessRequestSchema, PublicUploadAuthorizationRequestSchema
+from api.schemas.uploaded_file import UploadedFileSchema
 from api.services.email_verification_service import EmailVerificationService
+from api.services.file_upload_service import FileUploadService
 from api.services.object_storage_service import ObjectStorageService
 from api.utils.roles import Role
 from api.utils.tenant_validator import require_role
@@ -55,7 +61,7 @@ def _get_public_upload_scope(verification_token: str):
     return verification, survey, engagement
 
 
-@cors_preflight('GET,OPTIONS')
+@cors_preflight('POST,OPTIONS')
 @API.route('/')
 class DocumentStorage(Resource):
     """Document storage resource controller."""
@@ -63,20 +69,60 @@ class DocumentStorage(Resource):
     @staticmethod
     @cross_origin(origins=allowedorigins())
     @require_role([Role.EDIT_ENGAGEMENT.value])
-    def post():
+    @ensure_tenant_access()
+    def post(tenant: Tenant):
         """Retrieve authentication properties for document storage."""
         try:
+            object_storage = None
             requestfilejson = request.get_json()
             documents = cast(list[dict[str, Any]],
                              Document().load(requestfilejson, many=True))
-            return jsonify(ObjectStorageService().get_auth_headers(documents)), HTTPStatus.OK
+            auth_headers = []
+            for document in documents:
+                if document.get('s3sourceuri'):
+                    object_storage = object_storage or ObjectStorageService()
+                    auth_headers.append(
+                        object_storage.get_auth_headers([document])[0])
+                else:
+                    auth_headers.append(FileUploadService(db.session).prepare_file_upload(
+                        tenant_id=tenant.id,
+                        file_name=document['filename'],
+                        content_type=document.get('content_type'),
+                        engagement_id=document.get('engagement_id'),
+                        widget_id=document.get('widget_id')
+                    )[0])
+
+            return jsonify(auth_headers), HTTPStatus.OK
+        except BusinessException as err:
+            return str(err), err.status_code
         except KeyError as err:
             return str(err), HTTPStatus.INTERNAL_SERVER_ERROR
         except ValueError as err:
             return str(err), HTTPStatus.INTERNAL_SERVER_ERROR
 
 
-@cors_preflight('POST,OPTIONS')
+@API.route('/<string:file_id>/finalize')
+class FinalizeDocumentUpload(Resource):
+    """Finalizes the upload of a document to the storage service."""
+
+    @staticmethod
+    @cross_origin(origins=allowedorigins())
+    def post(file_id: str):
+        """Finalize the upload of a document to the storage service."""
+        upload_service = FileUploadService(db.session)  # type: ignore
+        try:
+            uploaded_file, status_code = upload_service.finalize_file_upload(
+                file_id)
+            return UploadedFileSchema().dump(uploaded_file), status_code
+        except ValueError as err:
+            if 'not found' in str(err):
+                return str(err), HTTPStatus.NOT_FOUND
+            return str(err), HTTPStatus.INTERNAL_SERVER_ERROR
+        except KeyError as err:
+            return str(err), HTTPStatus.BAD_REQUEST
+
+
+@cors_preflight('GET,POST,DELETE,OPTIONS')
 @API.route('/public')
 class PublicDocumentUploadAuthorization(Resource):
     """Token-scoped public upload/download/delete authorization controller."""

@@ -13,8 +13,8 @@ from tests.utilities.factory_scenarios import (
     TestWidgetInfo)
 from tests.utilities.factory_utils import (
     factory_auth_header, factory_document_model, factory_engagement_details_tab_model,
-    factory_engagement_details_tab_translation_model, factory_engagement_model, factory_widget_event_model,
-    factory_widget_model, factory_widget_timeline_model)
+    factory_engagement_details_tab_translation_model, factory_engagement_model, factory_tenant_model,
+    factory_uploaded_file_model, factory_widget_event_model, factory_widget_model, factory_widget_timeline_model)
 
 
 def test_get_engagement_content_translation_includes_new_widget_translation_buckets(client, jwt, session):
@@ -87,10 +87,12 @@ def test_get_engagement_content_translation_includes_new_widget_translation_buck
 
     image_widget = factory_widget_model(
         {**TestWidgetInfo.widget_image.value, 'engagement_id': engagement.id})
+    tenant = factory_tenant_model()
+    uploaded_file = factory_uploaded_file_model(tenant.id)
     image = WidgetImage(
         widget_id=image_widget.id,
         engagement_id=engagement.id,
-        image_url='https://example.com/image.jpg',
+        file_id=uploaded_file.id,
         alt_text='Alt EN',
         description='Description EN',
     )
@@ -186,10 +188,12 @@ def test_put_engagement_content_translation_syncs_new_widget_translation_buckets
 
     image_widget = factory_widget_model(
         {**TestWidgetInfo.widget_image.value, 'engagement_id': engagement.id})
+    tenant = factory_tenant_model()
+    uploaded_file = factory_uploaded_file_model(tenant.id)
     image = WidgetImage(
         widget_id=image_widget.id,
         engagement_id=engagement.id,
-        image_url='https://example.com/image.jpg',
+        file_id=uploaded_file.id,
         alt_text='Alt EN',
         description='Description EN',
     )

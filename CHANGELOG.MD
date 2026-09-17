@@ -1,3 +1,15 @@
+## September 17, 2026
+
+- **Feature** Added file tracking + auditing [🎟️ DEP-356](https://citz-gdx.atlassian.net/browse/DEP-356)
+  - Implemented backend logic to track and audit file changes.
+  - Added UploadedFile model to represent generic uploaded files.
+  - Added EngagementFile association table to hold engagement and optionally widget information.
+  - Modified document storage upload authorization endpoint so that all future files will have references stored in the database associated to their tenant.
+  - Built additional tracking into the following areas:
+    - Hero banner - engagement association is stored
+    - Image widget and Document widget: engagement and widget association are stored
+    - This way, we can see which files were associated with which resources even if they are no longer in use by those resources.
+
 ## September 10, 2026
 
 - **Feature** Implemented new layout system in all engagement components, including description, details tabs, hero, subscribe, survey, and suggested engagements. The preview control bar, internal header, and public header were also updated to match. [🎟️ DEP-329](https://citz-gdx.atlassian.net/browse/DEP-329)

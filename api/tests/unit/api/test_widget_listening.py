@@ -12,9 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Tests to verify the Widget Timeline API end-point.
+"""Tests to verify the Who is Listening Widget API end-point.
 
-Test-Suite to ensure that the Widget Timeline API endpoint
+Test-Suite to ensure that the Who is Listening Widget API endpoint
 is working as expected.
 """
 import json
@@ -53,7 +53,7 @@ def test_create_listening_widget(client, jwt, session,
     }
 
     rv = client.post(
-        f'/api/widgets/{widget.id}/timelines',
+        f'/api/widgets/{widget.id}/listening_widgets',
         data=json.dumps(data),
         headers=headers,
         content_type=ContentType.JSON.value
@@ -72,11 +72,11 @@ def test_create_listening_widget(client, jwt, session,
     assert rv.status_code == HTTPStatus.BAD_REQUEST
 
 
-def test_get_timeline(client, jwt, session):  # pylint:disable=unused-argument
+def test_get_listening_widget(client, jwt, session):  # pylint:disable=unused-argument
     """Assert that Who is Listening widget can be fetched."""
     engagement = factory_engagement_model()
-    TestWidgetInfo.widget_timeline['engagement_id'] = engagement.id
-    widget = factory_widget_model(TestWidgetInfo.widget_timeline)
+    TestWidgetInfo.widget_listening['engagement_id'] = engagement.id
+    widget = factory_widget_model(TestWidgetInfo.widget_listening)
 
     headers = factory_auth_header(jwt=jwt, claims=TestJwtClaims.no_role)
 

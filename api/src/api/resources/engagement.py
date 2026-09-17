@@ -25,12 +25,15 @@ from api.auth import auth
 from api.auth import jwt as _jwt
 from api.constants.membership_type import MembershipType
 from api.exceptions.business_exception import BusinessException
+from api.models import db
 from api.models.pagination_options import PaginationOptions
 from api.models.tenant import Tenant as TenantModel
 from api.resources.lock_validation_decorators import require_engagement_patch_lock
 from api.schemas.engagement import EngagementSchema
-from api.services.engagement_service import EngagementService
+from api.schemas.engagement_file import EngagementFileSchema
 from api.services import authorization
+from api.services.engagement_file_service import EngagementFileService
+from api.services.engagement_service import EngagementService
 from api.services.resource_lock_service import ResourceLockService
 from api.utils.roles import Role
 from api.utils.tenant_validator import require_role
@@ -252,3 +255,19 @@ class Engagements(Resource):
             return str(err), HTTPStatus.NOT_FOUND
         except ValidationError as err:
             return str(err.messages), HTTPStatus.BAD_REQUEST
+
+
+@cors_preflight('GET, POST')
+@API.route('/<engagement_id>/files')
+class EngagementUpload(Resource):
+    """Resource for managing file uploads per-engagement."""
+
+    @staticmethod
+    @require_role([Role.VIEW_ENGAGEMENT.value])
+    @cross_origin(origins=allowedorigins())
+    def get(engagement_id):
+        """Retrieve a list of uploaded files for an engagement."""
+        file_upload_service = EngagementFileService(db.session)  # type: ignore
+        engagement_files = file_upload_service.get_engagement_files(
+            engagement_id)
+        return EngagementFileSchema(many=True).dump(engagement_files), HTTPStatus.OK
