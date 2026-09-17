@@ -119,7 +119,7 @@ const ImageWidgetView = ({ widget }: ImageWidgetProps) => {
                         objectFit: 'cover',
                         borderRadius: '16px',
                     }}
-                    src={imageWidget.image_url}
+                    src={imageWidget.file.url}
                     alt={resolvedImageAltText}
                 />
             </Grid>

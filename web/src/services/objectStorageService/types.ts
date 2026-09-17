@@ -11,6 +11,9 @@ export interface ObjectStorageHeaderDetails {
 export interface ObjectStorageFileDetails {
     filename: string;
     s3sourceuri?: string;
+    content_type?: string;
+    engagement_id?: number;
+    widget_id?: number;
 }
 
 export interface PublicObjectStorageUploadRequest {

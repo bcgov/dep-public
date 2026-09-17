@@ -2,6 +2,7 @@ import { Survey, SurveySubmissionData } from './survey';
 import { EngagementStatusBlock } from './engagementStatusBlock';
 import { SubmissionStatus } from 'constants/engagementStatus';
 import { SuggestedEngagementWithAttachment } from './suggestedEngagement';
+import { UploadedFile } from './uploadedFile';
 
 export interface EngagementAuthoringAuthorization {
     can_edit: boolean;
@@ -25,7 +26,8 @@ export interface Engagement {
     scheduled_date: string;
     rich_content: string;
     banner_url: string;
-    banner_filename: string;
+    banner_file_id?: string;
+    banner_file?: UploadedFile;
     feedback_heading: string;
     feedback_body: string;
     surveys: Survey[];
@@ -99,7 +101,7 @@ export const createDefaultEngagement = (sponsorName?: string): Engagement => {
         updated_date: '',
         rich_content: '',
         banner_url: '',
-        banner_filename: '',
+        banner_file_id: '',
         feedback_heading: '',
         feedback_body: '',
         surveys: [],

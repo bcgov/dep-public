@@ -43,6 +43,9 @@ const Endpoints = {
         DELETE: `${AppConfig.apiUrl}/engagement_metadata/taxon/taxon_id`,
         PRESET_VALUES: `${AppConfig.apiUrl}/engagement_metadata/taxon/taxon_id/preset_values`,
     },
+    EngagementFiles: {
+        GET_LIST: `${AppConfig.apiUrl}/engagements/engagement_id/files`,
+    },
     EngagementSettings: {
         CREATE: `${AppConfig.apiUrl}/engagementsettings/`,
         UPDATE: `${AppConfig.apiUrl}/engagementsettings/`,
@@ -65,6 +68,7 @@ const Endpoints = {
     },
     Document: {
         OSS_HEADER: `${AppConfig.apiUrl}/document/`,
+        OSS_FINALIZE: `${AppConfig.apiUrl}/document/file_id/finalize`,
         PUBLIC: `${AppConfig.apiUrl}/document/public`,
     },
     Survey: {

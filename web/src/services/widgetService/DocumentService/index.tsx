@@ -5,13 +5,9 @@ import { replaceAllInURL, replaceUrl } from 'helper';
 import { WidgetLocation } from 'models/widget';
 
 export const fetchDocuments = async (widget_id: number): Promise<DocumentItem[]> => {
-    try {
-        const url = replaceUrl(Endpoints.Documents.GET_LIST, 'widget_id', String(widget_id));
-        const responseData = await http.GetRequest<DocumentItem>(url);
-        return responseData.data?.children ?? [];
-    } catch (err) {
-        return Promise.reject(err);
-    }
+    const url = replaceUrl(Endpoints.Documents.GET_LIST, 'widget_id', String(widget_id));
+    const responseData = await http.GetRequest<DocumentItem[]>(url);
+    return responseData.data ?? [];
 };
 
 interface PostDocumentRequest {
@@ -19,40 +15,30 @@ interface PostDocumentRequest {
     widget_id?: number;
     parent_document_id?: number | null;
     url?: string;
+    file_id?: string;
     type: DocumentType;
     is_uploaded?: boolean;
     location: WidgetLocation | null;
 }
 export const postDocument = async (widget_id: number, data: PostDocumentRequest): Promise<DocumentItem> => {
-    try {
-        const url = replaceUrl(Endpoints.Documents.CREATE, 'widget_id', String(widget_id));
-        const response = await http.PostRequest<DocumentItem>(url, data);
-        if (response.data) {
-            return response.data;
-        }
-        return Promise.reject('Failed to create document');
-    } catch (err) {
-        return Promise.reject(err);
-    }
+    const url = replaceUrl(Endpoints.Documents.CREATE, 'widget_id', String(widget_id));
+    const response = await http.PostRequest<DocumentItem>(url, data);
+    if (!response.data || response.status !== 200) throw new Error('Failed to create document');
+    return response.data;
 };
 
 export const deleteDocument = async (widget_id: number, document_id: number): Promise<DocumentItem> => {
-    try {
-        const url = replaceAllInURL({
-            URL: Endpoints.Documents.DELETE,
-            params: {
-                document_id: String(document_id),
-                widget_id: String(widget_id),
-            },
-        });
-        const response = await http.DeleteRequest<DocumentItem>(url);
-        if (response.data) {
-            return response.data;
-        }
-        return Promise.reject('Failed to delete document');
-    } catch (err) {
-        return Promise.reject(err);
-    }
+    const url = replaceAllInURL({
+        URL: Endpoints.Documents.DELETE,
+        params: {
+            document_id: String(document_id),
+            widget_id: String(widget_id),
+        },
+    });
+    const response = await http.DeleteRequest<DocumentItem>(url);
+    if (!response.data || response.status !== 200) throw new Error('Failed to delete document');
+
+    return response.data;
 };
 
 export interface PatchDocumentRequest {
@@ -66,22 +52,18 @@ export const patchDocument = async (
     document_id: number,
     data: PatchDocumentRequest,
 ): Promise<DocumentItem> => {
-    try {
-        const url = replaceAllInURL({
-            URL: Endpoints.Documents.UPDATE,
-            params: {
-                document_id: String(document_id),
-                widget_id: String(widget_id),
-            },
-        });
-        const response = await http.PatchRequest<DocumentItem>(url, data);
-        if (response.data) {
-            return response.data;
-        }
-        return Promise.reject('Failed to update document');
-    } catch (err) {
-        return Promise.reject(err);
+    const url = replaceAllInURL({
+        URL: Endpoints.Documents.UPDATE,
+        params: {
+            document_id: String(document_id),
+            widget_id: String(widget_id),
+        },
+    });
+    const response = await http.PatchRequest<DocumentItem>(url, data);
+    if (response.data) {
+        return response.data;
     }
+    throw new Error('Failed to update document');
 };
 
 export interface SortDocumentRequest {
@@ -89,14 +71,10 @@ export interface SortDocumentRequest {
     documents: DocumentItem[];
 }
 export const sortDocuments = async (widget_id: number, data: SortDocumentRequest): Promise<DocumentItem> => {
-    try {
-        const url = replaceUrl(Endpoints.Documents.ORDER, 'widget_id', String(widget_id));
-        const response = await http.PatchRequest<DocumentItem>(url, data);
-        if (response.data) {
-            return response.data;
-        }
-        return Promise.reject('Failed to update document');
-    } catch (err) {
-        return Promise.reject(err);
+    const url = replaceUrl(Endpoints.Documents.ORDER, 'widget_id', String(widget_id));
+    const response = await http.PatchRequest<DocumentItem>(url, data);
+    if (response.data) {
+        return response.data;
     }
+    throw new Error('Failed to update document');
 };

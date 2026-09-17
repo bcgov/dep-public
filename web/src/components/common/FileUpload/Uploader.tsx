@@ -9,8 +9,18 @@ interface UploaderProps {
     height?: string;
     acceptedFormat?: Accept;
 }
-const Uploader = ({ margin = 2, height = '10em', helpText, acceptedFormat }: UploaderProps) => {
+const Uploader = ({ margin = 2, height = '10em', helpText, acceptedFormat = {} }: UploaderProps) => {
     const { handleAddFile } = useContext(FileUploadContext);
+    // Join both strings and keys of the accepted file formats to create a comma-separated
+    // string for the accept attribute. It is recommended to use both mimetypes and explicit
+    // file extensions when specifying accepted file formats.
+    const acceptString = Object.keys(acceptedFormat)
+        .map((key) => {
+            const value = acceptedFormat?.[key];
+            if (!value || value.length === 0) return key;
+            return [acceptedFormat?.[key], key].join(',');
+        })
+        .join(',');
 
     return (
         <Dropzone
@@ -34,7 +44,7 @@ const Uploader = ({ margin = 2, height = '10em', helpText, acceptedFormat }: Upl
                             cursor: 'pointer',
                         }}
                     >
-                        <input {...getInputProps()} multiple={false} accept={'image/*'} />
+                        <input {...getInputProps()} multiple={false} accept={acceptString} />
                         <Typography m={margin}>{helpText}</Typography>
                     </Grid>
                 </section>

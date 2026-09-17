@@ -1,14 +1,14 @@
 import { JSX } from 'react';
 
 export interface HeadCell<T> {
-    disablePadding: boolean;
+    disablePadding?: boolean;
     key: keyof T;
     nestedSortKey?: string;
     label?: string;
     icon?: JSX.Element;
     hideSorticon?: boolean;
-    numeric: boolean;
-    allowSort: boolean;
+    numeric?: boolean;
+    allowSort?: boolean;
     renderCell?: (row: T) => string | number | JSX.Element | null;
     customStyle?: React.CSSProperties;
     align?: 'right' | 'left' | 'inherit' | 'center' | 'justify';

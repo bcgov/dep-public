@@ -172,7 +172,7 @@ const resolvePatchSectionForPayload = (payload: Record<string, unknown>): string
         return SECTION_AUTHORING_MORE;
     }
 
-    if ('status_block' in payload || 'banner_filename' in payload) {
+    if ('status_block' in payload || 'banner_file_id' in payload) {
         return SECTION_AUTHORING_BANNER;
     }
 
@@ -403,7 +403,7 @@ export const authoringUpdateAction: ActionFunction = async ({ request }) => {
                     start_date: (formData.get('start_date') as string) || undefined,
                     status_id: Number(formData.get('status_id')) || undefined,
                     end_date: (formData.get('end_date') as string) || undefined,
-                    banner_filename: (formData.get('banner_filename') as string) || undefined,
+                    banner_file_id: (formData.get('banner_file_id') as string) || undefined,
                     sponsor_name: languageCode === defaultLanguageCode ? sponsorName : undefined,
                     status_block: statusBlock,
                 };

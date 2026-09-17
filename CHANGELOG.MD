@@ -9,6 +9,9 @@
     - Hero banner - engagement association is stored
     - Image widget and Document widget: engagement and widget association are stored
     - This way, we can see which files were associated with which resources even if they are no longer in use by those resources.
+  - Integrated file tracking and auditing into the web app. All endpoints now support basic file tracking, and the areas mentioned above properly submit engagement and widget associations when applicable.
+  - Remove dummy file information from engagment Files tab and replace it with actual tracked file data.
+  - Added simple file management functionalities (preview, download, copy link) to the engagement Files tab (more later).
 
 ## September 10, 2026
 

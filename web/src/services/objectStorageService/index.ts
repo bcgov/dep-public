@@ -3,13 +3,14 @@ import http from 'apiManager/httpRequestHandler';
 import API from 'apiManager/endpoints';
 import { ObjectStorageFileDetails, ObjectStorageHeaderDetails, PublicObjectStorageUploadRequest } from './types';
 import { downloadFile } from 'utils';
+import { UploadedFile } from 'models/uploadedFile';
 
 const getOSSHeaderDetails = async (data: ObjectStorageFileDetails) => {
     return await http.PostRequest<ObjectStorageHeaderDetails[]>(API.Document.OSS_HEADER, [data]);
 };
 
 const getObject = async (headerDetails: ObjectStorageHeaderDetails) => {
-    return await http.OSSGetRequest<Blob>(headerDetails.filename, {
+    return await http.OSSGetRequest<Blob>(headerDetails.filepath, {
         amzDate: headerDetails.amzdate,
         authHeader: headerDetails.authheader,
     });
@@ -32,13 +33,18 @@ const doSaveObjectRequest = async (headerDetails: ObjectStorageHeaderDetails, fi
     });
 };
 
+const finalizeUpload = async (fileId: string) => {
+    return await axios.post<UploadedFile>(API.Document.OSS_FINALIZE.replace('file_id', fileId));
+};
+
 export const saveObject = async (file: File, fileDetails: ObjectStorageFileDetails) => {
     const fileDetailsResponse = await getOSSHeaderDetails(fileDetails);
     if (!fileDetailsResponse.data) {
         throw new Error('Error occurred while fetching a document from object storage');
     }
     await doSaveObjectRequest(fileDetailsResponse.data[0], file);
-    return fileDetailsResponse.data[0];
+    const finalizedFile = await finalizeUpload(fileDetailsResponse.data[0].uniquefilename.split('.')[0] || '');
+    return finalizedFile.data;
 };
 
 const getPublicUploadDetails = async (data: PublicObjectStorageUploadRequest) => {

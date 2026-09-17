@@ -1,3 +1,5 @@
+import { UploadedFile } from './uploadedFile';
+
 export interface SuggestedEngagement {
     id?: number;
     engagement_id: number;
@@ -18,8 +20,8 @@ interface SuggestedEngagementAttachment {
     start_date: string;
     end_date: string;
     submission_status: number;
-    banner_filename: string;
-    banner_url: string;
+    banner_file_id?: string;
+    banner_file?: UploadedFile;
     tenant_id: number;
     is_internal: boolean;
     consent_message: string;

@@ -106,7 +106,7 @@ describe('CommentReview Component', () => {
             created_date: '',
             updated_date: '',
             banner_url: '',
-            banner_filename: '',
+            banner_file_id: '',
             content: '',
             rich_content: '',
             engagement_status: { id: 0, status_name: '' },
