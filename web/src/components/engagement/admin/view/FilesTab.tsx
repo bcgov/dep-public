@@ -135,12 +135,13 @@ const FilesTab = () => {
         };
     };
 
-    type propertyKey = {
-        [x: string]: keyof propertyKey;
-    };
-
-    const getPropertyByNestedKey = (obj: propertyKey, key: string) => {
-        return key.split('.').reduce((acc: propertyKey, part: string) => acc?.[part], obj);
+    const getPropertyByNestedKey = (obj: unknown, key: string) => {
+        return key.split('.').reduce<unknown>((acc, part) => {
+            if (acc !== null && typeof acc === 'object' && part in acc) {
+                return (acc as Record<string, unknown>)[part];
+            }
+            return undefined;
+        }, obj);
     };
 
     const unlinkedFiles = (files: EngagementFile[]) => {

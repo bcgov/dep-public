@@ -42,6 +42,7 @@ export const FilesLightbox = ({ open, onClose, files }: FilesLightboxProps) => {
     const [zoomPosition, setZoomPosition] = React.useState({ x: 0, y: 0 });
     const currentFile = files[currentFileIndex];
     const oneFile = files.length <= 1;
+    const hiddenWhenOneFile = oneFile ? 'none' : 'inline-flex';
     const downloadIcon = isDownloading ? (
         <CircularProgress sx={{ color: 'inherit' }} size="20px" />
     ) : (
@@ -90,7 +91,7 @@ export const FilesLightbox = ({ open, onClose, files }: FilesLightboxProps) => {
         setZoomPosition({ x: (clampedX / rectWidth) * 100, y: (clampedY / rectHeight) * 100 });
     };
 
-    const displayDate = (date: string) => {
+    const displayDate = (date?: string) => {
         if (!date) return 'N/A';
         const relative = formatRelative(date);
         if (relative.includes('month') || relative.includes('year')) return formatToPacific(date);
@@ -135,7 +136,7 @@ export const FilesLightbox = ({ open, onClose, files }: FilesLightboxProps) => {
             </DialogTitle>
             <DialogContent sx={{ px: { xs: 2, sm: 3 } }}>
                 <Grid container size={12} alignItems="center" spacing={{ xs: 1, md: 2 }}>
-                    <Grid size="auto" display={{ xs: 'none', md: oneFile ? 'none' : 'inline-flex' }}>
+                    <Grid size="auto" display={{ xs: 'none', md: hiddenWhenOneFile }}>
                         <Button onClick={navigateBackward} icon={<FontAwesomeIcon icon={faArrowLeft} />} />
                     </Grid>
                     <Grid container size="grow" gap={2}>
@@ -227,7 +228,7 @@ export const FilesLightbox = ({ open, onClose, files }: FilesLightboxProps) => {
                             size={12}
                             spacing={1}
                             alignItems="center"
-                            display={{ xs: oneFile ? 'none' : 'inline-flex', md: 'none' }}
+                            display={{ xs: hiddenWhenOneFile, md: 'none' }}
                             justifyContent="space-between"
                         >
                             <Button
@@ -257,7 +258,11 @@ export const FilesLightbox = ({ open, onClose, files }: FilesLightboxProps) => {
                                 <BodyText title={`${currentFile.size} bytes`}>
                                     <b>Size:</b> {bytesToSize(currentFile.size)}
                                 </BodyText>
-                                <BodyText title={formatToPacific(currentFile.uploaded_at)}>
+                                <BodyText
+                                    title={
+                                        currentFile.uploaded_at ? formatToPacific(currentFile.uploaded_at) : undefined
+                                    }
+                                >
                                     <b>Uploaded:</b> {displayDate(currentFile.uploaded_at)}
                                 </BodyText>
                             </Grid>
@@ -265,7 +270,7 @@ export const FilesLightbox = ({ open, onClose, files }: FilesLightboxProps) => {
                             <p>No file selected</p>
                         )}
                     </Grid>
-                    <Grid size="auto" display={{ xs: 'none', md: oneFile ? 'none' : 'inline-flex' }}>
+                    <Grid size="auto" display={{ xs: 'none', md: hiddenWhenOneFile }}>
                         <Button onClick={navigateForward} icon={<FontAwesomeIcon icon={faArrowRight} />} />
                     </Grid>
                 </Grid>
