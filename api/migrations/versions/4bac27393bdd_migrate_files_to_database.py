@@ -46,6 +46,9 @@ mimetypes.add_type(
 
 
 def lookup_file_by_name(file_name: str):
+    if not s3_auth.aws_access_key or not s3_auth.aws_secret_access_key or not bucket:
+        raise RuntimeError(
+            "S3 bucket is not configured! Please set S3_AWS_ACCESS_KEY, S3_AWS_SECRET_KEY, and S3_BUCKET")
     if not file_name:
         return None, None, None
 
@@ -123,9 +126,6 @@ INSERT_STATEMENT = (
 
 
 def upgrade():  # NOSONAR - ignore S3776 (function complexity)
-    if not s3_auth.aws_access_key or not s3_auth.aws_secret_access_key or not bucket:
-        raise RuntimeError(
-            "S3 bucket is not configured! Please set S3_AWS_ACCESS_KEY, S3_AWS_SECRET_KEY, and S3_BUCKET")
     op.add_column('engagement', sa.Column('banner_file_id',
                   postgresql.UUID(as_uuid=True), nullable=True))
     op.create_foreign_key('engagement_banner_file_id_fkey',
