@@ -8,6 +8,7 @@ import {
     faLinkSlash,
     faTrash,
     faFileDownload,
+    faHardDrive,
 } from '@fortawesome/pro-regular-svg-icons';
 import {
     Grid2 as Grid,
@@ -20,6 +21,7 @@ import {
     LinearProgress,
     CircularProgress,
     Divider,
+    Chip,
 } from '@mui/material';
 import {
     Table,
@@ -472,6 +474,21 @@ const FilesTab = () => {
                     </TableBody>
                 </Table>
             </TableContainer>
+            <Grid size="auto" mt={2}>
+                <Await resolve={loaderData.files}>
+                    {(resolvedFiles) => {
+                        const totalSize = bytesToSize(
+                            resolvedFiles.reduce((acc, file) => acc + file.uploaded_file.size, 0),
+                        );
+                        return (
+                            <Chip
+                                icon={<FontAwesomeIcon fontSize="20px" icon={faHardDrive} />}
+                                label={`${totalSize} used`}
+                            />
+                        );
+                    }}
+                </Await>
+            </Grid>
             <FilesLightbox
                 open={!!previewingFiles.length}
                 onClose={() => setPreviewingFiles([])}
