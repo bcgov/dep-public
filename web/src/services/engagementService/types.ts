@@ -15,7 +15,7 @@ export interface PostEngagementRequest {
     description: string;
     rich_description: string;
     description_title: string;
-    banner_filename?: string;
+    banner_file_id?: string;
     status_block?: EngagementStatusBlock[];
     is_internal?: boolean;
     languages?: string[];
@@ -29,7 +29,7 @@ export interface PutEngagementRequest {
     description: string;
     rich_description: string;
     description_title: string;
-    banner_filename?: string;
+    banner_file_id?: string;
     status_block?: EngagementStatusBlock[];
     sponsor_name?: string;
 }
@@ -45,7 +45,7 @@ export interface PatchEngagementRequest {
     description?: string;
     rich_description?: string;
     description_title?: string;
-    banner_filename?: string;
+    banner_file_id?: string;
     status_block?: EngagementStatusBlock[];
     is_internal?: boolean;
     sponsor_name?: string;

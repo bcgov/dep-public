@@ -4,6 +4,8 @@ import { getWidgets } from 'services/widgetService';
 import { getEngagementMetadata, getMetadataTaxa } from 'services/engagementMetadataService';
 import { Engagement, EngagementMetadata, MetadataTaxon } from 'models/engagement';
 import { Widget } from 'models/widget';
+import { getEngagementFiles } from 'services/engagementFileService';
+import { EngagementFile } from 'models/engagementFile';
 import { getTeamMembers } from 'services/membershipService';
 import { EngagementTeamMember } from 'models/engagementTeamMember';
 import { EngagementDetailsTab } from 'models/engagementDetailsTab';
@@ -19,6 +21,7 @@ export type EngagementLoaderAdminData = {
     widgets: Promise<Widget[]>;
     details: Promise<EngagementDetailsTab[]>;
     metadata: Promise<EngagementMetadata[]>;
+    files: Promise<EngagementFile[]>;
     taxa: Promise<MetadataTaxon[]>;
     teamMembers: Promise<EngagementTeamMember[]>;
     languages: Promise<Language[]>;
@@ -60,6 +63,7 @@ export const engagementLoaderAdmin = async ({ params }: LoaderFunctionArgs) => {
     const widgets = engagement.then((response) => getWidgets(Number(response.id)));
     const details = engagement.then((response) => getDetailsTabs(response.id));
     const locks = engagement.then((response) => getEngagementLocks(response.id));
+    const files = engagement.then((response) => getEngagementFiles(Number(response.id)));
     const engagementMetadata = engagement.then((response) => getEngagementMetadata(Number(response.id)));
     const taxaData = getMetadataTaxa();
     const teamMembers = engagement.then((response) => getTeamMembers({ engagement_id: response.id }).catch(() => []));
@@ -85,6 +89,7 @@ export const engagementLoaderAdmin = async ({ params }: LoaderFunctionArgs) => {
         details,
         metadata,
         taxa,
+        files,
         teamMembers,
         languages,
         hasDefaultLanguageTranslation,

@@ -73,7 +73,7 @@ const AddContactDrawer = () => {
         }
         try {
             const savedDocumentDetails = await saveObject(avatarImage, { filename: avatarImage.name });
-            return savedDocumentDetails?.uniquefilename || '';
+            return savedDocumentDetails?.unique_filename || '';
         } catch (error) {
             console.log(error);
             throw new Error('Error occurred during avatar image upload');

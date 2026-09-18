@@ -237,7 +237,7 @@ const AuthoringBanner = () => {
                                 data-testid="engagement-form/image-upload"
                                 handleAddFile={handleAddBannerImage}
                                 savedImageUrl={eng.banner_url}
-                                savedImageName={eng.banner_filename}
+                                savedImageName={eng.banner_file?.filename}
                                 height={ENGAGEMENT_UPLOADER_HEIGHT}
                                 cropAspectRatio={ENGAGEMENT_CROPPER_ASPECT_RATIO}
                             />

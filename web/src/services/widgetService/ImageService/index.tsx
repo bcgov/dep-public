@@ -16,6 +16,7 @@ export const fetchImageWidgets = async (widget_id: number): Promise<ImageWidget[
 
 interface PostImageRequest {
     widget_id: number;
+    file_id: string;
     engagement_id: number;
     image_url: string;
     alt_text?: string;

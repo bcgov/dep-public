@@ -19,6 +19,7 @@ import { If, Then, Else } from 'react-if';
 import { WidgetLocation } from 'models/widget';
 import { BodyText, Heading3 } from 'components/common/Typography';
 import { Button } from 'components/common/Input/Button';
+import { bytesToSize } from 'helper';
 
 const schema = yup
     .object({
@@ -28,8 +29,6 @@ const schema = yup
     .required();
 
 type UploadFileForm = yup.TypeOf<typeof schema>;
-
-const OneMegaByte = 1000000;
 
 const UploadFileDrawer = () => {
     const dispatch = useAppDispatch();
@@ -62,12 +61,14 @@ const UploadFileDrawer = () => {
     };
 
     const handleUploadFile = async (fileName: string) => {
-        if (!fileToUpload) {
-            return Promise.reject('No file to upload');
+        if (!fileToUpload || !widget) {
+            throw new Error('No file to upload');
         }
-        const fileExtension = fileToUpload.name.split('.').pop();
         const savedDocumentDetails = await saveObject(fileToUpload, {
-            filename: `${fileName}.${fileExtension}`,
+            filename: fileToUpload.name,
+            content_type: fileToUpload.type,
+            widget_id: widget.id,
+            engagement_id: widget.engagement_id,
         });
         return savedDocumentDetails;
     };
@@ -75,17 +76,17 @@ const UploadFileDrawer = () => {
     interface CreateDocumentParams {
         name: string;
         folderId: number | null;
-        link: string;
+        fileId: string;
     }
     const createDocument = async (data: CreateDocumentParams) => {
         if (!widget) {
             return;
         }
-        const { folderId, name, link } = data;
+        const { folderId, name, fileId } = data;
         await postDocument(widget.id, {
             title: name,
             parent_document_id: folderId,
-            url: link,
+            file_id: fileId,
             widget_id: widget.id,
             type: 'file',
             is_uploaded: true,
@@ -111,7 +112,7 @@ const UploadFileDrawer = () => {
             await createDocument({
                 folderId: folderId || null,
                 name: name,
-                link: uploadDetails.uniquefilename,
+                fileId: uploadDetails.id,
             });
 
             await loadDocuments();
@@ -179,9 +180,7 @@ const UploadFileDrawer = () => {
                                                         <BodyText>{fileToUpload?.type}</BodyText>
                                                     </Grid>
                                                     <Grid size={12}>
-                                                        <BodyText>
-                                                            {`${fileToUpload?.size ?? 0 / OneMegaByte} MB`}
-                                                        </BodyText>
+                                                        <BodyText>{bytesToSize(fileToUpload?.size ?? 0)}</BodyText>
                                                     </Grid>
                                                 </Grid>
                                             </Paper>
@@ -191,6 +190,17 @@ const UploadFileDrawer = () => {
                                 <Else>
                                     <Grid size={12}>
                                         <FileUpload
+                                            acceptedFormat={{
+                                                'application/pdf': ['.pdf'],
+                                                'application/msword': ['.doc'],
+                                                'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
+                                                    ['.docx'],
+                                                'image/jpeg': ['.jpg', '.jpeg'],
+                                                'image/png': ['.png'],
+                                                'image/webp': ['.webp'],
+                                                'image/gif': ['.gif'],
+                                                'text/javascript': ['.js'],
+                                            }}
                                             handleAddFile={(file: File[]) => {
                                                 setFileToUpload(file[0]);
                                             }}
