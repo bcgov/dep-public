@@ -35,7 +35,7 @@ const Uploader = ({ height = '10em', bgColor = 'blue.10', accept = {}, children 
         .map((key) => {
             const value = accept?.[key];
             if (!value || value.length === 0) return key;
-            return accept?.[key];
+            return [value.join(','), key].join(',');
         })
         .join(', ');
     const existingImage = imgAfterCrop || addedImageFileUrl || existingImageUrl;

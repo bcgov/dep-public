@@ -18,7 +18,7 @@ const Uploader = ({ margin = 2, height = '10em', helpText, acceptedFormat = {} }
         .map((key) => {
             const value = acceptedFormat?.[key];
             if (!value || value.length === 0) return key;
-            return [acceptedFormat?.[key], key].join(',');
+            return [value.join(','), key].join(',');
         })
         .join(',');
 

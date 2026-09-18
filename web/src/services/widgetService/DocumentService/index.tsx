@@ -76,5 +76,5 @@ export const sortDocuments = async (widget_id: number, data: SortDocumentRequest
     if (response.data) {
         return response.data;
     }
-    throw new Error('Failed to update document');
+    throw new Error('Failed to update document order');
 };
