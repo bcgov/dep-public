@@ -22,7 +22,7 @@ class WidgetDocumentService:
         docs = WidgetDocumentsModel.get_all_by_widget_id(widget_id)
         docs = [doc for doc in docs if doc.parent_document_id is None]
         if not docs:
-            return {}
+            return []
 
         return WidgetDocumentsSchema().dump(docs, many=True)
 

@@ -96,8 +96,13 @@ export const WidgetDrawerProvider = ({
 
     const deleteWidget = async (widgetId: number) => {
         try {
-            await removeWidget({ engagementId: savedEngagement.id, widgetId });
-            dispatch(openNotification({ severity: 'success', text: 'Removed Widget' }));
+            const result = await removeWidget({ engagementId: savedEngagement.id, widgetId });
+            if (!result.error) {
+                dispatch(openNotification({ severity: 'success', text: 'Removed Widget' }));
+            } else {
+                console.error(result.error);
+                dispatch(openNotification({ severity: 'error', text: 'Failed to remove Widget' }));
+            }
             loadWidgets();
         } catch {
             dispatch(openNotification({ severity: 'error', text: 'Error removing widgets' }));

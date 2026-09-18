@@ -97,7 +97,12 @@ class Widget(BaseModel):  # pylint: disable=too-few-public-methods
     def remove_widget(cls, engagement_id, widget_id,) -> Widget:
         """Remove widget from engagement."""
         widget = Widget.query.filter_by(
-            id=widget_id, engagement_id=engagement_id).delete()
+            id=widget_id, engagement_id=engagement_id).first()
+        for file in widget.engagement_files:
+            file.widget_id = None
+        # Ensure the changes to engagement_files are persisted before deleting the widget
+        db.session.flush()
+        db.session.delete(widget)
         db.session.commit()
         return widget
 
