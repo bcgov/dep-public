@@ -5,8 +5,6 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPen } from '@fortawesome/pro-regular-svg-icons/faPen';
 import { faGripDotsVertical } from '@fortawesome/pro-solid-svg-icons/faGripDotsVertical';
 import { faCircleXmark } from '@fortawesome/pro-regular-svg-icons/faCircleXmark';
-import { faLinkSimple } from '@fortawesome/pro-regular-svg-icons/faLinkSimple';
-import { faFileLines } from '@fortawesome/pro-regular-svg-icons/faFileLines';
 import { useAppDispatch } from 'hooks';
 import { openNotificationModal } from 'services/notificationModalService/notificationModalSlice';
 import { deleteDocument } from 'services/widgetService/DocumentService';
@@ -14,6 +12,7 @@ import { WidgetDrawerContext } from '../WidgetDrawerContext';
 import { WidgetType, Widget } from 'models/widget';
 import { DocumentsContext } from './DocumentsContext';
 import { DraggableProvided } from '@hello-pangea/dnd';
+import { getFileIcon } from 'helper/getFileIcon';
 
 const DocumentFile = ({
     documentItem,
@@ -69,9 +68,15 @@ const DocumentFile = ({
                 <Grid size="auto">
                     <Stack spacing={2} direction="row" alignItems="center">
                         {documentItem.is_uploaded ? (
-                            <FontAwesomeIcon icon={faFileLines} style={{ fontSize: '22px' }} />
+                            <FontAwesomeIcon
+                                icon={getFileIcon(documentItem.file?.unique_filename ?? '', true)}
+                                style={{ fontSize: '22px' }}
+                            />
                         ) : (
-                            <FontAwesomeIcon icon={faLinkSimple} style={{ fontSize: '22px' }} />
+                            <FontAwesomeIcon
+                                icon={getFileIcon(documentItem.url ?? '', false)}
+                                style={{ fontSize: '22px' }}
+                            />
                         )}
                         <Typography>{documentItem.title}</Typography>
                     </Stack>

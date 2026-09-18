@@ -22,6 +22,7 @@ import {
     getEngagementContentTranslationsByCode,
     syncEngagementContentTranslationsByCode,
 } from 'services/engagementContentTranslationService';
+import { Link } from 'components/common/Navigation';
 
 const schema = yup
     .object({
@@ -182,29 +183,51 @@ const AddFileDrawer = () => {
                         padding="2em"
                     >
                         <Grid size={12}>
-                            <Heading3 bold>{documentToEdit ? 'Edit File' : 'Add File'}</Heading3>
+                            <Heading3 bold>{documentToEdit ? 'Edit Document' : 'Add Document'}</Heading3>
                             <Divider sx={{ marginTop: '1em' }} />
                         </Grid>
 
-                        <Grid size={12} container direction="row" spacing={2}>
-                            <Grid size={12}>
-                                <BodyText bold mb="2px">
-                                    Link
-                                </BodyText>
-                                <ControlledTextField
-                                    name="link"
-                                    id="document-link"
-                                    data-testid="document-form/link"
-                                    size="small"
-                                    disabled={documentToEdit?.is_uploaded}
-                                />
-                            </Grid>
+                        <Grid
+                            size={12}
+                            container
+                            direction="column"
+                            display={documentToEdit?.is_uploaded ? 'none' : undefined}
+                            spacing={2}
+                        >
+                            <BodyText bold mb="2px">
+                                Link
+                            </BodyText>
+                            <ControlledTextField
+                                name="link"
+                                id="document-link"
+                                data-testid="document-form/link"
+                                size="small"
+                                disabled={documentToEdit?.is_uploaded}
+                            />
+                        </Grid>
+
+                        <Grid
+                            size={12}
+                            container
+                            direction="column"
+                            display={documentToEdit?.is_uploaded ? undefined : 'none'}
+                            spacing={2}
+                        >
+                            <BodyText mb={-2}>
+                                <b>Object storage asset:</b>{' '}
+                            </BodyText>
+                            <Link href={documentToEdit?.file?.url} target="_blank">
+                                {documentToEdit?.file?.unique_filename}
+                            </Link>
+                            <BodyText>
+                                <b>File name:</b> {documentToEdit?.file?.filename}
+                            </BodyText>
                         </Grid>
 
                         <Grid size={12} container direction="row" spacing={2}>
                             <Grid size={12}>
                                 <BodyText bold mb="2px">
-                                    Name
+                                    Name in Listing
                                 </BodyText>
                                 <ControlledTextField
                                     name="name"

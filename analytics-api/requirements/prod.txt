@@ -31,5 +31,4 @@ secure==0.3.0
 python-dotenv
 aws-requests-auth
 requests
-anytree
 geopandas

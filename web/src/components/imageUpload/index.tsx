@@ -32,7 +32,7 @@ interface UploaderProps {
  * @param {string} [props.height='10em'] - Height of the uploader component.
  * @param {number} [props.cropAspectRatio=1] - Aspect ratio for image cropping.
  * @param {Accept} [props.accept] - Accepted file types for upload.
- * @returns {JSX.Element} The rendered ImageUpload component.
+ * @returns {React.JSX.Element} The rendered ImageUpload component.
  */
 export const ImageUpload = ({
     margin = 2,
@@ -48,7 +48,7 @@ export const ImageUpload = ({
         'image/webp': [],
     },
     bgColor = 'blue.10',
-}: UploaderProps) => {
+}: UploaderProps): React.JSX.Element => {
     return (
         <ImageUploadContextProvider
             handleAddFile={handleAddFile}

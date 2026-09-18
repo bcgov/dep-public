@@ -24,7 +24,7 @@ export const colors = {
     type: {
         regular: {
             primary: '#292929',
-            secondary: '#464341',
+            secondary: '#6A6866',
             link: '#1A5A96',
             disabled: '#A19F9D',
         },

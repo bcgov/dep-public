@@ -162,7 +162,7 @@ export const SecondaryButton: React.FC<ButtonProps> = ({
     onClick,
     size = 'medium',
     icon,
-    iconPosition = 'left',
+    iconPosition,
     disabled,
     sx,
     ...buttonProps
@@ -170,6 +170,7 @@ export const SecondaryButton: React.FC<ButtonProps> = ({
     const height: string = sizeMap[size];
     const theme = useTheme();
     const isDarkMode = theme.palette.mode === 'dark';
+    const hasOtherChildren = React.Children.count(children) > 0;
     const { baseBackground, textColor, darkTextColor, borderColor, darkBorderColor, darkBackgroundColor } =
         getSecondaryButtonStyles(color, isDarkMode);
 
@@ -178,7 +179,9 @@ export const SecondaryButton: React.FC<ButtonProps> = ({
             variant="outlined"
             onClick={onClick}
             disabled={disabled}
-            startIcon={icon && iconPosition === 'left' ? icon : undefined}
+            startIcon={
+                icon && (iconPosition === 'left' || (hasOtherChildren && iconPosition === undefined)) ? icon : undefined
+            }
             endIcon={icon && iconPosition === 'right' ? icon : undefined}
             sx={[
                 {
@@ -231,6 +234,7 @@ export const SecondaryButton: React.FC<ButtonProps> = ({
             {...buttonProps}
         >
             {children}
+            {icon && !hasOtherChildren && iconPosition === undefined && icon}
         </MuiButton>
     );
 };

@@ -145,11 +145,8 @@ def test_delete_document(session):  # pylint:disable=unused-argument
 
     WidgetDocumentService().delete_document(widget.id, document.id)
 
-    documents_root = WidgetDocumentService.get_documents_by_widget_id(
+    documents = WidgetDocumentService.get_documents_by_widget_id(
         widget.id)
 
-    documents = documents_root.get('children')
-
     # Assert that the deleted document is not longer available
-    if (documents is None):
-        assert documents is None
+    assert len(documents) == 0
