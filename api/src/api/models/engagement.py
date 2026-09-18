@@ -10,6 +10,7 @@ from datetime import datetime
 from typing import List, Optional
 
 from sqlalchemy import and_, asc, desc, or_, select
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.orderinglist import ordering_list
 from sqlalchemy.sql import text
@@ -21,7 +22,6 @@ from api.models.engagement_scope_options import EngagementScopeOptions
 from api.models.membership import Membership as MembershipModel
 from api.models.pagination_options import PaginationOptions
 from api.models.staff_user import StaffUser
-from api.schemas.engagement import EngagementSchema
 from api.utils.datetime import local_datetime, utc_now
 from api.utils.enums import MembershipStatus
 from api.utils.filter_types import filter_map
@@ -47,7 +47,8 @@ class Engagement(BaseModel):
         'EngagementStatus', backref='engagement', viewonly=True)
     published_date = db.Column(db.DateTime, nullable=True)
     scheduled_date = db.Column(db.DateTime, nullable=True)
-    banner_filename = db.Column(db.String(), unique=False, nullable=True)
+    banner_file_id = db.Column(UUID(as_uuid=True), db.ForeignKey(
+        'uploaded_files.id'), nullable=True)
     selected_survey_id = db.Column(db.Integer, ForeignKey(
         'survey.id', ondelete='SET NULL'
     ), nullable=True)
@@ -65,6 +66,10 @@ class Engagement(BaseModel):
         db.Integer, db.ForeignKey('tenant.id'), nullable=True)
     tenant = db.relationship('Tenant', backref='engagements')
     is_internal = db.Column(db.Boolean, nullable=False)
+    banner_file = db.relationship(
+        'UploadedFile', foreign_keys=[banner_file_id], backref='banner_usages')
+    file_assignments = db.relationship(
+        'EngagementFile', back_populates='engagement')
     suggested_engagement_links = db.relationship(
         'SuggestedEngagement',
         back_populates='source_engagement',
@@ -154,36 +159,6 @@ class Engagement(BaseModel):
         total_count = query.count()
 
         return items, total_count
-
-    @classmethod
-    def update_engagement(cls, engagement: EngagementSchema) -> Optional[Engagement]:
-        """Update engagement."""
-        engagement_id = engagement.get('id', None)
-        query = Engagement.query.filter_by(id=engagement_id)
-        record: Engagement = query.first()
-        if not record:
-            return None
-
-        update_fields = {
-            'start_date': engagement.get('start_date', None),
-            'end_date': engagement.get('end_date', None),
-            'status_id': engagement.get('status_id', None),
-            'selected_survey_id': engagement.get('selected_survey_id', None),
-            # to fix the bug with UI not passing published date always.
-            # Defaulting to existing
-            'published_date': engagement.get(
-                'published_date', record.published_date),
-            'scheduled_date': engagement.get(
-                'scheduled_date', record.scheduled_date),
-            'updated_date': utc_now(),
-            'updated_by': engagement.get('updated_by', None),
-            'banner_filename': engagement.get('banner_filename', None),
-            'is_internal': engagement.get('is_internal', record.is_internal),
-            'cta_url': engagement.get('cta_url', record.cta_url),
-        }
-        query.update(update_fields)
-        db.session.commit()
-        return record
 
     @classmethod
     def edit_engagement(cls, engagement_data: dict, commit: bool = True) -> Optional[Engagement]:

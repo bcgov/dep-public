@@ -6,17 +6,23 @@ Manages the engagement
 from marshmallow import EXCLUDE, Schema, ValidationError, fields, pre_load, validate, validates_schema
 
 from api.constants.comment_status import Status as CommentStatus
-from api.schemas.engagement_status_block import EngagementStatusBlockSchema
-from api.schemas.engagement_survey import EngagementSurveySchema
-from api.schemas.suggested_engagement import SuggestedEngagementSyncItemSchema, SuggestedEngagementWithAttachment
-from api.schemas.utils import count_comments_by_status
+from api.services.object_storage_service import ObjectStorageService
 from api.utils.submission_status import get_submission_status
 
 from .engagement_status import EngagementStatusSchema
+from .engagement_status_block import EngagementStatusBlockSchema
+from .engagement_survey import EngagementSurveySchema
+from .suggested_engagement import SuggestedEngagementSyncItemSchema, SuggestedEngagementWithAttachment
+from .utils import count_comments_by_status
 
 
 class EngagementSchema(Schema):
     """Schema for engagement."""
+
+    def __init__(self, *args, **kwargs):
+        """Initialize the engagement schema with an object storage instance."""
+        super().__init__(*args, **kwargs)
+        self.object_storage = ObjectStorageService()
 
     class Meta:  # pylint: disable=too-few-public-methods
         """Exclude unknown fields in the deserialized output."""
@@ -40,7 +46,10 @@ class EngagementSchema(Schema):
     updated_date = fields.Str(data_key='updated_date')
     published_date = fields.Str(data_key='published_date')
     scheduled_date = fields.Str(data_key='scheduled_date')
-    banner_filename = fields.Str(data_key='banner_filename')
+    banner_file_id = fields.Str(data_key='banner_file_id', allow_none=True)
+    banner_file = fields.Nested('UploadedFileSchema',
+                                exclude=('status', 'uploaded_at'))
+    banner_url = fields.Method('get_banner_url')
     engagement_status = fields.Nested(EngagementStatusSchema)
     surveys = fields.Nested(EngagementSurveySchema, many=True)
     selected_survey_id = fields.Int(data_key='selected_survey_id')
@@ -69,6 +78,12 @@ class EngagementSchema(Schema):
             data = dict(data)
             data['suggested_engagements_input'] = data['suggested_engagements']
         return data
+
+    def get_banner_url(self, obj):
+        """Get the URL of the banner image."""
+        if not obj or not obj.banner_file:
+            return None
+        return self.object_storage.get_url(obj.banner_file.path)
 
     def get_submissions_meta_data(self, obj):
         """Get the meta data of the submissions made in the survey."""

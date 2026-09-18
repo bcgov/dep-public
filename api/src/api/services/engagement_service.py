@@ -5,38 +5,39 @@ from datetime import datetime, timezone
 from http import HTTPStatus
 from typing import Mapping, Optional, Sequence, Union
 
-from sqlalchemy.exc import SQLAlchemyError
-from sqlalchemy.orm import selectinload
 from flask import current_app, has_app_context
 from flask_restx import abort
 from marshmallow import ValidationError
+from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.orm import selectinload
 
 from api.constants.engagement_status import Status
 from api.constants.membership_type import MembershipType
 from api.exceptions.business_exception import BusinessException
 from api.models import Tenant as TenantModel
+from api.models.db import db
 from api.models.engagement import Engagement as EngagementModel
 from api.models.engagement_scope_options import EngagementScopeOptions
 from api.models.engagement_status_block import EngagementStatusBlock as EngagementStatusBlockModel
 from api.models.engagement_translation import EngagementTranslation
 from api.models.language import Language as LanguageModel
-from api.models.survey import Survey as SurveyModel
-from api.models.suggested_engagement import SuggestedEngagement as SuggestedEngagementModel
 from api.models.pagination_options import PaginationOptions
 from api.models.submission import Submission as SubmissionModel
-from api.models.db import db
+from api.models.suggested_engagement import SuggestedEngagement as SuggestedEngagementModel
+from api.models.survey import Survey as SurveyModel
 from api.schemas.engagement import EngagementSchema
 from api.schemas.suggested_engagement import SuggestedEngagementSyncItemSchema
 from api.services import authorization
+from api.services.engagement_file_service import EngagementFileService
 from api.services.engagement_settings_service import EngagementSettingsService
 from api.services.object_storage_service import ObjectStorageService
 from api.services.project_service import ProjectService
 from api.utils import email_util, notification
+from api.utils.datetime import utc_now
 from api.utils.enums import SourceAction, SourceType
 from api.utils.roles import Role
 from api.utils.template import Template
 from api.utils.token_info import TokenInfo
-from api.utils.datetime import utc_now
 
 
 class EngagementService:
@@ -62,7 +63,8 @@ class EngagementService:
             EngagementModel.query
             .options(
                 selectinload(EngagementModel.suggested_engagement_links)
-                .selectinload(SuggestedEngagementModel.suggested_engagement)
+                .selectinload(SuggestedEngagementModel.suggested_engagement),
+                selectinload(EngagementModel.banner_file),
             )
             .filter_by(id=engagement_id)
             .one_or_none()
@@ -75,7 +77,8 @@ class EngagementService:
             EngagementModel.query
             .options(
                 selectinload(EngagementModel.suggested_engagement_links)
-                .selectinload(SuggestedEngagementModel.suggested_engagement)
+                .selectinload(SuggestedEngagementModel.suggested_engagement),
+                selectinload(EngagementModel.banner_file)
             )
             .filter_by(slug=slug, tenant_id=tenant_id)
             .one_or_none()
@@ -108,9 +111,6 @@ class EngagementService:
                 )
 
             engagement = EngagementSchema().dump(engagement_model)
-            engagement['banner_url'] = self.object_storage.get_url(
-                engagement['banner_filename']
-            )
             # pylint: disable=missing-kwoa
             engagement['authorization'] = authorization.get_authoring_engagement_access(  # type: ignore[call-arg]
                 engagement_id=engagement_model.id
@@ -136,19 +136,15 @@ class EngagementService:
             scope_options,
             search_options,
         )
-        engagements_schema = EngagementSchema(many=True)
+        exclude = set()
+        if not include_banner_url:
+            exclude.add('banner_url')
+            exclude.add('banner_file')
+
+        engagements_schema = EngagementSchema(many=True, exclude=exclude)
         engagements = engagements_schema.dump(items)
 
-        if include_banner_url:
-            engagements = self._attach_banner_url(engagements)
         return {'items': engagements, 'total': total}
-
-    def _attach_banner_url(self, engagements: list):
-        for engagement in engagements:
-            engagement['banner_url'] = self.object_storage.get_url(
-                engagement['banner_filename']
-            )
-        return engagements
 
     @staticmethod
     def _get_scope_options(user_roles, has_team_access):
@@ -258,7 +254,7 @@ class EngagementService:
             updated_date=None,
             published_date=None,
             scheduled_date=None,
-            banner_filename=engagement_data.get('banner_filename', None),
+            banner_file_id=engagement_data.get('banner_file_id', None),
             is_internal=engagement_data.get('is_internal', False),
             selected_survey_id=engagement_data.get('selected_survey_id', None),
         )
@@ -419,6 +415,15 @@ class EngagementService:
                     data['selected_survey_id'] = \
                         EngagementService._validate_and_assign_survey(
                             selected_survey_id, engagement_id)
+
+                replacement_file_id = data.get('banner_file_id')
+                should_retire_file = replacement_file_id and engagement.banner_file_id and \
+                    str(replacement_file_id) != str(engagement.banner_file_id)
+                if should_retire_file:
+                    EngagementFileService(db.session).retire_file(
+                        engagement_id,
+                        engagement.banner_file_id,
+                    )
 
                 updated_engagement = EngagementModel.edit_engagement(
                     data, commit=False)

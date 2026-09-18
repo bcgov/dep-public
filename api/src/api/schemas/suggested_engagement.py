@@ -17,11 +17,13 @@ class SuggestedEngagementSyncItemSchema(Schema):
         unknown = EXCLUDE
 
     id = fields.Int(data_key='id', allow_none=True)
-    suggested_engagement_id = fields.Int(data_key='suggested_engagement_id', required=True)
+    suggested_engagement_id = fields.Int(
+        data_key='suggested_engagement_id', required=True)
     sort_index = fields.Int(
         data_key='sort_index',
         required=True,
-        validate=validate.Range(min=1, error='sort_index must be 1 or greater'),
+        validate=validate.Range(
+            min=1, error='sort_index must be 1 or greater'),
     )
 
     @pre_load(pass_collection=True)
@@ -43,7 +45,8 @@ class SuggestedEngagementSyncItemSchema(Schema):
         targets = [row['suggested_engagement_id'] for row in rows]
 
         if len(slots) != len(set(slots)):
-            raise ValidationError('Duplicate sort_index values are not allowed', field_name='sort_index')
+            raise ValidationError(
+                'Duplicate sort_index values are not allowed', field_name='sort_index')
         if len(targets) != len(set(targets)):
             raise ValidationError(
                 'Duplicate suggested_engagement_id values are not allowed',
@@ -57,14 +60,14 @@ class SuggestedEngagementAttachment(Schema):
     _object_storage = ObjectStorageService()
 
     id = fields.Int(data_key='id')
-    name = fields.Str(data_key='name', required=True, validate=validate.Length(min=1, error='Name cannot be blank'))
+    name = fields.Str(data_key='name', required=True, validate=validate.Length(
+        min=1, error='Name cannot be blank'))
     description = fields.Str(data_key='description')
     rich_description = fields.Str(data_key='rich_description')
     description_title = fields.Str(data_key='description_title')
     start_date = fields.Date(data_key='start_date', required=True)
     end_date = fields.Date(data_key='end_date', required=True)
     submission_status = fields.Function(lambda obj: get_submission_status(obj))
-    banner_filename = fields.Str(data_key='banner_filename')
     banner_url = fields.Method('get_banner_url', data_key='banner_url')
     tenant_id = fields.Int(data_key='tenant_id')
     is_internal = fields.Bool(data_key='is_internal')
@@ -73,11 +76,10 @@ class SuggestedEngagementAttachment(Schema):
     slug = fields.Str(data_key='slug')
 
     def get_banner_url(self, obj):
-        """Return the object storage URL for the banner image."""
-        banner_filename = getattr(obj, 'banner_filename', None)
-        if banner_filename is None and isinstance(obj, dict):
-            banner_filename = obj.get('banner_filename')
-        return self._object_storage.get_url(banner_filename)
+        """Get the URL of the banner image."""
+        if not obj or not obj.banner_file:
+            return None
+        return self._object_storage.get_url(obj.banner_file.path)
 
 
 class SuggestedEngagementWithAttachment(Schema):
@@ -92,7 +94,8 @@ class SuggestedEngagementWithAttachment(Schema):
     engagement_id = fields.Int(data_key='engagement_id')
     suggested_engagement_id = fields.Int(data_key='suggested_engagement_id')
     sort_index = fields.Int(data_key='sort_index')
-    engagement = fields.Nested(SuggestedEngagementAttachment, attribute='suggested_engagement')
+    engagement = fields.Nested(
+        SuggestedEngagementAttachment, attribute='suggested_engagement')
 
 
 class SuggestedEngagementSchema(Schema):

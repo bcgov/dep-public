@@ -66,7 +66,7 @@ class ResourceLockService:
         SECTION_AUTHORING_BANNER: {
             'status_block',
             'sponsor_name',
-            'banner_filename',
+            'banner_file_id',
         },
         SECTION_AUTHORING_FEEDBACK: {
             'selected_survey_id',

@@ -1,9 +1,13 @@
-"""Tenat model class.
+"""Tenant model class.
 
 Manages the tenants
 """
 from __future__ import annotations
+
 from typing import List, Optional
+
+from sqlalchemy.orm import relationship
+
 from .base_model import BaseModel
 from .db import db
 
@@ -27,6 +31,7 @@ class Tenant(BaseModel):
     hero_image_url = db.Column(db.String(300), nullable=True)
     hero_image_credit = db.Column(db.String(60), comment='Hero banner image credit', nullable=True)
     hero_image_description = db.Column(db.String(80), comment='Hero banner image description', nullable=True)
+    uploaded_files = relationship('UploadedFile', back_populates='tenant')
 
     @staticmethod
     def find_by_short_name(short_name: str) -> Tenant:

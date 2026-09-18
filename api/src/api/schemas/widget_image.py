@@ -12,9 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Widget image schema definition."""
-from marshmallow import post_dump
+
+from marshmallow import fields
 
 from api.models.widget_image import WidgetImage as WidgetImageModel
+from api.schemas.uploaded_file import UploadedFileSchema
 from api.services.object_storage_service import ObjectStorageService
 
 from .base_schema import BaseSchema
@@ -30,26 +32,23 @@ class WidgetImageSchema(BaseSchema):
 
         model = WidgetImageModel
         include_fk = True
+        include_relationships = True
         fields = (
             'id',
             'widget_id',
             'engagement_id',
-            'image_url',
+            'file',
+            'file_id',
             'alt_text',
             'description',
         )
 
-    @post_dump(pass_collection=True)
-    def _attach_image_url(self, data, many, **kwargs):
-        if not many:
-            image_url = data.get('image_url')
-            if image_url:
-                data['image_url'] = self._object_storage.get_url(image_url)
-            return data
+    file = fields.Nested(UploadedFileSchema)
+    image_url = fields.Method(
+        'get_image_url', data_key='image_url', dump_only=True)
 
-        for item in data:
-            image_url = item.get('image_url')
-            if image_url:
-                item['image_url'] = self._object_storage.get_url(image_url)
-
-        return data
+    def get_image_url(self, obj):
+        """Generate a URL for the widget image based on its file path."""
+        if not obj or not obj.file:
+            raise ValueError('Invalid object or missing file.')
+        return self._object_storage.get_url(obj.file.path)

@@ -3,15 +3,16 @@
 Manages the widget
 """
 from __future__ import annotations
+
 from typing import Optional
 
 from sqlalchemy.sql.schema import ForeignKey
 
 from api.utils.datetime import utc_now
 
-from .widget_item import WidgetItem
 from .base_model import BaseModel
 from .db import db
+from .widget_item import WidgetItem
 
 
 class Widget(BaseModel):  # pylint: disable=too-few-public-methods
@@ -28,12 +29,19 @@ class Widget(BaseModel):  # pylint: disable=too-few-public-methods
     )
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    widget_type_id = db.Column(db.Integer, ForeignKey('widget_type.id', ondelete='RESTRICT'), nullable=False)
-    engagement_id = db.Column(db.Integer, ForeignKey('engagement.id', ondelete='CASCADE'))
-    engagement_details_tab_id = db.Column(db.Integer, ForeignKey('engagement_details_tabs.id', ondelete='CASCADE'))
+    widget_type_id = db.Column(db.Integer, ForeignKey(
+        'widget_type.id', ondelete='RESTRICT'), nullable=False)
+    engagement_id = db.Column(db.Integer, ForeignKey(
+        'engagement.id', ondelete='CASCADE'))
+    engagement_details_tab_id = db.Column(db.Integer, ForeignKey(
+        'engagement_details_tabs.id', ondelete='CASCADE'))
     title = db.Column(db.String(100), comment='Custom title for the widget.')
-    items = db.relationship('WidgetItem', backref='widget', cascade='all, delete', order_by='WidgetItem.sort_index')
+    items = db.relationship('WidgetItem', backref='widget',
+                            cascade='all, delete', order_by='WidgetItem.sort_index')
     location = db.Column(db.Integer, nullable=False)
+
+    engagement_files = db.relationship(
+        'EngagementFile', back_populates='widget')
 
     @classmethod
     def get_widget_by_id(cls, widget_id):
@@ -72,13 +80,15 @@ class Widget(BaseModel):  # pylint: disable=too-few-public-methods
             updated_by=widget.get('updated_by', None),
             title=widget.get('title', None),
             location=widget.get('location', None),
-            engagement_details_tab_id=widget.get('engagement_details_tab_id', None),
+            engagement_details_tab_id=widget.get(
+                'engagement_details_tab_id', None),
         )
 
     @classmethod
     def create_all_widgets(cls, widgets: list) -> list[Widget]:
         """Save widgets."""
-        new_widgets = [cls.__create_new_widget_entity(widget) for widget in widgets]
+        new_widgets = [cls.__create_new_widget_entity(
+            widget) for widget in widgets]
         db.session.add_all(new_widgets)
         db.session.commit()
         return new_widgets
@@ -86,7 +96,8 @@ class Widget(BaseModel):  # pylint: disable=too-few-public-methods
     @classmethod
     def remove_widget(cls, engagement_id, widget_id,) -> Widget:
         """Remove widget from engagement."""
-        widget = Widget.query.filter_by(id=widget_id, engagement_id=engagement_id).delete()
+        widget = Widget.query.filter_by(
+            id=widget_id, engagement_id=engagement_id).delete()
         db.session.commit()
         return widget
 
@@ -99,7 +110,8 @@ class Widget(BaseModel):  # pylint: disable=too-few-public-methods
     @classmethod
     def update_widget(cls, engagement_id, widget_id, widget_data: dict) -> Optional[Widget]:
         """Update widget."""
-        query = Widget.query.filter_by(id=widget_id, engagement_id=engagement_id)
+        query = Widget.query.filter_by(
+            id=widget_id, engagement_id=engagement_id)
         widget: Widget = query.first()
         if not widget:
             return None
