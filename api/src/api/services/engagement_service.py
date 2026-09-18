@@ -28,6 +28,7 @@ from api.models.survey import Survey as SurveyModel
 from api.schemas.engagement import EngagementSchema
 from api.schemas.suggested_engagement import SuggestedEngagementSyncItemSchema
 from api.services import authorization
+from api.services.engagement_file_service import EngagementFileService
 from api.services.engagement_settings_service import EngagementSettingsService
 from api.services.object_storage_service import ObjectStorageService
 from api.services.project_service import ProjectService
@@ -414,6 +415,15 @@ class EngagementService:
                     data['selected_survey_id'] = \
                         EngagementService._validate_and_assign_survey(
                             selected_survey_id, engagement_id)
+
+                replacement_file_id = data.get('banner_file_id')
+                should_retire_file = replacement_file_id and engagement.banner_file_id and \
+                    str(replacement_file_id) != str(engagement.banner_file_id)
+                if should_retire_file:
+                    EngagementFileService(db.session).retire_file(
+                        engagement_id,
+                        engagement.banner_file_id,
+                    )
 
                 updated_engagement = EngagementModel.edit_engagement(
                     data, commit=False)

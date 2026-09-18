@@ -2,8 +2,11 @@
 from http import HTTPStatus
 
 from api.exceptions.business_exception import BusinessException
+from api.models.db import db
+from api.models.widget import Widget as WidgetModel
 from api.models.widget_documents import WidgetDocuments as WidgetDocumentsModel
 from api.schemas.widget_documents import WidgetDocumentsSchema
+from api.services.engagement_file_service import EngagementFileService
 from api.services.object_storage_service import ObjectStorageService
 from api.utils.enums import WidgetDocumentType
 
@@ -88,6 +91,17 @@ class WidgetDocumentService:
             raise BusinessException(
                 error='Document to update was not found.',
                 status_code=HTTPStatus.BAD_REQUEST)
+        replacement_file_id = data.get('file_id')
+        should_retire_file = replacement_file_id and document.file_id and \
+            str(replacement_file_id) != str(document.file_id)
+        if should_retire_file:
+            widget = WidgetModel.find_by_id(document.widget_id)
+            if widget:
+                EngagementFileService(db.session).retire_file(
+                    widget.engagement_id,
+                    document.file_id,
+                    document.widget_id,
+                )
         update_data = {
             **data,
             'url': data.get('url', document.url) if not document.is_uploaded else document.url,
