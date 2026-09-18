@@ -1,4 +1,4 @@
-FROM python:3.12.2-slim-bullseye
+FROM python:3.12.2-slim-bookworm
 
 ARG DAGSTER_LIBRARIES_VERSION=0.29.1
 

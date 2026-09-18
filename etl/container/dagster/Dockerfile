@@ -1,7 +1,7 @@
 # Dagster libraries to run both dagit and the dagster-daemon. Does not
 # need to have access to any pipeline code.
 
-FROM python:3.12.2-bullseye
+FROM python:3.12.2-bookworm
 
 ARG DAGSTER_LIBRARIES_VERSION=0.29.1
 
