@@ -1,6 +1,6 @@
 ## September 21, 2026
 
-- **Feature** Updated file management functionalities in the engagement Files tab.
+- **Feature** Updated file management functionalities in the engagement Files tab. [🎟️ DEP-358](https://citz-gdx.atlassian.net/browse/DEP-358)
   - Added Rename functionality for files in the engagement Files tab.
   - Added ability to Unlink files from their associated locations.
   - Added ability to Delete files (after they have been unlinked from their associated locations)
