@@ -169,6 +169,22 @@ const FilesTab = () => {
             return;
         }
         const deletingFiles = unlinkedFiles(files);
+        const handleConfirmDelete = () => {
+            deletingFiles.forEach((file) => {
+                submit(
+                    {},
+                    {
+                        action: `./uploaded-files/${file.uploaded_file.id}`,
+                        method: 'delete',
+                        navigate: false,
+                    },
+                );
+            });
+            // Remove the deleted files from the selected items list.
+            setSelectedItems((prev) =>
+                prev.filter((item) => !deletingFiles.some((file) => file.id.toString() === item)),
+            );
+        };
         dispatch(
             openNotificationModal({
                 open: true,
@@ -179,23 +195,7 @@ const FilesTab = () => {
                     cancelButtonText: 'Cancel',
                     confirmButtonText: 'Delete',
                     style: 'danger',
-                    handleClose() {},
-                    handleConfirm() {
-                        deletingFiles.forEach((file) => {
-                            submit(
-                                {},
-                                {
-                                    action: `./uploaded-files/${file.uploaded_file.id}`,
-                                    method: 'delete',
-                                    navigate: false,
-                                },
-                            );
-                        });
-                        // Remove the deleted files from the selected items list.
-                        setSelectedItems((prev) =>
-                            prev.filter((item) => !deletingFiles.some((file) => file.id.toString() === item)),
-                        );
-                    },
+                    handleConfirm: handleConfirmDelete,
                 },
                 type: 'confirm',
             }),

@@ -92,11 +92,12 @@ def test_patch_engagement_file_rejects_new_location(client,
         engagement_id=engagement.id, file_id=uploaded_file.id)
     session.add(association)
     session.commit()
+    data = json.dumps({'location': 'banner'})
 
     with pytest.raises(ValueError):
         client.patch(
             f'/api/engagements/{engagement.id}/files/{uploaded_file.id}',
-            data=json.dumps({'location': 'banner'}),
+            data=data,
             headers=headers,
             content_type='application/json',
         )

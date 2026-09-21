@@ -92,8 +92,9 @@ def test_unlink_file_removes_widget_image_and_document_widgets(session):
 
 def test_unlink_file_rejects_non_engagement_file_input(session):
     """Passing something other than an EngagementFile/str raises an error."""
+    file_service = EngagementFileService(session)
     with pytest.raises(AttributeError):
-        EngagementFileService(session).unlink_file(12345)
+        file_service.unlink_file(12345)  # type: ignore
 
 
 def test_get_engagement_files_returns_files_ordered_by_name(session):
