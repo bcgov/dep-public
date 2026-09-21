@@ -24,7 +24,7 @@
     "@mui/material": "^6.5.0",
     "@mui/x-date-pickers": "^8.10.2",
     "@mui/x-tree-view": "^8.25.0",
-    "@pmmmwh/react-refresh-webpack-plugin": "^0.6.2",
+    "@pmmmwh/react-refresh-webpack-plugin": "^0.6.3",
     "@reduxjs/toolkit": "^2.11.0",
     "@svgr/webpack": "^8.1.0",
     "@testing-library/dom": "^10.4.1",
@@ -119,7 +119,7 @@
     "universal-cookie": "^8.0.1",
     "web-vitals": "^5.1.0",
     "webpack": "^5.105.0",
-    "webpack-dev-server": "^5.2.6",
+    "webpack-dev-server": "^6.0.0",
     "webpack-manifest-plugin": "^6.0.1",
     "workbox-webpack-plugin": "^7.4.1",
     "yup": "^0.32.11"
