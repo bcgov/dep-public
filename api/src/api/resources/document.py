@@ -20,6 +20,7 @@ from flask import jsonify, request
 from flask_cors import cross_origin
 from flask_restx import Namespace, Resource
 
+from api.auth import auth
 from api.exceptions.business_exception import BusinessException
 from api.models import Engagement as EngagementModel
 from api.models import Survey as SurveyModel
@@ -101,6 +102,37 @@ class DocumentStorage(Resource):
             return str(err), HTTPStatus.INTERNAL_SERVER_ERROR
 
 
+@cors_preflight('PATCH,DELETE')
+@API.route('/<string:file_id>')
+class DocumentResource(Resource):
+    """Handles operations on a specific document identified by file_id."""
+
+    @staticmethod
+    @auth.requires_auth
+    @require_role([Role.EDIT_ENGAGEMENT.value])
+    @cross_origin(origins=allowedorigins())
+    def patch(file_id: str):
+        """Update a specific document identified by file_id."""
+        file_upload_service = FileUploadService(db.session)  # type: ignore
+        file = file_upload_service.get_file_upload(file_id)
+        UploadedFileSchema().load(request.get_json(), instance=file,
+                                  partial=True, session=db.session)
+        db.session.commit()
+        return UploadedFileSchema().dump(file), HTTPStatus.OK
+
+    @staticmethod
+    @auth.requires_auth
+    @require_role([Role.EDIT_ENGAGEMENT.value])
+    @cross_origin(origins=allowedorigins())
+    def delete(file_id: str):
+        """Delete a specific document identified by file_id."""
+        file_upload_service = FileUploadService(db.session)  # type: ignore
+        file_upload_service.delete_file_upload(file_id)
+        db.session.commit()
+        return '', HTTPStatus.NO_CONTENT
+
+
+@cors_preflight('POST')
 @API.route('/<string:file_id>/finalize')
 class FinalizeDocumentUpload(Resource):
     """Finalizes the upload of a document to the storage service."""

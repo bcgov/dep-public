@@ -19,7 +19,7 @@ from http import HTTPStatus
 from flask import current_app, g, request
 from flask_cors import cross_origin
 from flask_restx import Namespace, Resource
-from marshmallow import ValidationError
+from marshmallow import EXCLUDE, ValidationError
 
 from api.auth import auth
 from api.auth import jwt as _jwt
@@ -257,7 +257,7 @@ class Engagements(Resource):
             return str(err.messages), HTTPStatus.BAD_REQUEST
 
 
-@cors_preflight('GET, POST')
+@cors_preflight('GET')
 @API.route('/<engagement_id>/files')
 class EngagementUpload(Resource):
     """Resource for managing file uploads per-engagement."""
@@ -267,7 +267,28 @@ class EngagementUpload(Resource):
     @cross_origin(origins=allowedorigins())
     def get(engagement_id):
         """Retrieve a list of uploaded files for an engagement."""
-        file_upload_service = EngagementFileService(db.session)  # type: ignore
-        engagement_files = file_upload_service.get_engagement_files(
+        eng_file_service = EngagementFileService(db.session)  # type: ignore
+        engagement_files = eng_file_service.get_engagement_files(
             engagement_id)
         return EngagementFileSchema(many=True).dump(engagement_files), HTTPStatus.OK
+
+
+@cors_preflight('PATCH, DELETE')
+@API.route('/<engagement_id>/files/<file_id>')
+class EngagementUploadDetail(Resource):
+    """Resource for managing individual file uploads per-engagement."""
+
+    @staticmethod
+    @require_role([Role.EDIT_ENGAGEMENT.value])
+    @cross_origin(origins=allowedorigins())
+    def patch(engagement_id, file_id):
+        """Update an uploaded file for an engagement."""
+        existing_file = EngagementFileService(db.session).get_engagement_file(
+            engagement_id, file_id
+        )
+        data = request.json
+        updated_file = EngagementFileSchema().load(data, instance=existing_file,
+                                                   partial=True, session=db.session,
+                                                   unknown=EXCLUDE)
+        db.session.commit()
+        return EngagementFileSchema().dump(updated_file), HTTPStatus.OK

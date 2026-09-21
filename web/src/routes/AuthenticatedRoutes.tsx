@@ -180,7 +180,16 @@ const AuthenticatedRoutes = resolveLazyRouteTree(
                             path="files"
                             handle={{ crumb: () => ({ name: 'Files' }) }}
                             ComponentLazy={() => import('engagements/admin/view/FilesTab')}
-                        />
+                        >
+                            <LazyRoute
+                                path="engagement-files/:fileId"
+                                actionLazy={() => import('engagements/admin/view/engagementFilesAction')}
+                            />
+                            <LazyRoute
+                                path="uploaded-files/:fileId"
+                                actionLazy={() => import('engagements/admin/view/uploadedFilesAction')}
+                            />
+                        </LazyRoute>
                         <LazyRoute
                             path="activity"
                             handle={{ crumb: () => ({ name: 'Activity' }) }}

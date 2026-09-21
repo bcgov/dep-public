@@ -40,6 +40,10 @@ class UploadedFile(BaseModel):
                     nullable=False, comment='Status of the uploaded file')
     uploaded_at = Column(DateTime, nullable=True,
                          comment='Timestamp of when the file was uploaded')
+    deleted_at = Column(DateTime, nullable=True,
+                        comment='Timestamp of when the file was deleted')
+    deleted_by = Column(String(length=64), nullable=True,
+                        comment='IDIR identity of the user who deleted the file')
 
     # Relation objects
     tenant = relationship('Tenant', back_populates='uploaded_files')

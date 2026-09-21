@@ -5,6 +5,7 @@ from http import HTTPStatus
 from mimetypes import MimeTypes
 
 import requests
+from flask import g
 from sqlalchemy.orm import Session
 
 from api.exceptions.business_exception import BusinessException
@@ -124,4 +125,20 @@ class FileUploadService:
             setattr(uploaded_file, key, value)
 
         self.db_session.commit()
+        return uploaded_file
+
+    def delete_file_upload(self, uploaded_file_id: str):
+        """Soft delete a specific uploaded file by its ID."""
+        uploaded_file = self.db_session.query(
+            UploadedFile).filter_by(id=uploaded_file_id).first()
+        if not uploaded_file:
+            raise ValueError(
+                f'Uploaded file with ID {uploaded_file_id} not found.')
+        token_info = g.jwt_oidc_token_info
+        # Set deleted status instead of physically deleting the record
+        uploaded_file.deleted_at = datetime.now(UTC)
+        uploaded_file.deleted_by = token_info.get('sub')
+        self.db_session.commit()
+        # Remove the file from the object storage system
+        self.object_storage.delete_file(uploaded_file.path)
         return uploaded_file

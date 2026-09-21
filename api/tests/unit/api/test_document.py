@@ -1,8 +1,61 @@
 """Tests for document upload authorization resources."""
+import json
 from http import HTTPStatus
 from unittest.mock import MagicMock, patch
 
+from api.models.engagement_file import EngagementFile
 from api.resources.document import _get_public_upload_scope
+from tests.utilities.factory_scenarios import TestEngagementInfo
+from tests.utilities.factory_utils import (
+    factory_auth_header, factory_engagement_model, factory_tenant_model, factory_uploaded_file_model)
+
+
+def test_rename_document(client, jwt, session, setup_admin_user_and_claims):  # pylint:disable=unused-argument
+    """Assert that PATCH can modify the uploaded file."""
+    _, claims = setup_admin_user_and_claims
+    headers = factory_auth_header(jwt=jwt, claims=claims)
+    tenant = factory_tenant_model()
+    uploaded_file = factory_uploaded_file_model(
+        tenant.id, filename='original.pdf')
+
+    rv = client.patch(
+        f'/api/document/{uploaded_file.id}',
+        data=json.dumps({'filename': 'renamed.pdf'}),
+        headers=headers,
+        content_type='application/json',
+    )
+
+    assert rv.status_code == HTTPStatus.OK
+    assert rv.json['filename'] == 'renamed.pdf'
+
+
+def test_delete_document_soft_deletes_and_hides_from_files_list(
+    client, jwt, session, setup_admin_user_and_claims
+):  # pylint:disable=unused-argument
+    """Assert that DELETE marks the file deleted and removes it from the engagement files list."""
+    _, claims = setup_admin_user_and_claims
+    headers = factory_auth_header(jwt=jwt, claims=claims)
+    tenant = factory_tenant_model()
+    engagement = factory_engagement_model(
+        {**TestEngagementInfo.engagement1, 'tenant_id': tenant.id}
+    )
+    uploaded_file = factory_uploaded_file_model(
+        tenant.id, filename='to-delete.pdf')
+    session.add(EngagementFile(
+        engagement_id=engagement.id, file_id=uploaded_file.id))
+    session.commit()
+
+    rv = client.delete(f'/api/document/{uploaded_file.id}', headers=headers)
+
+    assert rv.status_code == HTTPStatus.NO_CONTENT
+    session.refresh(uploaded_file)
+    assert uploaded_file.deleted_at is not None
+    assert uploaded_file.deleted_by is not None
+
+    rv = client.get(
+        f'/api/engagements/{engagement.id}/files', headers=headers)
+    assert rv.status_code == HTTPStatus.OK
+    assert rv.json == []
 
 
 def test_get_public_upload_scope_rejects_missing_survey(monkeypatch):

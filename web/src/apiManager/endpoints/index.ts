@@ -45,6 +45,8 @@ const Endpoints = {
     },
     EngagementFiles: {
         GET_LIST: `${AppConfig.apiUrl}/engagements/engagement_id/files`,
+        PATCH: `${AppConfig.apiUrl}/engagements/engagement_id/files/file_id`,
+        DELETE: `${AppConfig.apiUrl}/engagements/engagement_id/files/file_id`,
     },
     EngagementSettings: {
         CREATE: `${AppConfig.apiUrl}/engagementsettings/`,
@@ -69,6 +71,8 @@ const Endpoints = {
     Document: {
         OSS_HEADER: `${AppConfig.apiUrl}/document/`,
         OSS_FINALIZE: `${AppConfig.apiUrl}/document/file_id/finalize`,
+        PATCH: `${AppConfig.apiUrl}/document/file_id`,
+        DELETE: `${AppConfig.apiUrl}/document/file_id`,
         PUBLIC: `${AppConfig.apiUrl}/document/public`,
     },
     Survey: {
