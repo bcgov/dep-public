@@ -169,6 +169,8 @@ const FilesTab = () => {
             return;
         }
         const deletingFiles = unlinkedFiles(files);
+        const maskDeletedFiles = (prev: readonly string[]) =>
+            prev.filter((item) => !deletingFiles.some((file) => file.id.toString() === item));
         const handleConfirmDelete = () => {
             deletingFiles.forEach((file) => {
                 submit(
@@ -181,9 +183,7 @@ const FilesTab = () => {
                 );
             });
             // Remove the deleted files from the selected items list.
-            setSelectedItems((prev) =>
-                prev.filter((item) => !deletingFiles.some((file) => file.id.toString() === item)),
-            );
+            setSelectedItems(maskDeletedFiles);
         };
         dispatch(
             openNotificationModal({
