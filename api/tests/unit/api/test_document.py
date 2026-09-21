@@ -45,17 +45,20 @@ def test_delete_document_soft_deletes_and_hides_from_files_list(
         engagement_id=engagement.id, file_id=uploaded_file.id))
     session.commit()
 
-    rv = client.delete(f'/api/document/{uploaded_file.id}', headers=headers)
+    with patch('api.schemas.uploaded_file.ObjectStorageService'), \
+            patch('api.services.file_upload_service.ObjectStorageService'):
+        rv = client.delete(
+            f'/api/document/{uploaded_file.id}', headers=headers)
 
-    assert rv.status_code == HTTPStatus.NO_CONTENT
-    session.refresh(uploaded_file)
-    assert uploaded_file.deleted_at is not None
-    assert uploaded_file.deleted_by is not None
+        assert rv.status_code == HTTPStatus.NO_CONTENT
+        session.refresh(uploaded_file)
+        assert uploaded_file.deleted_at is not None
+        assert uploaded_file.deleted_by is not None
 
-    rv = client.get(
-        f'/api/engagements/{engagement.id}/files', headers=headers)
-    assert rv.status_code == HTTPStatus.OK
-    assert rv.json == []
+        rv = client.get(
+            f'/api/engagements/{engagement.id}/files', headers=headers)
+        assert rv.status_code == HTTPStatus.OK
+        assert rv.json == []
 
 
 def test_get_public_upload_scope_rejects_missing_survey(monkeypatch):
