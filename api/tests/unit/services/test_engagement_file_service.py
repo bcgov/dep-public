@@ -97,6 +97,13 @@ def test_unlink_file_rejects_non_engagement_file_input(session):
         file_service.unlink_file(12345)  # type: ignore
 
 
+def test_unlink_file_requires_engagement_id_when_passing_file_by_id(session):
+    """Passing a file ID without an engagement ID raises an error."""
+    file_service = EngagementFileService(session)
+    with pytest.raises(ValueError):
+        file_service.unlink_file('some-file-id')  # type: ignore
+
+
 def test_get_engagement_files_returns_files_ordered_by_name(session):
     """The Files tab receives only this engagement's files in name order."""
     tenant = factory_tenant_model()
