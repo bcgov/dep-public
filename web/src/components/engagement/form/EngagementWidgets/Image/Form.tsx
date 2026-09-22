@@ -16,7 +16,7 @@ import ImageUpload from 'components/imageUpload';
 import { useAsyncValue, useParams } from 'react-router';
 import { ImageWidget } from 'models/imageWidget';
 import { Button, TextField } from 'components/common/Input';
-import { saveObject } from 'services/objectStorageService';
+import { uploadFile } from 'services/uploadedFileService';
 import { SystemMessage } from 'components/common/Layout/SystemMessage';
 import { When } from 'react-if';
 import {
@@ -98,7 +98,7 @@ const Form = () => {
             return;
         }
         try {
-            const savedImage = await saveObject(previewImage, {
+            const savedImage = await uploadFile(previewImage, {
                 filename: previewImage.name,
                 content_type: previewImage.type,
                 widget_id: widget.id,

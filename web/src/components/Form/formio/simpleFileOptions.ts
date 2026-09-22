@@ -1,11 +1,6 @@
 import { Options } from '@formio/react/lib/components/Form';
 import { AxiosRequestConfig } from 'axios';
-import {
-    deletePublicObject,
-    downloadObject,
-    downloadPublicObject,
-    savePublicObject,
-} from 'services/objectStorageService';
+import { deletePublicFile, downloadObject, downloadPublicFile, uploadPublicFile } from 'services/uploadedFileService';
 
 type UploadConfig = AxiosRequestConfig & {
     onUploadProgress?: (event: ProgressEvent) => void;
@@ -55,7 +50,7 @@ export const createSimpleFileOptions = ({
                     throw new TypeError('A valid file upload payload is required.');
                 }
 
-                const response = await savePublicObject(file, verificationToken, config);
+                const response = await uploadPublicFile(file, verificationToken, config);
                 return createPublicUploadResponse(
                     response.filepath,
                     file,
@@ -70,7 +65,7 @@ export const createSimpleFileOptions = ({
                 } else if (!verificationToken) {
                     throw new Error('Verification token is required for public file downloads.');
                 } else {
-                    await downloadPublicObject(fileId, verificationToken);
+                    await downloadPublicFile(fileId, verificationToken);
                 }
             },
             deleteFile: async (fileInfo: { data?: { id?: string }; id?: string }, _config?: AxiosRequestConfig) => {
@@ -83,7 +78,7 @@ export const createSimpleFileOptions = ({
                     return;
                 }
 
-                await deletePublicObject(fileId, verificationToken);
+                await deletePublicFile(fileId, verificationToken);
             },
         },
     },

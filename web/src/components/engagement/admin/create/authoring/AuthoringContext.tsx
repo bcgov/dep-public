@@ -8,7 +8,7 @@ import { EngagementViewSections } from 'components/engagement/public/view';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useAppDispatch } from 'hooks';
 import { openNotification } from 'services/notificationService/notificationSlice';
-import { saveObject } from 'services/objectStorageService';
+import { uploadFile } from 'services/uploadedFileService';
 import { FormDetailsTab } from './types';
 import { AuthoringPreviewWindowProvider } from './AuthoringPreviewWindowContext';
 import { ROUTES, getPath } from 'routes/routes';
@@ -363,7 +363,7 @@ export const AuthoringContext = () => {
     const onSubmit = useCallback(
         async (data: EngagementUpdateData) => {
             const savedImageDetails = data.image_file
-                ? await saveObject(data.image_file, { filename: data.image_file.name, engagement_id: data.id })
+                ? await uploadFile(data.image_file, { filename: data.image_file.name, engagement_id: data.id })
                 : undefined;
 
             fetcher.submit(

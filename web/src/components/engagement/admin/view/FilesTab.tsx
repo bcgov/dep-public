@@ -50,7 +50,7 @@ import { EngagementLoaderAdminData } from '../EngagementLoaderAdmin';
 import { FilesLightbox, canBePreviewed } from './FilesLightbox';
 import { UploadedFile } from 'models/uploadedFile';
 import { EngagementFile } from 'models/engagementFile';
-import { downloadObject } from 'services/objectStorageService';
+import { downloadObject } from 'services/uploadedFileService';
 import { WidgetLocation } from 'models/widget';
 import { useAppDispatch } from 'hooks';
 import { openNotification } from 'services/notificationService/notificationSlice';

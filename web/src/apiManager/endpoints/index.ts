@@ -68,12 +68,12 @@ const Endpoints = {
         GET_USER_ENGAGEMENTS: `${AppConfig.apiUrl}/user/user_id/engagements`,
         TOGGLE_USER_STATUS: `${AppConfig.apiUrl}/user/user_id/status`,
     },
-    Document: {
-        OSS_HEADER: `${AppConfig.apiUrl}/document/`,
-        OSS_FINALIZE: `${AppConfig.apiUrl}/document/file_id/finalize`,
-        PATCH: `${AppConfig.apiUrl}/document/file_id`,
-        DELETE: `${AppConfig.apiUrl}/document/file_id`,
-        PUBLIC: `${AppConfig.apiUrl}/document/public`,
+    UploadedFile: {
+        OSS_HEADER: `${AppConfig.apiUrl}/uploaded_files/`,
+        OSS_FINALIZE: `${AppConfig.apiUrl}/uploaded_files/file_id/finalize`,
+        PATCH: `${AppConfig.apiUrl}/uploaded_files/file_id`,
+        DELETE: `${AppConfig.apiUrl}/uploaded_files/file_id`,
+        PUBLIC: `${AppConfig.apiUrl}/uploaded_files/public`,
     },
     Survey: {
         GET_LIST: `${AppConfig.apiUrl}/surveys/`,
