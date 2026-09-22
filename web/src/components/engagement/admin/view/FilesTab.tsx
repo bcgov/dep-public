@@ -73,7 +73,6 @@ const FilesTab = () => {
     const [renamingFileName, setRenamingFileName] = React.useState<string>('');
     const [renamingExtension, setRenamingExtension] = React.useState<string>('');
     const loaderData = useRouteLoaderData('single-engagement') as EngagementLoaderAdminData;
-    const actionData = useActionData();
     const submit = useSubmit();
 
     const [menuTarget, setMenuTarget] = React.useState<HTMLElement | null>(null);
