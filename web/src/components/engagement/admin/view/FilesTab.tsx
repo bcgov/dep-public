@@ -10,6 +10,7 @@ import {
     faFileDownload,
     faHardDrive,
     faFileCircleExclamation,
+    faPenField,
 } from '@fortawesome/pro-regular-svg-icons';
 import {
     Checkbox,
@@ -316,7 +317,7 @@ const FilesTab = () => {
                                         </span>
                                         <Divider orientation="vertical" flexItem />
                                         <span>
-                                            <b>{unlinkedFiles(files).length}</b> unlinked
+                                            <b>{unlinkedFiles(files).length}</b> not in use
                                         </span>
                                     </BodyText>
                                 )}
@@ -324,8 +325,8 @@ const FilesTab = () => {
                         </Suspense>
                     </Grid>
                     <Grid display={selectedItems.length < 1 ? 'none' : 'flex'} gap={2} alignItems="center">
-                        <BodyText bold>
-                            {selectedItems.length} file{selectedItems.length !== 1 ? 's' : ''} selected
+                        <BodyText>
+                            <b>{selectedItems.length}</b> file{selectedItems.length !== 1 ? 's' : ''} selected
                         </BodyText>
                         <Divider orientation="vertical" flexItem />
                         <Button
@@ -663,8 +664,14 @@ const FilesTab = () => {
                 onClose={() => setPreviewingFiles([])}
                 files={previewingFiles}
             />
-            <Dialog open={!!renamingFile} onClose={resetRenamingState} maxWidth="md">
+            <Dialog
+                open={!!renamingFile}
+                onClose={resetRenamingState}
+                maxWidth="md"
+                slotProps={{ paper: { sx: { borderTop: '8px solid', borderColor: 'primary.main' } } }}
+            >
                 <DialogTitle mb={2} width={700} maxWidth="100%">
+                    <FontAwesomeIcon icon={faPenField} style={{ marginRight: '0.5rem' }} />
                     Renaming file {renamingFile?.uploaded_file.filename}
                 </DialogTitle>
                 <DialogContent sx={{ overflow: 'visible' }}>
@@ -680,6 +687,9 @@ const FilesTab = () => {
                     />
                 </DialogContent>
                 <DialogActions>
+                    <Button variant="secondary" onClick={resetRenamingState}>
+                        Cancel
+                    </Button>
                     <Button variant="primary" onClick={handleSaveRename}>
                         Save
                     </Button>
