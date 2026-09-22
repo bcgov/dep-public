@@ -75,7 +75,6 @@ const FilesTab = () => {
     const loaderData = useRouteLoaderData('single-engagement') as EngagementLoaderAdminData;
     const actionData = useActionData();
     const submit = useSubmit();
-    loaderData.files = actionData?.files ?? loaderData.files;
 
     const [menuTarget, setMenuTarget] = React.useState<HTMLElement | null>(null);
     const [menuTargetId, setMenuTargetId] = React.useState<string | null>(null);
