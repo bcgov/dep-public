@@ -6,7 +6,6 @@ export const engagementFilesAction: ActionFunction = async ({ request, params, u
 
     if (request.method.toLowerCase() === 'delete') {
         const fileIds = formData.get('fileIds');
-        console.log(fileIds);
     }
     if (request.method.toLowerCase() === 'patch') {
         const engagementId = Number(params.engagementId);

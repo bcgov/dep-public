@@ -14,12 +14,8 @@ export const uploadedFilesAction: ActionFunction = async ({ request, params }: A
         deleteUploadedFile(fileId);
     }
     if (request.method.toLowerCase() === 'patch') {
-        console.debug('PATCH request received');
         const formData = await request.formData();
-        console.debug(formData);
-        console.log(fileId);
         patchUploadedFile(fileId, Object.fromEntries(formData));
-        console.debug('PATCH request processed');
     }
 };
 

@@ -32,14 +32,13 @@ class LocationField(fields.Field[str | None]):
                 return 'widget'
         return None
 
-    def deserialize(self, value, attr=None, data=None, **kwargs):
-        """Bypass the base Field's None short-circuit so a null value reaches `_deserialize`."""
-        return self._deserialize(value, attr, data, **kwargs)
-
-    def _deserialize(self, value, _, data, **kwargs):
+    def deserialize(self, value, *args, **kwargs):
         """
-        Deserialization is largely unsupported for the location field.
+        Override marshmallow.Field.deserialize to allow reading None values without setting allow_none=True.
 
+        allow_none also has the side effect of short-circuiting deserialization when the value is None.
+
+        Deserialization is largely unsupported for the location field.
         However, by setting the Location field to None, it should allow dissociation
         of the file from its current location.
         """

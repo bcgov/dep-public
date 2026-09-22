@@ -230,9 +230,7 @@ const FilesTab = () => {
                 { filename: newFilename },
                 { action: `./uploaded-files/${uploadedFile.id}`, method: 'patch', navigate: false },
             );
-            setRenamingFile(null);
-            setRenamingFileName('');
-            setRenamingExtension('');
+            resetRenamingState();
         }
     };
 
