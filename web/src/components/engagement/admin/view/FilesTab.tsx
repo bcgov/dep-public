@@ -9,19 +9,25 @@ import {
     faTrash,
     faFileDownload,
     faHardDrive,
+    faFileCircleExclamation,
+    faPenField,
 } from '@fortawesome/pro-regular-svg-icons';
 import {
+    Checkbox,
+    Chip,
+    CircularProgress,
+    Dialog,
+    Divider,
     Grid2 as Grid,
+    ListItemIcon,
+    LinearProgress,
     Menu,
     MenuItem,
-    ListItemIcon,
-    Checkbox,
     TableSortLabel,
     Tooltip,
-    LinearProgress,
-    CircularProgress,
-    Divider,
-    Chip,
+    DialogTitle,
+    DialogActions,
+    DialogContent,
 } from '@mui/material';
 import {
     Table,
@@ -34,18 +40,21 @@ import {
     TableHeadRow,
 } from 'components/common/Layout';
 import { HeadCell } from 'components/common/Table/types';
-import { Button } from 'components/common/Input';
+import { Button, TextInput } from 'components/common/Input';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { bytesToSize } from 'helper';
 import { BodyText, Heading2 } from 'components/common/Typography';
 import { getFileIcon } from 'helper/getFileIcon';
-import { Await, useRouteLoaderData } from 'react-router';
+import { Await, useRouteLoaderData, useSubmit } from 'react-router';
 import { EngagementLoaderAdminData } from '../EngagementLoaderAdmin';
 import { FilesLightbox, canBePreviewed } from './FilesLightbox';
 import { UploadedFile } from 'models/uploadedFile';
 import { EngagementFile } from 'models/engagementFile';
-import { downloadObject } from 'services/objectStorageService';
+import { downloadObject } from 'services/uploadedFileService';
 import { WidgetLocation } from 'models/widget';
+import { useAppDispatch } from 'hooks';
+import { openNotification } from 'services/notificationService/notificationSlice';
+import { openNotificationModal } from 'services/notificationModalService/notificationModalSlice';
 
 const tableHeadCells: HeadCell<EngagementFile>[] = [
     { key: 'uploaded_file', nestedSortKey: 'uploaded_file.filename', label: 'Name', allowSort: true },
@@ -60,10 +69,28 @@ const FilesTab = () => {
     const [orderBy, setOrderBy] = React.useState<string>('uploaded_file.filename');
     const [downloadQueue, setDownloadQueue] = React.useState<number>(0);
     const [previewingFiles, setPreviewingFiles] = React.useState<UploadedFile[]>([]);
+    const [renamingFile, setRenamingFile] = React.useState<EngagementFile | null>(null);
+    const [renamingFileName, setRenamingFileName] = React.useState<string>('');
+    const [renamingExtension, setRenamingExtension] = React.useState<string>('');
     const loaderData = useRouteLoaderData('single-engagement') as EngagementLoaderAdminData;
+    const submit = useSubmit();
 
     const [menuTarget, setMenuTarget] = React.useState<HTMLElement | null>(null);
     const [menuTargetId, setMenuTargetId] = React.useState<string | null>(null);
+
+    const dispatch = useAppDispatch();
+
+    const unlinkedFiles = (files: EngagementFile[]) => {
+        return files.filter((file) => !file.location);
+    };
+
+    const linkedFiles = (files: EngagementFile[]) => {
+        return files.filter((file) => file.location);
+    };
+
+    const canDelete = (files: EngagementFile[]) => {
+        return linkedFiles(files).length === 0;
+    };
 
     const handleRequestSort = (event: React.MouseEvent<unknown>, property: string) => {
         const isAsc = orderBy === property && order === 'asc';
@@ -78,7 +105,6 @@ const FilesTab = () => {
 
     const handlePreview = async (files: EngagementFile[]) => {
         setPreviewingFiles(files.map((file) => file.uploaded_file));
-        handleClose();
     };
 
     const handleDownload = async (files: EngagementFile[]) => {
@@ -102,8 +128,77 @@ const FilesTab = () => {
             const end = Date.now();
             console.log(`Download finished in ${(end - start) / 1000} s`);
             setDownloadQueue(0);
-            handleClose();
         }
+    };
+
+    const handleUnlink = async (files: EngagementFile[]) => {
+        const toUnlink = linkedFiles(files);
+        dispatch(
+            openNotificationModal({
+                open: true,
+                data: {
+                    icon: faLinkSlash,
+                    header: `Are you sure you want to unlink the selected file${toUnlink.length > 1 ? 's' : ''}?`,
+                    subText: [{ text: 'This action cannot be undone.' }],
+                    cancelButtonText: 'Cancel',
+                    confirmButtonText: 'Unlink',
+                    handleConfirm() {
+                        toUnlink.forEach((file) => {
+                            const uploadedFile = file.uploaded_file;
+                            submit(
+                                { id: file.id, location: null },
+                                { action: `./engagement-files/${uploadedFile.id}`, method: 'patch', navigate: false },
+                            );
+                        });
+                    },
+                },
+                type: 'confirm',
+            }),
+        );
+    };
+
+    const handleDelete = async (files: EngagementFile[]) => {
+        if (!canDelete(files)) {
+            dispatch(
+                openNotification({
+                    text: 'Cannot delete files which are linked',
+                    severity: 'error',
+                }),
+            );
+            return;
+        }
+        const deletingFiles = unlinkedFiles(files);
+        const maskDeletedFiles = (prev: readonly string[]) =>
+            prev.filter((item) => !deletingFiles.some((file) => file.id.toString() === item));
+        const handleConfirmDelete = () => {
+            deletingFiles.forEach((file) => {
+                submit(
+                    {},
+                    {
+                        action: `./uploaded-files/${file.uploaded_file.id}`,
+                        method: 'delete',
+                        navigate: false,
+                    },
+                );
+            });
+            // Remove the deleted files from the selected items list.
+            setSelectedItems(maskDeletedFiles);
+        };
+        dispatch(
+            openNotificationModal({
+                open: true,
+                data: {
+                    icon: faFileCircleExclamation,
+                    header: `Are you sure you want to delete the selected file${deletingFiles.length > 1 ? 's' : ''}?`,
+                    subText: [{ text: 'This action cannot be undone.' }],
+                    cancelButtonText: 'Cancel',
+                    confirmButtonText: 'Delete',
+                    style: 'danger',
+                    handleConfirm: handleConfirmDelete,
+                },
+                type: 'confirm',
+            }),
+        );
     };
 
     const handleCopyLink = async (files: EngagementFile[]) => {
@@ -111,7 +206,36 @@ const FilesTab = () => {
         if (currentFile) {
             await navigator.clipboard.writeText(currentFile.uploaded_file.url);
         }
-        handleClose();
+    };
+
+    const handleRename = async (files: EngagementFile[]) => {
+        const currentFile = files[0];
+        if (currentFile) {
+            const { filename, path } = currentFile.uploaded_file;
+            const extension = path.split('.').pop();
+            const baseFilename = filename.replace(`.${extension}`, '');
+            setRenamingFileName(baseFilename);
+            setRenamingExtension(extension ?? '');
+            setRenamingFile(currentFile);
+        }
+    };
+
+    const handleSaveRename = async () => {
+        if (renamingFile) {
+            const uploadedFile = renamingFile.uploaded_file;
+            const newFilename = `${renamingFileName}.${renamingExtension}`;
+            submit(
+                { filename: newFilename },
+                { action: `./uploaded-files/${uploadedFile.id}`, method: 'patch', navigate: false },
+            );
+            resetRenamingState();
+        }
+    };
+
+    const resetRenamingState = () => {
+        setRenamingFile(null);
+        setRenamingFileName('');
+        setRenamingExtension('');
     };
 
     const handleSingleAction = (action: (files: EngagementFile[]) => void) => {
@@ -144,10 +268,6 @@ const FilesTab = () => {
             }
             return undefined;
         }, obj);
-    };
-
-    const unlinkedFiles = (files: EngagementFile[]) => {
-        return files.filter((file) => !file.location);
     };
 
     const sortByFileSize = (a: EngagementFile, b: EngagementFile, asc?: boolean) => {
@@ -193,7 +313,7 @@ const FilesTab = () => {
                                         </span>
                                         <Divider orientation="vertical" flexItem />
                                         <span>
-                                            <b>{unlinkedFiles(files).length}</b> unlinked
+                                            <b>{unlinkedFiles(files).length}</b> not in use
                                         </span>
                                     </BodyText>
                                 )}
@@ -201,8 +321,8 @@ const FilesTab = () => {
                         </Suspense>
                     </Grid>
                     <Grid display={selectedItems.length < 1 ? 'none' : 'flex'} gap={2} alignItems="center">
-                        <BodyText bold>
-                            {selectedItems.length} file{selectedItems.length !== 1 ? 's' : ''} selected
+                        <BodyText>
+                            <b>{selectedItems.length}</b> file{selectedItems.length !== 1 ? 's' : ''} selected
                         </BodyText>
                         <Divider orientation="vertical" flexItem />
                         <Button
@@ -226,9 +346,46 @@ const FilesTab = () => {
                         >
                             {downloadQueue > 0 ? `Downloading (${downloadQueue} files)` : 'Download'}
                         </Button>
-                        <Button disabled size="small" color="error" icon={<FontAwesomeIcon icon={faTrash} />}>
-                            Delete
-                        </Button>
+                        <Suspense
+                            fallback={
+                                <Button disabled size="small" color="error" icon={<FontAwesomeIcon icon={faTrash} />}>
+                                    Delete
+                                </Button>
+                            }
+                        >
+                            <Await resolve={loaderData.files}>
+                                {(files) => {
+                                    const selectedFiles = files.filter((file) =>
+                                        selectedItems.includes(file.id.toString()),
+                                    );
+                                    const undeletableFiles = selectedFiles.filter((file) => file.location);
+                                    const canDelete = undeletableFiles.length === 0;
+                                    return (
+                                        <Tooltip
+                                            PopperProps={{ placement: 'top' }}
+                                            arrow
+                                            title={
+                                                canDelete
+                                                    ? ''
+                                                    : 'Files must be unlinked from their location before deleting'
+                                            }
+                                        >
+                                            <span>
+                                                <Button
+                                                    disabled={!canDelete}
+                                                    onClick={handleBulkAction(handleDelete)}
+                                                    size="small"
+                                                    color="error"
+                                                    icon={<FontAwesomeIcon icon={faTrash} />}
+                                                >
+                                                    Delete
+                                                </Button>
+                                            </span>
+                                        </Tooltip>
+                                    );
+                                }}
+                            </Await>
+                        </Suspense>
                     </Grid>
                 </Grid>
             </Grid>
@@ -299,9 +456,8 @@ const FilesTab = () => {
                                     const currentMenuTarget = fileRows.find(
                                         (row) => row.id.toString() === menuTargetId,
                                     );
-                                    const isUnlinked = currentMenuTarget?.location === 'other';
+                                    const isUnlinked = !currentMenuTarget?.location;
                                     const sortedRows = fileRows.toSorted((a, b) => {
-                                        console.log('orderBy', orderBy);
                                         if (orderBy === 'uploaded_file.size') {
                                             return sortByFileSize(a, b, order == 'asc');
                                         } else if (orderBy === 'location') {
@@ -437,13 +593,16 @@ const FilesTab = () => {
                                                     </ListItemIcon>
                                                     Copy Link
                                                 </MenuItem>
-                                                <MenuItem onClick={handleClose}>
+                                                <MenuItem onClick={handleSingleAction(handleRename)}>
                                                     <ListItemIcon>
                                                         <FontAwesomeIcon icon={faEdit} />
                                                     </ListItemIcon>
                                                     Rename
                                                 </MenuItem>
-                                                <MenuItem onClick={handleClose} disabled={isUnlinked}>
+                                                <MenuItem
+                                                    onClick={handleSingleAction(handleUnlink)}
+                                                    disabled={isUnlinked}
+                                                >
                                                     <ListItemIcon>
                                                         <FontAwesomeIcon icon={faLinkSlash} />
                                                     </ListItemIcon>
@@ -454,11 +613,18 @@ const FilesTab = () => {
                                                     slotProps={{
                                                         popper: { placement: 'left' },
                                                     }}
-                                                    title={isUnlinked ? 'Must unlink before deleting' : ''}
+                                                    title={
+                                                        isUnlinked
+                                                            ? ''
+                                                            : 'Files must be unlinked from their location before deleting'
+                                                    }
                                                 >
                                                     {/* Wrap the MenuItem in a span to allow Tooltip to work correctly */}
                                                     <span>
-                                                        <MenuItem onClick={handleClose} disabled={!isUnlinked}>
+                                                        <MenuItem
+                                                            onClick={handleSingleAction(handleDelete)}
+                                                            disabled={!isUnlinked}
+                                                        >
                                                             <ListItemIcon sx={{ color: 'error.main' }}>
                                                                 <FontAwesomeIcon icon={faTrash} />
                                                             </ListItemIcon>
@@ -494,6 +660,37 @@ const FilesTab = () => {
                 onClose={() => setPreviewingFiles([])}
                 files={previewingFiles}
             />
+            <Dialog
+                open={!!renamingFile}
+                onClose={resetRenamingState}
+                maxWidth="md"
+                slotProps={{ paper: { sx: { borderTop: '8px solid', borderColor: 'primary.main' } } }}
+            >
+                <DialogTitle mb={2} width={700} maxWidth="100%">
+                    <FontAwesomeIcon icon={faPenField} style={{ marginRight: '0.5rem' }} />
+                    Renaming file {renamingFile?.uploaded_file.filename}
+                </DialogTitle>
+                <DialogContent sx={{ overflow: 'visible' }}>
+                    <TextInput
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                                handleSaveRename();
+                            }
+                        }}
+                        value={renamingFileName}
+                        onChange={(name) => setRenamingFileName(name)}
+                        renderSuffix={() => <Chip label={`.${renamingExtension}`} />}
+                    />
+                </DialogContent>
+                <DialogActions>
+                    <Button variant="secondary" onClick={resetRenamingState}>
+                        Cancel
+                    </Button>
+                    <Button variant="primary" onClick={handleSaveRename}>
+                        Save
+                    </Button>
+                </DialogActions>
+            </Dialog>
         </Grid>
     );
 };

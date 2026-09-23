@@ -17,7 +17,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowRight, faArrowLeft, faDownload, faCheck } from '@fortawesome/pro-regular-svg-icons';
 import { BodyText, Heading3 } from 'components/common/Typography';
 import { AdminDarkTheme } from 'styles/Theme';
-import { downloadObject } from 'services/objectStorageService';
+import { downloadObject } from 'services/uploadedFileService';
 import { formatRelative, formatToPacific } from 'components/common/dateHelper';
 
 export type FilesLightboxProps = {

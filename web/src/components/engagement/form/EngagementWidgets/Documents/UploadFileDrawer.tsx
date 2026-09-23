@@ -13,7 +13,7 @@ import { DocumentsContext } from './DocumentsContext';
 import ControlledSelect from 'components/common/ControlledInputComponents/ControlledSelect';
 import { postDocument } from 'services/widgetService/DocumentService';
 import { DOCUMENT_TYPE, DocumentItem } from 'models/document';
-import { saveObject } from 'services/objectStorageService';
+import { uploadFile } from 'services/uploadedFileService';
 import FileUpload from 'components/common/FileUpload';
 import { If, Then, Else } from 'react-if';
 import { WidgetLocation } from 'models/widget';
@@ -64,7 +64,7 @@ const UploadFileDrawer = () => {
         if (!fileToUpload || !widget) {
             throw new Error('No file to upload');
         }
-        const savedDocumentDetails = await saveObject(fileToUpload, {
+        const savedDocumentDetails = await uploadFile(fileToUpload, {
             filename: fileToUpload.name,
             content_type: fileToUpload.type,
             widget_id: widget.id,

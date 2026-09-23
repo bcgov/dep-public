@@ -18,6 +18,7 @@ class UploadedFileSchema(BaseSchema):
 
         model = UploadedFile
         include_fk = True
+        load_instance = True
         fields = (
             'id',
             'filename',

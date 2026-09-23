@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""API endpoints for managing documents resource."""
+"""API endpoints for managing uploaded file resources."""
 
 from http import HTTPStatus
 from typing import Any, cast
@@ -20,14 +20,15 @@ from flask import jsonify, request
 from flask_cors import cross_origin
 from flask_restx import Namespace, Resource
 
+from api.auth import auth
 from api.exceptions.business_exception import BusinessException
 from api.models import Engagement as EngagementModel
 from api.models import Survey as SurveyModel
 from api.models.db import db
 from api.models.tenant import Tenant
 from api.resources.metadata_taxon import ensure_tenant_access
-from api.schemas.document import Document
 from api.schemas.public_upload import PublicObjectAccessRequestSchema, PublicUploadAuthorizationRequestSchema
+from api.schemas.upload_request import UploadRequestSchema
 from api.schemas.uploaded_file import UploadedFileSchema
 from api.services.email_verification_service import EmailVerificationService
 from api.services.file_upload_service import FileUploadService
@@ -38,7 +39,7 @@ from api.utils.util import allowedorigins, cors_preflight
 
 
 API = Namespace(
-    'document', description='Endpoints for Document Storage Management')
+    'uploaded_files', description='Endpoints for Uploaded File Storage Management')
 """Custom exception messages"""
 
 
@@ -63,33 +64,33 @@ def _get_public_upload_scope(verification_token: str):
 
 @cors_preflight('POST,OPTIONS')
 @API.route('/')
-class DocumentStorage(Resource):
-    """Document storage resource controller."""
+class UploadedFileUploadAuthorization(Resource):
+    """Uploaded file storage resource controller."""
 
     @staticmethod
     @cross_origin(origins=allowedorigins())
     @require_role([Role.EDIT_ENGAGEMENT.value])
     @ensure_tenant_access()
     def post(tenant: Tenant):
-        """Retrieve authentication properties for document storage."""
+        """Retrieve authentication properties for uploaded file storage."""
         try:
             object_storage = None
             requestfilejson = request.get_json()
-            documents = cast(list[dict[str, Any]],
-                             Document().load(requestfilejson, many=True))
+            upload_requests = cast(list[dict[str, Any]],
+                                   UploadRequestSchema().load(requestfilejson, many=True))
             auth_headers = []
-            for document in documents:
-                if document.get('s3sourceuri'):
+            for upload_request in upload_requests:
+                if upload_request.get('s3sourceuri'):
                     object_storage = object_storage or ObjectStorageService()
                     auth_headers.append(
-                        object_storage.get_auth_headers([document])[0])
+                        object_storage.get_auth_headers([upload_request])[0])
                 else:
                     auth_headers.append(FileUploadService(db.session).prepare_file_upload(
                         tenant_id=tenant.id,
-                        file_name=document['filename'],
-                        content_type=document.get('content_type'),
-                        engagement_id=document.get('engagement_id'),
-                        widget_id=document.get('widget_id')
+                        file_name=upload_request['filename'],
+                        content_type=upload_request.get('content_type'),
+                        engagement_id=upload_request.get('engagement_id'),
+                        widget_id=upload_request.get('widget_id')
                     )[0])
 
             return jsonify(auth_headers), HTTPStatus.OK
@@ -101,14 +102,45 @@ class DocumentStorage(Resource):
             return str(err), HTTPStatus.INTERNAL_SERVER_ERROR
 
 
+@cors_preflight('PATCH,DELETE')
+@API.route('/<string:file_id>')
+class UploadedFileResource(Resource):
+    """Handles operations on a specific uploaded file identified by file_id."""
+
+    @staticmethod
+    @auth.requires_auth
+    @require_role([Role.EDIT_ENGAGEMENT.value])
+    @cross_origin(origins=allowedorigins())
+    def patch(file_id: str):
+        """Update a specific uploaded file identified by file_id."""
+        file_upload_service = FileUploadService(db.session)  # type: ignore
+        file = file_upload_service.get_file_upload(file_id)
+        UploadedFileSchema().load(request.get_json(), instance=file,
+                                  partial=True, session=db.session)
+        db.session.commit()
+        return UploadedFileSchema().dump(file), HTTPStatus.OK
+
+    @staticmethod
+    @auth.requires_auth
+    @require_role([Role.EDIT_ENGAGEMENT.value])
+    @cross_origin(origins=allowedorigins())
+    def delete(file_id: str):
+        """Delete a specific uploaded file identified by file_id."""
+        file_upload_service = FileUploadService(db.session)  # type: ignore
+        file_upload_service.delete_file_upload(file_id)
+        db.session.commit()
+        return '', HTTPStatus.NO_CONTENT
+
+
+@cors_preflight('POST')
 @API.route('/<string:file_id>/finalize')
-class FinalizeDocumentUpload(Resource):
-    """Finalizes the upload of a document to the storage service."""
+class FinalizeUploadedFile(Resource):
+    """Finalizes the upload of a file to the storage service."""
 
     @staticmethod
     @cross_origin(origins=allowedorigins())
     def post(file_id: str):
-        """Finalize the upload of a document to the storage service."""
+        """Finalize the upload of a file to the storage service."""
         upload_service = FileUploadService(db.session)  # type: ignore
         try:
             uploaded_file, status_code = upload_service.finalize_file_upload(
@@ -124,7 +156,7 @@ class FinalizeDocumentUpload(Resource):
 
 @cors_preflight('GET,POST,DELETE,OPTIONS')
 @API.route('/public')
-class PublicDocumentUploadAuthorization(Resource):
+class PublicUploadedFileAuthorization(Resource):
     """Token-scoped public upload/download/delete authorization controller."""
 
     @staticmethod

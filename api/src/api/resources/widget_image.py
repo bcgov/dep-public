@@ -20,6 +20,7 @@ from flask_restx import Namespace, Resource, fields
 
 from api.auth import jwt as _jwt
 from api.exceptions.business_exception import BusinessException
+from api.models.db import db
 from api.schemas.widget_image import WidgetImageSchema
 from api.services.widget_image_service import WidgetImageService
 from api.utils.util import allowedorigins, cors_preflight
@@ -94,7 +95,7 @@ class Image(Resource):
         """Update image widget."""
         request_json = request.get_json()
         try:
-            WidgetImageSchema(partial=True).load(request_json)
+            WidgetImageSchema().load(request_json, partial=True, session=db.session)
             widget_image = WidgetImageService().update_image(
                 widget_id, image_widget_id, request_json
             )

@@ -1,32 +1,30 @@
-import axios, { AxiosRequestConfig } from 'axios';
 import http from 'apiManager/httpRequestHandler';
+import { replaceAllInURL } from 'helper';
+import axios, { AxiosRequestConfig } from 'axios';
 import API from 'apiManager/endpoints';
 import { ObjectStorageFileDetails, ObjectStorageHeaderDetails, PublicObjectStorageUploadRequest } from './types';
 import { downloadFile } from 'utils';
 import { UploadedFile } from 'models/uploadedFile';
 
-const getOSSHeaderDetails = async (data: ObjectStorageFileDetails) => {
-    return await http.PostRequest<ObjectStorageHeaderDetails[]>(API.Document.OSS_HEADER, [data]);
-};
-
-const getObject = async (headerDetails: ObjectStorageHeaderDetails) => {
-    return await http.OSSGetRequest<Blob>(headerDetails.filepath, {
-        amzDate: headerDetails.amzdate,
-        authHeader: headerDetails.authheader,
-    });
+const getStorageAuthHeaders = async (data: ObjectStorageFileDetails) => {
+    return await http.PostRequest<ObjectStorageHeaderDetails[]>(API.UploadedFile.OSS_HEADER, [data]);
 };
 
 export const downloadObject = async (file: ObjectStorageFileDetails) => {
-    const response = await getOSSHeaderDetails(file);
+    const response = await getStorageAuthHeaders(file);
     if (!response.data) {
         throw new Error('Error occurred while fetching a document from object storage');
     }
-    const blobResponse = await getObject(response.data[0]);
+    const headerDetails = response.data[0];
+    const blobResponse = await http.OSSGetRequest<Blob>(headerDetails.filepath, {
+        amzDate: headerDetails.amzdate,
+        authHeader: headerDetails.authheader,
+    });
     const fallbackFileName = file.filename.split('/').pop() || 'download';
     downloadFile(blobResponse, fallbackFileName);
 };
 
-const doSaveObjectRequest = async (headerDetails: ObjectStorageHeaderDetails, file: File) => {
+const doUploadFileRequest = async (headerDetails: ObjectStorageHeaderDetails, file: File) => {
     return await http.OSSPutRequest(headerDetails.filepath, file, {
         amzDate: headerDetails.amzdate,
         authHeader: headerDetails.authheader,
@@ -34,40 +32,34 @@ const doSaveObjectRequest = async (headerDetails: ObjectStorageHeaderDetails, fi
 };
 
 const finalizeUpload = async (fileId: string) => {
-    return await axios.post<UploadedFile>(API.Document.OSS_FINALIZE.replace('file_id', fileId));
+    return await http.PostRequest<UploadedFile>(API.UploadedFile.OSS_FINALIZE.replace('file_id', fileId));
 };
 
-export const saveObject = async (file: File, fileDetails: ObjectStorageFileDetails) => {
-    const fileDetailsResponse = await getOSSHeaderDetails(fileDetails);
+export const uploadFile = async (file: File, fileDetails: ObjectStorageFileDetails) => {
+    const fileDetailsResponse = await getStorageAuthHeaders(fileDetails);
     if (!fileDetailsResponse.data) {
         throw new Error('Error occurred while fetching a document from object storage');
     }
-    await doSaveObjectRequest(fileDetailsResponse.data[0], file);
+    await doUploadFileRequest(fileDetailsResponse.data[0], file);
     const finalizedFile = await finalizeUpload(fileDetailsResponse.data[0].uniquefilename.split('.')[0] || '');
     return finalizedFile.data;
 };
 
+export const patchUploadedFile = async (fileId: string, data: Record<string, unknown>) => {
+    const url = replaceAllInURL({ URL: API.UploadedFile.PATCH, params: { file_id: fileId.toString() } });
+    return http.PatchRequest(url, data);
+};
+
+export const deleteUploadedFile = async (fileId: string) => {
+    const url = replaceAllInURL({ URL: API.UploadedFile.DELETE, params: { file_id: fileId.toString() } });
+    return http.DeleteRequest(url);
+};
+
 const getPublicUploadDetails = async (data: PublicObjectStorageUploadRequest) => {
-    return await axios.post<ObjectStorageHeaderDetails>(API.Document.PUBLIC, data);
+    return await axios.post<ObjectStorageHeaderDetails>(API.UploadedFile.PUBLIC, data);
 };
 
-const uploadPublicObject = async (
-    headerDetails: ObjectStorageHeaderDetails,
-    file: File,
-    config?: AxiosRequestConfig,
-) => {
-    return await axios.put(headerDetails.filepath, file, {
-        ...config,
-        headers: {
-            ...config?.headers,
-            'Content-Type': headerDetails.content_type ?? file.type,
-            'X-Amz-Date': headerDetails.amzdate,
-            Authorization: headerDetails.authheader,
-        },
-    });
-};
-
-export const savePublicObject = async (file: File, verificationToken: string, config?: AxiosRequestConfig) => {
+export const uploadPublicFile = async (file: File, verificationToken: string, config?: AxiosRequestConfig) => {
     const fileDetailsResponse = await getPublicUploadDetails({
         filename: file.name,
         content_type: file.type || 'application/octet-stream',
@@ -78,12 +70,21 @@ export const savePublicObject = async (file: File, verificationToken: string, co
         throw new Error('Error occurred while fetching document upload details from object storage');
     }
 
-    await uploadPublicObject(fileDetailsResponse.data, file, config);
+    const headerDetails: ObjectStorageHeaderDetails = fileDetailsResponse.data;
+    await axios.put(headerDetails.filepath, file, {
+        ...config,
+        headers: {
+            ...config?.headers,
+            'Content-Type': headerDetails.content_type ?? file.type,
+            'X-Amz-Date': headerDetails.amzdate,
+            Authorization: headerDetails.authheader,
+        },
+    });
     return fileDetailsResponse.data;
 };
 
 const getPublicDownloadDetails = async (fileId: string, verificationToken: string) => {
-    return await axios.get<ObjectStorageHeaderDetails>(API.Document.PUBLIC, {
+    return await axios.get<ObjectStorageHeaderDetails>(API.UploadedFile.PUBLIC, {
         params: {
             file_id: fileId,
         },
@@ -93,7 +94,7 @@ const getPublicDownloadDetails = async (fileId: string, verificationToken: strin
     });
 };
 
-export const downloadPublicObject = async (fileId: string, verificationToken: string) => {
+export const downloadPublicFile = async (fileId: string, verificationToken: string) => {
     const response = await getPublicDownloadDetails(fileId, verificationToken);
     if (!response.data) {
         throw new Error('Error occurred while fetching document download details from object storage');
@@ -111,8 +112,8 @@ export const downloadPublicObject = async (fileId: string, verificationToken: st
     downloadFile(blobResponse, fallbackFileName);
 };
 
-export const deletePublicObject = async (fileId: string, verificationToken: string) => {
-    const response = await axios.delete(API.Document.PUBLIC, {
+export const deletePublicFile = async (fileId: string, verificationToken: string) => {
+    const response = await axios.delete(API.UploadedFile.PUBLIC, {
         params: {
             file_id: fileId,
         },

@@ -1,9 +1,9 @@
-"""Document schema class."""
+"""Upload request schema class."""
 from marshmallow import EXCLUDE, Schema, fields
 
 
-class Document(Schema):
-    """Document schema class."""
+class UploadRequestSchema(Schema):
+    """Request schema for preparing an UploadedFile, combining fields from several asset types for convenience."""
 
     class Meta:
         """Exclude unknown fields in the deserialized output."""

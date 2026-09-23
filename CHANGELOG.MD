@@ -1,3 +1,11 @@
+## September 21, 2026
+
+- **Feature** Updated file management functionalities in the engagement Files tab. [🎟️ DEP-358](https://citz-gdx.atlassian.net/browse/DEP-358)
+  - Added Rename functionality for files in the engagement Files tab.
+  - Added ability to Unlink files from their associated locations.
+  - Added ability to Delete files (after they have been unlinked from their associated locations)
+    - Deleted files are removed from the object storage system, but the database records are retained for auditing purposes, marked with a `deleted_at` timestamp.
+
 ## September 17, 2026
 
 - **Feature** Added file tracking + auditing [🎟️ DEP-356](https://citz-gdx.atlassian.net/browse/DEP-356)

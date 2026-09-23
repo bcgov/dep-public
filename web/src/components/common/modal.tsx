@@ -9,7 +9,7 @@ import { When } from 'react-if';
 export const NotificationModal = () => {
     const dispatch = useAppDispatch();
     const open = useAppSelector((state) => state.notificationModal.open);
-    const { style, header, subHeader, subText, handleClose, handleConfirm, confirmButtonText, cancelButtonText } =
+    const { style, header, subHeader, subText, handleClose, handleConfirm, confirmButtonText, cancelButtonText, icon } =
         useAppSelector((state) => state.notificationModal.data);
     const type = useAppSelector((state) => state.notificationModal.type);
 
@@ -36,6 +36,7 @@ export const NotificationModal = () => {
                 </When>
                 <When condition={type === 'confirm'}>
                     <ConfirmModal
+                        icon={icon}
                         style={style}
                         header={header}
                         subHeader={subHeader}

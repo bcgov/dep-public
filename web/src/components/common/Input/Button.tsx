@@ -99,7 +99,7 @@ export const PrimaryButton: React.FC<ButtonProps> = ({
         if (isDarkMode && color === '#ffffff') {
             return colors.surface.blue[90];
         }
-        if (isDarkColor(bgColor, 0.4)) {
+        if (isDarkColor(bgColor, 0.5)) {
             return colors.type.inverted.primary;
         }
         return colors.type.regular.primary;
