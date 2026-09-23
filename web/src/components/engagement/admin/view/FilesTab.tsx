@@ -45,7 +45,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { bytesToSize } from 'helper';
 import { BodyText, Heading2 } from 'components/common/Typography';
 import { getFileIcon } from 'helper/getFileIcon';
-import { Await, useActionData, useRouteLoaderData, useSubmit } from 'react-router';
+import { Await, useRouteLoaderData, useSubmit } from 'react-router';
 import { EngagementLoaderAdminData } from '../EngagementLoaderAdmin';
 import { FilesLightbox, canBePreviewed } from './FilesLightbox';
 import { UploadedFile } from 'models/uploadedFile';
