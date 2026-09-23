@@ -21,7 +21,7 @@ export const getFileIcon = (url: string, isFile: boolean) => {
     if (!url.includes('.')) {
         return faLink;
     }
-    switch (url.split('.').pop()) {
+    switch (url.split('.').pop()?.toLowerCase()) {
         case 'pdf':
             return faFilePdf;
         case 'zip':
