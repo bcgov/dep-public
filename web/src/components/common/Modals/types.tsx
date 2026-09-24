@@ -1,5 +1,5 @@
 import { IconDefinition } from '@fortawesome/fontawesome-svg-core';
-import { ReactNode } from 'react';
+import { ReactElement, ReactNode } from 'react';
 
 export interface ModalSubtext {
     text: string;
@@ -24,7 +24,7 @@ export interface SingleLineInputModalProps {
     icon?: IconDefinition;
     header: string;
     subHeader?: string;
-    subText: ModalSubtext[];
+    subText: ReactElement;
     subTextId?: string;
     placeholder?: string;
     handleConfirm?: (value: string) => void;

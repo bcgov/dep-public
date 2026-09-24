@@ -20,7 +20,7 @@ import { TextField } from '../Input/TextInput';
  * @param {string} [props.style="default"] - The style of the modal, which determines its color scheme and icon.
  * @param {string} props.header - The main title of the modal.
  * @param {string} [props.subHeader] - An optional secondary title for additional context.
- * @param {Array<{ text: string; bold?: boolean }>} props.subText - An array of objects containing text to display in the modal, with optional bold styling.
+ * @param {ReactElement} props.subText - A react element (and its children) that will be rendered in the subtext area.
  * @param {string} props.subTextId - An optional string that matches the aria-describedby label from the parent <Modal> component to this child component.
  * @param {() => void} props.handleConfirm - A function to call when the user confirms the action.
  * @param {() => void} props.handleClose - A function to call when the user cancels the action or closes the modal.
@@ -34,7 +34,7 @@ import { TextField } from '../Input/TextInput';
  *     style="warning"
  *     header="Delete Item"
  *     subHeader="Are you sure?"
- *     subText={[{ text: 'This action cannot be undone.', bold: true }]}
+ *     subText={<BodyText>This action cannot be undone.</BodyText>}
  *     subTextId="delete-files-modal-subtext"
  *     handleConfirm={() => console.log('Confirmed')}
  *     handleClose={() => console.log('Cancelled')}
@@ -99,13 +99,7 @@ const SingleLineInputModal = ({
                     </Grid>
                 )}
                 <Grid container id={subTextId ?? undefined} direction="row" size={12} sx={{ mt: '1em' }}>
-                    {subText.map((subtext) => (
-                        <Grid key={subtext.text} size={12}>
-                            <BodyText bold={subtext.bold} sx={{ mb: 1 }}>
-                                {subtext.text}
-                            </BodyText>
-                        </Grid>
-                    ))}
+                    {subText}
                     {validation && error && (
                         <BodyText size="small" color="error">
                             {error}

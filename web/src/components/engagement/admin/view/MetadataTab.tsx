@@ -73,9 +73,9 @@ export const MetadataTab = () => {
     };
 
     // Get the form fields from the available taxons
-    const buildForm = (taxons: MetadataTaxon[]) => {
+    const buildForm = (t: MetadataTaxon[]) => {
         const defaults: (string | string[])[] = [];
-        taxons.forEach((taxon) => {
+        t.forEach((taxon) => {
             if ((!taxon.position && taxon.position !== 0) || (!taxon.id && taxon.id !== 0)) return; // Protect 0 values
             defaults[taxon.position] = metadataTypes.find((mdt) => mdt.db_name === taxon.data_type)?.default ?? [
                 'none',
@@ -85,7 +85,7 @@ export const MetadataTab = () => {
     };
 
     // Populate the form with existing engagement metadata values and reset default state
-    const populateForm = async (taxa: MetadataTaxon[]) => {
+    const populateForm = async (t: MetadataTaxon[]) => {
         engMetaForm.setValue('engagement_id', Number(engagementId));
         engMetaForm.setValue('id', defaultValues.id);
 
@@ -93,7 +93,7 @@ export const MetadataTab = () => {
         if (!metadata) return;
 
         // Create an updated copy of taxa with any missing custom values added
-        const updatedTaxa = taxa.map((taxon) => {
+        const updatedTaxa = t.map((taxon) => {
             if (!selectDataTypes.includes(taxon.data_type as string)) {
                 return taxon;
             }
@@ -453,12 +453,13 @@ const MetadataSelect = ({
                         header={`Custom Option`}
                         subHeader={`${selectedTaxonPosition !== undefined ? 'The ' + taxa.find((t) => t.position === selectedTaxonPosition)?.name : 'This'} taxon allows you to create custom options. ${selectedTaxonDataType ? getTypeString() : ''}`}
                         subTextId="custom-value-modal-subtext"
-                        subText={[
-                            {
-                                text: `Enter your new option here to add it to the list of options, then select it from ${selectedTaxonPosition !== undefined ? 'the ' + taxa.find((t) => t.position === selectedTaxonPosition)?.name : 'the'} select box to use it with this engagement.`,
-                                bold: false,
-                            },
-                        ]}
+                        subText={
+                            <Grid size={12}>
+                                <BodyText
+                                    sx={{ mb: 1 }}
+                                >{`Enter your new option here to add it to the list of options, then select it from ${selectedTaxonPosition !== undefined ? 'the ' + taxa.find((t) => t.position === selectedTaxonPosition)?.name : 'the'} select box to use it with this engagement.`}</BodyText>
+                            </Grid>
+                        }
                         placeholder="New value text"
                         handleConfirm={(value) => {
                             setError(undefined); // Reset errors every time user presses confirmation button in modal

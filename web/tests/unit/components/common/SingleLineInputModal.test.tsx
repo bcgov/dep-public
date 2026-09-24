@@ -10,7 +10,7 @@ describe('SingleLineInputModal component tests', () => {
     const defaultProps = {
         header: 'Test Header',
         subHeader: 'Test Sub Header',
-        subText: [{ text: 'Test description' }],
+        subText: <p>Test description</p>,
         handleConfirm,
         handleClose,
     };
