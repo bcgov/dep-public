@@ -9,7 +9,7 @@ import { BodyText, Heading1 } from 'components/common/Typography';
 import { StatusLabel } from '../create/authoring/StatusLabel';
 import { ROUTES } from 'routes/routes';
 
-export type engagementViewTab = 'config' | 'authoring' | 'activity' | 'files' | 'results' | 'publish';
+export type engagementViewTab = 'config' | 'authoring' | 'metadata' | 'files' | 'activity' | 'results' | 'publish';
 
 const AdminEngagementView = () => {
     const loaderData = useRouteLoaderData('single-engagement') as EngagementLoaderAdminData;
