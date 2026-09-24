@@ -1,5 +1,5 @@
 import { IconDefinition } from '@fortawesome/fontawesome-svg-core';
-import { ReactNode } from 'react';
+import { ReactElement, ReactNode } from 'react';
 
 export interface ModalSubtext {
     text: string;
@@ -17,6 +17,22 @@ export interface NotificationModalProps {
     handleClose?: () => void;
     cancelButtonText?: string;
     confirmButtonText?: string;
+}
+
+export interface SingleLineInputModalProps {
+    style?: 'default' | 'danger' | 'warning' | 'success';
+    icon?: IconDefinition;
+    header: string;
+    subHeader?: string;
+    subText: ReactElement;
+    subTextId?: string;
+    placeholder?: string;
+    handleConfirm?: (value: string) => void;
+    handleClose?: () => void;
+    cancelButtonText?: string;
+    confirmButtonText?: string;
+    validation?: boolean;
+    error?: string;
 }
 
 export interface ModalProps {
