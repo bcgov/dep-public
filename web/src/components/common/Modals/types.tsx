@@ -19,6 +19,22 @@ export interface NotificationModalProps {
     confirmButtonText?: string;
 }
 
+export interface SingleLineInputModalProps {
+    style?: 'default' | 'danger' | 'warning' | 'success';
+    icon?: IconDefinition;
+    header: string;
+    subHeader?: string;
+    subText: ModalSubtext[];
+    subTextId?: string;
+    placeholder?: string;
+    handleConfirm?: (value: string) => void;
+    handleClose?: () => void;
+    cancelButtonText?: string;
+    confirmButtonText?: string;
+    validation?: boolean;
+    error?: string;
+}
+
 export interface ModalProps {
     open: boolean;
     isSaving: boolean;

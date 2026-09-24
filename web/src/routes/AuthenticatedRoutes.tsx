@@ -180,6 +180,7 @@ const AuthenticatedRoutes = resolveLazyRouteTree(
                             path="metadata"
                             handle={{ crumb: () => ({ name: 'Metadata' }) }}
                             ComponentLazy={() => import('engagements/admin/view/MetadataTab')}
+                            actionLazy={() => import('engagements/admin/view/metadataAction')}
                         />
                         <LazyRoute
                             path="activity"

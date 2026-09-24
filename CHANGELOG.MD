@@ -1,3 +1,10 @@
+## September 24, 2026
+
+- **Feature** Created the engagement metadata tab. [🎟️ DEP-365](https://citz-gdx.atlassian.net/browse/DEP-365)
+  - Includes all taxon types and conditions
+  - List respects order from metadata management view
+  - Custom values are input via a modal dialog
+
 ## September 10, 2026
 
 - **Feature** Implemented new layout system in all engagement components, including description, details tabs, hero, subscribe, survey, and suggested engagements. The preview control bar, internal header, and public header were also updated to match. [🎟️ DEP-329](https://citz-gdx.atlassian.net/browse/DEP-329)
