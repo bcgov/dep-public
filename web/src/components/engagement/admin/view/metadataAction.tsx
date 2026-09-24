@@ -4,9 +4,9 @@ import { bulkPatchEngagementMetadata, patchMetadataTaxon } from 'services/engage
 export const metadataAction: ActionFunction = async ({ request }) => {
     const formData = (await request.formData()) as FormData;
     const engagementId = Number(formData.get('engagement_id'));
-    if (isNaN(engagementId)) return 'failure';
+    if (Number.isNaN(engagementId)) return 'failure';
 
-    // Update custom values (optional)
+    // Update custom values
     if (formData.get('custom_values')) {
         try {
             const customValues = JSON.parse(formData.get('custom_values') as string) as {
@@ -14,13 +14,15 @@ export const metadataAction: ActionFunction = async ({ request }) => {
                 value: string[];
             }[];
             if (Array.isArray(customValues) && customValues.length > 0) {
-                const customValuePromiseArray = customValues
-                    .map((cv) => {
-                        if ((!cv.taxon_id && cv.taxon_id !== 0) || cv.value?.length === 0) return;
-                        return patchMetadataTaxon(cv.taxon_id, { preset_values: cv.value });
-                    })
-                    .filter(Boolean);
-                await Promise.all(customValuePromiseArray);
+                const customValuePromises = customValues
+                    .filter((cv) => (cv.taxon_id || cv.taxon_id === 0) && cv.value?.length > 0)
+                    .map((cv) =>
+                        patchMetadataTaxon(cv.taxon_id, {
+                            preset_values: cv.value,
+                        }),
+                    );
+
+                await Promise.all(customValuePromises);
             }
         } catch (e) {
             console.error('Error updating custom metadata options', e);

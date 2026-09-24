@@ -99,8 +99,8 @@ const SingleLineInputModal = ({
                     </Grid>
                 )}
                 <Grid container id={subTextId ?? undefined} direction="row" size={12} sx={{ mt: '1em' }}>
-                    {subText.map((subtext, index) => (
-                        <Grid key={index} size={12}>
+                    {subText.map((subtext) => (
+                        <Grid key={subtext.text} size={12}>
                             <BodyText bold={subtext.bold} sx={{ mb: 1 }}>
                                 {subtext.text}
                             </BodyText>
@@ -134,7 +134,7 @@ const SingleLineInputModal = ({
                             <Button
                                 variant="primary"
                                 color={style}
-                                onClick={() => handleConfirm && handleConfirm(value)}
+                                onClick={() => handleConfirm?.(value)}
                                 type="submit"
                             >
                                 {confirmButtonText}

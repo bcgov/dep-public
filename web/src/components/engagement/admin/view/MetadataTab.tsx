@@ -150,7 +150,7 @@ export const MetadataTab = () => {
                         : m;
                     // Filter out default values and normalize values to strings
                     if (Array.isArray(values) && values.length > 0) {
-                        values = values.filter((md) => !filterValues.includes(String(md))).map((v) => String(v));
+                        values = values.filter((md) => !filterValues.includes(String(md))).map(String);
                         if (values.length === 0) return; // Protect against empty array
                     } else {
                         values = [String(values)]; // Normalize to string type within array
@@ -229,101 +229,108 @@ export const MetadataTab = () => {
             <Form onSubmit={engMetaForm.handleSubmit(submitForm)} id="publishing-form">
                 <Grid container gap="0" sx={metaContainerStyles}>
                     {taxa.length > 0 &&
-                        taxa?.map((taxon: MetadataTaxon) => (
-                            <Grid container direction="column" py={2} key={taxon.id}>
-                                <Box component="label" htmlFor="publish_date" sx={labelStyles}>
-                                    <BodyText bold>{taxon.name}</BodyText>
-                                    <BodyText size="small">
-                                        {metadataTypes.find((mdt) => mdt.db_name === taxon.data_type)?.readable_name}{' '}
-                                        data type
-                                        {selectDataTypes.includes(String(taxon.data_type))
-                                            ? `, ${taxon.one_per_engagement ? 'single' : 'multiple'} 
-                                        selection, pre-defined ${taxon.freeform ? ' and custom' : ' '} options`
-                                            : ''}
-                                    </BodyText>
-                                </Box>
-                                <Controller
-                                    control={engMetaForm.control}
-                                    name={`metadata.${taxon.position}`}
-                                    render={({ field }) => (
-                                        <Switch>
-                                            <Case condition={selectDataTypes.includes(taxon.data_type as string)}>
-                                                <MetadataSelect
-                                                    taxa={taxa}
-                                                    taxon={taxon}
-                                                    value={field.value as string[]}
-                                                    onChange={field.onChange}
-                                                    customValues={customValues}
-                                                    setCustomValues={setCustomValues}
-                                                />
-                                            </Case>
-                                            <Case condition={taxon.data_type === 'long_text'}>
-                                                <TextField
-                                                    multiline={true}
-                                                    minRows={4}
-                                                    value={String(field.value)}
-                                                    onChange={field.onChange}
-                                                    sx={{
-                                                        '& .MuiOutlinedInput-root': {
-                                                            borderRadius: '8px',
-                                                        },
-                                                    }}
-                                                />
-                                            </Case>
-                                            <Case condition={taxon.data_type === 'date'}>
-                                                <DatePicker
-                                                    value={dayjs(String(field.value))}
-                                                    onChange={field.onChange}
-                                                    sx={dateAndTimeStyles}
-                                                    slotProps={{
-                                                        textField: {
-                                                            error: false,
-                                                            helperText: null,
-                                                        },
-                                                    }}
-                                                />
-                                            </Case>
-                                            <Case condition={taxon.data_type === 'time'}>
-                                                <TimePicker
-                                                    value={dayjs(String(field.value))}
-                                                    onChange={field.onChange}
-                                                    sx={dateAndTimeStyles}
-                                                    slotProps={{
-                                                        textField: {
-                                                            error: false,
-                                                            helperText: null,
-                                                        },
-                                                    }}
-                                                />
-                                            </Case>
-                                            <Case condition={taxon.data_type === 'datetime'}>
-                                                <DateTimePicker
-                                                    value={dayjs(String(field.value))}
-                                                    onChange={field.onChange}
-                                                    sx={dateAndTimeStyles}
-                                                    slotProps={{
-                                                        textField: {
-                                                            error: false,
-                                                            helperText: null,
-                                                        },
-                                                    }}
-                                                />
-                                            </Case>
-                                            <Case condition={taxon.data_type === 'boolean'}>
-                                                <span>
-                                                    False{' '}
-                                                    <MUISwitch
-                                                        checked={String(field.value) === 'true'}
-                                                        onChange={(e) => field.onChange(String(e.target.checked))}
-                                                    />{' '}
-                                                    True
-                                                </span>
-                                            </Case>
-                                        </Switch>
-                                    )}
-                                />
-                            </Grid>
-                        ))}
+                        taxa?.map((taxon: MetadataTaxon) => {
+                            const selectionType = taxon.one_per_engagement ? 'single' : 'multiple';
+                            const optionType = taxon.freeform ? ' and custom' : '';
+                            return (
+                                <Grid container direction="column" py={2} key={taxon.id}>
+                                    <Box component="label" htmlFor="publish_date" sx={labelStyles}>
+                                        <BodyText bold>{taxon.name}</BodyText>
+                                        <BodyText size="small">
+                                            {
+                                                metadataTypes.find((mdt) => mdt.db_name === taxon.data_type)
+                                                    ?.readable_name
+                                            }{' '}
+                                            data type
+                                            {selectDataTypes.includes(String(taxon.data_type))
+                                                ? `, ${selectionType}
+                                            selection, pre-defined${optionType} options`
+                                                : ''}
+                                        </BodyText>
+                                    </Box>
+                                    <Controller
+                                        control={engMetaForm.control}
+                                        name={`metadata.${taxon.position}`}
+                                        render={({ field }) => (
+                                            <Switch>
+                                                <Case condition={selectDataTypes.includes(taxon.data_type as string)}>
+                                                    <MetadataSelect
+                                                        taxa={taxa}
+                                                        taxon={taxon}
+                                                        value={field.value as string[]}
+                                                        onChange={field.onChange}
+                                                        customValues={customValues}
+                                                        setCustomValues={setCustomValues}
+                                                    />
+                                                </Case>
+                                                <Case condition={taxon.data_type === 'long_text'}>
+                                                    <TextField
+                                                        multiline={true}
+                                                        minRows={4}
+                                                        value={String(field.value)}
+                                                        onChange={field.onChange}
+                                                        sx={{
+                                                            '& .MuiOutlinedInput-root': {
+                                                                borderRadius: '8px',
+                                                            },
+                                                        }}
+                                                    />
+                                                </Case>
+                                                <Case condition={taxon.data_type === 'date'}>
+                                                    <DatePicker
+                                                        value={dayjs(String(field.value))}
+                                                        onChange={field.onChange}
+                                                        sx={dateAndTimeStyles}
+                                                        slotProps={{
+                                                            textField: {
+                                                                error: false,
+                                                                helperText: null,
+                                                            },
+                                                        }}
+                                                    />
+                                                </Case>
+                                                <Case condition={taxon.data_type === 'time'}>
+                                                    <TimePicker
+                                                        value={dayjs(String(field.value))}
+                                                        onChange={field.onChange}
+                                                        sx={dateAndTimeStyles}
+                                                        slotProps={{
+                                                            textField: {
+                                                                error: false,
+                                                                helperText: null,
+                                                            },
+                                                        }}
+                                                    />
+                                                </Case>
+                                                <Case condition={taxon.data_type === 'datetime'}>
+                                                    <DateTimePicker
+                                                        value={dayjs(String(field.value))}
+                                                        onChange={field.onChange}
+                                                        sx={dateAndTimeStyles}
+                                                        slotProps={{
+                                                            textField: {
+                                                                error: false,
+                                                                helperText: null,
+                                                            },
+                                                        }}
+                                                    />
+                                                </Case>
+                                                <Case condition={taxon.data_type === 'boolean'}>
+                                                    <span>
+                                                        False{' '}
+                                                        <MUISwitch
+                                                            checked={String(field.value) === 'true'}
+                                                            onChange={(e) => field.onChange(String(e.target.checked))}
+                                                        />{' '}
+                                                        True
+                                                    </span>
+                                                </Case>
+                                            </Switch>
+                                        )}
+                                    />
+                                </Grid>
+                            );
+                        })}
                 </Grid>
                 <Grid container gap="1rem">
                     <Button
@@ -407,7 +414,7 @@ const MetadataSelect = ({
             return false;
         }
         // Number validation
-        if (matching?.db_name === 'number' && isNaN(Number(value))) {
+        if (matching?.db_name === 'number' && Number.isNaN(Number(value))) {
             setError(errorPrefix + 'The type of your option must be a number.');
             return false;
         }
