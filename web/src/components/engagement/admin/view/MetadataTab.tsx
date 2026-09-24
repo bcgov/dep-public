@@ -171,7 +171,7 @@ export const MetadataTab = () => {
                     const oldValues = [...(matching.preset_values || [])];
                     const iteratedValues = [...(customOptions[i]?.value || [])]; // Other custom values on same taxon
                     const newValues = [...new Set([...oldValues, ...iteratedValues, ...cv])]; // No duplicates
-                    customOptions[i] = { value: newValues, taxon_id: matching.id };
+                    customOptions.push({ value: newValues, taxon_id: matching.id });
                 }
             });
             fetcher.submit(

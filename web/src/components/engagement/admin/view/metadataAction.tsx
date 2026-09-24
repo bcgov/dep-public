@@ -15,7 +15,7 @@ export const metadataAction: ActionFunction = async ({ request }) => {
             }[];
             if (Array.isArray(customValues) && customValues.length > 0) {
                 const customValuePromises = customValues
-                    .filter((cv) => (cv.taxon_id || cv.taxon_id === 0) && cv.value?.length > 0)
+                    .filter((cv) => cv != null && (cv.taxon_id || cv.taxon_id === 0) && cv.value?.length > 0)
                     .map((cv) =>
                         patchMetadataTaxon(cv.taxon_id, {
                             preset_values: cv.value,
