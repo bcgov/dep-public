@@ -16,7 +16,6 @@ from api.schemas.engagement import EngagementSchema
 from api.schemas.survey import SurveySchema
 from api.services import authorization
 from api.services.membership_service import MembershipService
-from api.services.object_storage_service import ObjectStorageService
 from api.services.report_setting_service import REPORT_COMPONENT_TYPES, ReportSettingService
 from api.utils.roles import Role
 
@@ -58,9 +57,6 @@ class SurveyService:
                 one_of_roles=one_of_roles, engagement_id=eng_id)
 
         survey = SurveySchema().dump(survey_model)
-        if engagement_banner_filename := (survey.get('engagement') or {}).get('banner_filename'):
-            survey['engagement']['banner_url'] = ObjectStorageService().get_url(
-                engagement_banner_filename)
         return survey
 
     @classmethod
@@ -71,8 +67,6 @@ class SurveyService:
             survey_model.engagement_id)
         survey = SurveySchema().dump(survey_model)
         eng = EngagementSchema().dump(engagement_model)
-        eng['banner_url'] = ObjectStorageService().get_url(
-            engagement_model.banner_filename)
         survey['engagement'] = eng
         return survey
 
@@ -138,7 +132,8 @@ class SurveyService:
                 if (types is None or component.get('type') in types) and \
                    (input_types is None or component.get('inputType') in input_types):
                     component_copy = {**component}
-                    component_copy.pop('components', None)  # Remove nested components to avoid duplication
+                    # Remove nested components to avoid duplication
+                    component_copy.pop('components', None)
                     components.append(component_copy)
                 if 'components' in component:
                     recursive_extract(component['components'])
@@ -220,9 +215,11 @@ class SurveyService:
 
         updated_survey = SurveyModel.update_survey(data)
         form_json = updated_survey.form_json
-        form_components = cls.extract_components(form_json, types=[t.value for t in REPORT_COMPONENT_TYPES])
+        form_components = cls.extract_components(
+            form_json, types=[t.value for t in REPORT_COMPONENT_TYPES])
 
-        ReportSettingService.refresh_report_setting(updated_survey.id, form_components)
+        ReportSettingService.refresh_report_setting(
+            updated_survey.id, form_components)
 
         return updated_survey
 

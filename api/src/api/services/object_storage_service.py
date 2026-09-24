@@ -72,8 +72,11 @@ class ObjectStorageService:
 
     def generate_unique_filename(self, filename: str):
         """Return a unique filename preserving the original extension."""
-        filenamesplittext = os.path.splitext(filename)
-        return f'{uuid.uuid4()}{filenamesplittext[1]}'
+        # get the last part of the filename, the extension (including the dot)
+        # or an empty string if there is no extension
+        extension = os.path.splitext(filename)[-1]
+        # and append it to a generated UUID
+        return f'{uuid.uuid4()}{extension}'
 
     def build_public_upload_key(self, tenant_id: int, survey_id: int, verification_id: int, filename: str):
         """Build an object key for a public survey upload."""
@@ -133,8 +136,7 @@ class ObjectStorageService:
                 raise ValueError('filename is required')
             uniquefilename = self.generate_unique_filename(filename)
 
-            s3uri = s3sourceuri if s3sourceuri is not None else self.get_url(
-                uniquefilename)
+            s3uri = s3sourceuri or self.get_url(uniquefilename)
 
             if s3sourceuri is None:
                 response = requests.put(
@@ -145,6 +147,6 @@ class ObjectStorageService:
             file['filepath'] = s3uri
             file['authheader'] = response.request.headers['Authorization']
             file['amzdate'] = response.request.headers['x-amz-date']
-            file['uniquefilename'] = uniquefilename if s3sourceuri is None else ''
+            file['uniquefilename'] = uniquefilename if not s3sourceuri else ''
 
         return documents

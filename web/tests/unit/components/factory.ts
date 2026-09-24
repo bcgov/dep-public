@@ -101,6 +101,17 @@ const openEngagement = {
     },
 };
 
+const mockUploadedFile = {
+    id: 'a11718dc-75f4-4495-80c9-71571bfdb621',
+    filename: 'test.zip',
+    name: 'test.zip',
+    size: 12345,
+    mimetype: 'application/zip',
+    url: 'https://example.com/test.zip',
+    unique_filename: 'a11718dc-75f4-4495-80c9-71571bfdb621.zip',
+    path: '/a11718dc-75f4-4495-80c9-71571bfdb621.zip',
+};
+
 const mockEventItem: EventItem = {
     id: 1,
     event_name: 'event name',
@@ -241,7 +252,8 @@ const mockImage: ImageWidget = {
     id: 1,
     widget_id: 1,
     engagement_id: 1,
-    image_url: 'https://image.url',
+    file_id: 'a11718dc-75f4-4495-80c9-71571bfdb621',
+    file: mockUploadedFile,
     alt_text: 'Image alt text',
     description: 'Image description',
 };

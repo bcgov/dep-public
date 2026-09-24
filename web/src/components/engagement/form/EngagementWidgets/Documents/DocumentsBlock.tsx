@@ -13,7 +13,7 @@ const DocumentsBlock = () => {
         const { source, destination, type } = dropResult;
 
         // Check if the item was dropped outside a droppable area or into a different droppable area
-        if (!destination || source.droppableId !== destination.droppableId || !widget) {
+        if (source.droppableId !== destination?.droppableId || !widget) {
             return;
         }
 

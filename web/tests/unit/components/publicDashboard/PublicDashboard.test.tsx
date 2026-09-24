@@ -80,9 +80,16 @@ jest.mock('components/publicDashboard/SurveyBarPrintable', () => {
     return () => React.createElement('div', null, 'Survey Bar Printable');
 });
 
-jest.mock('maplibre-gl/dist/maplibre-gl', () => ({
-    Map: () => ({}),
-}));
+jest.mock(
+    'maplibre-gl',
+    () => ({
+        Map: () => ({}),
+        setWorkerUrl: () => {
+            /* noop */
+        },
+    }),
+    { virtual: true },
+);
 
 jest.mock('react-redux', () => ({
     ...jest.requireActual('react-redux'),

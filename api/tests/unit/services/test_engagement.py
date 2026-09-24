@@ -24,6 +24,7 @@ from werkzeug.exceptions import Forbidden
 from api.constants.engagement_status import Status
 from api.models import db
 from api.models.engagement import Engagement
+from api.models.engagement_file import EngagementFile
 from api.models.engagement_translation import EngagementTranslation
 from api.models.language import Language
 from api.services import authorization
@@ -33,7 +34,7 @@ from api.utils.roles import Role
 from tests.utilities.factory_scenarios import TestEngagementInfo, TestJwtClaims
 from tests.utilities.factory_utils import (
     factory_engagement_model, factory_membership_model, factory_staff_user_model, factory_tenant_model,
-    factory_user_group_membership_model, patch_token_info, set_global_tenant)
+    factory_uploaded_file_model, factory_user_group_membership_model, patch_token_info, set_global_tenant)
 
 
 fake = Faker()
@@ -54,7 +55,8 @@ def test_create_engagement(session, monkeypatch):  # pylint:disable=unused-argum
     assert fetched_engagement.get('id') == saved_engagament.id
     assert fetched_engagement.get('name') == engagement_data.get('name')
     assert fetched_engagement.get('description') is None
-    assert fetched_engagement.get('start_date')  # TODO address date format and assert
+    # TODO address date format and assert
+    assert fetched_engagement.get('start_date')
     assert fetched_engagement.get('end_date')
 
 
@@ -72,7 +74,8 @@ def test_create_engagement_with_survey_block(session, monkeypatch):  # pylint:di
     assert fetched_engagement.get('id') == saved_engagament.id
     assert fetched_engagement.get('name') == engagement_data.get('name')
     assert fetched_engagement.get('description') is None
-    assert fetched_engagement.get('start_date')  # TODO address date format and assert
+    # TODO address date format and assert
+    assert fetched_engagement.get('start_date')
     assert fetched_engagement.get('end_date')
 
 
@@ -184,6 +187,36 @@ def test_patch_engagement(session, monkeypatch):  # pylint:disable=unused-argume
             date_format) == engagement_edits.get('end_date')
         assert updated_engagement_record.created_date.strftime(
             date_format) == engagement_edits.get('created_date')
+
+
+def test_replacing_banner_file_retires_previous_engagement_file(session, monkeypatch):
+    """Replacing a banner file records removal details for the old file."""
+    tenant = factory_tenant_model()
+    engagement = factory_engagement_model(
+        {**TestEngagementInfo.engagement1, 'tenant_id': tenant.id})
+    previous_file = factory_uploaded_file_model(tenant.id)
+    replacement_file = factory_uploaded_file_model(tenant.id)
+    engagement.banner_file_id = previous_file.id
+    previous_association = EngagementFile(
+        engagement_id=engagement.id, file_id=previous_file.id)
+    replacement_association = EngagementFile(
+        engagement_id=engagement.id, file_id=replacement_file.id)
+    session.add_all([previous_association, replacement_association])
+    session.commit()
+    monkeypatch.setattr(
+        'api.services.engagement_file_service.TokenInfo.get_id', lambda: 'editor-id')
+
+    with patch.object(authorization, 'check_auth', return_value=True):
+        EngagementService.edit_engagement({
+            'id': engagement.id,
+            'banner_file_id': replacement_file.id,
+        })
+
+    session.refresh(previous_association)
+    session.refresh(replacement_association)
+    assert previous_association.removed_at is not None
+    assert previous_association.removed_by == 'editor-id'
+    assert replacement_association.removed_at is None
 
 
 def test_patch_engagement_syncs_translation_languages(session, monkeypatch):  # pylint:disable=unused-argument

@@ -20,6 +20,7 @@ from flask_restx import Namespace, Resource, fields
 
 from api.auth import jwt as _jwt
 from api.exceptions.business_exception import BusinessException
+from api.models.db import db
 from api.schemas.widget_image import WidgetImageSchema
 from api.services.widget_image_service import WidgetImageService
 from api.utils.util import allowedorigins, cors_preflight
@@ -33,7 +34,7 @@ API = Namespace('widget_images',
 image_creation_model = API.model(
     'ImageCreation',
     {
-        'image_url': fields.String(description='The URL of the image', required=True),
+        'file_id': fields.String(description='The ID of the image file', required=True),
         'alt_text': fields.String(description='The alt text for the image'),
         'description': fields.String(description='The description of the image'),
     },
@@ -42,7 +43,7 @@ image_creation_model = API.model(
 image_update_model = API.model(
     'ImageUpdate',
     {
-        'image_url': fields.String(description='The URL of the image'),
+        'file_id': fields.String(description='The ID of the image file'),
         'alt_text': fields.String(description='The alt text for the image'),
         'description': fields.String(description='The description of the image'),
     },
@@ -94,7 +95,7 @@ class Image(Resource):
         """Update image widget."""
         request_json = request.get_json()
         try:
-            WidgetImageSchema(partial=True).load(request_json)
+            WidgetImageSchema().load(request_json, partial=True, session=db.session)
             widget_image = WidgetImageService().update_image(
                 widget_id, image_widget_id, request_json
             )

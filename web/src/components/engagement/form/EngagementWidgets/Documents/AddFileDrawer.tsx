@@ -22,6 +22,7 @@ import {
     getEngagementContentTranslationsByCode,
     syncEngagementContentTranslationsByCode,
 } from 'services/engagementContentTranslationService';
+import { Link } from 'components/common/Navigation';
 
 const schema = yup
     .object({
@@ -39,7 +40,7 @@ const AddFileDrawer = () => {
         useContext(DocumentsContext);
     const { languageCode } = useParams<{ languageCode?: string }>();
     const activeLanguageCode = (languageCode ?? 'en').toLowerCase();
-    const [isCreatingFile, setIsCreatingDocument] = useState(false);
+    const [isCreatingFile, setIsCreatingFile] = useState(false);
     const parentDocument = documents.find(
         (document: DocumentItem) => document.id === documentToEdit?.parent_document_id,
     );
@@ -69,12 +70,15 @@ const AddFileDrawer = () => {
         if (!(documentToEdit && widget)) {
             return;
         }
-        setIsCreatingDocument(true);
-        const documentEditsToPatch = updatedDiff(documentToEdit, {
-            title: activeLanguageCode === 'en' ? data.name : documentToEdit.title,
-            parent_document_id: data.folderId === 0 ? null : data.folderId,
-            url: data.link,
-        }) as PatchDocumentRequest;
+        setIsCreatingFile(true);
+        const documentEditsToPatch = updatedDiff(
+            { ...documentToEdit, parent_document_id: documentToEdit?.parent_document_id ?? null },
+            {
+                title: activeLanguageCode === 'en' ? data.name : documentToEdit.title,
+                parent_document_id: data.folderId === 0 ? null : data.folderId,
+                url: data.link,
+            },
+        ) as PatchDocumentRequest;
         if (Object.values(documentEditsToPatch).length > 0) {
             await patchDocument(widget.id, documentToEdit.id, {
                 ...documentEditsToPatch,
@@ -85,7 +89,7 @@ const AddFileDrawer = () => {
                 widget.engagement_id,
                 activeLanguageCode,
             );
-            const existingTranslation = existingContentTranslations.documents_widgets.find(
+            const existingTranslation = existingContentTranslations.documents_widgets.some(
                 (translation) => translation.widget_documents_id === documentToEdit.id,
             );
             const nextTranslations = existingTranslation
@@ -113,7 +117,7 @@ const AddFileDrawer = () => {
             }),
         );
         await loadDocuments();
-        setIsCreatingDocument(false);
+        setIsCreatingFile(false);
         handleClose();
     };
 
@@ -121,7 +125,7 @@ const AddFileDrawer = () => {
         if (!widget) {
             return;
         }
-        setIsCreatingDocument(true);
+        setIsCreatingFile(true);
         await postDocument(widget.id, {
             title: data.name,
             parent_document_id: data.folderId === 0 ? null : data.folderId,
@@ -137,7 +141,7 @@ const AddFileDrawer = () => {
             }),
         );
         await loadDocuments();
-        setIsCreatingDocument(false);
+        setIsCreatingFile(false);
         handleClose();
     };
 
@@ -179,29 +183,51 @@ const AddFileDrawer = () => {
                         padding="2em"
                     >
                         <Grid size={12}>
-                            <Heading3 bold>{documentToEdit ? 'Edit File' : 'Add File'}</Heading3>
+                            <Heading3 bold>{documentToEdit ? 'Edit Document' : 'Add Document'}</Heading3>
                             <Divider sx={{ marginTop: '1em' }} />
                         </Grid>
 
-                        <Grid size={12} container direction="row" spacing={2}>
-                            <Grid size={12}>
-                                <BodyText bold mb="2px">
-                                    Link
-                                </BodyText>
-                                <ControlledTextField
-                                    name="link"
-                                    id="document-link"
-                                    data-testid="document-form/link"
-                                    size="small"
-                                    disabled={documentToEdit?.is_uploaded}
-                                />
-                            </Grid>
+                        <Grid
+                            size={12}
+                            container
+                            direction="column"
+                            display={documentToEdit?.is_uploaded ? 'none' : undefined}
+                            spacing={2}
+                        >
+                            <BodyText bold mb="2px">
+                                Link
+                            </BodyText>
+                            <ControlledTextField
+                                name="link"
+                                id="document-link"
+                                data-testid="document-form/link"
+                                size="small"
+                                disabled={documentToEdit?.is_uploaded}
+                            />
+                        </Grid>
+
+                        <Grid
+                            size={12}
+                            container
+                            direction="column"
+                            display={documentToEdit?.is_uploaded ? undefined : 'none'}
+                            spacing={2}
+                        >
+                            <BodyText mb={-2}>
+                                <b>Object storage asset:</b>{' '}
+                            </BodyText>
+                            <Link href={documentToEdit?.file?.url} target="_blank">
+                                {documentToEdit?.file?.unique_filename}
+                            </Link>
+                            <BodyText>
+                                <b>File name:</b> {documentToEdit?.file?.filename}
+                            </BodyText>
                         </Grid>
 
                         <Grid size={12} container direction="row" spacing={2}>
                             <Grid size={12}>
                                 <BodyText bold mb="2px">
-                                    Name
+                                    Name in Listing
                                 </BodyText>
                                 <ControlledTextField
                                     name="name"

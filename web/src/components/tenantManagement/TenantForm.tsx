@@ -6,7 +6,7 @@ import { BodyText } from 'components/common/Typography/';
 import ImageUpload from 'components/imageUpload';
 import { Tenant } from 'models/tenant';
 import { Controller, useForm, SubmitHandler } from 'react-hook-form';
-import { saveObject } from 'services/objectStorageService';
+import { uploadFile } from 'services/uploadedFileService';
 import { UploadGuidelines } from 'components/imageUpload/UploadGuidelines';
 import { Await, useRouteLoaderData } from 'react-router';
 import UnsavedWorkConfirmation from 'components/common/Navigation/UnsavedWorkConfirmation';
@@ -85,8 +85,8 @@ export const TenantForm = ({
             return savedBannerImageFileName;
         }
         try {
-            const savedDocumentDetails = await saveObject(bannerImage, { filename: bannerImage.name });
-            return savedDocumentDetails?.uniquefilename || '';
+            const savedDocumentDetails = await uploadFile(bannerImage, { filename: bannerImage.name });
+            return savedDocumentDetails?.unique_filename || '';
         } catch (error) {
             console.log(error);
             throw new Error('Error occurred during banner image upload');

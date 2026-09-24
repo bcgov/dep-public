@@ -37,7 +37,12 @@ export const AuthenticatedLayout = () => {
                             flexGrow: 1,
                             marginTop: { xs: '3.5em', md: '6.5em' },
                             width: '100%',
-                            overflowX: 'visible',
+                            overflowX: 'hidden',
+                            // Switch to visible overflow if form builder is
+                            // present - to preserve sticky behavior of the sidebar
+                            '&:has([ref="sidebar-groups"])': {
+                                overflowX: 'visible',
+                            },
                         }}
                     >
                         <Grid py="3em" px={{ xs: '1em', md: '1.5em', lg: '3em' }} container spacing={2}>

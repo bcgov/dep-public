@@ -1,7 +1,9 @@
 import React from 'react';
 import ReactMapGL, { Marker, NavigationControl, Source, Layer, MapLib } from 'react-map-gl/maplibre';
 import 'maplibre-gl/dist/maplibre-gl.css';
-import maplibregl, { type LayerSpecification } from 'maplibre-gl';
+import * as maplibregl from 'maplibre-gl';
+import { setWorkerUrl } from 'maplibre-gl';
+import type { LayerSpecification } from 'maplibre-gl';
 import { GeoJSON } from 'geojson';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faLocationDot } from '@fortawesome/pro-solid-svg-icons/faLocationDot';
@@ -9,6 +11,13 @@ import { BodyText } from 'components/common/Typography/Body';
 import { Stack } from '@mui/material';
 import { When } from 'react-if';
 import { colors, Palette } from 'styles/Theme';
+
+// maplibre-gl loads its worker from import.meta.url, which webpack rewrites to a
+// content-hashed asset path; the worker's own relative import of its shared chunk
+// doesn't get rewritten to match, so it 404s. CopyWebpackPlugin allows using both files
+// unhashed instead (see config/webpack.config.js) and we point the worker to these.
+const workerUrl = `${process.env.PUBLIC_URL}/maplibre-gl/maplibre-gl-worker.mjs`;
+setWorkerUrl(workerUrl);
 
 interface MapProps {
     latitude: number;

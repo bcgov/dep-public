@@ -1,7 +1,9 @@
-"""Widget schema class."""
-from marshmallow import post_dump
+"""Widget document schema class."""
+
+from marshmallow import fields
 
 from api.models.widget_documents import WidgetDocuments as WidgetDocumentModel
+from api.schemas.uploaded_file import UploadedFileSchema
 from api.services.object_storage_service import ObjectStorageService
 
 from .base_schema import BaseSchema
@@ -17,17 +19,30 @@ class WidgetDocumentsSchema(BaseSchema):
 
         model = WidgetDocumentModel
         include_fk = True
-        fields = ('id', 'title', 'type', 'parent_document_id', 'url', 'sort_index', 'is_uploaded')
+        include_relationships = True
+        fields = (
+            'id',
+            'title',
+            'type',
+            'parent_document_id',
+            'children',
+            'url',
+            'file_id',
+            'file',
+            'sort_index',
+            'is_uploaded'
+        )
 
-    @post_dump(pass_collection=True)
-    def _attach_document_url(self, data, many, **kwargs):
-        if not many:
-            if data.get('is_uploaded') and data.get('url'):
-                data['url'] = self._object_storage.get_url(data.get('url'))
-            return data
+    children = fields.Nested('WidgetDocumentsSchema', many=True)
+    file = fields.Nested(UploadedFileSchema, exclude=('status', 'uploaded_at'))
+    url = fields.Method('get_document_url', data_key='url')
 
-        for item in data:
-            if item.get('is_uploaded') and item.get('url'):
-                item['url'] = self._object_storage.get_url(item.get('url'))
-
-        return data
+    def get_document_url(self, obj):
+        """Generate a URL for the document file based on its file path or uploaded status."""
+        if not obj:
+            raise ValueError('Invalid object.')
+        if hasattr(obj, 'file') and obj.file:
+            return self._object_storage.get_url(obj.file.path)
+        if obj.is_uploaded and obj.url:
+            return self._object_storage.get_url(obj.url)
+        return obj.url

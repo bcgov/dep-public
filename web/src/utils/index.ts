@@ -28,6 +28,8 @@ export const downloadFile = (response: AxiosResponse<Blob, unknown>, filename: s
     link.setAttribute('download', filename);
     document.body.appendChild(link);
     link.click();
+    link.remove();
+    globalThis.URL.revokeObjectURL(url);
 };
 
 export const reorder = <T>(list: T[], startIndex: number, endIndex: number) => {
@@ -64,7 +66,7 @@ export const findTenantInPath = () => {
 // Convert hex color to RGB
 export const hexToRgb = (hex: string) => {
     hex = hex.replace('#', '');
-    const bigint = parseInt(hex.slice(1), 16);
+    const bigint = Number.parseInt(hex, 16);
     const r = (bigint >> 16) & 255;
     const g = (bigint >> 8) & 255;
     const b = bigint & 255;

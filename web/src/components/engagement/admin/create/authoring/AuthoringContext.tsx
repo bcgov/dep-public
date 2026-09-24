@@ -8,7 +8,7 @@ import { EngagementViewSections } from 'components/engagement/public/view';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useAppDispatch } from 'hooks';
 import { openNotification } from 'services/notificationService/notificationSlice';
-import { saveObject } from 'services/objectStorageService';
+import { uploadFile } from 'services/uploadedFileService';
 import { FormDetailsTab } from './types';
 import { AuthoringPreviewWindowProvider } from './AuthoringPreviewWindowContext';
 import { ROUTES, getPath } from 'routes/routes';
@@ -171,7 +171,7 @@ export interface EngagementUpdateData
     description: string;
     rich_description: string;
     description_title: string;
-    banner_filename: string;
+    banner_file_id: string;
     status_block: string[];
     title: string;
     icon_name: string;
@@ -206,7 +206,7 @@ export const defaultValuesObject = {
     description: '',
     rich_description: '',
     description_title: '',
-    banner_filename: '',
+    banner_file_id: '',
     status_block: [],
     title: '',
     icon_name: '',
@@ -363,7 +363,7 @@ export const AuthoringContext = () => {
     const onSubmit = useCallback(
         async (data: EngagementUpdateData) => {
             const savedImageDetails = data.image_file
-                ? await saveObject(data.image_file, { filename: data.image_file.name })
+                ? await uploadFile(data.image_file, { filename: data.image_file.name, engagement_id: data.id })
                 : undefined;
 
             fetcher.submit(
@@ -397,7 +397,7 @@ export const AuthoringContext = () => {
                     json_content: data.json_content,
                     form_source: data.form_source || '',
 
-                    banner_filename: savedImageDetails?.uniquefilename || '',
+                    banner_file_id: savedImageDetails?.id || '',
 
                     eyebrow: data.eyebrow || '',
                     upcoming_message: data.upcoming_message || '',

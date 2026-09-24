@@ -16,7 +16,7 @@ import ImageUpload from 'components/imageUpload';
 import { useAsyncValue, useParams } from 'react-router';
 import { ImageWidget } from 'models/imageWidget';
 import { Button, TextField } from 'components/common/Input';
-import { saveObject } from 'services/objectStorageService';
+import { uploadFile } from 'services/uploadedFileService';
 import { SystemMessage } from 'components/common/Layout/SystemMessage';
 import { When } from 'react-if';
 import {
@@ -59,10 +59,9 @@ const Form = () => {
             if (!imageWidget) {
                 return;
             }
-
             if (activeLanguageCode === 'en') {
                 setValue('description', imageWidget.description || '');
-                setValue('image_url', imageWidget.image_url);
+                setValue('image_url', imageWidget.file.url);
                 setValue('alt_text', imageWidget.alt_text || '');
                 return;
             }
@@ -76,7 +75,7 @@ const Form = () => {
             );
 
             setValue('description', imageTranslation?.description ?? imageWidget.description ?? '');
-            setValue('image_url', imageWidget.image_url);
+            setValue('image_url', imageWidget.file.url);
             setValue('alt_text', imageTranslation?.alt_text ?? imageWidget.alt_text ?? '');
         };
 
@@ -99,11 +98,16 @@ const Form = () => {
             return;
         }
         try {
-            const savedImage = await saveObject(previewImage, { filename: previewImage.name });
-            return savedImage?.uniquefilename || '';
+            const savedImage = await uploadFile(previewImage, {
+                filename: previewImage.name,
+                content_type: previewImage.type,
+                widget_id: widget.id,
+                engagement_id: widget.engagement_id,
+            });
+            return savedImage?.unique_filename || '';
         } catch (error) {
             console.error(error);
-            throw new Error('Error occurred during banner image upload');
+            throw new Error('Error occurred during image upload');
         }
     };
 
@@ -112,6 +116,7 @@ const Form = () => {
         const { alt_text, image_url, description } = validatedData;
         const createdImage = await postImage(widget.id, {
             widget_id: widget.id,
+            file_id: image_url.split('/').pop()!.split('.')[0],
             engagement_id: widget.engagement_id,
             image_url: image_url,
             alt_text: alt_text,
@@ -145,12 +150,12 @@ const Form = () => {
         const validatedData = await schema.validate(data);
         const updatedData = updatedDiff(
             {
-                image_url: imageWidget.image_url,
+                file_id: imageWidget.file_id,
                 alt_text: imageWidget.alt_text,
                 description: imageWidget.description,
             },
             {
-                image_url: validatedData.image_url,
+                file_id: validatedData.image_url.split('/').pop()!.split('.')[0],
                 alt_text: validatedData.alt_text,
                 description: validatedData.description,
             },
@@ -165,10 +170,10 @@ const Form = () => {
         } else {
             const structuralUpdates = updatedDiff(
                 {
-                    image_url: imageWidget.image_url,
+                    file_id: imageWidget.file_id,
                 },
                 {
-                    image_url: validatedData.image_url,
+                    file_id: validatedData.image_url.split('/').pop()!.split('.')[0],
                 },
             );
 

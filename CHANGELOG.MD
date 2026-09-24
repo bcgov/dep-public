@@ -5,9 +5,38 @@
   - List respects order from metadata management view
   - Custom values are input via a modal dialog
 
+## September 21, 2026
+
+- **Feature** Updated file management functionalities in the engagement Files tab. [🎟️ DEP-358](https://citz-gdx.atlassian.net/browse/DEP-358)
+  - Added Rename functionality for files in the engagement Files tab.
+  - Added ability to Unlink files from their associated locations.
+  - Added ability to Delete files (after they have been unlinked from their associated locations)
+    - Deleted files are removed from the object storage system, but the database records are retained for auditing purposes, marked with a `deleted_at` timestamp.
+
+## September 17, 2026
+
+- **Feature** Added file tracking + auditing [🎟️ DEP-356](https://citz-gdx.atlassian.net/browse/DEP-356)
+  - Implemented backend logic to track and audit file changes.
+  - Added UploadedFile model to represent generic uploaded files.
+  - Added EngagementFile association table to hold engagement and optionally widget information.
+  - Modified document storage upload authorization endpoint so that all future files will have references stored in the database associated to their tenant.
+  - Built additional tracking into the following areas:
+    - Hero banner - engagement association is stored
+    - Image widget and Document widget: engagement and widget association are stored
+    - This way, we can see which files were associated with which resources even if they are no longer in use by those resources.
+  - Integrated file tracking and auditing into the web app. All endpoints now support basic file tracking, and the areas mentioned above properly submit engagement and widget associations when applicable.
+  - Remove dummy file information from engagment Files tab and replace it with actual tracked file data.
+  - Added simple file management functionalities (preview, download, copy link) to the engagement Files tab (more later).
+
 ## September 10, 2026
 
 - **Feature** Implemented new layout system in all engagement components, including description, details tabs, hero, subscribe, survey, and suggested engagements. The preview control bar, internal header, and public header were also updated to match. [🎟️ DEP-329](https://citz-gdx.atlassian.net/browse/DEP-329)
+
+## September 4, 2026
+
+- **Feature** Added engagement file management tab skeleton [🎟️ DEP-355](https://citz-gdx.atlassian.net/browse/DEP-355)
+  - Added a new Files tab to the engagement management pages according to the Figma sketch.
+  - Added a table with dummy data to display the structure of the files tab.
 
 ## September 1, 2026
 

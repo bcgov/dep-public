@@ -69,7 +69,7 @@ export const Select: React.FC<SelectProps & Omit<MuiSelectProps, 'value' | 'onCh
     const customColor = colors.button[color as keyof typeof colors.button]?.shade ?? color;
     const bgColor = customColor;
     const darkBgColor = `color-mix(in srgb, ${bgColor}, black 20%)`;
-    const textColors = isDarkColor(bgColor, 0.4) ? colors.type.inverted : colors.type.regular;
+    const textColors = isDarkColor(bgColor, 0.5) ? colors.type.inverted : colors.type.regular;
 
     return (
         <MuiSelect

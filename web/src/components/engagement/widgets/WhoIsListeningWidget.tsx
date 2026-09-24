@@ -146,7 +146,14 @@ const WhoIsListeningWidget = ({ widget }: WhoIsListeningWidgetProps) => {
                                     </BodyText>
                                 </Grid>
                             </When>
-                            <Grid mt="0.75rem" container justifyContent="flex-start" alignItems="center" size={12}>
+                            <Grid
+                                mt="0.75rem"
+                                container
+                                justifyContent="flex-start"
+                                alignItems="center"
+                                size={12}
+                                color="text.primary"
+                            >
                                 <FontAwesomeIcon
                                     style={{ fontSize: '1rem' }}
                                     icon={faEnvelope}
@@ -156,7 +163,13 @@ const WhoIsListeningWidget = ({ widget }: WhoIsListeningWidgetProps) => {
                                     {' ' + contact.email}
                                 </Link>
                             </Grid>
-                            <Grid container justifyContent="flex-start" alignItems="center" size={12}>
+                            <Grid
+                                container
+                                justifyContent="flex-start"
+                                alignItems="center"
+                                size={12}
+                                color="text.primary"
+                            >
                                 <When condition={Boolean(contact.phone_number)}>
                                     <FontAwesomeIcon
                                         style={{ fontSize: '1rem' }}

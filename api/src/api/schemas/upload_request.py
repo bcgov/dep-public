@@ -1,9 +1,9 @@
-"""Document schema class."""
+"""Upload request schema class."""
 from marshmallow import EXCLUDE, Schema, fields
 
 
-class Document(Schema):
-    """Document schema class."""
+class UploadRequestSchema(Schema):
+    """Request schema for preparing an UploadedFile, combining fields from several asset types for convenience."""
 
     class Meta:
         """Exclude unknown fields in the deserialized output."""
@@ -15,3 +15,6 @@ class Document(Schema):
     authheader = fields.Str(data_key='authheader', allow_none=True)
     amzdate = fields.Str(data_key='amzdate', allow_none=True)
     s3sourceuri = fields.Str(data_key='s3sourceuri', allow_none=True)
+    content_type = fields.Str(data_key='content_type', allow_none=True)
+    engagement_id = fields.Int(data_key='engagement_id', allow_none=True)
+    widget_id = fields.Int(data_key='widget_id', allow_none=True)

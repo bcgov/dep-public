@@ -31,6 +31,13 @@ const Uploader = ({ height = '10em', bgColor = 'blue.10', accept = {}, children 
         };
     }, []);
 
+    const acceptString = Object.keys(accept)
+        .map((key) => {
+            const value = accept?.[key];
+            if (!value || value.length === 0) return key;
+            return [value.join(','), key].join(',');
+        })
+        .join(', ');
     const existingImage = imgAfterCrop || addedImageFileUrl || existingImageUrl;
 
     if (existingImage) {
@@ -46,6 +53,7 @@ const Uploader = ({ height = '10em', bgColor = 'blue.10', accept = {}, children 
                     }}
                 >
                     <img
+                        alt="Preview of uploaded file"
                         data-testid="uploaded-image"
                         src={existingImage}
                         style={{
@@ -121,7 +129,7 @@ const Uploader = ({ height = '10em', bgColor = 'blue.10', accept = {}, children 
                             cursor: 'pointer',
                         }}
                     >
-                        <input {...getInputProps()} multiple={false} accept={'image/*'} />
+                        <input {...getInputProps()} multiple={false} accept={acceptString} />
                         {children}
                     </Grid>
                 </section>

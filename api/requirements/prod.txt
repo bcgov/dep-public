@@ -31,7 +31,6 @@ secure
 python-dotenv
 aws-requests-auth
 requests
-anytree
 geopandas
 awesome-slugify==1.6.5
 pytz==2026.1.post1

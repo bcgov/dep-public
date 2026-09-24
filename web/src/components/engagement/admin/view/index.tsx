@@ -9,30 +9,34 @@ import { BodyText, Heading1 } from 'components/common/Typography';
 import { StatusLabel } from '../create/authoring/StatusLabel';
 import { ROUTES } from 'routes/routes';
 
+export type engagementViewTab = 'config' | 'authoring' | 'activity' | 'files' | 'results' | 'publish';
+
 const AdminEngagementView = () => {
     const loaderData = useRouteLoaderData('single-engagement') as EngagementLoaderAdminData;
     const { engagementId } = useParams<{ engagementId: string }>();
 
-    const EngagementViewTabs = {
+    const EngagementViewTabs: Record<engagementViewTab, string> = {
         config: 'Configuration',
         authoring: 'Authoring',
         metadata: 'Metadata',
+        files: 'Files',
         activity: 'Activity',
         results: 'Results',
         publish: 'Publishing',
     };
 
-    const EngagementViewLinks = {
+    const EngagementViewLinks: Record<engagementViewTab, (typeof ROUTES)[keyof typeof ROUTES]> = {
         config: ROUTES.ENGAGEMENT_DETAILS_CONFIG,
         authoring: ROUTES.ENGAGEMENT_DETAILS_AUTHORING,
         metadata: ROUTES.ENGAGEMENT_DETAILS_METADATA,
+        files: ROUTES.ENGAGEMENT_DETAILS_FILES,
         activity: ROUTES.ENGAGEMENT_DETAILS_ACTIVITY,
         results: ROUTES.ENGAGEMENT_DETAILS_RESULTS,
         publish: ROUTES.ENGAGEMENT_DETAILS_PUBLISH,
     };
 
-    const getEngagementViewLink = (tab: string, engagementId: number) => {
-        const route = EngagementViewLinks[tab as keyof typeof EngagementViewLinks];
+    const getEngagementViewLink = (tab: engagementViewTab, engagementId: number) => {
+        const route = EngagementViewLinks[tab];
         return route ? route.replace(':engagementId', engagementId.toString()) : '';
     };
 
@@ -75,7 +79,7 @@ const AdminEngagementView = () => {
                             },
                         }}
                     >
-                        {Object.entries(EngagementViewTabs).map(([key, value]) => (
+                        {(Object.entries(EngagementViewTabs) as [engagementViewTab, string][]).map(([key, value]) => (
                             <Tab
                                 key={key}
                                 value={key}

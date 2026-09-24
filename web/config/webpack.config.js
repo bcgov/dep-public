@@ -16,6 +16,7 @@ const WorkboxWebpackPlugin = require('workbox-webpack-plugin');
 const ModuleScopePlugin = require('react-dev-utils/ModuleScopePlugin');
 const getCSSModuleLocalIdent = require('react-dev-utils/getCSSModuleLocalIdent');
 const ESLintPlugin = require('eslint-webpack-plugin');
+const CopyWebpackPlugin = require('copy-webpack-plugin');
 const paths = require('./paths');
 const modules = require('./modules');
 const getClientEnvironment = require('./env');
@@ -850,9 +851,40 @@ module.exports = function exports (webpackEnv) {
         process: 'process/browser',
         Buffer: ['buffer', 'Buffer'],
       }),
+      // maplibre-gl loads its worker via `new Worker(url)` with a runtime string, which
+      // webpack can't statically bundle. Vendor the worker and its sibling chunk under a
+      // stable, unhashed path so the worker's own relative import can resolve at runtime.
+      new CopyWebpackPlugin({
+        patterns: [
+          {
+            from: path.join(
+              paths.appNodeModules,
+              'maplibre-gl/dist/maplibre-gl-worker.mjs'
+            ),
+            to: 'maplibre-gl/maplibre-gl-worker.mjs',
+          },
+          {
+            from: path.join(
+              paths.appNodeModules,
+              'maplibre-gl/dist/maplibre-gl-shared.mjs'
+            ),
+            to: 'maplibre-gl/maplibre-gl-shared.mjs',
+          },
+        ],
+      }),
     ].filter(Boolean),
     // Turn off performance processing because we utilize
     // our own hints via the FileSizeReporter
     performance: false,
+    ignoreWarnings: [
+      {
+        // maplibre-gl loads its worker via `new Worker(url)` with a runtime string,
+        // which webpack can't statically bundle. We intentionally vendor that worker
+        // as a static asset instead (see the CopyWebpackPlugin config above), so this
+        // warning is expected and not actionable.
+        module: /maplibre-gl/,
+        message: /Critical dependency: the request of a dependency is an expression/,
+      },
+    ],
   };
 };

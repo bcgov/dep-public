@@ -1,12 +1,12 @@
 """Service for widget Document management."""
 from http import HTTPStatus
 
-from anytree import AnyNode
-from anytree.exporter import DictExporter
-from anytree.search import find_by_attr
-
 from api.exceptions.business_exception import BusinessException
+from api.models.db import db
+from api.models.widget import Widget as WidgetModel
 from api.models.widget_documents import WidgetDocuments as WidgetDocumentsModel
+from api.schemas.widget_documents import WidgetDocumentsSchema
+from api.services.engagement_file_service import EngagementFileService
 from api.services.object_storage_service import ObjectStorageService
 from api.utils.enums import WidgetDocumentType
 
@@ -20,50 +20,11 @@ class WidgetDocumentService:
     def get_documents_by_widget_id(widget_id):
         """Get documents by widget id."""
         docs = WidgetDocumentsModel.get_all_by_widget_id(widget_id)
+        docs = [doc for doc in docs if doc.parent_document_id is None]
         if not docs:
-            return {}
-        # create all folders structure
-        root = AnyNode()
-        WidgetDocumentService._attach_folder_nodes(docs, root)
-        WidgetDocumentService._attach_file_nodes(docs, root)
+            return []
 
-        exporter = DictExporter()
-        return exporter.export(root)
-
-    @staticmethod
-    def _attach_file_nodes(docs, root):
-        files = list(filter(lambda doc: doc.type == WidgetDocumentType.FILE.value, docs))
-        for file in files:
-            props = WidgetDocumentService._fetch_props(file)
-            parent_node = root
-            if parent_id := file.parent_document_id:
-                parent_node = find_by_attr(root, parent_id, name='id')
-            AnyNode(**props, parent=parent_node)
-
-    @staticmethod
-    def _attach_folder_nodes(docs, root):
-        folders = list(filter(lambda doc: doc.type == WidgetDocumentType.FOLDER.value, docs))
-        for folder in folders:
-            props = WidgetDocumentService._fetch_props(folder)
-            AnyNode(**props, parent=root)
-
-    @staticmethod
-    def _fetch_props(doc):
-        document_url = doc.url
-        if doc.is_uploaded:
-            document_url = WidgetDocumentService._object_storage.get_url(doc.url)
-
-        props = {
-            'id': doc.id,
-            'type': doc.type,
-            'title': doc.title,
-            'sort_index': doc.sort_index,
-            'url': document_url,
-            'parent_document_id': doc.parent_document_id,
-            'is_uploaded': doc.is_uploaded,
-        }
-        # remove null
-        return dict(props.items())
+        return WidgetDocumentsSchema().dump(docs, many=True)
 
     @staticmethod
     def create_document(widget_id, doc_details):
@@ -71,23 +32,29 @@ class WidgetDocumentService:
         if parent_id := doc_details.get('parent_document_id', None):
             WidgetDocumentService._validate_parent_type(parent_id)
 
-        doc = WidgetDocumentService._create_document_from_dict(doc_details, parent_id, widget_id)
+        doc = WidgetDocumentService._create_document_from_dict(
+            doc_details, parent_id, widget_id)
         doc.save()
         return doc
 
     @staticmethod
     def _create_document_from_dict(doc_details, parent_id, widget_id):
         doc: WidgetDocumentsModel = WidgetDocumentsModel()
-        is_uploaded = doc_details.get('is_uploaded')
+        file_id = doc_details.get('file_id')
+        is_uploaded = bool(file_id) or doc_details.get('is_uploaded', False)
         doc_url = doc_details.get('url')
-        if is_uploaded:
-            doc_url = WidgetDocumentService._object_storage.get_object_key(doc_url)
+        # Legacy uploads stored the object storage key directly on url; new uploads
+        # are linked via file_id and resolve their URL through the UploadedFile relation.
+        if is_uploaded and not file_id:
+            doc_url = WidgetDocumentService._object_storage.get_object_key(
+                doc_url)
 
         doc.type = doc_details.get('type')
         doc.is_uploaded = is_uploaded
         doc.title = doc_details.get('title')
         doc.parent_document_id = parent_id
-        doc.url = doc_url
+        doc.file_id = file_id
+        doc.url = None if file_id else doc_url
         doc.widget_id = widget_id
         sort_index = WidgetDocumentService._find_highest_sort_index(widget_id)
         doc.sort_index = sort_index + 1
@@ -105,7 +72,8 @@ class WidgetDocumentService:
 
     @staticmethod
     def _validate_parent_type(parent_id):
-        parent: WidgetDocumentsModel = WidgetDocumentsModel.find_by_id(parent_id)
+        parent: WidgetDocumentsModel = WidgetDocumentsModel.find_by_id(
+            parent_id)
         if parent is None:
             raise BusinessException(
                 error='Parent Folder doesnt exist.',
@@ -123,17 +91,30 @@ class WidgetDocumentService:
             raise BusinessException(
                 error='Document to update was not found.',
                 status_code=HTTPStatus.BAD_REQUEST)
+        replacement_file_id = data.get('file_id')
+        should_retire_file = replacement_file_id and document.file_id and \
+            str(replacement_file_id) != str(document.file_id)
+        if should_retire_file:
+            widget = WidgetModel.find_by_id(document.widget_id)
+            if widget:
+                EngagementFileService(db.session).retire_file(
+                    widget.engagement_id,
+                    document.file_id,
+                    document.widget_id,
+                )
         update_data = {
             **data,
             'url': data.get('url', document.url) if not document.is_uploaded else document.url,
         }
-        updated_document = WidgetDocumentsModel.edit_widget_document(widget_id, document_id, update_data)
+        updated_document = WidgetDocumentsModel.edit_widget_document(
+            widget_id, document_id, update_data)
         return updated_document
 
     @staticmethod
     def delete_document(widget_id, document_id):
         """Remove document from a document widget."""
-        delete_document = WidgetDocumentsModel.remove_widget_document(widget_id, document_id)
+        delete_document = WidgetDocumentsModel.remove_widget_document(
+            widget_id, document_id)
         if not delete_document:
             raise BusinessException(
                 error='Document to remove was not found.',
@@ -158,7 +139,8 @@ class WidgetDocumentService:
         """Validate if documents ids belong to the widget."""
         widget_documents = WidgetDocumentsModel.get_all_by_widget_id(widget_id)
         document_ids = [document.id for document in widget_documents]
-        input_document_ids = [document_item.get('id') for document_item in documents]
+        input_document_ids = [document_item.get(
+            'id') for document_item in documents]
         if len(set(input_document_ids) - set(document_ids)) > 0:
             raise BusinessException(
                 error='Invalid widgets.',

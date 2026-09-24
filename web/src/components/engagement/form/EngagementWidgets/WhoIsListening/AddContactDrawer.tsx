@@ -15,7 +15,7 @@ import { useAppDispatch } from 'hooks';
 import { openNotification } from 'services/notificationService/notificationSlice';
 import { updatedDiff } from 'deep-object-diff';
 import { WhoIsListeningContext } from './WhoIsListeningContext';
-import { saveObject } from 'services/objectStorageService';
+import { uploadFile } from 'services/uploadedFileService';
 import { Contact } from 'models/contact';
 import { useParams } from 'react-router';
 import { getLanguageIdByCode } from 'services/engagementContentTranslationService';
@@ -72,8 +72,8 @@ const AddContactDrawer = () => {
             return avatarFileName;
         }
         try {
-            const savedDocumentDetails = await saveObject(avatarImage, { filename: avatarImage.name });
-            return savedDocumentDetails?.uniquefilename || '';
+            const savedDocumentDetails = await uploadFile(avatarImage, { filename: avatarImage.name });
+            return savedDocumentDetails?.unique_filename || '';
         } catch (error) {
             console.log(error);
             throw new Error('Error occurred during avatar image upload');

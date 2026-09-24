@@ -16,6 +16,7 @@
 Test Utility for creating model factory.
 """
 
+import uuid
 from typing import Optional
 
 from faker import Faker
@@ -53,6 +54,8 @@ from api.models.survey import Survey as SurveyModel
 from api.models.survey_translation import SurveyTranslation as SurveyTranslationModel
 from api.models.timeline_event import TimelineEvent as TimelineEventModel
 from api.models.timeline_event_translation import TimelineEventTranslation as TimelineEventTranslationModel
+from api.models.uploaded_file import UploadedFile as UploadedFileModel
+from api.models.uploaded_file import UploadedFileStatus
 from api.models.user_group_membership import UserGroupMembership as UserGroupMembershipModel
 from api.models.widget import Widget as WidgetModal
 from api.models.widget_documents import WidgetDocuments as WidgetDocumentModel
@@ -65,6 +68,7 @@ from api.models.widget_timeline import WidgetTimeline as WidgetTimelineModel
 from api.models.widget_translation import WidgetTranslation as WidgetTranslationModel
 from api.models.widget_video import WidgetVideo as WidgetVideoModel
 from api.utils.constants import TENANT_ID_HEADER
+from api.utils.datetime import utc_now
 from api.utils.enums import CompositeRoleId, MembershipStatus
 from tests.utilities.factory_scenarios import (
     TestCommentInfo, TestEngagementDetailsTabsInfo, TestEngagementDetailsTabTranslationInfo, TestEngagementInfo,
@@ -443,11 +447,32 @@ def factory_document_model(
         type=document_info.get('type'),
         parent_document_id=document_info.get('parent_document_id'),
         url=document_info.get('url'),
+        file_id=document_info.get('file_id'),
         sort_index=document_info.get('sort_index'),
         widget_id=document_info.get('widget_id'),
     )
     document.save()
     return document
+
+
+def factory_uploaded_file_model(tenant_id: int, **overrides):
+    """Produce an UploadedFile row backing a widget image/document/banner upload."""
+    file_id = overrides.get('id') or uuid.uuid4()
+    filename = overrides.get('filename') or fake.file_name(extension='jpg')
+    uploaded_file = UploadedFileModel(
+        id=file_id,
+        tenant_id=tenant_id,
+        filename=filename,
+        unique_filename=overrides.get(
+            'unique_filename', f'{file_id}_{filename}'),
+        path=overrides.get('path', f'uploads/{file_id}_{filename}'),
+        mimetype=overrides.get('mimetype', 'image/jpeg'),
+        size=overrides.get('size', 1024),
+        status=overrides.get('status', UploadedFileStatus.UPLOADED),
+        uploaded_at=overrides.get('uploaded_at', utc_now()),
+    )
+    uploaded_file.save()
+    return uploaded_file
 
 
 def patch_token_info(claims, monkeypatch):

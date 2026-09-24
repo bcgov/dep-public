@@ -19,18 +19,21 @@ from http import HTTPStatus
 from flask import current_app, g, request
 from flask_cors import cross_origin
 from flask_restx import Namespace, Resource
-from marshmallow import ValidationError
+from marshmallow import EXCLUDE, ValidationError
 
 from api.auth import auth
 from api.auth import jwt as _jwt
 from api.constants.membership_type import MembershipType
 from api.exceptions.business_exception import BusinessException
+from api.models import db
 from api.models.pagination_options import PaginationOptions
 from api.models.tenant import Tenant as TenantModel
 from api.resources.lock_validation_decorators import require_engagement_patch_lock
 from api.schemas.engagement import EngagementSchema
-from api.services.engagement_service import EngagementService
+from api.schemas.engagement_file import EngagementFileSchema
 from api.services import authorization
+from api.services.engagement_file_service import EngagementFileService
+from api.services.engagement_service import EngagementService
 from api.services.resource_lock_service import ResourceLockService
 from api.utils.roles import Role
 from api.utils.tenant_validator import require_role
@@ -252,3 +255,40 @@ class Engagements(Resource):
             return str(err), HTTPStatus.NOT_FOUND
         except ValidationError as err:
             return str(err.messages), HTTPStatus.BAD_REQUEST
+
+
+@cors_preflight('GET')
+@API.route('/<engagement_id>/files')
+class EngagementUpload(Resource):
+    """Resource for managing file uploads per-engagement."""
+
+    @staticmethod
+    @require_role([Role.VIEW_ENGAGEMENT.value])
+    @cross_origin(origins=allowedorigins())
+    def get(engagement_id):
+        """Retrieve a list of uploaded files for an engagement."""
+        eng_file_service = EngagementFileService(db.session)  # type: ignore
+        engagement_files = eng_file_service.get_engagement_files(
+            engagement_id)
+        return EngagementFileSchema(many=True).dump(engagement_files), HTTPStatus.OK
+
+
+@cors_preflight('PATCH, DELETE')
+@API.route('/<engagement_id>/files/<file_id>')
+class EngagementUploadDetail(Resource):
+    """Resource for managing individual file uploads per-engagement."""
+
+    @staticmethod
+    @require_role([Role.EDIT_ENGAGEMENT.value])
+    @cross_origin(origins=allowedorigins())
+    def patch(engagement_id, file_id):
+        """Update an uploaded file for an engagement."""
+        existing_file = EngagementFileService(db.session).get_engagement_file(
+            engagement_id, file_id
+        )
+        data = request.json
+        updated_file = EngagementFileSchema().load(data, instance=existing_file,
+                                                   partial=True, session=db.session,
+                                                   unknown=EXCLUDE)
+        db.session.commit()
+        return EngagementFileSchema().dump(updated_file), HTTPStatus.OK

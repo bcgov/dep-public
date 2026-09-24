@@ -96,10 +96,6 @@ const MapWidget = ({ widget }: MapWidgetProps) => {
         borderRadius: '16px',
         overflow: 'hidden',
     };
-    const linkStyles = {
-        color: 'text.primary',
-        cursor: 'pointer',
-    };
 
     return (
         <Grid container size={12} justifyContent={{ xs: 'center' }} alignItems="center" rowSpacing={2}>
@@ -127,12 +123,18 @@ const MapWidget = ({ widget }: MapWidgetProps) => {
             </Grid>
             <When condition={isMediumScreen}>
                 <Grid container size={12} alignItems={'center'} justifyContent={'flex-start'}>
-                    <Link onClick={() => setOpen(true)} sx={linkStyles} tabIndex={0} onKeyDown={() => setOpen(true)}>
+                    <Link
+                        onClick={() => setOpen(true)}
+                        color="text.primary"
+                        sx={{ cursor: 'pointer' }}
+                        tabIndex={0}
+                        onKeyDown={() => setOpen(true)}
+                    >
                         <FontAwesomeIcon
                             icon={faExpand}
                             style={{ color: isDarkMode ? colors.surface.white : Palette.text.primary }}
                         />
-                        <span style={{ paddingLeft: '0.5rem' }}>View Expanded Map</span>
+                        <span style={{ paddingLeft: '0.5rem', color: 'inherit' }}>View Expanded Map</span>
                     </Link>
                 </Grid>
                 <ExpandModal map={map} markerLabel={markerLabel} open={open} setOpen={setOpen} />

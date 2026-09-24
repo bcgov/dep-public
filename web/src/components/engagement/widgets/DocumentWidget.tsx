@@ -1,4 +1,5 @@
 import React, { Suspense, useMemo, useState } from 'react';
+import { getFileIcon } from 'helper/getFileIcon';
 import { Grid2 as Grid, Skeleton, Paper, ThemeProvider } from '@mui/material';
 import { Widget } from 'models/widget';
 import { DocumentItem, DOCUMENT_TYPE } from 'models/document';
@@ -11,19 +12,7 @@ import { TreeItem } from '@mui/x-tree-view/TreeItem';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
     faFolder,
-    faFileAudio,
-    faFilePdf,
     faFolderOpen,
-    faFileVideo,
-    faFileMusic,
-    faFileZipper,
-    faFile,
-    faFileDoc,
-    faFileSpreadsheet,
-    faFilePowerpoint,
-    faFileImage,
-    faLink,
-    faChainBroken,
     faChevronDown,
     faChevronRight,
     faFaceThinking,
@@ -41,58 +30,6 @@ interface DocumentTreeProps {
 const iconSize = '20px';
 const folderSize = '24px';
 const chevronSize = '14px';
-
-const getFileIcon = (url: string, isFile: boolean) => {
-    if (!isFile) {
-        return url ? faLink : faChainBroken;
-    }
-    // If there is no extension, it is a link rather than a file
-    if (!url.includes('.')) {
-        return faLink;
-    }
-    switch (url.split('.').pop()) {
-        case 'pdf':
-            return faFilePdf;
-        case 'zip':
-            return faFileZipper;
-        case 'mid':
-        case 'midi':
-            return faFileMusic;
-        case 'doc':
-        case 'docx':
-            return faFileDoc;
-        case 'xls':
-        case 'xlsx':
-            return faFileSpreadsheet;
-        case 'ppt':
-        case 'pptx':
-            return faFilePowerpoint;
-        case 'mp3':
-        case 'wav':
-        case 'flac':
-        case 'ogg':
-        case 'm4a':
-        case 'wma':
-            return faFileAudio;
-        case 'mp4':
-        case 'avi':
-        case 'mov':
-        case 'wmv':
-        case 'flv':
-        case 'mkv':
-            return faFileVideo;
-        case 'png':
-        case 'jpg':
-        case 'jpeg':
-        case 'gif':
-        case 'bmp':
-        case 'tiff':
-        case 'webp':
-            return faFileImage;
-        default:
-            return faFile;
-    }
-};
 
 const treeItemStyles = (isFolder: boolean) => ({
     color: 'text.primary',

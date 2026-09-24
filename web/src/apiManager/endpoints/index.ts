@@ -43,6 +43,11 @@ const Endpoints = {
         DELETE: `${AppConfig.apiUrl}/engagement_metadata/taxon/taxon_id`,
         PRESET_VALUES: `${AppConfig.apiUrl}/engagement_metadata/taxon/taxon_id/preset_values`,
     },
+    EngagementFiles: {
+        GET_LIST: `${AppConfig.apiUrl}/engagements/engagement_id/files`,
+        PATCH: `${AppConfig.apiUrl}/engagements/engagement_id/files/file_id`,
+        DELETE: `${AppConfig.apiUrl}/engagements/engagement_id/files/file_id`,
+    },
     EngagementSettings: {
         CREATE: `${AppConfig.apiUrl}/engagementsettings/`,
         UPDATE: `${AppConfig.apiUrl}/engagementsettings/`,
@@ -63,9 +68,12 @@ const Endpoints = {
         GET_USER_ENGAGEMENTS: `${AppConfig.apiUrl}/user/user_id/engagements`,
         TOGGLE_USER_STATUS: `${AppConfig.apiUrl}/user/user_id/status`,
     },
-    Document: {
-        OSS_HEADER: `${AppConfig.apiUrl}/document/`,
-        PUBLIC: `${AppConfig.apiUrl}/document/public`,
+    UploadedFile: {
+        OSS_HEADER: `${AppConfig.apiUrl}/uploaded_files/`,
+        OSS_FINALIZE: `${AppConfig.apiUrl}/uploaded_files/file_id/finalize`,
+        PATCH: `${AppConfig.apiUrl}/uploaded_files/file_id`,
+        DELETE: `${AppConfig.apiUrl}/uploaded_files/file_id`,
+        PUBLIC: `${AppConfig.apiUrl}/uploaded_files/public`,
     },
     Survey: {
         GET_LIST: `${AppConfig.apiUrl}/surveys/`,

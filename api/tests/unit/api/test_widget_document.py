@@ -18,10 +18,10 @@ Test-Suite to ensure that the Widget endpoint is working as expected.
 """
 import json
 from http import HTTPStatus
-
-from faker import Faker
 from unittest.mock import patch
+
 import pytest
+from faker import Faker
 
 from api.exceptions.business_exception import BusinessException
 from api.services.widget_documents_service import WidgetDocumentService
@@ -29,6 +29,7 @@ from api.utils.enums import ContentType, WidgetDocumentType
 from tests.utilities.factory_scenarios import TestJwtClaims, TestWidgetDocumentInfo, TestWidgetInfo
 from tests.utilities.factory_utils import (
     factory_auth_header, factory_document_model, factory_engagement_model, factory_widget_model)
+
 
 fake = Faker()
 
@@ -86,7 +87,7 @@ def test_get_document(client, jwt, session):  # pylint:disable=unused-argument
     )
 
     assert rv.status_code == HTTPStatus.OK
-    assert rv.json.get('children')[0].get('id') == document.id
+    assert rv.json[0].get('id') == document.id
 
     with patch.object(WidgetDocumentService, 'get_documents_by_widget_id', side_effect=ValueError('Test error')):
         rv = client.get(
@@ -111,7 +112,8 @@ def test_assert_tree_structure_invalid(client, jwt, session):  # pylint:disable=
         'widget_id': widget.id
     })
 
-    folder = {**TestWidgetDocumentInfo.document1, 'widget_id': widget.id, 'parent_document_id': file_doc.id}
+    folder = {**TestWidgetDocumentInfo.document1,
+              'widget_id': widget.id, 'parent_document_id': file_doc.id}
 
     rv = client.post(
         f'/api/widgets/{widget.id}/documents',
@@ -147,10 +149,11 @@ def test_assert_tree_structure(client, jwt, session):  # pylint:disable=unused-a
     )
 
     assert rv.status_code == HTTPStatus.OK
-    expected_folder_element = rv.json.get('children')[0]
+    expected_folder_element = rv.json[0]
     assert expected_folder_element.get('id') == folder.id
     assert expected_folder_element.get('title') == folder.title
-    assert expected_folder_element.get('type') == WidgetDocumentType.FOLDER.value
+    assert expected_folder_element.get(
+        'type') == WidgetDocumentType.FOLDER.value
     expected_file_element = expected_folder_element.get('children')[0]
     assert expected_file_element.get('id') == file_doc.id
     assert expected_file_element.get('title') == file_doc.title
@@ -183,7 +186,7 @@ def test_patch_documents(client, jwt, session):  # pylint:disable=unused-argumen
         content_type=ContentType.JSON.value
     )
     assert rv.status_code == HTTPStatus.OK
-    assert rv.json.get('children')[0].get('title') == document_edits.get('title')
+    assert rv.json[0].get('title') == document_edits.get('title')
 
     with patch.object(WidgetDocumentService, 'edit_document',
                       side_effect=BusinessException('Test error', status_code=HTTPStatus.INTERNAL_SERVER_ERROR)):
@@ -236,12 +239,15 @@ def test_sort_folders(client, jwt, session):
         'type': 'folder'
     })
 
-    headers = factory_auth_header(jwt=jwt, claims=TestJwtClaims.staff_admin_role)
+    headers = factory_auth_header(
+        jwt=jwt, claims=TestJwtClaims.staff_admin_role)
 
     # Retrieve the initial order of folders within the widget
-    rv = client.get(f'/api/widgets/{widget.id}/documents', headers=headers, content_type=ContentType.JSON.value)
+    rv = client.get(f'/api/widgets/{widget.id}/documents',
+                    headers=headers, content_type=ContentType.JSON.value)
     assert rv.status_code == HTTPStatus.OK
-    initial_order = [doc['id'] for doc in rv.json['children'] if doc.get('type') == 'folder']
+    initial_order = [doc['id']
+                     for doc in rv.json if doc.get('type') == 'folder']
 
     # Define the desired order of folders
     desired_order = [folder2.id, folder3.id, folder1.id]
@@ -252,13 +258,15 @@ def test_sort_folders(client, jwt, session):
     # Perform the folder sorting
     rv = client.patch(f'/api/widgets/{widget.id}/documents/order', data=json.dumps({
         'documents': reorder_dict}),
-                      headers=headers, content_type=ContentType.JSON.value)
+        headers=headers, content_type=ContentType.JSON.value)
     assert rv.status_code == HTTPStatus.OK
 
     # Retrieve the updated order of folders within the widget
-    rv = client.get(f'/api/widgets/{widget.id}/documents', headers=headers, content_type=ContentType.JSON.value)
+    rv = client.get(f'/api/widgets/{widget.id}/documents',
+                    headers=headers, content_type=ContentType.JSON.value)
     assert rv.status_code == HTTPStatus.OK
-    updated_order = [doc['id'] for doc in rv.json['children'] if doc.get('type') == 'folder']
+    updated_order = [doc['id']
+                     for doc in rv.json if doc.get('type') == 'folder']
 
     # Assert that the order of folders has changed according to the desired order
     assert updated_order == desired_order
@@ -270,20 +278,21 @@ def test_sort_folders(client, jwt, session):
     reset_reorder_dict = [{'id': folder_id} for folder_id in initial_order]
     rv = client.patch(f'/api/widgets/{widget.id}/documents/order', data=json.dumps({
         'documents': reset_reorder_dict}),
-                      headers=headers, content_type=ContentType.JSON.value)
+        headers=headers, content_type=ContentType.JSON.value)
     assert rv.status_code == HTTPStatus.OK
 
     # Verify that the order of folders has been reset
-    rv = client.get(f'/api/widgets/{widget.id}/documents', headers=headers, content_type=ContentType.JSON.value)
+    rv = client.get(f'/api/widgets/{widget.id}/documents',
+                    headers=headers, content_type=ContentType.JSON.value)
     assert rv.status_code == HTTPStatus.OK
-    reset_order = [doc['id'] for doc in rv.json['children'] if doc.get('type') == 'folder']
+    reset_order = [doc['id'] for doc in rv.json if doc.get('type') == 'folder']
     assert reset_order == initial_order
 
     with patch.object(WidgetDocumentService, 'sort_documents',
                       side_effect=BusinessException('Test error', status_code=HTTPStatus.INTERNAL_SERVER_ERROR)):
         rv = client.patch(f'/api/widgets/{widget.id}/documents/order', data=json.dumps({
             'documents': reset_reorder_dict}),
-                        headers=headers, content_type=ContentType.JSON.value)
+            headers=headers, content_type=ContentType.JSON.value)
     assert rv.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
 
 
@@ -291,7 +300,8 @@ def test_sort_files(client, jwt, session):
     """Test sorting of documents within a folder."""
     engagement = factory_engagement_model()
     widget = factory_widget_model({'engagement_id': engagement.id})
-    folder = factory_document_model({'widget_id': widget.id, 'title': 'Folder', 'type': 'folder'})
+    folder = factory_document_model(
+        {'widget_id': widget.id, 'title': 'Folder', 'type': 'folder'})
     file1 = factory_document_model({
         'widget_id': widget.id,
         'title': 'Document 1',
@@ -313,12 +323,14 @@ def test_sort_files(client, jwt, session):
         'type': 'file'
     })
 
-    headers = factory_auth_header(jwt=jwt, claims=TestJwtClaims.staff_admin_role)
+    headers = factory_auth_header(
+        jwt=jwt, claims=TestJwtClaims.staff_admin_role)
 
     # Retrieve the initial order of documents within the folder
-    rv = client.get(f'/api/widgets/{widget.id}/documents', headers=headers, content_type=ContentType.JSON.value)
+    rv = client.get(f'/api/widgets/{widget.id}/documents',
+                    headers=headers, content_type=ContentType.JSON.value)
     assert rv.status_code == HTTPStatus.OK
-    retreived_folder = rv.json['children'][0]
+    retreived_folder = rv.json[0]
     initial_order = [
         doc['id']
         for doc in retreived_folder.get('children')
@@ -334,13 +346,14 @@ def test_sort_files(client, jwt, session):
     # Perform the document sorting
     rv = client.patch(f'/api/widgets/{widget.id}/documents/order', data=json.dumps({
         'documents': reorder_dict}),
-                      headers=headers, content_type=ContentType.JSON.value)
+        headers=headers, content_type=ContentType.JSON.value)
     assert rv.status_code == HTTPStatus.OK
 
     # Retrieve the updated order of documents within the folder
-    rv = client.get(f'/api/widgets/{widget.id}/documents', headers=headers, content_type=ContentType.JSON.value)
+    rv = client.get(f'/api/widgets/{widget.id}/documents',
+                    headers=headers, content_type=ContentType.JSON.value)
     assert rv.status_code == HTTPStatus.OK
-    retreived_folder = rv.json['children'][0]
+    retreived_folder = rv.json[0]
     updated_order = [
         doc['id']
         for doc in retreived_folder.get('children')
@@ -357,12 +370,14 @@ def test_sort_files(client, jwt, session):
     reset_reorder_dict = [{'id': doc_id} for doc_id in initial_order]
     rv = client.patch(f'/api/widgets/{widget.id}/documents/order', data=json.dumps({
         'documents': reset_reorder_dict}),
-                      headers=headers, content_type=ContentType.JSON.value)
+        headers=headers, content_type=ContentType.JSON.value)
     assert rv.status_code == HTTPStatus.OK
 
     # Verify that the order of documents has been reset
-    rv = client.get(f'/api/widgets/{widget.id}/documents', headers=headers, content_type=ContentType.JSON.value)
-    retreived_folder = rv.json['children'][0]
+    rv = client.get(f'/api/widgets/{widget.id}/documents',
+                    headers=headers, content_type=ContentType.JSON.value)
+    retreived_folder = rv.json[0]
     assert rv.status_code == HTTPStatus.OK
-    reset_order = [doc['id'] for doc in retreived_folder.get('children') if doc.get('type') == 'file']
+    reset_order = [doc['id'] for doc in retreived_folder.get(
+        'children') if doc.get('type') == 'file']
     assert reset_order == initial_order

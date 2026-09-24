@@ -57,7 +57,8 @@ export const EngagementDescription = () => {
                         margin="0 auto"
                     >
                         <Grid
-                            display="inherit"
+                            container
+                            gap={0}
                             component={RouterLinkRenderer}
                             href={getPath(ROUTES.PUBLIC_LANDING)}
                             sx={{

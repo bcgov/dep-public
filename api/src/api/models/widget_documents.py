@@ -6,8 +6,9 @@ from __future__ import annotations
 
 from typing import List
 
-from sqlalchemy.sql.schema import ForeignKey
 import sqlalchemy as sa
+from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.sql.schema import ForeignKey
 
 from .base_model import BaseModel
 from .db import db
@@ -20,18 +21,26 @@ class WidgetDocuments(BaseModel):  # pylint: disable=too-few-public-methods
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     title = db.Column(db.String(50))
     type = db.Column(db.String(50), comment='File or Folder identifier')
-    parent_document_id = db.Column(db.Integer, ForeignKey('widget_documents.id'))
-    url = db.Column(db.String(2000))
+    parent_document_id = db.Column(
+        db.Integer, ForeignKey('widget_documents.id'))
+    url = db.Column(db.String(2000), nullable=True)
+    file_id = db.Column(UUID(as_uuid=True), db.ForeignKey(
+        'uploaded_files.id'), nullable=True)
     # defines the sorting within the specific widget.Not the overall sorting.
     sort_index = db.Column(db.Integer, nullable=True, default=1)
-    widget_id = db.Column(db.Integer, ForeignKey('widget.id', ondelete='CASCADE'), nullable=True)
+    widget_id = db.Column(db.Integer, ForeignKey(
+        'widget.id', ondelete='CASCADE'), nullable=True)
     is_uploaded = db.Column(db.Boolean, nullable=True, default=False)
+    file = db.relationship('UploadedFile', backref='document_widgets')
+    children = db.relationship('WidgetDocuments', backref=db.backref(
+        'parent_document', remote_side=[id]))
 
     @classmethod
     def get_all_by_widget_id(cls, widget_id) -> List[WidgetDocuments]:
         """Get a survey."""
         docs = db.session.query(WidgetDocuments) \
             .filter(WidgetDocuments.widget_id == widget_id) \
+            .order_by(WidgetDocuments.sort_index, WidgetDocuments.id) \
             .all()
         return docs
 

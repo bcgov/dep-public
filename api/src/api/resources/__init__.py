@@ -24,48 +24,49 @@ That are used to expose operational health information about the service, and me
 from flask import Blueprint
 
 from .apihelper import Api
-from .oidc_config import API as OIDC_CONFIG_API
 from .comment import API as COMMENT_API
 from .contact import API as CONTACT_API
-from .document import API as DOCUMENT_API
+from .contact_translation import API as CONTACT_TRANSLATION_API
 from .email_verification import API as EMAIL_VERIFICATION_API
-from .engagement_details_tab import API as ENGAGEMENT_DETAILS_TAB_API
 from .engagement import API as ENGAGEMENT_API
-from .engagement_metadata import API as ENGAGEMENT_METADATA_API
-from .metadata_taxon import API as METADATA_TAXON_API
+from .engagement_content_translation import API as ENGAGEMENT_CONTENT_TRANSLATION_API
+from .engagement_details_tab import API as ENGAGEMENT_DETAILS_TAB_API
+from .engagement_details_tab_translation import API as ENGAGEMENT_DETAILS_TAB_TRANSLATION_API
 from .engagement_members import API as ENGAGEMENT_MEMBERS_API
+from .engagement_metadata import API as ENGAGEMENT_METADATA_API
+from .engagement_settings import API as ENGAGEMENT_SETTINGS_API
+from .engagement_translation import API as ENGAGEMENT_TRANSLATION_API
+from .event_item_translation import API as EVENT_ITEM_TRANSLATION_API
 from .feedback import API as FEEDBACK_API
+from .language import API as LANGUAGE_API
+from .metadata_taxon import API as METADATA_TAXON_API
+from .oidc_config import API as OIDC_CONFIG_API
+from .poll_answer_translation import API as POLL_ANSWER_TRANSLATION_API
+from .report_setting import API as REPORT_SETTING_API
+from .resource_lock import API as RESOURCE_LOCK_API
+from .shape_file import API as SHAPEFILE_API
+from .staff_user import API as USER_API
 from .submission import API as SUBMISSION_API
 from .subscription import API as SUBSCRIPTION_API
 from .survey import API as SURVEY_API
-from .staff_user import API as USER_API
+from .survey_translation import API as SURVEY_TRANSLATION_API
+from .tenant import API as TENANT_API
+from .timeline_event_translation import API as TIMELINE_EVENT_TRANSLATION_API
+from .uploaded_file import API as UPLOADED_FILE_API
 from .value_component import API as VALUE_COMPONENTS_API
+from .version import API as VERSION_API
 from .widget import API as WIDGET_API
 from .widget_documents import API as WIDGET_DOCUMENTS_API
 from .widget_events import API as WIDGET_EVENTS_API
-from .widget_map import API as WIDGET_MAPS_API
-from .shape_file import API as SHAPEFILE_API
-from .tenant import API as TENANT_API
-from .report_setting import API as REPORT_SETTING_API
-from .widget_video import API as WIDGET_VIDEO_API
-from .engagement_settings import API as ENGAGEMENT_SETTINGS_API
-from .widget_timeline import API as WIDGET_TIMELINE_API
-from .widget_poll import API as WIDGET_POLL_API
 from .widget_image import API as WIDGET_IMAGE_API
-from .widget_listening import API as WIDGET_LISTENING_API
-from .language import API as LANGUAGE_API
-from .widget_translation import API as WIDGET_TRANSLATION_API
-from .survey_translation import API as SURVEY_TRANSLATION_API
 from .widget_image_translation import api as widget_image_translation_api
-from .poll_answer_translation import API as POLL_ANSWER_TRANSLATION_API
-from .contact_translation import API as CONTACT_TRANSLATION_API
-from .event_item_translation import API as EVENT_ITEM_TRANSLATION_API
-from .timeline_event_translation import API as TIMELINE_EVENT_TRANSLATION_API
-from .engagement_translation import API as ENGAGEMENT_TRANSLATION_API
-from .engagement_details_tab_translation import API as ENGAGEMENT_DETAILS_TAB_TRANSLATION_API
-from .engagement_content_translation import API as ENGAGEMENT_CONTENT_TRANSLATION_API
-from .resource_lock import API as RESOURCE_LOCK_API
-from .version import API as VERSION_API
+from .widget_listening import API as WIDGET_LISTENING_API
+from .widget_map import API as WIDGET_MAPS_API
+from .widget_poll import API as WIDGET_POLL_API
+from .widget_timeline import API as WIDGET_TIMELINE_API
+from .widget_translation import API as WIDGET_TRANSLATION_API
+from .widget_video import API as WIDGET_VIDEO_API
+
 
 __all__ = ('API_BLUEPRINT',)
 
@@ -79,7 +80,7 @@ API = Api(
 API.add_namespace(OIDC_CONFIG_API, path='/oidc_config')
 API.add_namespace(ENGAGEMENT_API)
 API.add_namespace(USER_API)
-API.add_namespace(DOCUMENT_API)
+API.add_namespace(UPLOADED_FILE_API)
 API.add_namespace(SURVEY_API)
 API.add_namespace(SUBMISSION_API)
 API.add_namespace(SUBSCRIPTION_API)
