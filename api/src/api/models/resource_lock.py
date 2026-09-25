@@ -15,6 +15,7 @@ from api.utils.datetime import utc_now
 from .base_model import BaseModel
 from .db import db
 
+
 ACTIVE_LOCK_WHERE = 'released_at IS NULL'
 SQL_QUOTE = chr(39)
 
@@ -98,9 +99,17 @@ class ResourceLock(BaseModel):
     )
 
     @classmethod
-    def find_active_by_scope(cls, lock_scope: str) -> Optional['ResourceLock']:
+    def find_by_scope(cls, lock_scope: str, expired=False) -> Optional['ResourceLock']:
         """Return the active lock for a scope, if one exists."""
-        return cls.query.filter_by(lock_scope=lock_scope, released_at=None).first()
+        result = cls.query.filter_by(
+            lock_scope=lock_scope,
+            released_at=None
+        )
+        if not expired:
+            result = result.filter(
+                ResourceLock.expires_at > utc_now()
+            )
+        return result.first()
 
     @classmethod
     def find_active_by_resource(cls, resource_type: str, resource_id: int) -> list['ResourceLock']:
@@ -109,6 +118,8 @@ class ResourceLock(BaseModel):
             resource_type=resource_type,
             resource_id=resource_id,
             released_at=None,
+        ).filter(
+            ResourceLock.expires_at > utc_now()
         ).all()
 
     @classmethod
@@ -124,6 +135,8 @@ class ResourceLock(BaseModel):
             resource_id=resource_id,
             section_key=section_key,
             released_at=None,
+        ).filter(
+            ResourceLock.expires_at > utc_now()
         ).all()
 
     @classmethod

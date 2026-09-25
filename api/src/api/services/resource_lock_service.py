@@ -706,7 +706,7 @@ class ResourceLockService:
                 lock=cross_scope_conflict,
             )
 
-        active = ResourceLock.find_active_by_scope(lock_scope)
+        active = ResourceLock.find_by_scope(lock_scope, expired=True)
         existing_lock_response = cls._handle_existing_lock_on_acquire(
             active=active,
             lock_scope=lock_scope,
@@ -740,7 +740,7 @@ class ResourceLockService:
             db.session.commit()
         except IntegrityError:
             db.session.rollback()
-            conflict = ResourceLock.find_active_by_scope(lock_scope)
+            conflict = ResourceLock.find_by_scope(lock_scope)
             if conflict and conflict.owner_user_sub == owner_user_sub and conflict.owner_session_id == session_id:
                 return cls._serialize_lock(conflict, is_mine=True)
             cls._lock_error(
