@@ -1,3 +1,9 @@
+## September 29, 2026
+
+- **Feature** Added engagement search results page skeleton [🎟️ DEP-391](https://citz-gdx.atlassian.net/browse/DEP-391)
+  - Query parameter `q` is used to set the initial search term.
+  - Results are not populated; filter options display as a placeholder for now.
+
 ## September 24, 2026
 
 - **Feature** Created the engagement metadata tab. [🎟️ DEP-365](https://citz-gdx.atlassian.net/browse/DEP-365)
