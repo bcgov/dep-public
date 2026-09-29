@@ -22,8 +22,6 @@ const PublicHeader = () => {
                 boxShadow: elevations.default,
                 borderRadius: 0,
                 boxSizing: 'border-box',
-                borderBottom: '1px solid',
-                borderColor: 'gray.10',
             }}
             data-testid="simplified-header"
         >
