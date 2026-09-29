@@ -5,7 +5,7 @@ export type EngagementSearchLoaderData = {
     engagements: Promise<Engagement[]>;
 };
 
-export const engagementSearchLoader = async ({ request }: { request: Request }) => {
+export const engagementSearchLoader = ({ request }: { request: Request }) => {
     const url = new URL(request.url);
     const queryParams = url.searchParams;
 
