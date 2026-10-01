@@ -20,6 +20,8 @@ const landingLoader = ({ request }: LoaderFunctionArgs): LandingLoaderData => {
     // Request data
     const metaFiltersPromise = getMetadataFilters();
     const engagementsPromise = getEngagements({
+        // Only get publically shared metadata for the landing page, even if logged in
+        filterable_metadata: true,
         search_text: searchText ?? defaultSearchFilters.search_text,
         page: Number(page ?? defaultSearchFilters.page),
         metadata:

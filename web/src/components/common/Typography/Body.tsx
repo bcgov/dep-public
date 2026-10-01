@@ -27,18 +27,22 @@ export const BodyText = ({
 }: {
     bold?: boolean;
     thin?: boolean;
-    size?: 'small' | 'regular' | 'large';
+    size?: 'tiny' | 'small' | 'regular' | 'large' | 'huge';
     children: React.ReactNode;
 } & TypographyProps) => {
     const fontSize = {
+        tiny: '12px',
         small: '14px',
         regular: '16px',
         large: '18px',
+        huge: '20px',
     }[size];
     const lineHeight = {
+        tiny: '18px',
         small: '22px',
         regular: '24px',
         large: '24px',
+        huge: '28px',
     }[size];
     const fontWeight = () => {
         if (bold) {

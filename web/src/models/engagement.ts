@@ -31,6 +31,7 @@ export interface Engagement {
     feedback_heading: string;
     feedback_body: string;
     surveys: Survey[];
+    metadata?: EngagementMetadata[];
     selected_survey_id: number;
     engagement_status: Status;
     submission_status: SubmissionStatus;
@@ -73,6 +74,7 @@ export interface MetadataTaxon extends MetadataTaxonModify {
 }
 
 export interface EngagementMetadata {
+    id?: number; // The ID of the metadata object
     value: string; // The content of the metadata
     taxon_id: number; // ID of the taxon this metadata is for
     engagement_id?: number; // The ID of the relevant engagement

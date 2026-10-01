@@ -1,13 +1,15 @@
 import React from 'react';
-import { ChipProps as MuiChipProps, Chip as MuiChip, Skeleton, useTheme } from '@mui/material';
+import { ChipProps as MuiChipProps, Chip as MuiChip, Skeleton } from '@mui/material';
 import { SubmissionStatus } from 'constants/engagementStatus';
+import { elevations } from 'styles/Theme';
 
 export interface ChipProps {
     label?: string;
     statusId: SubmissionStatus;
+    hovered?: boolean;
 }
 
-type StatusText = 'Open' | 'Upcoming' | 'Closed';
+type StatusText = 'Open' | 'Upcoming' | 'Closed' | 'Closed With Results';
 
 export const getStatusFromStatusId = (statusId: SubmissionStatus): StatusText => {
     switch (statusId) {
@@ -17,6 +19,8 @@ export const getStatusFromStatusId = (statusId: SubmissionStatus): StatusText =>
             return 'Upcoming';
         case SubmissionStatus.Closed:
             return 'Closed';
+        case SubmissionStatus.ClosedWithResults:
+            return 'Closed With Results';
         default:
             return 'Closed';
     }
@@ -27,8 +31,9 @@ export const getSubmissionStatusFromPreviewState = (previewStateType?: string | 
         case 'Open':
             return SubmissionStatus.Open;
         case 'Closed':
-        case 'ViewResults':
             return SubmissionStatus.Closed;
+        case 'ViewResults':
+            return SubmissionStatus.ClosedWithResults;
         case 'Upcoming':
         default:
             return SubmissionStatus.Upcoming;
@@ -49,62 +54,68 @@ export const getSubmissionStatusFromPreviewState = (previewStateType?: string | 
 export const EngagementStatusChip: React.FC<ChipProps & Partial<MuiChipProps>> = ({
     label: customLabel,
     statusId: status,
+    hovered,
     ...props
 }) => {
     const statusText = getStatusFromStatusId(status);
-    const theme = useTheme();
-    const invert = theme.palette.mode === 'dark';
+
+    const getChipProps = (): MuiChipProps => {
+        switch (statusText) {
+            case 'Open':
+                return { color: 'success' };
+            case 'Upcoming':
+                return {
+                    color: 'success',
+                    sx: { color: 'success.main', backgroundColor: 'success.contrastText', borderStyle: 'dashed' },
+                };
+            case 'Closed':
+            case 'Closed With Results':
+                return {
+                    color: 'default',
+                    sx: { color: 'white', backgroundColor: 'gray.90', borderColor: 'gray.100' },
+                };
+            default:
+                return {};
+        }
+    };
+
+    const getClassName = (): string => {
+        // Force the chip to be in the hovered state if the hovered prop is true.
+        if (hovered) {
+            return 'hovered';
+        }
+        // If hovered is *explicitly* set to false, prevent the hover styles from
+        // being applied even when the chip *is* hovered.
+        if (hovered === false) {
+            return 'unhovered';
+        }
+        // Otherwise, use the default hover behavior.
+        return '';
+    };
+
+    const chipProps = getChipProps();
     return (
         <MuiChip
+            {...chipProps}
             {...props}
+            className={getClassName()}
+            sx={[
+                {
+                    borderWidth: '2px',
+                    borderColor: 'currentColor',
+                    borderStyle: 'solid',
+                    fontWeight: 'bold',
+                    boxShadow: elevations.tertiary,
+                    '&:not(.unhovered)': {
+                        '&:hover, &:active, &.hovered': {
+                            boxShadow: elevations.tertiaryDark,
+                        },
+                    },
+                },
+                ...(Array.isArray(chipProps.sx) ? chipProps.sx : [chipProps.sx]),
+                ...(Array.isArray(props.sx) ? props.sx : [props.sx]),
+            ]}
             label={customLabel || statusText}
-            className={`status-chip status-chip-${statusText.toLowerCase()} ${invert ? 'status-chip-invert' : ''}`}
-            sx={{
-                display: 'inline-flex',
-                height: '28px',
-                justifyContent: 'center',
-                alignItems: 'center',
-                gap: '10px',
-                flexShrink: 0,
-                border: '2px solid',
-                borderColor: 'transparent',
-                borderRadius: '24px',
-                boxSizing: 'border-box',
-                '&>.MuiChip-label': {
-                    padding: '4px 16px',
-                    fontSize: '14px',
-                    fontWeight: 700,
-                    lineHeight: '16px',
-                    position: 'relative',
-                    bottom: '1px',
-                },
-                '&.status-chip-open': {
-                    backgroundColor: 'primary.main',
-                    color: 'primary.contrastText',
-                    '&.status-chip-invert': {
-                        backgroundColor: 'transparent',
-                        color: 'primary.main',
-                        borderColor: 'white',
-                    },
-                },
-                '&.status-chip-upcoming': {
-                    backgroundColor: 'transparent',
-                    color: 'primary.main',
-                    borderColor: 'primary.main',
-                    borderStyle: 'dashed',
-                    '&.status-chip-invert': {
-                        backgroundColor: 'transparent',
-                        borderColor: 'white',
-                        color: 'white',
-                    },
-                },
-                '&.status-chip-closed': {
-                    backgroundColor: 'gray.90',
-                    borderColor: 'gray.100',
-                    color: 'gray.40',
-                },
-                ...props.sx,
-            }}
         />
     );
 };
@@ -115,5 +126,5 @@ export const EngagementStatusChip: React.FC<ChipProps & Partial<MuiChipProps>> =
  * @returns A rectangular skeleton with a fixed width and height, styled to resemble a status chip.
  */
 export const StatusChipSkeleton = () => (
-    <Skeleton variant="rectangular" sx={{ width: '72px', height: '28px', borderRadius: '24px' }} />
+    <Skeleton variant="rounded" sx={{ width: '78px', height: '32px', borderRadius: '32px' }} />
 );

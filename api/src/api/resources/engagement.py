@@ -191,6 +191,11 @@ class Engagements(Resource):
                 'published_to_date': args.get('published_to_date', None, type=str),
                 'metadata': metadata,
                 'exclude_internal': exclude_internal,
+                'filterable_metadata': args.get(
+                    'filterable_metadata',
+                    default=False,
+                    type=lambda v: v.lower() == 'true'
+                ),
                 # the membership changing pages sometimes need only engagements where users can add a member.
                 # pass this has_team_access to restrict searches only within engagements they have access on.
                 'has_team_access': args.get(

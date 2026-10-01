@@ -144,6 +144,15 @@ class EngagementService:
         engagements_schema = EngagementSchema(many=True, exclude=exclude)
         engagements = engagements_schema.dump(items)
 
+        # If user is not authorized to view private metadata (or is only interested in public metadata)
+        # filter out non-public metadata
+        if scope_options.restricted or (search_options and search_options.get('filterable_metadata')):
+            for engagement in engagements:
+                if 'metadata' in engagement:
+                    engagement['metadata'] = [
+                        md for md in engagement['metadata'] if md.get('taxon') and md['taxon'].get('filter_type')
+                    ]
+
         return {'items': engagements, 'total': total}
 
     @staticmethod

@@ -17,6 +17,7 @@ class EngagementMetadataSchema(SQLAlchemyAutoSchema):
         model = EngagementMetadata
         load_instance = True
         include_fk = True  # Include foreign keys in the schema
+        include_relationships = True
 
     value = fields.String(validate=validate.Length(max=512))
     taxon_id = fields.Integer(required=True)
@@ -89,7 +90,8 @@ class MetadataTaxonSchema(SQLAlchemyAutoSchema):
         return data
 
     # Nested field
-    entries = Nested(EngagementMetadataSchema, many=True, exclude=['taxon'])
+    entries = Nested(EngagementMetadataSchema, many=True,
+                     exclude=['taxon', 'engagement'])
 
 
 class MetadataTaxonFilterSchema(Schema):

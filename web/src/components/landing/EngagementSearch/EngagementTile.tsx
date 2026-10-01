@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Box, Grid2 as Grid, Card, CardContent, CardMedia, CardActionArea, ThemeProvider } from '@mui/material';
+import { Grid2 as Grid, Card, CardContent, CardMedia, CardActionArea, ThemeProvider, Chip, Stack } from '@mui/material';
 import { Engagement } from 'models/engagement';
 import { getEngagement } from 'services/engagementService';
 import dayjs from 'dayjs';
@@ -9,11 +9,13 @@ import { useAppTranslation } from 'hooks';
 import { BodyText, Heading2 } from 'components/common/Typography';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowRight } from '@fortawesome/pro-regular-svg-icons';
+import { faCubes } from '@fortawesome/pro-light-svg-icons';
 import { colors, elevations, globalFocusShadow } from 'components/common';
 import { BaseTheme, DarkTheme } from 'styles/Theme';
-import { RouterLinkRenderer } from 'components/common/Navigation/Link';
+import { Link, RouterLinkRenderer } from 'components/common/Navigation/Link';
 import { getPath, ROUTES } from 'routes/routes';
 import BlueprintImagePlaceholder from 'components/engagement/preview/placeholders/BlueprintImagePlaceholder';
+import { SubmissionStatus } from 'constants/engagementStatus';
 
 interface EngagementTileProps {
     passedEngagement?: Engagement;
@@ -28,7 +30,7 @@ const EngagementTile = ({ passedEngagement, engagementId }: EngagementTileProps)
     const [isActive, setIsActive] = useState(false);
     const startDate = dayjs(loadedEngagement?.start_date);
     const endDate = dayjs(loadedEngagement?.end_date);
-    const dateFormat = 'MMMM DD, YYYY';
+    const dateFormat = 'MMM DD, YYYY';
     const semanticDateFormat = 'YYYY-MM-DD';
     const language = sessionStorage.getItem('languageId');
     const engagementUrl = getPath(ROUTES.PUBLIC_ENGAGEMENT_BY_SLUG, {
@@ -68,6 +70,35 @@ const EngagementTile = ({ passedEngagement, engagementId }: EngagementTileProps)
         return <BodyText size="large">{translate('landingPage.tile.error')}</BodyText>;
     }
 
+    const getEngagementCTA = () => {
+        switch (loadedEngagement?.submission_status) {
+            case SubmissionStatus.Upcoming:
+                return translate('landingPage.tile.cta.upcoming');
+            case SubmissionStatus.Open:
+                return translate('landingPage.tile.cta.open');
+            case SubmissionStatus.Closed:
+                return translate('landingPage.tile.cta.closed');
+            case SubmissionStatus.ClosedWithResults:
+                return translate('landingPage.tile.cta.closedWithResults');
+            default:
+                return translate('landingPage.tile.cta.upcoming');
+        }
+    };
+
+    const getEngagementImportantDate = () => {
+        switch (loadedEngagement?.submission_status) {
+            case SubmissionStatus.Upcoming:
+                return translate('landingPage.tile.opensOn').replace('{0}', startDate.format(dateFormat));
+            case SubmissionStatus.Open:
+                return translate('landingPage.tile.openUntil').replace('{0}', endDate.format(dateFormat));
+            case SubmissionStatus.Closed:
+            case SubmissionStatus.ClosedWithResults:
+                return translate('landingPage.tile.closedOn').replace('{0}', endDate.format(dateFormat));
+            default:
+                return '';
+        }
+    };
+
     const { name, banner_url } = loadedEngagement;
 
     return (
@@ -78,7 +109,7 @@ const EngagementTile = ({ passedEngagement, engagementId }: EngagementTileProps)
                 sx={{
                     cursor: isLoadingEngagement ? 'not-allowed' : 'pointer',
                     borderRadius: '24px',
-                    width: '320px',
+                    width: '343px',
                     '&:hover, &:has(:hover)': {
                         boxShadow: elevations.hover,
                         background: colors.surface.blue[90],
@@ -129,60 +160,80 @@ const EngagementTile = ({ passedEngagement, engagementId }: EngagementTileProps)
                         },
                     }}
                 >
-                    <CardMedia sx={{ height: '172px' }} image={banner_url ?? ''}>
+                    <CardMedia sx={{ height: '147px' }} image={banner_url ?? ''}>
+                        <EngagementStatusChip
+                            sx={{ position: 'absolute', zIndex: 2, margin: '0.75rem 1.5rem' }}
+                            hovered={isHovered || isFocused || isActive}
+                            statusId={loadedEngagement.submission_status}
+                        />
                         {!banner_url && <BlueprintImagePlaceholder height="100%" />}
                     </CardMedia>
-                    <CardContent sx={{ height: '270px', p: '40px 32px', boxSizing: 'border-box' }}>
-                        <Box
-                            sx={{
-                                height: '96px',
-                                mb: '32px',
-                                width: '100%',
-                                display: 'flex',
-                            }}
-                        >
+                    <CardContent
+                        sx={{
+                            height: '300px',
+                            p: 3,
+                            boxSizing: 'border-box',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            justifyContent: 'space-between',
+                        }}
+                    >
+                        <Grid container spacing={3} flexDirection="column">
+                            {/* Next important date */}
+                            <Grid size={12} container>
+                                <BodyText size="small" sx={{ lineHeight: 1, textWrap: 'nowrap' }}>
+                                    {getEngagementImportantDate()}
+                                </BodyText>
+                            </Grid>
                             <Heading2
                                 weight="thin"
                                 component="p"
                                 sx={{
-                                    // Required for multi-line text truncation
-                                    // https://developer.mozilla.org/en-US/docs/Web/CSS/-webkit-line-clamp
-                                    // Works on: Chrome, Firefox, Safari, Opera, Edge
-                                    // On unsupported browsers, displays as 3 lines with no ellipsis
-                                    flexGrow: 1,
-                                    display: '-webkit-box',
-                                    overflow: 'hidden',
-                                    textOverflow: 'ellipsis',
-                                    WebkitLineClamp: '3',
-                                    WebkitBoxOrient: 'vertical',
+                                    fontSize: '22px',
                                     m: 0,
                                     lineHeight: 'normal',
                                 }}
                             >
                                 {name}
-                                <FontAwesomeIcon
-                                    style={{ flexGrow: 0, whiteSpace: 'nowrap', marginLeft: '8px' }}
-                                    icon={faArrowRight}
-                                />
                             </Heading2>
-                        </Box>
-                        <Grid container flexDirection="row" alignItems="flex-start" columnSpacing={2}>
-                            <Grid size="auto" alignContent={'flex-start'} alignItems={'flex-start'}>
-                                <EngagementStatusChip statusId={loadedEngagement.submission_status} />
-                            </Grid>
-                            <Grid size="auto" maxWidth="50%" container flexDirection="column">
-                                <BodyText bold size="small" sx={{ lineHeight: 1, textWrap: 'nowrap' }}>
-                                    <time dateTime={`${startDate.format(semanticDateFormat)}`}>
-                                        {startDate.format(dateFormat)}
-                                    </time>{' '}
-                                    to
-                                </BodyText>
-                                <BodyText bold size="small" sx={{ lineHeight: 2, textWrap: 'nowrap' }}>
-                                    <time dateTime={`${endDate.format(semanticDateFormat)}`}>
-                                        {endDate.format(dateFormat)}
-                                    </time>
-                                </BodyText>
-                            </Grid>
+
+                            {/* Engagement Metadata Chips */}
+                            <Stack
+                                direction="row"
+                                spacing={1}
+                                useFlexGap
+                                flexWrap="wrap"
+                                maxHeight="64px"
+                                overflow="clip"
+                            >
+                                {loadedEngagement.metadata?.map((metadatum) => (
+                                    <Chip
+                                        size="small"
+                                        sx={{
+                                            height: '28px',
+                                            fontSize: '12px',
+                                            color:
+                                                isHovered || isFocused || isActive
+                                                    ? 'text.invertPrimary'
+                                                    : 'text.primary',
+                                            borderRadius: '4px',
+                                            backgroundColor: 'gray.30',
+                                            '& .MuiChip-icon': { color: 'gray.80' },
+                                        }}
+                                        key={metadatum.id}
+                                        icon={<FontAwesomeIcon fontSize="18px" icon={faCubes} />}
+                                        label={metadatum.value}
+                                    />
+                                ))}
+                            </Stack>
+                        </Grid>
+
+                        {/* Call to Action */}
+                        <Grid container>
+                            <Link component="p" display="flex" gap="8px" alignItems="center">
+                                {getEngagementCTA()}
+                                <FontAwesomeIcon icon={faArrowRight} />
+                            </Link>
                         </Grid>
                     </CardContent>
                 </CardActionArea>

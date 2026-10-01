@@ -62,7 +62,16 @@
     "landingPage": {
         "tile": {
             "error": "Error while loading",
-            "status": "Status:"
+            "status": "Status:",
+            "cta": {
+                "upcoming": "View engagement",
+                "open": "Share feedback",
+                "closed": "View engagement",
+                "closedWithResults": "View results"
+            },
+            "opensOn": "Opens on {0}",
+            "openUntil": "Open until {0}",
+            "closedOn": "Closed on {0}"
         }
     },
     "comment": {
@@ -114,7 +123,7 @@
     },
     "common": {
         "logout": "Logout",
-        "headerTitleAreaLabel" : "Header Title Area",
+        "headerTitleAreaLabel": "Header Title Area",
         "logoutAreaLabel": "Logout Button",
         "defaultBCText": "British Columbia Logo",
         "defaultText": "Site Logo",
