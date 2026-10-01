@@ -57,7 +57,7 @@ const EngagementTile = ({ passedEngagement, engagementId }: EngagementTileProps)
         }
     };
     useEffect(() => {
-        loadEngagement();
+        void loadEngagement();
     }, [passedEngagement, engagementId]);
 
     if (isLoadingEngagement) {
