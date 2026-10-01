@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { Grid2 as Grid, Card, CardContent, CardMedia, CardActionArea, ThemeProvider, Chip, Stack } from '@mui/material';
 import { Engagement } from 'models/engagement';
 import { getEngagement } from 'services/engagementService';
-import dayjs from 'dayjs';
 import { EngagementStatusChip } from 'components/common/Indicators/StatusChip';
 import { TileSkeleton } from './TileSkeleton';
 import { useAppTranslation } from 'hooks';
@@ -17,7 +16,6 @@ import { getPath, ROUTES } from 'routes/routes';
 import BlueprintImagePlaceholder from 'components/engagement/preview/placeholders/BlueprintImagePlaceholder';
 import { SubmissionStatus } from 'constants/engagementStatus';
 import { convertToPacific } from 'components/common/dateHelper';
-import { date } from 'yup';
 
 interface EngagementTileProps {
     passedEngagement?: Engagement;
@@ -30,8 +28,6 @@ const EngagementTile = ({ passedEngagement, engagementId }: EngagementTileProps)
     const [isHovered, setIsHovered] = useState(false);
     const [isFocused, setIsFocused] = useState(false);
     const [isActive, setIsActive] = useState(false);
-    const startDate = dayjs(loadedEngagement?.start_date);
-    const endDate = dayjs(loadedEngagement?.end_date);
     const dateFormat = 'MMM DD, YYYY';
     const semanticDateFormat = 'YYYY-MM-DD';
     const language = sessionStorage.getItem('languageId');
