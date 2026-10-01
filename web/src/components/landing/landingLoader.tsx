@@ -22,6 +22,8 @@ const landingLoader = ({ request }: LoaderFunctionArgs): LandingLoaderData => {
     const engagementsPromise = getEngagements({
         // Only get publically shared metadata for the landing page, even if logged in
         filterable_metadata: true,
+        // Only include engagements that have been published
+        published_from_date: '1970-01-01',
         search_text: searchText ?? defaultSearchFilters.search_text,
         page: Number(page ?? defaultSearchFilters.page),
         metadata:

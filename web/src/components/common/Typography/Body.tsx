@@ -10,7 +10,7 @@ import { colors } from 'styles/Theme';
  * @param {Object} props - The component props.
  * @param {boolean} [props.bold] - If true, the text will be bold.
  * @param {boolean} [props.thin] - If true, the text will be thin.
- * @param {string} [props.size='regular'] - The size of the text, can be 'small', 'regular', or 'large'.
+ * @param {string} [props.size='regular'] - The size of the text, can be 'tiny', 'small', 'regular', 'large', or 'huge'.
  * @param {React.ReactNode} props.children - The content to display within the body text.
  * @returns {JSX.Element} A styled Typography component with the specified text styles.
  * @example

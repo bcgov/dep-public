@@ -16,6 +16,8 @@ import { Link, RouterLinkRenderer } from 'components/common/Navigation/Link';
 import { getPath, ROUTES } from 'routes/routes';
 import BlueprintImagePlaceholder from 'components/engagement/preview/placeholders/BlueprintImagePlaceholder';
 import { SubmissionStatus } from 'constants/engagementStatus';
+import { convertToPacific } from 'components/common/dateHelper';
+import { date } from 'yup';
 
 interface EngagementTileProps {
     passedEngagement?: Engagement;
@@ -88,16 +90,22 @@ const EngagementTile = ({ passedEngagement, engagementId }: EngagementTileProps)
     const getEngagementImportantDate = () => {
         switch (loadedEngagement?.submission_status) {
             case SubmissionStatus.Upcoming:
-                return translate('landingPage.tile.opensOn').replace('{0}', startDate.format(dateFormat));
+                return translate('landingPage.tile.opensOn');
             case SubmissionStatus.Open:
-                return translate('landingPage.tile.openUntil').replace('{0}', endDate.format(dateFormat));
+                return translate('landingPage.tile.openUntil');
             case SubmissionStatus.Closed:
             case SubmissionStatus.ClosedWithResults:
-                return translate('landingPage.tile.closedOn').replace('{0}', endDate.format(dateFormat));
+                return translate('landingPage.tile.closedOn');
             default:
                 return '';
         }
     };
+
+    const nextImportantDate = convertToPacific(
+        loadedEngagement.submission_status == SubmissionStatus.Upcoming
+            ? loadedEngagement.start_date
+            : loadedEngagement.end_date,
+    );
 
     const { name, banner_url } = loadedEngagement;
 
@@ -182,7 +190,11 @@ const EngagementTile = ({ passedEngagement, engagementId }: EngagementTileProps)
                             {/* Next important date */}
                             <Grid size={12} container>
                                 <BodyText size="small" sx={{ lineHeight: 1, textWrap: 'nowrap' }}>
-                                    {getEngagementImportantDate()}
+                                    {getEngagementImportantDate().split('{0}')[0]}
+                                    <time dateTime={nextImportantDate.format(semanticDateFormat)}>
+                                        {nextImportantDate.format(dateFormat)}
+                                    </time>
+                                    {getEngagementImportantDate().split('{0}')[1] ?? ''}
                                 </BodyText>
                             </Grid>
                             <Heading2
