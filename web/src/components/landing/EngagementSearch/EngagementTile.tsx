@@ -193,6 +193,16 @@ const EngagementTile = ({ passedEngagement, engagementId }: EngagementTileProps)
                                 weight="thin"
                                 component="p"
                                 sx={{
+                                    // Required for multi-line text truncation
+                                    // https://developer.mozilla.org/en-US/docs/Web/CSS/-webkit-line-clamp
+                                    // Works on: Chrome, Firefox, Safari, Opera, Edge
+                                    // On unsupported browsers, displays as 3 lines with no ellipsis
+                                    flexGrow: 1,
+                                    display: '-webkit-box',
+                                    overflow: 'hidden',
+                                    textOverflow: 'ellipsis',
+                                    WebkitLineClamp: '3',
+                                    WebkitBoxOrient: 'vertical',
                                     fontSize: '22px',
                                     m: 0,
                                     lineHeight: 'normal',
