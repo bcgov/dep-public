@@ -73,6 +73,7 @@ const EngagementTile = ({ passedEngagement, engagementId }: EngagementTileProps)
             case SubmissionStatus.Open:
                 return translate('landingPage.tile.cta.open');
             case SubmissionStatus.Closed:
+                return translate('landingPage.tile.cta.closed');
             case SubmissionStatus.ClosedWithResults:
                 return translate('landingPage.tile.cta.closedWithResults');
             default:
