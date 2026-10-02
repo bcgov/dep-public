@@ -80,17 +80,9 @@ export const EngagementStatusChip: React.FC<ChipProps & Partial<MuiChipProps>> =
     };
 
     const getClassName = (): string => {
-        // Force the chip to be in the hovered state if the hovered prop is true.
-        if (hovered) {
-            return 'hovered';
-        }
-        // If hovered is *explicitly* set to false, prevent the hover styles from
-        // being applied even when the chip *is* hovered.
-        if (hovered === false) {
-            return 'unhovered';
-        }
-        // Otherwise, use the default hover behavior.
-        return '';
+        if (hovered) return 'hovered'; // Set the chip to be in the hovered state
+        if (hovered === false) return 'unhovered'; // If hovered is explicitly false, force no hover state
+        return ''; // Otherwise (if not passed), use the default hover behavior.
     };
 
     const chipProps = getChipProps();
