@@ -37,7 +37,7 @@ class Engagement(BaseModel):
 
     __tablename__ = 'engagement'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    name = db.Column(db.String(50))
+    name = db.Column(db.String(75))
     slug = db.Column(db.String(256), nullable=False)
     start_date = db.Column(db.DateTime)
     end_date = db.Column(db.DateTime)
