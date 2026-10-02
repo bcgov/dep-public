@@ -46,7 +46,8 @@ export const TileSkeleton = () => {
                         <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap" maxHeight="64px" overflow="clip">
                             {/* Between 0 and 4 tags of varying width */}
                             {Array.from({ length: Math.floor(/*NOSONAR*/ Math.random() * 5) }).map((_, index) => (
-                                <Skeleton // NOSONAR: intentional use of default key
+                                <Skeleton
+                                    key={index} // NOSONAR: intentional use of static key for UI skeletons
                                     variant="rectangular"
                                     sx={{
                                         borderRadius: '4px',
@@ -58,7 +59,7 @@ export const TileSkeleton = () => {
                         </Stack>
                     </Grid>
                     <Grid container>
-                        <Link component="p" color="gray.50" display="flex" gap="8px" alignItems="center">
+                        <Link component="p" sx={{ color: 'gray.50' }} display="flex" gap="8px" alignItems="center">
                             <Skeleton width="120px" height="22px" />
                             <FontAwesomeIcon fontSize="16px" icon={faArrowRight} />
                         </Link>
