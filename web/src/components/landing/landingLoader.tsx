@@ -20,7 +20,7 @@ const landingLoader = ({ request }: LoaderFunctionArgs): LandingLoaderData => {
     // Request data
     const metaFiltersPromise = getMetadataFilters();
     const engagementsPromise = getEngagements({
-        // Only get publically shared metadata for the landing page, even if logged in
+        // Only get publicly shared metadata for the landing page, even if logged in
         filterable_metadata: true,
         // Only include engagements that have been published
         published_from_date: '1970-01-01',
