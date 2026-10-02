@@ -7,6 +7,7 @@ import { colors } from 'styles/Theme';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 export const TileSkeleton = () => {
+    const randomBetween = (min: number, max: number) => Math.floor(Math.random() * (max - min + 1)) + min; //NOSONAR: non-cryptographically secure random() for UI purposes only
     return (
         <Card sx={{ borderRadius: '24px', width: '343px' }}>
             <CardActionArea sx={{ cursor: 'progress' }}>
@@ -39,19 +40,18 @@ export const TileSkeleton = () => {
                             </BodyText>
                         </Grid>
                         <Heading2 weight="thin" component="p" sx={{ fontSize: '22px', m: 0, lineHeight: 'normal' }}>
-                            {/* non-cryptographically secure random() for UI purposes only */}
-                            <Skeleton height="30px" width={Math.floor(/*NOSONAR*/ Math.random() * 120) + 170} />
-                            <Skeleton height="30px" width={Math.floor(/*NOSONAR*/ Math.random() * 120) + 100} />
+                            <Skeleton height="30px" width={randomBetween(170, 290)} />
+                            <Skeleton height="30px" width={randomBetween(100, 220)} />
                         </Heading2>
                         <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap" maxHeight="64px" overflow="clip">
                             {/* Between 0 and 4 tags of varying width */}
-                            {Array.from({ length: Math.floor(/*NOSONAR*/ Math.random() * 5) }).map((_, index) => (
+                            {Array.from({ length: randomBetween(0, 4) }).map((_, index) => (
                                 <Skeleton
                                     key={index} // NOSONAR: intentional use of static key for UI skeletons
                                     variant="rectangular"
                                     sx={{
                                         borderRadius: '4px',
-                                        width: Math.floor(/*NOSONAR*/ Math.random() * 80) + 40,
+                                        width: randomBetween(40, 120),
                                         height: '28px',
                                     }}
                                 />
