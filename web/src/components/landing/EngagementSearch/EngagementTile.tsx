@@ -70,12 +70,9 @@ const EngagementTile = ({ passedEngagement, engagementId }: EngagementTileProps)
 
     const getEngagementCTA = () => {
         switch (loadedEngagement?.submission_status) {
-            case SubmissionStatus.Upcoming:
-                return translate('landingPage.tile.cta.upcoming');
             case SubmissionStatus.Open:
                 return translate('landingPage.tile.cta.open');
             case SubmissionStatus.Closed:
-                return translate('landingPage.tile.cta.closed');
             case SubmissionStatus.ClosedWithResults:
                 return translate('landingPage.tile.cta.closedWithResults');
             default:
@@ -85,15 +82,13 @@ const EngagementTile = ({ passedEngagement, engagementId }: EngagementTileProps)
 
     const getEngagementImportantDate = () => {
         switch (loadedEngagement?.submission_status) {
-            case SubmissionStatus.Upcoming:
-                return translate('landingPage.tile.opensOn');
             case SubmissionStatus.Open:
                 return translate('landingPage.tile.openUntil');
             case SubmissionStatus.Closed:
             case SubmissionStatus.ClosedWithResults:
                 return translate('landingPage.tile.closedOn');
             default:
-                return '';
+                return translate('landingPage.tile.opensOn');
         }
     };
 
