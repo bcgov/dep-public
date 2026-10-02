@@ -1,3 +1,10 @@
+## October 1, 2026
+
+- **Feature** Updated engagement card to new design [🎟️ DEP-393](https://citz-gdx.atlassian.net/browse/DEP-393)
+  - Updated the visual layout and styling of the engagement card to match the new design specifications.
+  - Exposed engagement metadata as a property of Engagements on the API, allowing display of metadata in the engagement card.
+  - Updated card skeleton to match the new card design.
+
 ## September 29, 2026
 
 - **Feature** Added engagement search results page skeleton [🎟️ DEP-391](https://citz-gdx.atlassian.net/browse/DEP-391)

@@ -10,7 +10,7 @@ import { colors } from 'styles/Theme';
  * @param {Object} props - The component props.
  * @param {boolean} [props.bold] - If true, the text will be bold.
  * @param {boolean} [props.thin] - If true, the text will be thin.
- * @param {string} [props.size='regular'] - The size of the text, can be 'small', 'regular', or 'large'.
+ * @param {string} [props.size='regular'] - The size of the text, can be 'tiny', 'small', 'regular', 'large', or 'huge'.
  * @param {React.ReactNode} props.children - The content to display within the body text.
  * @returns {JSX.Element} A styled Typography component with the specified text styles.
  * @example
@@ -27,18 +27,22 @@ export const BodyText = ({
 }: {
     bold?: boolean;
     thin?: boolean;
-    size?: 'small' | 'regular' | 'large';
+    size?: 'tiny' | 'small' | 'regular' | 'large' | 'huge';
     children: React.ReactNode;
 } & TypographyProps) => {
     const fontSize = {
+        tiny: '12px',
         small: '14px',
         regular: '16px',
         large: '18px',
+        huge: '20px',
     }[size];
     const lineHeight = {
+        tiny: '18px',
         small: '22px',
         regular: '24px',
         large: '24px',
+        huge: '28px',
     }[size];
     const fontWeight = () => {
         if (bold) {

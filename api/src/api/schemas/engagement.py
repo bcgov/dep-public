@@ -58,6 +58,8 @@ class EngagementSchema(Schema):
     status_block = fields.List(fields.Nested(EngagementStatusBlockSchema))
     tenant_id = fields.Str(data_key='tenant_id')
     is_internal = fields.Bool(data_key='is_internal')
+    metadata = fields.Nested('EngagementMetadataSchema',
+                             many=True, exclude=('engagement', 'engagement_id'))
     languages = fields.List(fields.Str(), data_key='languages', load_only=True)
     suggested_engagements = fields.Nested(
         SuggestedEngagementWithAttachment,

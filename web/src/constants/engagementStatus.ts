@@ -11,6 +11,7 @@ export enum SubmissionStatus {
     Open = 2,
     Closed = 3,
     Unpublished = 4,
+    ClosedWithResults = 5,
 }
 
 export enum EngagementDisplayStatus {

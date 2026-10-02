@@ -36,6 +36,7 @@ export interface GetEngagementsParams {
     published_to_date?: string;
     include_banner_url?: boolean;
     has_team_access?: boolean;
+    filterable_metadata?: boolean;
     metadata?: string;
     tenant_id?: number;
 }

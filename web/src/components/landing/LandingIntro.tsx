@@ -37,11 +37,11 @@ const EngagementTallyRow = (props: EngagementTallyRowProps) => {
             >
                 <FontAwesomeIcon icon={props.icon} />
             </Grid>
-            <Grid container direction="column" align-items="flex-start" width="200px" sx={{ justifyContent: 'center' }}>
-                <BodyText bold sx={{ fontSize: '20px' }}>
+            <Grid container direction="column" width="200px" sx={{ justifyContent: 'center' }}>
+                <BodyText size="huge" bold>
                     {props.count}
                 </BodyText>
-                <BodyText sx={{ fontSize: '16px' }}>{props.text}</BodyText>
+                <BodyText>{props.text}</BodyText>
             </Grid>
         </Grid>
     );
