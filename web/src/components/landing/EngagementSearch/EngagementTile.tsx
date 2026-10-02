@@ -81,7 +81,7 @@ const EngagementTile = ({ passedEngagement, engagementId }: EngagementTileProps)
         }
     };
 
-    const getEngagementImportantDate = () => {
+    const getImportantDateLabel = () => {
         switch (loadedEngagement?.submission_status) {
             case SubmissionStatus.Open:
                 return translate('landingPage.tile.openUntil');
@@ -182,11 +182,11 @@ const EngagementTile = ({ passedEngagement, engagementId }: EngagementTileProps)
                             {/* Next important date */}
                             <Grid size={12} container>
                                 <BodyText size="small" sx={{ lineHeight: 1, textWrap: 'nowrap' }}>
-                                    {getEngagementImportantDate().split('{0}')[0]}
+                                    {getImportantDateLabel().split('{0}')[0]}
                                     <time dateTime={nextImportantDate.format(semanticDateFormat)}>
                                         {nextImportantDate.format(dateFormat)}
                                     </time>
-                                    {getEngagementImportantDate().split('{0}')[1] ?? ''}
+                                    {getImportantDateLabel().split('{0}')[1] ?? ''}
                                 </BodyText>
                             </Grid>
                             <Heading2
