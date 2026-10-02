@@ -1,3 +1,8 @@
+## October 2, 2026
+
+- **Feature** Increased engagement title length from 60 to 75 characters. [🎟️ DEP-394](https://citz-gdx.atlassian.net/browse/DEP-394)
+  - Updated database, validation, and UI to support engagement titles up to 75 characters.
+
 ## October 1, 2026
 
 - **Feature** Updated engagement card to new design [🎟️ DEP-393](https://citz-gdx.atlassian.net/browse/DEP-393)

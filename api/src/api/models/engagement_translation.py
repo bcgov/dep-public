@@ -4,10 +4,14 @@ Manages the Engagement Translations.
 """
 
 from __future__ import annotations
+
 from typing import Optional
+
 from sqlalchemy import UniqueConstraint
 from sqlalchemy.dialects.postgresql import JSON
+
 from api.models.language import Language as LanguageModel
+
 from .base_model import BaseModel
 from .db import db
 
@@ -21,7 +25,7 @@ class EngagementTranslation(BaseModel):
         'engagement.id', ondelete='CASCADE'), nullable=False)
     language_id = db.Column(db.Integer, db.ForeignKey(
         'language.id', ondelete='CASCADE'), nullable=False)
-    name = db.Column(db.String(50))
+    name = db.Column(db.String(75))
     description = db.Column(db.Text())
     rich_description = db.Column(JSON, unique=False, nullable=True)
     description_title = db.Column(db.String(255))
