@@ -64,7 +64,7 @@ export const SuggestedEngagements = () => {
                                 size="auto"
                                 key={`placeholder-${i + 1}`}
                                 container
-                                width="320px"
+                                width="343px"
                                 sx={placeholderStyles}
                             >
                                 <TileSkeleton />
@@ -153,7 +153,7 @@ export const SuggestedEngagements = () => {
                                                         key={`placeholder-${i + 1}`}
                                                         size="auto"
                                                         container
-                                                        width="320px"
+                                                        width="343px"
                                                         sx={placeholderStyles}
                                                     >
                                                         <p
