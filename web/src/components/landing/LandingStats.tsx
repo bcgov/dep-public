@@ -67,7 +67,8 @@ const LandingStats = () => {
                 flexWrap={{ xs: 'wrap', lg: 'nowrap' }}
                 alignItems="center"
                 width="100%"
-                gap="3rem"
+                columnGap="3rem"
+                rowGap="1rem"
                 sx={{ borderRadius: 'none' }}
             >
                 <Heading2 sx={heading2Styles}>{translate('landing.stats.title')}</Heading2>
