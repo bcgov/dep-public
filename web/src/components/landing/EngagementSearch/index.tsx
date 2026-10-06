@@ -45,7 +45,7 @@ export const EngagementSearchDataContext = createContext<EngagementSearchData>(d
 /**
  * @deprecated This component will be replaced with the new search page
  */
-const EngagementSearch = () => {
+export const EngagementSearch = () => {
     const [filtersOpen, setFiltersOpen] = useState(false);
     const [searchParams, setSearchParams] = useSearchParams();
     const [loadingEngagements, setLoadingEngagements] = useState(false);
@@ -96,5 +96,3 @@ const EngagementSearch = () => {
         </EngagementSearchDataContext.Provider>
     );
 };
-
-export default EngagementSearch;

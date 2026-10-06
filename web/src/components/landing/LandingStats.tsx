@@ -11,7 +11,7 @@ import { useAppTranslation } from 'hooks';
 const LandingStats = () => {
     const { t: translate } = useAppTranslation();
 
-    // TODO: Replace counts with real values when they are available from the API
+    // Replace counts with real values when they are available from the API
     const tallyData = [
         {
             icon: faCommentExclamation,

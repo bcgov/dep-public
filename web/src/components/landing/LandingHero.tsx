@@ -19,7 +19,7 @@ export const LandingHero = () => {
     const [searchParams, setSearchParams] = useSearchParams();
     const { t: translate } = useAppTranslation();
 
-    // TODO: Replace with real region metadata when the time comes
+    // Replace static regions with real region metadata when the time comes
     const regions = [
         'Vancouver',
         'Vancouver Island',
