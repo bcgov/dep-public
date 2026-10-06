@@ -105,7 +105,10 @@ const subscribeSchema = yup.object({
 });
 
 const authoringTemplateSchema = yup.object({
-    name: yup.string().required('Engagement title is required'),
+    name: yup
+        .string()
+        .required('Engagement title is required')
+        .max(75, 'Engagement title must be 75 characters or less'),
     eyebrow: yup.string().nullable().max(40, 'Eyebrow text must be 40 characters or less'),
     form_source: yup.string().required(),
     image_url: yup

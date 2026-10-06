@@ -24,5 +24,5 @@ const convertToString = (data: string | number | object) => {
 
 export const getSearchParamObject = (property: string, searchParams: URLSearchParams) => {
     const params = searchParams.get(property) || '';
-    return tryParse(params) ? JSON.parse(params) : [];
+    return tryParse(params) || [];
 };

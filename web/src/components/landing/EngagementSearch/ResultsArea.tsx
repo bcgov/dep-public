@@ -57,12 +57,12 @@ const ResultsArea = () => {
                     container
                     size="auto"
                     sx={{
-                        flexBasis: '320px',
+                        flexBasis: '343px',
                         alignItems: 'center',
                         justifyContent: 'center',
                     }}
                 >
-                    <Grid width="320px">
+                    <Grid width="343px">
                         <TileSkeleton />
                     </Grid>
                 </RepeatedGrid>
@@ -102,7 +102,7 @@ const ResultsArea = () => {
                 size={12}
                 display="grid"
                 sx={{
-                    gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 320px))',
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(343px, 343px))',
                 }}
             >
                 {engagements?.map((engagement) => (

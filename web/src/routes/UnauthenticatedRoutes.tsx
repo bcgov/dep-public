@@ -8,12 +8,15 @@ const UnauthenticatedRoutes = resolveLazyRouteTree(
         path="/"
         ComponentLazy={() => import('components/appLayouts/PublicLayout')}
         ErrorBoundaryLazy={() => import('routes/NotFound')}
+        handle={{ crumb: () => ({ name: 'Home' }) }}
         id="public-root"
     >
+        <LazyRoute index ComponentLazy={() => import('components/landing')} />
         <LazyRoute
-            index
-            ComponentLazy={() => import('components/landing')}
-            handle={{ crumb: () => ({ title: 'Home' }) }}
+            path="search"
+            ComponentLazy={() => import('components/engagement/search')}
+            loaderLazy={() => import('components/engagement/search/engagementSearchLoader')}
+            handle={{ crumb: () => ({ name: 'Search results' }) }}
         />
         <Route path=":slug">
             <LazyRoute index ComponentLazy={() => import('routes/SlugLanguageRedirect')} />

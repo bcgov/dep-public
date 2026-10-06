@@ -80,7 +80,7 @@ export const PrimaryButton: React.FC<ButtonProps> = ({
     onClick,
     size = 'medium',
     icon,
-    iconPosition = 'left',
+    iconPosition,
     disabled,
     sx,
     ...buttonProps
@@ -91,6 +91,7 @@ export const PrimaryButton: React.FC<ButtonProps> = ({
     if (color === 'default' && isDarkMode) {
         color = '#ffffff';
     }
+    const hasOtherChildren = React.Children.count(children) > 0;
     const customColor = colors.button[color as keyof typeof colors.button]?.shade ?? color;
     const bgColor = customColor;
     const darkBgColor = `color-mix(in srgb, ${bgColor}, black 20%)`;
@@ -152,6 +153,7 @@ export const PrimaryButton: React.FC<ButtonProps> = ({
             {...buttonProps}
         >
             {children}
+            {!hasOtherChildren && icon && iconPosition === undefined && icon}
         </MuiButton>
     );
 };
@@ -245,7 +247,7 @@ const TertiaryButton = ({
     onClick,
     size = 'medium',
     icon,
-    iconPosition = 'left',
+    iconPosition,
     disabled,
     sx,
     ...buttonProps
@@ -255,6 +257,7 @@ const TertiaryButton = ({
         tint: color === 'default' ? 'white' : color,
         shade: color === 'default' ? 'gray.110' : color,
     };
+    const hasOtherChildren = React.Children.count(children) > 0;
     const customColor =
         (color !== 'default' && colors.notification[color as keyof typeof colors.notification]) || colorobject;
 
@@ -298,6 +301,7 @@ const TertiaryButton = ({
             {...buttonProps}
         >
             {children}
+            {icon && !hasOtherChildren && iconPosition === undefined && icon}
         </MuiButton>
     );
 };

@@ -469,12 +469,29 @@ export const DarkPalette = {
     text: {
         primary: colors.type.inverted.primary,
         secondary: colors.type.inverted.secondary,
+        invertPrimary: colors.type.regular.primary,
+        invertSecondary: colors.type.regular.secondary,
     },
     action: {
         active: colors.type.inverted.link,
     },
     info: {
         main: colors.surface.gray[20],
+    },
+    error: {
+        main: colors.notification.error.shade,
+        light: colors.notification.error.tint,
+        contrastText: colors.type.inverted.primary,
+    },
+    warning: {
+        main: colors.notification.warning.shade,
+        light: colors.notification.warning.tint,
+        contrastText: colors.type.inverted.primary,
+    },
+    success: {
+        main: colors.notification.success.shade,
+        light: colors.notification.success.tint,
+        contrastText: colors.type.inverted.primary,
     },
 };
 

@@ -12,6 +12,24 @@
 - **Bugfix** Forced rendering of engagement metadata tab fields that have no preset_values
 - **Bugfix** Fixed none value submission for clearing engagement metadata values
 
+## October 2, 2026
+
+- **Feature** Increased engagement title length from 60 to 75 characters. [🎟️ DEP-394](https://citz-gdx.atlassian.net/browse/DEP-394)
+  - Updated database, validation, and UI to support engagement titles up to 75 characters.
+
+## October 1, 2026
+
+- **Feature** Updated engagement card to new design [🎟️ DEP-393](https://citz-gdx.atlassian.net/browse/DEP-393)
+  - Updated the visual layout and styling of the engagement card to match the new design specifications.
+  - Exposed engagement metadata as a property of Engagements on the API, allowing display of metadata in the engagement card.
+  - Updated card skeleton to match the new card design.
+
+## September 29, 2026
+
+- **Feature** Added engagement search results page skeleton [🎟️ DEP-391](https://citz-gdx.atlassian.net/browse/DEP-391)
+  - Query parameter `q` is used to set the initial search term.
+  - Results are not populated; filter options display as a placeholder for now.
+
 ## September 24, 2026
 
 - **Feature** Created the engagement metadata tab. [🎟️ DEP-365](https://citz-gdx.atlassian.net/browse/DEP-365)

@@ -52,7 +52,7 @@ const NoResults = () => {
             >
                 <Grid size={12} container padding="12px 24px" bgcolor="primary.main">
                     <Grid>
-                        <BodyText bold color="primary.contrastText" fontSize="20px">
+                        <BodyText bold color="primary.contrastText" size="huge">
                             {translate('NoResults.contact.header')}
                         </BodyText>
                     </Grid>

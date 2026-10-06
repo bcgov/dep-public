@@ -81,7 +81,7 @@ const EngagementForm = ({
                                 completed={Boolean(field.value)}
                                 completing={touchedFields.name && nameHasBeenEdited}
                                 question="What is the title of your engagement?"
-                                details="Titles should succinctly describe what your engagement is about in 60 characters or less."
+                                details="Titles should succinctly describe what your engagement is about in 75 characters or less."
                                 labelFor="name"
                             >
                                 <TextField
@@ -89,7 +89,7 @@ const EngagementForm = ({
                                     {...field}
                                     error={nameHasBeenEdited ? errors.name?.message : undefined}
                                     counter
-                                    maxLength={50}
+                                    maxLength={75}
                                     onChange={(value) => {
                                         setNameHasBeenEdited((current) => Boolean(value) || current);
                                         field.onChange(value);

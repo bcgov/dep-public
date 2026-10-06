@@ -185,7 +185,7 @@ const AuthoringBanner = () => {
                             id="name"
                             title="Title"
                             counter
-                            maxLength={60}
+                            maxLength={75}
                             placeholder="Engagement title"
                             error={errors.name?.message}
                         />
