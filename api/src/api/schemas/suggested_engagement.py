@@ -74,7 +74,7 @@ class SuggestedEngagementAttachment(Schema):
     consent_message = fields.Str(data_key='consent_message')
     sponsor_name = fields.Str(data_key='sponsor_name')
     slug = fields.Str(data_key='slug')
-    metadata = fields.Nested("EngagementMetadataSchema", many=True)
+    metadata = fields.Nested('EngagementMetadataSchema', many=True)
 
     def get_banner_url(self, obj):
         """Get the URL of the banner image."""
