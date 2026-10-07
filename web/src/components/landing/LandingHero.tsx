@@ -210,24 +210,16 @@ export const LandingHero = () => {
                                 {translate('landing.hero.search')}
                             </PrimaryButton>
                         </Link>
-                        {isTabletOrSmaller && (
-                            <BrowseAllLink translate={translate} isTabletOrSmaller={isTabletOrSmaller} />
-                        )}
+                        {isTabletOrSmaller && <BrowseAllLink>{translate('landing.hero.browseAllShort')}</BrowseAllLink>}
                     </Grid>
                 </Grid>
-                {!isTabletOrSmaller && <BrowseAllLink translate={translate} isTabletOrSmaller={isTabletOrSmaller} />}
+                {!isTabletOrSmaller && <BrowseAllLink>{translate('landing.hero.browseAllLong')}</BrowseAllLink>}
             </Grid>
         </LandingSection>
     );
 };
 
-const BrowseAllLink = ({
-    translate,
-    isTabletOrSmaller,
-}: {
-    translate: (key: string) => string;
-    isTabletOrSmaller: boolean;
-}) => {
+const BrowseAllLink = ({ children }: { children: React.ReactNode }) => {
     return (
         <Link
             href="/search"
@@ -246,9 +238,7 @@ const BrowseAllLink = ({
             }}
         >
             <Box component="span" sx={{ fontSize: '0.875rem' }}>
-                {!isTabletOrSmaller
-                    ? translate('landing.hero.browseAllLong')
-                    : translate('landing.hero.browseAllShort')}
+                {children}
             </Box>
             <FontAwesomeIcon icon={faArrowRightLong} style={{ marginLeft: '0.5rem' }} />
         </Link>
