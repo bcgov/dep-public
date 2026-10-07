@@ -14,6 +14,9 @@
 
 ## October 2, 2026
 
+- **Feature** Added horizontal orientation for engagement cards. [🎟️ DEP-395](https://citz-gdx.atlassian.net/browse/DEP-395)
+  - Added an "orientation" prop to the engagement card component. This supports responsive values, so use cases like `orientation={{ xs: 'vertical', md: 'horizontal', lg: 'vertical' }}` are made easy.
+  - Fixed layouts expecting vertical cards to be 320px wide; they are now 343px wide.
 - **Feature** Increased engagement title length from 60 to 75 characters. [🎟️ DEP-394](https://citz-gdx.atlassian.net/browse/DEP-394)
   - Updated database, validation, and UI to support engagement titles up to 75 characters.
 

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Grid2 as Grid, Card, CardContent, CardMedia, CardActionArea, ThemeProvider, Chip, Stack } from '@mui/material';
+import { ResponsiveStyleValue } from '@mui/system';
 import { Engagement } from 'models/engagement';
 import { getEngagement } from 'services/engagementService';
 import { EngagementStatusChip } from 'components/common/Indicators/StatusChip';
@@ -20,8 +21,33 @@ import { convertToPacific } from 'components/common/dateHelper';
 interface EngagementTileProps {
     passedEngagement?: Engagement;
     engagementId: number;
+    orientation?: ResponsiveStyleValue<'horizontal' | 'vertical'>;
 }
-const EngagementTile = ({ passedEngagement, engagementId }: EngagementTileProps) => {
+
+export function mapOrientation<T extends string>(
+    orientation: ResponsiveStyleValue<'horizontal' | 'vertical'>,
+    horizontalValue: T,
+    verticalValue: T,
+): ResponsiveStyleValue<T> {
+    const getValue = (value: 'horizontal' | 'vertical' | null) =>
+        value === 'horizontal' ? horizontalValue : verticalValue;
+
+    if (Array.isArray(orientation)) return orientation.map(getValue);
+
+    if (typeof orientation === 'object') {
+        const breakpointValues = Object.fromEntries(
+            Object.entries(orientation)
+                .filter(([, value]) => value !== null)
+                .map(([breakpoint, value]) => [breakpoint, getValue(value)]),
+        );
+        // Ensure that the default value for the smallest breakpoint is set to verticalValue
+        return { xs: verticalValue, ...breakpointValues };
+    }
+
+    return orientation === 'horizontal' ? horizontalValue : verticalValue;
+}
+
+const EngagementTile = ({ passedEngagement, engagementId, orientation = 'vertical' }: EngagementTileProps) => {
     const { t: translate } = useAppTranslation();
     const [loadedEngagement, setLoadedEngagement] = useState<Engagement | null>(passedEngagement || null);
     const [isLoadingEngagement, setIsLoadingEngagement] = useState(true);
@@ -61,7 +87,7 @@ const EngagementTile = ({ passedEngagement, engagementId }: EngagementTileProps)
     }, [passedEngagement, engagementId]);
 
     if (isLoadingEngagement) {
-        return <TileSkeleton />;
+        return <TileSkeleton orientation={orientation} />;
     }
 
     if (!loadedEngagement) {
@@ -101,15 +127,29 @@ const EngagementTile = ({ passedEngagement, engagementId }: EngagementTileProps)
 
     const { name, banner_url } = loadedEngagement;
 
+    const cardMinWidth = mapOrientation(orientation, '704px', '343px');
+    const cardMaxWidth = mapOrientation(orientation, '806px', '343px');
+    const mediaHeight = mapOrientation(orientation, '289px', '147px');
+    const mediaWidth = mapOrientation(orientation, '33.3%', '343px');
+    const contentWidth = mapOrientation(orientation, '426px', '100%');
+    const contentHeight = mapOrientation(orientation, '289px', '345px');
+
     return (
         <ThemeProvider theme={isHovered || isFocused ? DarkTheme : BaseTheme}>
             <Card
                 draggable={false}
                 className={isActive ? 'active' : ''}
                 sx={{
+                    '& a': {
+                        display: 'flex',
+                        flexDirection: mapOrientation(orientation, 'row', 'column'),
+                        justifyContent: 'flex-start',
+                    },
                     cursor: isLoadingEngagement ? 'not-allowed' : 'pointer',
                     borderRadius: '24px',
-                    width: '343px',
+                    width: '100%',
+                    minWidth: cardMinWidth,
+                    maxWidth: cardMaxWidth,
                     '&:hover, &:has(:hover)': {
                         boxShadow: elevations.hover,
                         background: colors.surface.blue[90],
@@ -160,7 +200,10 @@ const EngagementTile = ({ passedEngagement, engagementId }: EngagementTileProps)
                         },
                     }}
                 >
-                    <CardMedia sx={{ height: '147px' }} image={banner_url ?? ''}>
+                    <CardMedia
+                        sx={{ height: mediaHeight, minWidth: mediaWidth, backgroundPositionX: '85%' }}
+                        image={banner_url ?? ''}
+                    >
                         <EngagementStatusChip
                             sx={{ position: 'absolute', zIndex: 2, margin: '0.75rem 1.5rem' }}
                             hovered={isHovered || isFocused || isActive}
@@ -170,7 +213,8 @@ const EngagementTile = ({ passedEngagement, engagementId }: EngagementTileProps)
                     </CardMedia>
                     <CardContent
                         sx={{
-                            height: '300px',
+                            height: contentHeight,
+                            width: contentWidth,
                             p: 3,
                             boxSizing: 'border-box',
                             display: 'flex',
@@ -201,7 +245,7 @@ const EngagementTile = ({ passedEngagement, engagementId }: EngagementTileProps)
                                     display: '-webkit-box',
                                     overflow: 'hidden',
                                     textOverflow: 'ellipsis',
-                                    WebkitLineClamp: '3',
+                                    WebkitLineClamp: mapOrientation(orientation, '2', '3'),
                                     WebkitBoxOrient: 'vertical',
                                     fontSize: '22px',
                                     m: 0,
@@ -222,21 +266,23 @@ const EngagementTile = ({ passedEngagement, engagementId }: EngagementTileProps)
                             >
                                 {loadedEngagement.metadata?.map((metadatum) => (
                                     <Chip
-                                        size="small"
+                                        key={metadatum.id}
+                                        icon={
+                                            <FontAwesomeIcon
+                                                style={{ marginLeft: '12px' }}
+                                                fontSize="18px"
+                                                icon={faCubes}
+                                            />
+                                        }
+                                        label={metadatum.value}
                                         sx={{
+                                            transition: '0s',
                                             height: '28px',
                                             fontSize: '12px',
-                                            color:
-                                                isHovered || isFocused || isActive
-                                                    ? 'text.invertPrimary'
-                                                    : 'text.primary',
                                             borderRadius: '4px',
-                                            backgroundColor: 'gray.30',
-                                            '& .MuiChip-icon': { color: 'gray.80' },
+                                            backgroundColor:
+                                                isHovered || isFocused || isActive ? 'blue.100' : 'gray.30',
                                         }}
-                                        key={metadatum.id}
-                                        icon={<FontAwesomeIcon fontSize="18px" icon={faCubes} />}
-                                        label={metadatum.value}
                                     />
                                 ))}
                             </Stack>
