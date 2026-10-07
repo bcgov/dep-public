@@ -1,12 +1,12 @@
 import { getEngagements } from 'services/engagementService';
-import { defaultLandingStatuses, defaultSearchFilters, validSortOrders } from './constants';
+import { defaultLandingStatuses, defaultSearchFilters, validSortOrders } from '../constants';
 import { getMetadataFilters } from 'services/engagementMetadataService';
-import { LandingLoaderData, SortOrder } from './types';
+import { LandingLoaderData, SortOrder } from '../types';
 import { LoaderFunctionArgs } from 'react-router';
 import { EngagementStatus } from 'constants/engagementStatus';
 import { tryParse } from 'helper';
 
-const landingLoader = ({ request }: LoaderFunctionArgs): LandingLoaderData => {
+const engagementSearchLoader = ({ request }: LoaderFunctionArgs): LandingLoaderData => {
     // Retrieve params
     const url = new URL(request.url);
     const searchParams = url?.searchParams;
@@ -53,4 +53,4 @@ const translateEngagementStatus = (es: string): EngagementStatus[] => {
     return [];
 };
 
-export default landingLoader;
+export default engagementSearchLoader;

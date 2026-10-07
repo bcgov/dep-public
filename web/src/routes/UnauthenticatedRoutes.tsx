@@ -11,11 +11,7 @@ const UnauthenticatedRoutes = resolveLazyRouteTree(
         handle={{ crumb: () => ({ name: 'Home' }) }}
         id="public-root"
     >
-        <LazyRoute
-            index
-            ComponentLazy={() => import('components/landing')}
-            loaderLazy={() => import('components/landing/landingLoader')}
-        />
+        <LazyRoute index ComponentLazy={() => import('components/landing')} />
         <LazyRoute
             path="search"
             ComponentLazy={() => import('components/engagement/search')}

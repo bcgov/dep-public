@@ -83,42 +83,59 @@
         }
     },
     "landing": {
-        "filters": {
-            "countEngagement": "engagement",
-            "countFound": "found",
-            "drawer": {
-                "openButton": "Filter",
-                "title": "Filter Engagements",
-                "apply": "Apply Filters",
-                "statusFilter": "Engagement Status",
-                "filterHeader": "Filter by {0}"
-            },
-            "clear": "Clear Filters",
-            "search": "Search Engagements",
-            "searchPlaceholder": "Engagement Title",
-            "sortBy": "Sort by",
-            "sort": {
-                "newestCreated": "Newest (created)",
-                "oldestCreated": "Oldest (created)",
-                "newestUpdated": "Newest (updated)",
-                "oldestUpdated": "Oldest (updated)"
-            },
-            "status": {
-                "all": "All Engagements",
-                "open": "Open Engagements",
-                "closed": "Closed Engagements",
-                "upcoming": "Upcoming Engagements"
-            },
+        "hero": {
+            "browseAllShort": "Browse all open",
+            "browseAllLong": "Browse all open engagements",
+            "search": "Search",
+            "searchPlaceholder": "By keyword",
+            "regionSelectPlaceholder": "Near an area",
+            "regionSelectNoneValue": "None",
             "aria": {
-                "closeDrawer": "Close filter options",
-                "openDrawer": "Open more filter options",
-                "deleteFilterChip": "{0} filter - press to remove",
-                "metadataFilterChip": "{0} filter - {1}",
-                "selected": "Applied",
-                "notSelected": "Not Applied",
-                "applyFilters": "Apply Filters and close filter options",
-                "statusFilter": "Engagement Status Selector - {0} selected"
+                "search": "Search for an engagement by keywords.",
+                "regionSelect": "Select an area to filter by region."
             }
+        },
+        "stats": {
+            "title": "Recent engagement activity:",
+            "publicResponses": "Public responses",
+            "totalEngagements": "Total engagements",
+            "openOpportunities": "Open opportunities",
+            "upcomingOpportunities": "Upcoming opportunities"
+        }
+    },
+    "search": {
+        "countEngagement": "engagement",
+        "countFound": "found",
+        "drawer": {
+            "openButton": "Filter",
+            "title": "Filter Engagements",
+            "apply": "Apply Filters",
+            "statusFilter": "Engagement Status",
+            "filterHeader": "Filter by {0}"
+        },
+        "clear": "Clear Filters",
+        "sortBy": "Sort by",
+        "sort": {
+            "newestCreated": "Newest (created)",
+            "oldestCreated": "Oldest (created)",
+            "newestUpdated": "Newest (updated)",
+            "oldestUpdated": "Oldest (updated)"
+        },
+        "status": {
+            "all": "All Engagements",
+            "open": "Open Engagements",
+            "closed": "Closed Engagements",
+            "upcoming": "Upcoming Engagements"
+        },
+        "aria": {
+            "closeDrawer": "Close filter options",
+            "openDrawer": "Open more filter options",
+            "deleteFilterChip": "{0} filter - press to remove",
+            "metadataFilterChip": "{0} filter - {1}",
+            "selected": "Applied",
+            "notSelected": "Not Applied",
+            "applyFilters": "Apply Filters and close filter options",
+            "statusFilter": "Engagement Status Selector - {0} selected"
         }
     },
     "common": {

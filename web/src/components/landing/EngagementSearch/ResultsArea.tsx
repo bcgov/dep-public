@@ -6,18 +6,18 @@ import EngagementTile from './EngagementTile';
 import NoResult from 'routes/NoResults';
 import { LiveAnnouncer, LiveMessage } from 'react-aria-live';
 import { Pagination } from 'components/common/Input';
-import { LandingDataContext } from '..';
 import { Engagement } from 'models/engagement';
 import { updateSearchParams } from '../utils';
+import { EngagementSearchDataContext } from '.';
 
 const ResultsArea = () => {
     const {
+        searchParams,
+        setSearchParams,
         engagements: engs,
         loadingEngagements,
         setLoadingEngagements,
-        searchParams,
-        setSearchParams,
-    } = useContext(LandingDataContext);
+    } = useContext(EngagementSearchDataContext);
     const [engagements, setEngagements] = useState<Engagement[]>([]);
     const [count, setCount] = useState(0);
     const [ariaStatusMessage, setAriaStatusMessage] = useState(

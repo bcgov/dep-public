@@ -8,14 +8,14 @@ import { useAppTranslation } from 'hooks';
 import { Button } from 'components/common/Input/Button';
 import { DarkTheme } from 'styles/Theme';
 import { Heading2, Heading4 } from 'components/common/Typography';
-import { LandingDataContext } from '..';
 import { getSearchParamObject, updateSearchParams } from '../utils';
 import { MetadataFilter } from 'components/metadataManagement/types';
+import { EngagementSearchDataContext } from '.';
 
-const FilterDrawer = () => {
+const FilterDrawer = ({ clearFilters }: { clearFilters: () => void }) => {
     const [filters, setFilters] = useState<MetadataFilter[]>([]);
-    const { searchParams, setSearchParams, allMetaFilters, clearFilters, filtersOpen, setFiltersOpen } =
-        useContext(LandingDataContext);
+    const { allMetaFilters } = useContext(EngagementSearchDataContext);
+    const { searchParams, setSearchParams, filtersOpen, setFiltersOpen } = useContext(EngagementSearchDataContext);
 
     const { t: translate } = useAppTranslation();
 

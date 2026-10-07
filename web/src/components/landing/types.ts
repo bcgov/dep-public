@@ -4,7 +4,6 @@ import { MetadataFilter } from 'components/metadataManagement/types';
 import { EngagementDisplayStatus } from 'constants/engagementStatus';
 import { Engagement } from 'models/engagement';
 import { ReactNode } from 'react';
-import { TenantState } from 'reduxSlices/tenantSlice';
 import { Page } from 'services/type';
 
 export type SortOrder = 'desc' | 'asc';
@@ -48,17 +47,4 @@ export interface EngagementTallyRowProps {
     icon: IconProp;
     count: number;
     text: string;
-}
-
-export interface LandingData {
-    tenant: TenantState;
-    engagements: Promise<Page<Engagement> | undefined>;
-    allMetaFilters: Promise<MetadataFilter[] | undefined>;
-    searchParams: URLSearchParams;
-    setSearchParams: (params: URLSearchParams) => void;
-    filtersOpen: boolean;
-    setFiltersOpen: (open: boolean) => void;
-    loadingEngagements: boolean;
-    setLoadingEngagements: (loading: boolean) => void;
-    clearFilters: () => void;
 }

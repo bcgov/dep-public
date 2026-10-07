@@ -15,13 +15,13 @@ import { colors } from '../../common';
 import { CustomTextField, Select } from 'components/common/Input';
 import { When } from 'react-if';
 import { BodyText } from 'components/common/Typography/Body';
-import { LandingDataContext } from '..';
 import { getSearchParamObject, updateSearchParams } from '../utils';
 import { EngagementDisplayStatus } from 'constants/engagementStatus';
 import { tryParse } from 'helper';
+import { EngagementSearchDataContext } from '.';
 
-const SearchAndFilterArea = () => {
-    const { searchParams, setSearchParams, clearFilters, setFiltersOpen } = useContext(LandingDataContext);
+const SearchAndFilterArea = ({ clearFilters }: { clearFilters: () => void }) => {
+    const { searchParams, setSearchParams, setFiltersOpen } = useContext(EngagementSearchDataContext);
 
     const selectedValue =
         getSearchParamObject('engagement_status', searchParams)?.length === 0

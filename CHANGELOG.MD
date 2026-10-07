@@ -1,3 +1,17 @@
+## October 6, 2026
+
+- **Feature** Reworked public landing page hero/stats section. [🎟️ DEP-390](https://citz-gdx.atlassian.net/browse/DEP-390)
+  - Renamed 'LandingIntro' to 'LandingStats'
+  - Implemented new hero and stats section designs from Figma
+  - Added basic query params logic for adding search/region values in URL and retrieving them on page load
+    - Query params are forwarded to search page
+  - Decoupled engagement search from landing page
+  - Marked engagement search component as deprecated
+  - Refactored translation strings to accomodate new page structure
+  - Removed loader from landing route to avoid requests after query param update
+- **Bugfix** Forced rendering of engagement metadata tab fields that have no preset_values
+- **Bugfix** Fixed none value submission for clearing engagement metadata values
+
 ## October 2, 2026
 
 - **Feature** Increased engagement title length from 60 to 75 characters. [🎟️ DEP-394](https://citz-gdx.atlassian.net/browse/DEP-394)

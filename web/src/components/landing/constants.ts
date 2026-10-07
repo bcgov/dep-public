@@ -1,6 +1,5 @@
 import { EngagementDisplayStatus } from 'constants/engagementStatus';
-import { initialTenantState } from 'reduxSlices/tenantSlice';
-import { LandingData, SortOrder } from './types';
+import { SortOrder } from './types';
 
 export const defaultLandingStatuses = [
     EngagementDisplayStatus.Open,
@@ -9,19 +8,6 @@ export const defaultLandingStatuses = [
 ];
 
 export const validSortOrders = ['asc', 'desc'];
-
-export const defaultLandingData: LandingData = {
-    tenant: initialTenantState,
-    engagements: Promise.resolve({ items: [], total: 0 }),
-    allMetaFilters: Promise.resolve([]),
-    searchParams: new URLSearchParams(),
-    setSearchParams: () => {},
-    filtersOpen: false,
-    setFiltersOpen: () => {},
-    loadingEngagements: false,
-    setLoadingEngagements: () => {},
-    clearFilters: () => {},
-};
 
 export const defaultSearchFilters = {
     page: 1,

@@ -151,7 +151,6 @@ export const MetadataTab = () => {
                     // Filter out default values and normalize values to strings
                     if (Array.isArray(values) && values.length > 0) {
                         values = values.filter((md) => !filterValues.includes(String(md))).map(String);
-                        if (values.length === 0) return; // Protect against empty array
                     } else {
                         values = [String(values)]; // Normalize to string type within array
                     }
@@ -360,7 +359,9 @@ const MetadataSelect = ({
     const [selectedTaxonPosition, setSelectedTaxonPosition] = useState<number | undefined>();
     const [selectedTaxonDataType, setSelectedTaxonDataType] = useState<string | undefined>();
     const [error, setError] = useState<string | undefined>();
-    const taxonIsMulti = !taxon.one_per_engagement;
+    const taxonIsMulti = !taxon?.one_per_engagement;
+    const allOptions = [...(taxon?.preset_values || []), ...(customValues[taxon.position] || [])];
+    const taxonHasOptions = allOptions?.length > 0;
     const customValueLinkStyles = {
         fontSize: '14px',
         background: 'transparent',
@@ -441,7 +442,7 @@ const MetadataSelect = ({
         return true;
     };
 
-    if (Array.isArray(taxon.preset_values) && taxon.preset_values.length > 0) {
+    if (Array.isArray(taxon.preset_values)) {
         return (
             <>
                 {/* Modal that allows the user to input a custom option for the select */}
@@ -505,11 +506,12 @@ const MetadataSelect = ({
                     <MenuItem key={`${taxon.id}-${taxon.name}-none-option`} value="None">
                         None
                     </MenuItem>
-                    {[...taxon.preset_values, ...(customValues[taxon.position] || [])]?.map((pv) => (
-                        <MenuItem key={`${taxon.id}-${taxon.name}-${pv}-option`} value={pv}>
-                            {pv}
-                        </MenuItem>
-                    ))}
+                    {taxonHasOptions &&
+                        allOptions?.map((pv) => (
+                            <MenuItem key={`${taxon.id}-${taxon.name}-${pv}-option`} value={pv}>
+                                {pv}
+                            </MenuItem>
+                        ))}
                 </Select>
                 {taxon.freeform && (
                     <Button

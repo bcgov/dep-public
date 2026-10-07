@@ -1,5 +1,4 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { LandingDataContext } from '../index';
 import { BodyText } from 'components/common/Typography';
 import Grid from '@mui/material/Grid2';
 import { Select } from 'components/common/Input/Select';
@@ -7,9 +6,10 @@ import { updateSearchParams } from '../utils';
 import { Box, SelectChangeEvent } from '@mui/material';
 import { SortOrder } from '../types';
 import { useAppTranslation } from 'hooks';
+import { EngagementSearchDataContext } from '.';
 
 const CountAndSortArea = () => {
-    const { searchParams, engagements: engs } = useContext(LandingDataContext);
+    const { searchParams, engagements: engs } = useContext(EngagementSearchDataContext);
     const [engCount, setEngCount] = useState(0);
     const [sort, setSort] = useState('engagement.created_date:desc');
 
@@ -75,7 +75,7 @@ const SortSelect = ({ sort }: { sort: string }) => {
         { value: 'engagement.updated_date:asc', label: translate('landing.filters.sort.oldestUpdated') },
         { value: 'engagement.updated_date:desc', label: translate('landing.filters.sort.newestUpdated') },
     ];
-    const { searchParams, setSearchParams } = useContext(LandingDataContext);
+    const { searchParams, setSearchParams } = useContext(EngagementSearchDataContext);
 
     const updateSort = (event: SelectChangeEvent<unknown>) => {
         const newString = String(event.target.value);
