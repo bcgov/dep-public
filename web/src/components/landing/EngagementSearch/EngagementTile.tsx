@@ -127,10 +127,12 @@ const EngagementTile = ({ passedEngagement, engagementId, orientation = 'vertica
 
     const { name, banner_url } = loadedEngagement;
 
-    const cardWidth = mapOrientation(orientation, '704px', '343px');
+    const cardMinWidth = mapOrientation(orientation, '704px', '343px');
+    const cardMaxWidth = mapOrientation(orientation, '806px', '343px');
     const mediaHeight = mapOrientation(orientation, '289px', '147px');
-    const mediaWidth = mapOrientation(orientation, '230px', '343px');
-    const contentHeight = mapOrientation(orientation, '289px', '300px');
+    const mediaWidth = mapOrientation(orientation, '33.3%', '343px');
+    const contentWidth = mapOrientation(orientation, '426px', '100%');
+    const contentHeight = mapOrientation(orientation, '289px', '345px');
 
     return (
         <ThemeProvider theme={isHovered || isFocused ? DarkTheme : BaseTheme}>
@@ -145,7 +147,9 @@ const EngagementTile = ({ passedEngagement, engagementId, orientation = 'vertica
                     },
                     cursor: isLoadingEngagement ? 'not-allowed' : 'pointer',
                     borderRadius: '24px',
-                    width: cardWidth,
+                    width: '100%',
+                    minWidth: cardMinWidth,
+                    maxWidth: cardMaxWidth,
                     '&:hover, &:has(:hover)': {
                         boxShadow: elevations.hover,
                         background: colors.surface.blue[90],
@@ -210,7 +214,7 @@ const EngagementTile = ({ passedEngagement, engagementId, orientation = 'vertica
                     <CardContent
                         sx={{
                             height: contentHeight,
-                            width: '100%',
+                            width: contentWidth,
                             p: 3,
                             boxSizing: 'border-box',
                             display: 'flex',
@@ -262,21 +266,23 @@ const EngagementTile = ({ passedEngagement, engagementId, orientation = 'vertica
                             >
                                 {loadedEngagement.metadata?.map((metadatum) => (
                                     <Chip
-                                        size="small"
+                                        key={metadatum.id}
+                                        icon={
+                                            <FontAwesomeIcon
+                                                style={{ marginLeft: '12px' }}
+                                                fontSize="18px"
+                                                icon={faCubes}
+                                            />
+                                        }
+                                        label={metadatum.value}
                                         sx={{
+                                            transition: '0s',
                                             height: '28px',
                                             fontSize: '12px',
-                                            color:
-                                                isHovered || isFocused || isActive
-                                                    ? 'text.invertPrimary'
-                                                    : 'text.primary',
                                             borderRadius: '4px',
-                                            backgroundColor: 'gray.30',
-                                            '& .MuiChip-icon': { color: 'gray.80' },
+                                            backgroundColor:
+                                                isHovered || isFocused || isActive ? 'blue.100' : 'gray.30',
                                         }}
-                                        key={metadatum.id}
-                                        icon={<FontAwesomeIcon fontSize="18px" icon={faCubes} />}
-                                        label={metadatum.value}
                                     />
                                 ))}
                             </Stack>
