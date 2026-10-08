@@ -20,9 +20,9 @@ def upgrade():
     op.add_column('engagement_metadata_taxa', sa.Column('is_required', sa.Boolean(), nullable=False, server_default=sa.false()))
     # Mark existing 'Region' and 'Category' taxa as required
     op.execute(
-        f"UPDATE engagement_metadata_taxa SET is_required = TRUE WHERE name IN ('Region', 'Category');"
-        f"UPDATE engagement_metadata_taxa SET data_type = 'geo_area' WHERE name = 'Region';"
-        f"UPDATE engagement_metadata_taxa SET data_type = 'text' WHERE name = 'Category';"
+        "UPDATE engagement_metadata_taxa SET is_required = TRUE WHERE name IN ('Region', 'Category');"
+        "UPDATE engagement_metadata_taxa SET data_type = 'geo_area' WHERE name = 'Region';"
+        "UPDATE engagement_metadata_taxa SET data_type = 'text' WHERE name = 'Category';"
     )
     # For each tenant, create 'Region' and 'Category' taxa if they do not exist
     tenant_entries = op.get_bind().execute("SELECT id FROM tenant").fetchall()
