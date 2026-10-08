@@ -71,6 +71,7 @@ export interface MetadataTaxon extends MetadataTaxonModify {
     tenant_id: number; // The tenant id
     position: number; // The taxon's position within the tenant
     entries?: EngagementMetadata[]; // The content of the taxon
+    is_required: boolean; // Whether the taxon is marked as required
 }
 
 export interface EngagementMetadata {

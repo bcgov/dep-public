@@ -210,26 +210,34 @@ const TaxonEditForm = ({ taxon }: { taxon: MetadataTaxon }): JSX.Element => {
                             )}
                             <Heading3>Edit taxon</Heading3>
                         </Grid>
-                        <Grid size="auto" justifySelf="flex-end">
-                            <Button
-                                icon={
-                                    <FontAwesomeIcon icon={faTrash} style={{ fontSize: '20px', paddingRight: '5px' }} />
-                                }
-                                color="error"
-                                aria-label="delete"
-                                onClick={() => removeMetadataTaxon(taxon.id)}
-                            >
-                                Delete
-                            </Button>
-                        </Grid>
+                        <Tooltip title={taxon.is_required ? 'This taxon is required and cannot be deleted.' : ''}>
+                            <Grid size="auto" justifySelf="flex-end">
+                                <Button
+                                    icon={
+                                        <FontAwesomeIcon
+                                            icon={faTrash}
+                                            style={{ fontSize: '20px', paddingRight: '5px' }}
+                                        />
+                                    }
+                                    color="error"
+                                    aria-label="delete"
+                                    onClick={() => removeMetadataTaxon(taxon.id)}
+                                    disabled={taxon.is_required}
+                                >
+                                    Delete
+                                </Button>
+                            </Grid>
+                        </Tooltip>
                     </Grid>
                     <Grid>
                         <BodyText bold>Taxon Name</BodyText>
                         <Controller
                             name="name"
                             control={control}
+                            disabled={taxon.is_required}
                             render={({ field }) => (
                                 <TextField
+                                    disabled={field.disabled}
                                     placeholder="Enter taxon name"
                                     error={!!methods.formState.errors.name}
                                     helperText={methods.formState.errors.name?.message}
@@ -273,8 +281,9 @@ const TaxonEditForm = ({ taxon }: { taxon: MetadataTaxon }): JSX.Element => {
                             <Controller
                                 name="data_type"
                                 control={control}
+                                disabled={taxon.is_required}
                                 render={({ field }) => (
-                                    <Select value={field.value} onChange={field.onChange}>
+                                    <Select {...field}>
                                         {Object.entries(TaxonTypes).map(([key, type]: [string, TaxonType]) => (
                                             <MenuItem key={key} value={key}>
                                                 <Grid container spacing={1} alignItems="center">

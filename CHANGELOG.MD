@@ -1,3 +1,10 @@
+## October 8, 2026
+
+- **Feature** Added required taxa to each tenant. [🎟️ DEP-397](https://citz-gdx.atlassian.net/browse/DEP-397)
+  - Added a "required" flag to metadata, which makes taxa that have it mandatory/permanent.
+  - Required taxa cannot be deleted from a tenant or have their name or data type changed.
+  - Required taxa are automatically included when creating a new tenant.
+
 ## October 6, 2026
 
 - **Feature** Reworked public landing page hero/stats section. [🎟️ DEP-390](https://citz-gdx.atlassian.net/browse/DEP-390)

@@ -15,6 +15,7 @@ import {
     faLinkSimple,
     faPhone,
     faToggleOff,
+    faMapMarkerAlt,
 } from '@fortawesome/pro-regular-svg-icons';
 
 export const TaxonTypes: { [key: string]: TaxonType } = {
@@ -130,5 +131,13 @@ export const TaxonTypes: { [key: string]: TaxonType } = {
             ),
         externalResource: (value: string) => `tel:${value}`,
         externalResourceLabel: 'Call',
+    },
+    geo_area: {
+        name: 'Geographical Area',
+        icon: faMapMarkerAlt,
+        supportsPresetValues: true,
+        supportsFreeform: true,
+        supportsMulti: true,
+        yupValidator: yup.string(),
     },
 };

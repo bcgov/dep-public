@@ -8,6 +8,16 @@ from api.models.engagement_metadata import (
     EngagementMetadata, MetadataTaxon, MetadataTaxonDataType, MetadataTaxonFilterType)
 
 
+def _check_value_unchanged(key, instance, data):
+    if key in data and data[key] != getattr(instance, key):
+        raise ValidationError(f'{key} field cannot be changed.')
+
+
+def _check_required_value_unchanged(key, instance, data):
+    if getattr(instance, 'is_required', False) and key in data and data[key] != getattr(instance, key):
+        raise ValidationError(f'{key} field cannot be changed for required taxa.')
+
+
 class EngagementMetadataSchema(SQLAlchemyAutoSchema):
     """Schema for engagement metadata."""
 
@@ -26,12 +36,9 @@ class EngagementMetadataSchema(SQLAlchemyAutoSchema):
     def check_immutable_fields(self, data, **kwargs):
         """Validate fields."""
         if self.instance:
-            if 'id' in data and data['id'] != self.instance.id:
-                raise ValidationError('id field cannot be changed.')
-            if 'tenant_id' in data and data['tenant_id'] != self.instance.tenant_id:
-                raise ValidationError('tenant_id field cannot be changed.')
-            if 'engagement_id' in data and data['engagement_id'] != self.instance.engagement_id:
-                raise ValidationError('engagement_id field cannot be changed.')
+            _check_value_unchanged('id', self.instance, data)
+            _check_value_unchanged('tenant_id', self.instance, data)
+            _check_value_unchanged('engagement_id', self.instance, data)
         return data
 
     # Nested fields
@@ -64,6 +71,7 @@ class MetadataTaxonSchema(SQLAlchemyAutoSchema):
     filter_type = fields.String(
         validate=validate.OneOf([e.value for e in MetadataTaxonFilterType]), allow_none=True)
     include_freeform = fields.Boolean()
+    is_required = fields.Boolean()
 
     def get_preset_values(self, obj):
         """Serialize the preset_values property for Marshmallow."""
@@ -80,13 +88,13 @@ class MetadataTaxonSchema(SQLAlchemyAutoSchema):
     def check_immutable_fields(self, data, **kwargs):
         """Check fields."""
         if self.instance:
-            if 'id' in data and data['id'] != self.instance.id:
-                raise ValidationError('id field cannot be changed.')
-            if 'tenant_id' in data and data['tenant_id'] != self.instance.tenant_id:
-                raise ValidationError('tenant_id field cannot be changed.')
-            if 'position' in data and data['position'] != self.instance.position:
-                raise ValidationError('Position field cannot be updated directly;'
-                                      ' use a reorder operation instead.')
+            _check_value_unchanged('id', self.instance, data)
+            _check_value_unchanged('tenant_id', self.instance, data)
+            _check_value_unchanged('position', self.instance, data)
+            _check_value_unchanged('is_required', self.instance, data)
+
+            _check_required_value_unchanged('name', self.instance, data)
+            _check_required_value_unchanged('data_type', self.instance, data)
         return data
 
     # Nested field
