@@ -64,6 +64,7 @@ class MetadataTaxonSchema(SQLAlchemyAutoSchema):
     filter_type = fields.String(
         validate=validate.OneOf([e.value for e in MetadataTaxonFilterType]), allow_none=True)
     include_freeform = fields.Boolean()
+    is_required = fields.Boolean()
 
     def get_preset_values(self, obj):
         """Serialize the preset_values property for Marshmallow."""
@@ -87,6 +88,13 @@ class MetadataTaxonSchema(SQLAlchemyAutoSchema):
             if 'position' in data and data['position'] != self.instance.position:
                 raise ValidationError('Position field cannot be updated directly;'
                                       ' use a reorder operation instead.')
+            if 'is_required' in data and data['is_required'] != self.instance.is_required:
+                raise ValidationError('is_required field cannot be changed.')
+
+            if 'name' in data and data['name'] != self.instance.name and self.instance.is_required:
+                raise ValidationError('name field cannot be changed for required taxa.')
+            if 'data_type' in data and data['data_type'] != self.instance.data_type and self.instance.is_required:
+                raise ValidationError('data_type field cannot be changed for required taxa.')
         return data
 
     # Nested field

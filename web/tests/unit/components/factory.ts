@@ -293,6 +293,7 @@ const engagementMetadataTaxon: MetadataTaxon = {
     freeform: true,
     preset_values: ['test'],
     position: 1,
+    is_required: false,
 };
 
 const engagementSetting: EngagementSettings = {

@@ -6,7 +6,9 @@ the value is a string. MetadataTaxa are used to group metadata by type, and
 determine how it is displayed in the UI.
 """
 from __future__ import annotations
+
 import enum
+
 from sqlalchemy.orm import relationship, validates
 
 from .base_model import BaseModel
@@ -73,6 +75,7 @@ class MetadataTaxonDataType(str, enum.Enum):
     URL = 'url'
     EMAIL = 'email'
     PHONE = 'phone'
+    GEO_AREA = 'geo_area'
     OTHER = 'other'
 
     @classmethod
@@ -105,6 +108,7 @@ class MetadataTaxon(BaseModel):
                           nullable=False, index=True)
     tenant = relationship('Tenant', backref='metadata_taxa')
     name = db.Column(db.String(64), nullable=True)
+    is_required = db.Column(db.Boolean, nullable=False, default=False)
     description = db.Column(db.String(256), nullable=True)
     freeform = db.Column(db.Boolean, nullable=False, default=False)
     data_type = db.Column(db.String(64), nullable=True, default='text')

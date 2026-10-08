@@ -17,10 +17,13 @@
 Test-Suite to ensure that the tenant endpoint is working as expected.
 """
 import json
-import pytest
 from http import HTTPStatus
 from unittest.mock import patch
 
+import pytest
+
+from api.models.tenant import Tenant
+from api.services.metadata_taxon_service import MetadataTaxonService
 from api.services.tenant_service import TenantService
 from api.utils.enums import ContentType
 from tests.utilities.factory_scenarios import TestJwtClaims, TestTenantInfo
@@ -62,6 +65,13 @@ def test_create_tenant(client, jwt, session, tenant_info, setup_super_admin_user
     assert rv.json.get('contact_name') == tenant_info.get('contact_name')
     assert rv.json.get('contact_email') == tenant_info.get('contact_email')
     assert rv.json.get('title') == tenant_info.get('title')
+    tenant = Tenant.query.filter_by(short_name=tenant_info['short_name']).one()
+    taxa = MetadataTaxonService.get_by_tenant(tenant.id)
+    assert {taxon['name']: taxon['data_type'] for taxon in taxa} == {
+        'Region': 'geo_area',
+        'Category': 'text',
+    }
+    assert all(taxon['is_required'] for taxon in taxa)
 
 
 @pytest.mark.parametrize('tenant_info', [TestTenantInfo.tenant1])
