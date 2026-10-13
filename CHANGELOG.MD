@@ -1,4 +1,4 @@
-## October 8, 2026
+## October 13, 2026
 
 - **Feature** Updated public-facing engagement components to support RTL styling. [🎟️ DEP-383](https://citz-gdx.atlassian.net/browse/DEP-383)
   - Set dir="auto" on the root of the app, allowing the whole app layout to automatically adjust for right-to-left (RTL) languages based on the first character direction of the content.
