@@ -68,6 +68,33 @@ class MetadataTaxonService:
         return dict(MetadataTaxonSchema().dump(taxon))
 
     @staticmethod
+    def create_default_taxa_for_tenant(tenant_id: int) -> List[dict]:
+        """Create the required default taxa for a tenant."""
+        default_taxa = [
+            {
+                'tenant_id': tenant_id,
+                'name': 'Region',
+                'data_type': 'geo_area',
+                'filter_type': MetadataTaxonFilterType.CHIPS_ANY.value,
+                'position': 1,
+                'is_required': True
+
+            },
+            {
+                'tenant_id': tenant_id,
+                'name': 'Category',
+                'data_type': 'text',
+                'filter_type': MetadataTaxonFilterType.CHIPS_ALL.value,
+                'position': 2,
+                'is_required': True
+            }
+        ]
+        created_taxa = []
+        for taxon_data in default_taxa:
+            created_taxa.append(MetadataTaxonService.create(tenant_id, taxon_data))
+        return created_taxa
+
+    @staticmethod
     @transactional()
     def update(taxon_id: int, taxon_data: dict) -> dict:
         """Update a taxon."""
@@ -127,6 +154,8 @@ class MetadataTaxonService:
     def delete(taxon_id: int) -> None:
         """Delete a taxon."""
         taxon: MetadataTaxon = MetadataTaxon.query.get(taxon_id)
+        if taxon.is_required:
+            raise ValueError(f'Cannot delete required taxon with id {taxon_id}.')
         if not taxon:
             raise KeyError(f'Taxon with id {taxon_id} does not exist.')
         for entry in taxon.entries:

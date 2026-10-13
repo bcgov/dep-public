@@ -14,7 +14,9 @@
 
 """Tests for the metadata taxon service."""
 
+import pytest
 from faker import Faker
+from marshmallow import ValidationError
 
 from api.models.engagement_metadata import MetadataTaxon
 from api.services.engagement_metadata_service import EngagementMetadataService
@@ -100,6 +102,35 @@ def test_update_taxon(session):
     assert taxon_updated['name'] == 'Updated Taxon'
 
 
+@pytest.mark.parametrize('field,value', [
+    ('name', 'Updated required taxon'),
+    ('data_type', 'long_text'),
+])
+def test_update_required_taxon_rejects_name_and_data_type_changes(session, field, value):
+    """Assert that required taxa cannot change their name or data type."""
+    tenant, _ = factory_taxon_requirements()
+    taxon = factory_metadata_taxon_model(tenant.id)
+    taxon.is_required = True
+    session.commit()
+
+    with pytest.raises(ValidationError):
+        MetadataTaxonService.update(taxon.id, {field: value})
+
+
+@pytest.mark.parametrize('field,value', [
+    ('name', 'Updated regular taxon'),
+    ('data_type', 'long_text'),
+])
+def test_update_regular_taxon_allows_name_and_data_type_changes(session, field, value):
+    """Assert that regular taxa can change their name and data type."""
+    tenant, _ = factory_taxon_requirements()
+    taxon = factory_metadata_taxon_model(tenant.id)
+
+    updated_taxon = MetadataTaxonService.update(taxon.id, {field: value})
+
+    assert updated_taxon[field] == value
+
+
 def test_modify_presets(session):
     """Assert that taxon preset values can be updated."""
     taxon_service = MetadataTaxonService()
@@ -130,6 +161,19 @@ def test_delete_taxon(session):
     taxon_service.delete(taxon.id)
     taxon_existing = taxon_service.get_by_id(taxon.id)
     assert taxon_existing is None
+
+
+def test_delete_required_taxon_is_rejected(session):
+    """Assert that a required taxon cannot be deleted."""
+    tenant, _ = factory_taxon_requirements()
+    taxon = factory_metadata_taxon_model(tenant.id)
+    taxon.is_required = True
+    session.commit()
+
+    with pytest.raises(ValueError, match='Cannot delete required taxon'):
+        MetadataTaxonService.delete(taxon.id)
+
+    assert MetadataTaxonService.get_by_id(taxon.id) is not None
 
 
 def test_reorder_tenant(session):

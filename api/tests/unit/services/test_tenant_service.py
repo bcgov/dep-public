@@ -7,6 +7,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from api.models.tenant import Tenant as TenantModel
 from api.schemas.tenant import TenantSchema
 from api.services import authorization
+from api.services.metadata_taxon_service import MetadataTaxonService
 from api.services.tenant_service import TenantService
 from tests.utilities.factory_utils import TestTenantInfo, factory_tenant_model
 
@@ -47,11 +48,17 @@ def test_create_tenant(session):
             'contact_email': 'john.doe@gov.bc.ca',
             'title': 'Director'
         }
-        with patch.object(TenantModel, 'save', return_value=None):
-            with patch.object(TenantSchema, 'dump', return_value=tenant_data):
-                result = TenantService.create(tenant_data)
-                assert result['short_name'] == tenant_data['short_name']
-                assert result['name'] == tenant_data['name']
+
+        def save_tenant(tenant):
+            tenant.id = 1
+
+        with patch.object(TenantModel, 'save', save_tenant):
+            with patch.object(MetadataTaxonService, 'create_default_taxa_for_tenant') as create_default_taxa:
+                with patch.object(TenantSchema, 'dump', return_value=tenant_data):
+                    result = TenantService.create(tenant_data)
+                    assert result['short_name'] == tenant_data['short_name']
+                    assert result['name'] == tenant_data['name']
+                create_default_taxa.assert_called_once_with(1)
 
 
 def test_create_tenant_error(session):
