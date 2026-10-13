@@ -1,3 +1,9 @@
+## October 13, 2026
+
+- **Bugfix** Fixed issue with engagement author locking affecting the ability to update certain widget details
+  - Updated widget forms to always include lock headers.
+  - Updated unit tests to account for the inclusion of lock headers. Added new test cases to verify the headers are being correctly applied.
+
 ## October 8, 2026
 
 - **Feature** Added required taxa to each tenant. [🎟️ DEP-397](https://citz-gdx.atlassian.net/browse/DEP-397)

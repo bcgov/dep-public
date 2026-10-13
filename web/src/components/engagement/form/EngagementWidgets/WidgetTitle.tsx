@@ -16,6 +16,7 @@ import {
     getEngagementContentTranslationsByCode,
     syncEngagementContentTranslationsByCode,
 } from 'services/engagementContentTranslationService';
+import { useWidgetSectionLockRequest } from './useWidgetSectionLockRequest';
 
 export const WidgetTitle = ({ widget }: { widget: Widget }) => {
     const [editing, setEditing] = React.useState(false);
@@ -26,6 +27,7 @@ export const WidgetTitle = ({ widget }: { widget: Widget }) => {
     const [isSaving, setIsSaving] = React.useState(false);
     const { languageCode } = useParams<{ languageCode?: string }>();
     const activeLanguageCode = (languageCode ?? 'en').toLowerCase();
+    const { filterWidgetTranslations, withWidgetLock } = useWidgetSectionLockRequest(widget, activeLanguageCode);
 
     React.useEffect(() => {
         if (activeLanguageCode === 'en') {
@@ -43,20 +45,23 @@ export const WidgetTitle = ({ widget }: { widget: Widget }) => {
     }, [widget.id, activeLanguageCode]);
 
     const saveTitle = async () => {
-        if (title === widget.title) {
+        if (activeLanguageCode === 'en' && title === widget.title) {
             setEditing(false);
             return;
         }
         try {
             setIsSaving(true);
             if (activeLanguageCode === 'en') {
-                const response = await updateWidget({
-                    id: widget.id,
-                    engagementId: widget.engagement_id,
-                    data: {
-                        title,
-                    },
-                }).unwrap();
+                const response = await withWidgetLock((headers) =>
+                    updateWidget({
+                        id: widget.id,
+                        engagementId: widget.engagement_id,
+                        data: {
+                            title,
+                        },
+                        headers,
+                    }).unwrap(),
+                );
                 setWidgets((prevWidgets) => {
                     const updatedWidget = prevWidgets.find((prevWidget) => prevWidget.id === widget.id);
                     if (updatedWidget) {
@@ -80,24 +85,23 @@ export const WidgetTitle = ({ widget }: { widget: Widget }) => {
                       )
                     : [...existingContentTranslations.widgets, { widget_id: widget.id, title }];
 
-                await syncEngagementContentTranslationsByCode(widget.engagement_id, activeLanguageCode, {
-                    widgets: nextTranslations,
-                });
-
-                setWidgets((prevWidgets) => {
-                    const updatedWidget = prevWidgets.find((prevWidget) => prevWidget.id === widget.id);
-                    if (updatedWidget) {
-                        updatedWidget.title = title;
-                    }
-                    return [...prevWidgets];
-                });
+                await withWidgetLock((headers) =>
+                    syncEngagementContentTranslationsByCode(
+                        widget.engagement_id,
+                        activeLanguageCode,
+                        {
+                            widgets: filterWidgetTranslations(nextTranslations),
+                        },
+                        headers,
+                    ),
+                );
             }
             dispatch(openNotification({ severity: 'success', text: 'Widget title successfully updated' }));
-            setIsSaving(false);
             setEditing(false);
         } catch {
-            setIsSaving(false);
             dispatch(openNotification({ severity: 'error', text: 'Error occurred while updating widget title' }));
+        } finally {
+            setIsSaving(false);
         }
     };
 

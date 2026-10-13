@@ -23,6 +23,7 @@ import {
     getEngagementContentTranslationsByCode,
     syncEngagementContentTranslationsByCode,
 } from 'services/engagementContentTranslationService';
+import { useWidgetSectionLockRequest } from '../useWidgetSectionLockRequest';
 
 const Form = () => {
     const schema = yup
@@ -41,6 +42,7 @@ const Form = () => {
     const [isCreating, setIsCreating] = React.useState(false);
     const { languageCode } = useParams<{ languageCode?: string }>();
     const activeLanguageCode = (languageCode ?? 'en').toLowerCase();
+    const { filterWidgetTranslations, withWidgetLock } = useWidgetSectionLockRequest(widget, activeLanguageCode);
 
     const imageForm = useForm<ImageWidgetForm>({
         resolver: yupResolver(schema) as unknown as Resolver<ImageWidgetForm>,
@@ -138,9 +140,16 @@ const Form = () => {
                     description,
                 },
             ];
-            await syncEngagementContentTranslationsByCode(widget.engagement_id, activeLanguageCode, {
-                image_widgets: nextTranslations,
-            });
+            await withWidgetLock((headers) =>
+                syncEngagementContentTranslationsByCode(
+                    widget.engagement_id,
+                    activeLanguageCode,
+                    {
+                        image_widgets: filterWidgetTranslations(nextTranslations),
+                    },
+                    headers,
+                ),
+            );
         }
 
         dispatch(openNotification({ severity: 'success', text: 'A new image was successfully added' }));
@@ -211,9 +220,16 @@ const Form = () => {
                       },
                   ];
 
-            await syncEngagementContentTranslationsByCode(widget.engagement_id, activeLanguageCode, {
-                image_widgets: nextTranslations,
-            });
+            await withWidgetLock((headers) =>
+                syncEngagementContentTranslationsByCode(
+                    widget.engagement_id,
+                    activeLanguageCode,
+                    {
+                        image_widgets: filterWidgetTranslations(nextTranslations),
+                    },
+                    headers,
+                ),
+            );
         }
         dispatch(openNotification({ severity: 'success', text: 'The image widget was successfully updated' }));
     };

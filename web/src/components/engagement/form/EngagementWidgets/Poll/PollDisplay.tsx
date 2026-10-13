@@ -41,6 +41,7 @@ const PollDisplay = ({ pollWidget, interactionEnabled, onOptionChange }: PollDis
             >
                 {pollWidget.answers.map((answer, index) => (
                     <FormControlLabel
+                        sx={{ marginInline: '-11px 16px' }}
                         key={'answer' + index}
                         value={answer.id.toString()}
                         control={<Radio />}

@@ -28,6 +28,7 @@ import {
     getEngagementContentTranslationsByCode,
     syncEngagementContentTranslationsByCode,
 } from 'services/engagementContentTranslationService';
+import { useWidgetSectionLockRequest } from '../useWidgetSectionLockRequest';
 
 const schema = yup
     .object({
@@ -58,6 +59,7 @@ const Form = () => {
     const { setWidgetDrawerOpen } = useContext(WidgetDrawerContext);
     const { languageCode } = useParams<{ languageCode?: string }>();
     const activeLanguageCode = (languageCode ?? 'en').toLowerCase();
+    const { filterWidgetTranslations, withWidgetLock } = useWidgetSectionLockRequest(widget, activeLanguageCode);
     const [isCreating, setIsCreating] = useState(false);
     const [uploadName, setUploadName] = useState('');
     const [calculatingZoom, setCalculatingZoom] = useState(false);
@@ -135,9 +137,16 @@ const Form = () => {
                   t.widget_id === widget.id ? { ...t, map_marker_label: markerLabel } : t,
               )
             : [...existingContentTranslations.widgets, { widget_id: widget.id, map_marker_label: markerLabel }];
-        await syncEngagementContentTranslationsByCode(widget.engagement_id, activeLanguageCode, {
-            widgets: nextTranslations,
-        });
+        await withWidgetLock((headers) =>
+            syncEngagementContentTranslationsByCode(
+                widget.engagement_id,
+                activeLanguageCode,
+                {
+                    widgets: filterWidgetTranslations(nextTranslations),
+                },
+                headers,
+            ),
+        );
         dispatch(
             openNotification({ severity: 'success', text: 'Map marker label translation was successfully saved' }),
         );

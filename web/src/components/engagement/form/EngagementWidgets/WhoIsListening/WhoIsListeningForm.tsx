@@ -17,6 +17,7 @@ import {
     getEngagementContentTranslationsByCode,
     syncEngagementContentTranslationsByCode,
 } from 'services/engagementContentTranslationService';
+import { useWidgetSectionLockRequest } from '../useWidgetSectionLockRequest';
 
 const WhoIsListeningForm = () => {
     const { setWidgetDrawerOpen, widgets, loadWidgets } = useContext(WidgetDrawerContext);
@@ -41,6 +42,7 @@ const WhoIsListeningForm = () => {
         widgets.find(
             (widget) => widget.widget_type_id === WidgetType.WhoIsListening && widget.location === widgetLocation,
         ) || null;
+    const { filterWidgetTranslations, withWidgetLock } = useWidgetSectionLockRequest(widget, activeLanguageCode);
 
     useEffect(() => {
         if (!widget) return;
@@ -112,9 +114,16 @@ const WhoIsListeningForm = () => {
                               ...existingTranslations.widgets,
                               { widget_id: widget.id, description: listeningWidget.description },
                           ];
-                    await syncEngagementContentTranslationsByCode(widget.engagement_id, activeLanguageCode, {
-                        widgets: nextTranslations,
-                    });
+                    await withWidgetLock((headers) =>
+                        syncEngagementContentTranslationsByCode(
+                            widget.engagement_id,
+                            activeLanguageCode,
+                            {
+                                widgets: filterWidgetTranslations(nextTranslations),
+                            },
+                            headers,
+                        ),
+                    );
                 }
             } else {
                 await postListeningWidget(widget.id, {
