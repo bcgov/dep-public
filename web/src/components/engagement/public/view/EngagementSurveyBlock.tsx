@@ -101,7 +101,7 @@ const EngagementSurveyContent = ({}) => {
                 minHeight="60px"
                 display={shouldDisplayFeedbackColumn ? 'flex' : 'none'}
             >
-                <Grid container>
+                <Grid container direction="column">
                     <PreviewSwitch
                         hasValue={Boolean(feedbackHeading?.trim())}
                         value={

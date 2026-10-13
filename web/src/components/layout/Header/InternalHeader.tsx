@@ -174,7 +174,7 @@ const InternalHeader = ({
                             orientation="horizontal"
                             timeout={250}
                         >
-                            <BodyText>Menu</BodyText>
+                            <BodyText dir="ltr">Menu</BodyText>
                         </Collapse>
                     </Button>
                 </Grow>
@@ -211,30 +211,41 @@ const InternalHeader = ({
                                 transition: 'height 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
                             }}
                         >
-                            <Link underline="none" to={getPath(ROUTES.HOME)} sx={{ height: '100%', mr: '2px' }}>
-                                <Box
-                                    component={BCLogo}
-                                    sx={{
-                                        height: '100%',
-                                        width: 'auto',
-                                        padding: '0 0',
-                                        ml: '-13px',
-                                    }}
-                                    alt="British Columbia Logo"
-                                />
+                            {/* BC Government Logo */}
+                            <Link
+                                underline="none"
+                                sx={{ height: '100%', mr: '2px', marginInlineStart: '-13px' }}
+                                to={getPath(ROUTES.PUBLIC_LANDING)}
+                            >
+                                <Box component="span" dir="ltr">
+                                    <Box
+                                        component={BCLogo}
+                                        sx={{
+                                            height: '100%',
+                                            width: 'auto',
+                                            padding: '0',
+                                        }}
+                                        alt="Government of British Columbia Logo"
+                                    />
+                                </Box>
                             </Link>
+                            {/* Divider */}
                             <Box
                                 sx={{
                                     borderLeft: `1px solid ${colors.surface.gray[80]}`,
                                     height: '1.5em',
                                     width: '1px',
-                                    marginRight: '1em',
+                                    marginInlineEnd: '1em',
                                 }}
                             />
-                            <BodyText thin sx={{ color: colors.surface.blue[80], userSelect: 'none' }}>
-                                engage{/*no space*/}
-                                <span style={{ color: colors.surface.blue[90], fontWeight: 'normal' }}>BC</span>
-                            </BodyText>
+
+                            <Link to={getPath(ROUTES.PUBLIC_LANDING)} underline="none">
+                                {/* engageBC Branding */}
+                                <BodyText dir="ltr" thin sx={{ color: colors.surface.blue[80], userSelect: 'none' }}>
+                                    engage{/*no space*/}
+                                    <span style={{ color: colors.surface.blue[90], fontWeight: 'normal' }}>BC</span>
+                                </BodyText>
+                            </Link>
                         </Box>
                     </Toolbar>
                     <If condition={isPending}>
@@ -350,7 +361,7 @@ const TenantSelector = ({
 
     if (noOtherTenants) {
         return (
-            <Link component={RouterLinkRenderer} href={getPath(ROUTES.HOME)}>
+            <Link dir="auto" component={RouterLinkRenderer} href={getPath(ROUTES.HOME)}>
                 <BodyText sx={{ userSelect: 'none' }}>{currentTenant.name}</BodyText>
             </Link>
         );
@@ -487,7 +498,7 @@ const TenantButtonContent = ({
     hasOtherTenants: boolean;
 }) => {
     return (
-        <Grid container data-testid="tenant-switcher-button" direction="row" alignItems="center" spacing={1}>
+        <Grid container data-testid="tenant-switcher-button" direction="row" alignItems="center" spacing={1} dir="auto">
             <Grid sx={{ flex: '1 1 auto' }}>
                 <BodyText
                     sx={{
@@ -565,7 +576,7 @@ const UserMenu = () => {
             renderButtonContent={UserButtonContent}
             buttonProps={{
                 sx: {
-                    marginLeft: 'auto' /* float to the right */,
+                    marginInlineStart: 'auto' /* float to the end */,
                     height: 'calc( 100% - 2px )' /* 1px on either side to show border*/,
                     transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
                 },
@@ -589,7 +600,7 @@ const UserMenu = () => {
                     }}
                 >
                     <FontAwesomeIcon
-                        style={{ marginRight: '0.5rem' }}
+                        style={{ marginInlineEnd: '0.5rem' }}
                         icon={location.pathname.startsWith('/manage') ? faUserSecret : faIdCardClip}
                     />
                     {switchTarget.label}
@@ -616,7 +627,7 @@ const UserMenu = () => {
 const UserButtonContent = ({ isOpen }: { isOpen: boolean }) => {
     const currentUser = useAppSelector((state) => state.user.userDetail.user);
     return (
-        <Grid container data-testid="user-menu-button" direction="row" alignItems="center" spacing={1}>
+        <Grid container data-testid="user-menu-button" direction="row" alignItems="center" spacing={1} dir="auto">
             <Grid>
                 <UserAvatar />
             </Grid>

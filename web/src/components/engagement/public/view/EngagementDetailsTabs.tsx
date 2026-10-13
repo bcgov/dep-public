@@ -120,7 +120,7 @@ export const EngagementDetailsTabs = () => {
                                     mr: { xs: `-${Layout.padding.default}`, md: 0 },
                                     bgcolor: 'white',
                                     '& .MuiTabs-indicator': { height: '0.375rem' },
-                                    borderTopRightRadius: { xs: 0, md: '1.5rem' },
+                                    borderStartEndRadius: { xs: 0, md: '1.5rem' },
                                 }}
                             >
                                 {displayTabs.map((tab, key) => (
@@ -169,7 +169,7 @@ export const EngagementDetailsTabs = () => {
                                         columnGap="3rem"
                                         rowGap="1rem"
                                     >
-                                        <Grid size={{ xs: 12, md: 6, lg: 8 }}>
+                                        <Grid container direction="column" size={{ xs: 12, md: 6, lg: 8 }}>
                                             <Heading2
                                                 decorated
                                                 weight="thin"

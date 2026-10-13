@@ -269,7 +269,7 @@ const EngagementTile = ({ passedEngagement, engagementId, orientation = 'vertica
                                         key={metadatum.id}
                                         icon={
                                             <FontAwesomeIcon
-                                                style={{ marginLeft: '12px' }}
+                                                style={{ marginInline: '12px -6px' }}
                                                 fontSize="18px"
                                                 icon={faCubes}
                                             />
@@ -289,7 +289,7 @@ const EngagementTile = ({ passedEngagement, engagementId, orientation = 'vertica
                         </Grid>
 
                         {/* Call to Action */}
-                        <Grid container>
+                        <Grid container sx={{ '&:dir(rtl) svg': { transform: 'rotateY(180deg)' } }}>
                             <Link component="p" display="flex" gap="8px" alignItems="center">
                                 {getEngagementCTA()}
                                 <FontAwesomeIcon icon={faArrowRight} />

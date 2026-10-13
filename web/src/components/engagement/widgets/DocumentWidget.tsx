@@ -119,7 +119,7 @@ const DocumentLabel = ({ documentItem, expandedItems }: DocumentTreeProps) =>
                 icon={expandedItems?.includes(documentItem.id.toString()) ? faFolderOpen : faFolder}
                 style={{
                     verticalAlign: '-5px',
-                    marginRight: '0.75em',
+                    marginInlineEnd: '0.75em',
                     color: expandedItems?.includes(documentItem.id.toString())
                         ? BaseTheme.palette.primary.main
                         : 'inherit',
@@ -130,7 +130,7 @@ const DocumentLabel = ({ documentItem, expandedItems }: DocumentTreeProps) =>
             {documentItem.title}
         </BodyText>
     ) : (
-        <BodyText lineHeight="inherit">
+        <BodyText lineHeight="inherit" sx={{ '&:dir(rtl) svg': { transform: 'rotateY(180deg)' } }}>
             <Link
                 to={documentItem.url ?? ''}
                 underline="hover"
@@ -142,7 +142,7 @@ const DocumentLabel = ({ documentItem, expandedItems }: DocumentTreeProps) =>
             </Link>
             <FontAwesomeIcon
                 icon={faArrowUpRightFromSquare}
-                style={{ marginLeft: '0.5em', height: '12px', width: '12px', verticalAlign: 'baseline' }}
+                style={{ marginInlineStart: '0.5em', height: '12px', width: '12px', verticalAlign: 'baseline' }}
             />
         </BodyText>
     );
@@ -252,7 +252,7 @@ const DocumentWidget = ({ widget }: DocumentWidgetProps) => {
                                             justifyContent: 'flex-start',
                                         },
                                         '& .MuiTreeItem-groupTransition': {
-                                            marginLeft: '3.75em',
+                                            marginInlineStart: '3.75em',
                                         },
                                     }}
                                     slots={{

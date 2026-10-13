@@ -36,17 +36,22 @@ const PublicHeader = () => {
                     }}
                 >
                     {/* BC Government Logo */}
-                    <Link underline="none" sx={{ height: '100%', mr: '2px' }} to={getPath(ROUTES.PUBLIC_LANDING)}>
-                        <Box
-                            component={BCLogo}
-                            sx={{
-                                height: '100%',
-                                width: 'auto',
-                                padding: '0 0',
-                                ml: '-13px',
-                            }}
-                            alt="Government of British Columbia Logo"
-                        />
+                    <Link
+                        underline="none"
+                        sx={{ height: '100%', marginInlineEnd: '2px', marginInlineStart: '-13px' }}
+                        to={getPath(ROUTES.PUBLIC_LANDING)}
+                    >
+                        <Box component="span" dir="ltr">
+                            <Box
+                                component={BCLogo}
+                                sx={{
+                                    height: '100%',
+                                    width: 'auto',
+                                    padding: '0',
+                                }}
+                                alt="Government of British Columbia Logo"
+                            />
+                        </Box>
                     </Link>
 
                     {/* Divider */}
@@ -55,13 +60,13 @@ const PublicHeader = () => {
                             borderLeft: `1px solid ${colors.surface.gray[80]}`,
                             height: '1.5em',
                             width: '1px',
-                            marginRight: '1em',
+                            marginInlineEnd: '1em',
                         }}
                     />
 
                     <Link to={getPath(ROUTES.PUBLIC_LANDING)} underline="none">
                         {/* engageBC Branding */}
-                        <BodyText thin sx={{ color: colors.surface.blue[80], userSelect: 'none' }}>
+                        <BodyText dir="ltr" thin sx={{ color: colors.surface.blue[80], userSelect: 'none' }}>
                             engage{/*no space*/}
                             <span style={{ color: colors.surface.blue[90], fontWeight: 'normal' }}>BC</span>
                         </BodyText>
