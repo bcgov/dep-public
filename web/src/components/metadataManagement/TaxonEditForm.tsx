@@ -220,9 +220,10 @@ const TaxonEditForm = ({ taxon }: { taxon: MetadataTaxon }): JSX.Element => {
                                         />
                                     }
                                     color="error"
-                                    aria-label="delete"
+                                    aria-label={taxon.is_required ? 'cannot delete' : 'delete'}
                                     onClick={() => removeMetadataTaxon(taxon.id)}
                                     disabled={taxon.is_required}
+                                    aria-disabled={taxon.is_required}
                                 >
                                     Delete
                                 </Button>
