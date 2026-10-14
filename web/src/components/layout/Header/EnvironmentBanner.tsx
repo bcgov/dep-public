@@ -38,7 +38,9 @@ const EnvironmentBanner = () => {
                 <BodyText component="span" fontSize="22px" color="warning.dark">
                     <FontAwesomeIcon icon={faExclamationTriangle} />
                 </BodyText>
-                <BodyText component="span">You are using a test environment.</BodyText>
+                <BodyText dir="ltr" component="span">
+                    You are using a test environment.
+                </BodyText>
             </Grid>
         </Grid>
     );

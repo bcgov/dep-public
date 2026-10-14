@@ -7,6 +7,7 @@ import { BodyText } from 'components/common/Typography';
 import DropdownMenu from 'components/common/Navigation/DropdownMenu';
 import { AppConfig } from 'config';
 import { Language } from 'models/language';
+import { Layout } from 'styles/Theme';
 
 const defaultLanguage = {
     id: 0,
@@ -107,75 +108,85 @@ export const EngagementLanguageSwitcher = ({
                         >
                             <Box
                                 sx={{
-                                    px: { xs: '16px', md: '5vw', lg: '10em' },
-                                    display: 'flex',
-                                    justifyContent: 'flex-end',
+                                    px: Layout.padding.default,
                                     position: 'absolute',
                                     top,
                                     left: 0,
                                     right: 0,
                                 }}
                             >
-                                <DropdownMenu
-                                    name={menuName}
-                                    renderButtonContent={({ isOpen }) => (
-                                        <LanguageButtonContent
-                                            isOpen={isOpen}
-                                            activeLanguageName={activeLanguage.name}
-                                        />
-                                    )}
-                                    buttonProps={{
-                                        sx: {
-                                            display: 'flex',
-                                            height: '48px',
-                                            alignItems: 'center',
-                                            gap: '6px',
-                                            padding: '0 16px',
-                                            borderRadius: '0 0 8px 8px',
-                                            background: '#000',
-                                            marginTop: 0,
-                                            '&:hover': {
-                                                background: '#000',
-                                            },
-                                            '&:focus-visible': {
-                                                borderColor: 'common.white',
-                                                borderStyle: 'dashed',
-                                            },
-                                        },
-                                    }}
-                                    popperProps={{
-                                        placement: 'bottom-end',
-                                        sx: {
-                                            backgroundColor: 'common.white',
-                                            color: 'text.primary',
-                                        },
+                                <Box
+                                    sx={{
+                                        width: Layout.width.default,
+                                        maxWidth: '100%',
+                                        mx: 'auto',
+                                        display: 'flex',
+                                        justifyContent: 'flex-end',
                                     }}
                                 >
-                                    {languages.map((item) => (
-                                        <MenuItem
-                                            key={item.code}
-                                            selected={item.code === activeLanguage.code}
-                                            onClick={() => {
-                                                if (item.code === activeLanguage.code) {
-                                                    return;
-                                                }
-                                                setTargetLanguageCode(item.code);
-                                                onLanguageSelect(item.code);
-                                            }}
-                                            sx={{
-                                                width: '100%',
-                                                px: 2,
+                                    <DropdownMenu
+                                        name={menuName}
+                                        renderButtonContent={({ isOpen }) => (
+                                            <LanguageButtonContent
+                                                isOpen={isOpen}
+                                                activeLanguageName={activeLanguage.name}
+                                            />
+                                        )}
+                                        buttonProps={{
+                                            dir: 'auto',
+                                            sx: {
+                                                display: 'flex',
+                                                height: '48px',
+                                                alignItems: 'center',
+                                                gap: '6px',
+                                                padding: '0 16px',
+                                                borderRadius: '0 0 8px 8px',
+                                                background: '#000',
+                                                marginTop: 0,
+                                                '&:hover': {
+                                                    background: '#000',
+                                                },
+                                                '&:focus-visible': {
+                                                    borderColor: 'common.white',
+                                                    borderStyle: 'dashed',
+                                                },
+                                            },
+                                        }}
+                                        popperProps={{
+                                            placement: 'bottom-end',
+                                            sx: {
+                                                backgroundColor: 'common.white',
                                                 color: 'text.primary',
-                                                transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-                                            }}
-                                        >
-                                            {item.name}
-                                            {item.code === targetLanguageCode && item.code !== activeLanguage.code && (
-                                                <CircularProgress size={16} sx={{ marginLeft: 1 }} />
-                                            )}
-                                        </MenuItem>
-                                    ))}
-                                </DropdownMenu>
+                                            },
+                                        }}
+                                    >
+                                        {languages.map((item) => (
+                                            <MenuItem
+                                                key={item.code}
+                                                selected={item.code === activeLanguage.code}
+                                                onClick={() => {
+                                                    if (item.code === activeLanguage.code) {
+                                                        return;
+                                                    }
+                                                    setTargetLanguageCode(item.code);
+                                                    onLanguageSelect(item.code);
+                                                }}
+                                                sx={{
+                                                    width: '100%',
+                                                    px: 2,
+                                                    color: 'text.primary',
+                                                    transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                                                }}
+                                            >
+                                                {item.name}
+                                                {item.code === targetLanguageCode &&
+                                                    item.code !== activeLanguage.code && (
+                                                        <CircularProgress size={16} sx={{ marginLeft: 1 }} />
+                                                    )}
+                                            </MenuItem>
+                                        ))}
+                                    </DropdownMenu>
+                                </Box>
                             </Box>
                         </Box>
                     );

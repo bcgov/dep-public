@@ -170,8 +170,14 @@ export const SuggestedEngagements = () => {
                                     </Grid>
                                 </Grid>
                                 <Grid size={12} mt="64px" textAlign={'center'}>
-                                    <Link to={getPath(ROUTES.HOME)} sx={{ color: 'text.primary' }}>
-                                        <FontAwesomeIcon icon={faArrowLeftLong} style={{ paddingRight: '8px' }} />
+                                    <Link
+                                        to={getPath(ROUTES.HOME)}
+                                        sx={{
+                                            color: 'text.primary',
+                                            '&:dir(rtl) svg': { transform: 'rotateY(180deg)' },
+                                        }}
+                                    >
+                                        <FontAwesomeIcon icon={faArrowLeftLong} style={{ paddingInlineStart: '8px' }} />
                                         All engagements
                                     </Link>
                                 </Grid>
