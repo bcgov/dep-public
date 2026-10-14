@@ -40,6 +40,13 @@ export const useResourceSectionEditLock = ({
     const lockTokenRef = useRef<string | null>(null);
     const activeScopeRef = useRef<LockScope | null>(null);
     const isReleasingLockRef = useRef(false);
+    const onConflictRef = useRef(onConflict);
+    const sectionKey = scope?.sectionKey;
+    const languageId = scope?.languageId;
+
+    useEffect(() => {
+        onConflictRef.current = onConflict;
+    }, [onConflict]);
 
     useEffect(() => {
         lockTokenRef.current = lockToken;
@@ -74,7 +81,7 @@ export const useResourceSectionEditLock = ({
     );
 
     useEffect(() => {
-        if (!enabled || !isDirty || isSubmitting || !scope || blockedByLock) {
+        if (!enabled || !isDirty || isSubmitting || !sectionKey || blockedByLock) {
             return;
         }
 
@@ -85,9 +92,7 @@ export const useResourceSectionEditLock = ({
                 const currentToken = lockTokenRef.current;
                 const currentScope = activeScopeRef.current;
                 const hasMatchingLock =
-                    currentToken &&
-                    currentScope?.sectionKey === scope.sectionKey &&
-                    currentScope?.languageId === scope.languageId;
+                    currentToken && currentScope?.sectionKey === sectionKey && currentScope?.languageId === languageId;
 
                 if (hasMatchingLock) {
                     return;
@@ -104,8 +109,8 @@ export const useResourceSectionEditLock = ({
                 const lock = await acquireResourceLock({
                     resourceType,
                     resourceId,
-                    sectionKey: scope.sectionKey,
-                    languageId: scope.languageId,
+                    sectionKey,
+                    languageId,
                 });
 
                 if (isCancelled) {
@@ -118,9 +123,9 @@ export const useResourceSectionEditLock = ({
                 }
 
                 setLockToken(lock.lock_token);
-                setActiveScope(scope);
+                setActiveScope({ sectionKey, languageId });
             } catch (error) {
-                await onConflict?.(error);
+                await onConflictRef.current?.(error);
             }
         };
 
@@ -129,7 +134,7 @@ export const useResourceSectionEditLock = ({
         return () => {
             isCancelled = true;
         };
-    }, [blockedByLock, enabled, resourceId, resourceType, isDirty, isSubmitting, onConflict, scope]);
+    }, [blockedByLock, enabled, resourceId, resourceType, isDirty, isSubmitting, sectionKey, languageId]);
 
     useEffect(() => {
         if (!lockToken || isSubmitting) {
@@ -153,22 +158,22 @@ export const useResourceSectionEditLock = ({
             return;
         }
 
-        if (!enabled || !scope) {
+        if (!enabled || !sectionKey) {
             void releaseActiveLock('navigation');
             return;
         }
 
-        if (scope.sectionKey !== activeScope?.sectionKey) {
+        if (sectionKey !== activeScope?.sectionKey) {
             void releaseActiveLock('navigation');
             return;
         }
 
-        if (scope.languageId === undefined || activeScope?.languageId === scope.languageId) {
+        if (languageId === undefined || activeScope?.languageId === languageId) {
             return;
         }
 
         void releaseActiveLock('navigation');
-    }, [activeScope, enabled, lockToken, releaseActiveLock, scope]);
+    }, [activeScope, enabled, languageId, lockToken, releaseActiveLock, sectionKey]);
 
     useEffect(() => {
         if (lockToken && !isDirty && !isSubmitting) {
