@@ -23,6 +23,7 @@ import {
     syncEngagementContentTranslationsByCode,
 } from 'services/engagementContentTranslationService';
 import { Link } from 'components/common/Navigation';
+import { useWidgetSectionLockRequest } from '../useWidgetSectionLockRequest';
 
 const schema = yup
     .object({
@@ -40,6 +41,7 @@ const AddFileDrawer = () => {
         useContext(DocumentsContext);
     const { languageCode } = useParams<{ languageCode?: string }>();
     const activeLanguageCode = (languageCode ?? 'en').toLowerCase();
+    const { filterWidgetTranslations, withWidgetLock } = useWidgetSectionLockRequest(widget, activeLanguageCode);
     const [isCreatingFile, setIsCreatingFile] = useState(false);
     const parentDocument = documents.find(
         (document: DocumentItem) => document.id === documentToEdit?.parent_document_id,
@@ -106,9 +108,16 @@ const AddFileDrawer = () => {
                           title: data.name,
                       },
                   ];
-            await syncEngagementContentTranslationsByCode(widget.engagement_id, activeLanguageCode, {
-                documents_widgets: nextTranslations,
-            });
+            await withWidgetLock((headers) =>
+                syncEngagementContentTranslationsByCode(
+                    widget.engagement_id,
+                    activeLanguageCode,
+                    {
+                        documents_widgets: filterWidgetTranslations(nextTranslations),
+                    },
+                    headers,
+                ),
+            );
         }
         dispatch(
             openNotification({

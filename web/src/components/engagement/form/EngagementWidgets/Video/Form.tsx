@@ -21,6 +21,7 @@ import {
     getEngagementContentTranslationsByCode,
     syncEngagementContentTranslationsByCode,
 } from 'services/engagementContentTranslationService';
+import { useWidgetSectionLockRequest } from '../useWidgetSectionLockRequest';
 
 const schema = yup
     .object({
@@ -43,6 +44,7 @@ const Form = () => {
     const [isCreating, setIsCreating] = React.useState(false);
     const { languageCode } = useParams<{ languageCode?: string }>();
     const activeLanguageCode = (languageCode ?? 'en').toLowerCase();
+    const { filterWidgetTranslations, withWidgetLock } = useWidgetSectionLockRequest(widget, activeLanguageCode);
 
     const methods = useForm<DetailsForm>({
         resolver: yupResolver(schema) as unknown as Resolver<DetailsForm>,
@@ -144,9 +146,16 @@ const Form = () => {
                       },
                   ];
 
-            await syncEngagementContentTranslationsByCode(widget.engagement_id, activeLanguageCode, {
-                widgets: nextTranslations,
-            });
+            await withWidgetLock((headers) =>
+                syncEngagementContentTranslationsByCode(
+                    widget.engagement_id,
+                    activeLanguageCode,
+                    {
+                        widgets: filterWidgetTranslations(nextTranslations),
+                    },
+                    headers,
+                ),
+            );
         }
         dispatch(openNotification({ severity: 'success', text: 'The video widget was successfully updated' }));
     };
