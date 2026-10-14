@@ -203,8 +203,8 @@ const TimelineEvent = ({ event, isLast }: { event: TimelineEventType; isLast: bo
                         <Box
                             sx={{
                                 height: 'calc(100% + 2em)',
-                                width: 'calc(50% - 1px)',
-                                borderRight: '4px solid',
+                                width: 'calc(50% + 2px)',
+                                borderInlineEnd: '4px solid',
                                 borderColor: 'blue.90',
                             }}
                         />

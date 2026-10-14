@@ -11,11 +11,11 @@ const VirtualSession = ({ eventItem }: EventProps) => {
     // Define styles
     const containerStyles = {
         alignItems: 'center',
-        paddingLeft: '0 !important',
+        paddingInlineStart: '0 !important',
     };
     const iconStyles = {
         display: 'flex',
-        marginRight: '0.8750em',
+        marginInlineEnd: '0.8750em',
         fontSize: '1.5em',
         width: '1em',
         verticalAlign: 'middle',

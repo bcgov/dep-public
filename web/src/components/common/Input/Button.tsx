@@ -146,6 +146,20 @@ export const PrimaryButton: React.FC<ButtonProps> = ({
                         boxShadow: 'none',
                         color: colors.type.regular.disabled,
                     },
+                    '& .MuiButton-startIcon': {
+                        marginInlineStart: '-4px',
+                        marginInlineEnd: '8px',
+                        '&:dir(rtl)': {
+                            transform: 'rotateY(180deg)',
+                        },
+                    },
+                    '& .MuiButton-endIcon': {
+                        marginInlineStart: '8px',
+                        marginInlineEnd: '-4px',
+                        '&:dir(rtl)': {
+                            transform: 'rotateY(180deg)',
+                        },
+                    },
                 },
                 buttonStyles,
                 ...(Array.isArray(sx) ? sx : [sx]),

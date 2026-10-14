@@ -64,6 +64,9 @@ export const EngagementDescription = () => {
                             sx={{
                                 textDecoration: 'none !important',
                                 '&:hover': { textDecoration: 'underline !important' },
+                                '&:dir(rtl) svg': {
+                                    transform: 'rotateY(180deg)',
+                                },
                             }}
                             mb="3rem"
                         >
@@ -71,7 +74,7 @@ export const EngagementDescription = () => {
                                 icon={faArrowLeftLong}
                                 color={'inherit'}
                                 fontSize={'24px'}
-                                style={{ paddingRight: '8px' }}
+                                style={{ marginInlineEnd: '8px' }}
                             />
                             <BodyText thin size="small">
                                 All engagements

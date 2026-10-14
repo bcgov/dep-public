@@ -1,4 +1,10 @@
-## October 8, 2026
+## October 13, 2026
+
+- **Feature** Updated public-facing engagement components to support RTL styling. [🎟️ DEP-383](https://citz-gdx.atlassian.net/browse/DEP-383)
+  - Set dir="auto" on the root of the app, allowing the whole app layout to automatically adjust for right-to-left (RTL) languages based on the first character direction of the content.
+  - Ensured that all text and layout components on the engagement page respect the text direction when applicable.
+    - Directional icons are mirrored appropriately in RTL mode.
+    - Layouts and spacing are adjusted to use inline-start and inline-end properties instead of left and right, ensuring proper alignment in both LTR and RTL modes.
 
 - **Feature** Added required taxa to each tenant. [🎟️ DEP-397](https://citz-gdx.atlassian.net/browse/DEP-397)
   - Added a "required" flag to metadata, which makes taxa that have it mandatory/permanent.

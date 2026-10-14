@@ -100,6 +100,7 @@ const EmailPanel = ({ email, checkEmail, handleClose, updateEmail, isSaving, isI
                     <Grid size={12}>
                         <FormControl required error={emailFormError.terms} component="fieldset" variant="standard">
                             <FormControlLabel
+                                sx={{ marginInline: '-11px 16px' }}
                                 control={
                                     <Checkbox
                                         onChange={(event) => {
