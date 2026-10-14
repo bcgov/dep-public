@@ -214,7 +214,7 @@ const InternalHeader = ({
                             {/* BC Government Logo */}
                             <Link
                                 underline="none"
-                                sx={{ height: '100%', mr: '2px', marginInlineStart: '-13px' }}
+                                sx={{ height: '100%', marginInline: '-13px 2px' }}
                                 to={getPath(ROUTES.PUBLIC_LANDING)}
                             >
                                 <Box component="span" dir="ltr">
