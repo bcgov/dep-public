@@ -40,29 +40,27 @@ const VirtualSession = ({ eventItem }: EventProps) => {
     const endTime = formatToPacific(eventItem.end_date, 'h:mm a');
 
     return (
-        <>
-            <Grid container direction="column" size={12} gap={1.5} justifyContent="flex-start">
-                <Grid {...rowContainerProps}>
-                    <Grid {...headingProps}>
-                        <FontAwesomeIcon icon={faCalendarDays} style={iconStyles} />
-                        <BodyText bold>Date</BodyText>
-                    </Grid>
-                    <BodyText {...bodyTextProps}>{startDate}</BodyText>
+        <Grid container direction="column" size={12} gap={1.5} justifyContent="flex-start">
+            <Grid {...rowContainerProps}>
+                <Grid {...headingProps}>
+                    <FontAwesomeIcon icon={faCalendarDays} style={iconStyles} />
+                    <BodyText bold>Date</BodyText>
                 </Grid>
-                <Grid {...rowContainerProps}>
-                    <Grid {...headingProps}>
-                        <FontAwesomeIcon icon={faClock} style={iconStyles} />
-                        <BodyText bold>Time</BodyText>
-                    </Grid>
-                    <BodyText {...bodyTextProps}>{`${startTime} to ${endTime} PT`}</BodyText>
-                </Grid>
-                <Grid {...rowContainerProps}>
-                    <Button variant="primary" size="large" href={eventItem.url} sx={{ mt: '1em' }}>
-                        {eventItem.url_label}
-                    </Button>
-                </Grid>
+                <BodyText {...bodyTextProps}>{startDate}</BodyText>
             </Grid>
-        </>
+            <Grid {...rowContainerProps}>
+                <Grid {...headingProps}>
+                    <FontAwesomeIcon icon={faClock} style={iconStyles} />
+                    <BodyText bold>Time</BodyText>
+                </Grid>
+                <BodyText {...bodyTextProps}>{`${startTime} to ${endTime} PT`}</BodyText>
+            </Grid>
+            <Grid {...rowContainerProps}>
+                <Button variant="primary" size="large" href={eventItem.url} sx={{ mt: '1em' }}>
+                    {eventItem.url_label}
+                </Button>
+            </Grid>
+        </Grid>
     );
 };
 

@@ -243,8 +243,8 @@ const AuthoringDetails = () => {
             body: getEditorStateFromRaw(''),
             sort_index: newIndex,
         };
-        const { tempId, ...submissionTab } = newTab;
-        void tempId;
+        // Remove tempId for post request
+        const submissionTab = (({ tempId, ...tab }) => tab)(newTab);
         try {
             const createdTabs = await withDetailsLock((headers) =>
                 postDetailsTabs(engagementId, [{ ...submissionTab, body: '' }], headers),
@@ -328,9 +328,13 @@ const AuthoringDetails = () => {
         setValue('details_tabs', newTabs, { shouldDirty: dirtied });
     };
 
-    const enableTabs = () => {
-        setTabsEnabled(true);
-        addTab();
+    const enableTabs = async () => {
+        try {
+            await addTab();
+            setTabsEnabled(true);
+        } catch (e) {
+            console.error(`Failed to enable tabs: ${e}`);
+        }
     };
 
     const disableTabs = () => {
@@ -381,14 +385,18 @@ const AuthoringDetails = () => {
         setUpdateFocus(true);
     };
 
-    const tabKeyDown = (
+    const tabKeyDown = async (
         event: React.KeyboardEvent<HTMLButtonElement | HTMLDivElement | HTMLSpanElement>,
         source: string,
         index = -1,
     ) => {
         if (source === 'add' && (event.key === 'Enter' || event.key === 'Spacebar' || event.key === ' ')) {
             event.preventDefault();
-            addTab();
+            try {
+                await addTab();
+            } catch (e) {
+                console.error(`Failed to add a tab with keyboard key: ${e}`);
+            }
         } else if (source === 'tab' && (event.key === 'Delete' || event.key === 'Backspace')) {
             event.preventDefault();
             removeTab(event, index);
