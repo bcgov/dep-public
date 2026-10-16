@@ -279,82 +279,83 @@ const InPersonEventFormDrawer = () => {
         >
             <Box sx={{ width: '40vw', paddingTop: '7em' }} role="presentation">
                 <FormProvider {...methods}>
-                    <form onSubmit={handleSubmit(onSubmit)}>
+                    <Grid
+                        container
+                        direction="row"
+                        alignItems="baseline"
+                        justifyContent="flex-start"
+                        spacing={2}
+                        padding="2em"
+                    >
+                        <Grid size={12}>
+                            <Heading3 bold>{eventItemToEdit ? 'Edit' : 'Add'} In-Person Event</Heading3>
+                            <Divider sx={{ marginTop: '1em' }} />
+                        </Grid>
+                        <Grid size={12}>
+                            <BodyText bold mb="2px">
+                                Event Name
+                            </BodyText>
+                            <ControlledTextField name="event_name" />
+                        </Grid>
+                        <Grid size={12}>
+                            <BodyText bold mb="2px">
+                                Description
+                            </BodyText>
+                            <ControlledTextField name="description" multiline minRows={4} />
+                        </Grid>
+                        <Grid size={12}>
+                            <BodyText bold mb="2px">
+                                Location Name
+                            </BodyText>
+                            <ControlledTextField name="location_name" />
+                        </Grid>
+                        <Grid size={12}>
+                            <BodyText bold mb="2px">
+                                Location Address
+                            </BodyText>
+                            <ControlledTextField name="location_address" />
+                        </Grid>
+                        <Grid size={12}>
+                            <BodyText bold mb="2px">
+                                Date
+                            </BodyText>
+                            <ControlledTextField name="date" type="date" />
+                        </Grid>
+                        <Grid size={12}>
+                            <BodyText bold mb="2px">
+                                Time - From
+                            </BodyText>
+                            <ControlledTextField name="time_from" type="time" />
+                        </Grid>
+                        <Grid size={12}>
+                            <BodyText bold mb="2px">
+                                Time - To
+                            </BodyText>
+                            <ControlledTextField name="time_to" type="time" />
+                        </Grid>
                         <Grid
+                            size={12}
                             container
                             direction="row"
-                            alignItems="baseline"
-                            justifyContent="flex-start"
-                            spacing={2}
-                            padding="2em"
+                            spacing={1}
+                            justifyContent={'flex-start'}
+                            marginTop="2em"
                         >
-                            <Grid size={12}>
-                                <Heading3 bold>{eventItemToEdit ? 'Edit' : 'Add'} In-Person Event</Heading3>
-                                <Divider sx={{ marginTop: '1em' }} />
+                            <Grid>
+                                <Button
+                                    variant="primary"
+                                    type="button"
+                                    onClick={handleSubmit(onSubmit)}
+                                    loading={isCreating}
+                                >
+                                    Save &amp; Close
+                                </Button>
                             </Grid>
-                            <Grid size={12}>
-                                <BodyText bold mb="2px">
-                                    Event Name
-                                </BodyText>
-                                <ControlledTextField name="event_name" />
-                            </Grid>
-                            <Grid size={12}>
-                                <BodyText bold mb="2px">
-                                    Description
-                                </BodyText>
-                                <ControlledTextField name="description" multiline minRows={4} />
-                            </Grid>
-                            <Grid size={12}>
-                                <BodyText bold mb="2px">
-                                    Location Name
-                                </BodyText>
-                                <ControlledTextField name="location_name" />
-                            </Grid>
-                            <Grid size={12}>
-                                <BodyText bold mb="2px">
-                                    Location Address
-                                </BodyText>
-                                <ControlledTextField name="location_address" />
-                            </Grid>
-                            <Grid size={12}>
-                                <BodyText bold mb="2px">
-                                    Date
-                                </BodyText>
-                                <ControlledTextField name="date" type="date" />
-                            </Grid>
-                            <Grid size={12}>
-                                <BodyText bold mb="2px">
-                                    Time - From
-                                </BodyText>
-                                <ControlledTextField name="time_from" type="time" />
-                            </Grid>
-                            <Grid size={12}>
-                                <BodyText bold mb="2px">
-                                    Time - To
-                                </BodyText>
-                                <ControlledTextField name="time_to" type="time" />
-                            </Grid>
-                            <Grid
-                                size={12}
-                                container
-                                direction="row"
-                                spacing={1}
-                                justifyContent={'flex-start'}
-                                marginTop="2em"
-                            >
-                                <Grid>
-                                    <Button variant="primary" type="submit" loading={isCreating}>
-                                        Save &amp; Close
-                                    </Button>
-                                </Grid>
-                                <Grid>
-                                    <Button onClick={() => handleEventDrawerOpen(EVENT_TYPE.MEETUP, false)}>
-                                        Cancel
-                                    </Button>
-                                </Grid>
+                            <Grid>
+                                <Button onClick={() => handleEventDrawerOpen(EVENT_TYPE.MEETUP, false)}>Cancel</Button>
                             </Grid>
                         </Grid>
-                    </form>
+                    </Grid>
                 </FormProvider>
             </Box>
         </Drawer>

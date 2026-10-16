@@ -8,18 +8,31 @@ import { BodyText } from 'components/common/Typography/Body';
 import { Button } from 'components/common/Input/Button';
 
 const VirtualSession = ({ eventItem }: EventProps) => {
-    // Define styles
-    const containerStyles = {
-        alignItems: 'center',
-        paddingLeft: '0 !important',
-    };
+    // Styles
+
     const iconStyles = {
         display: 'flex',
-        marginRight: '0.8750em',
         fontSize: '1.5em',
-        width: '1em',
         verticalAlign: 'middle',
+        width: '1.5rem',
     };
+
+    const rowContainerProps = {
+        container: true,
+        direction: { xs: 'column', sm: 'row' },
+        size: 12,
+        justifyContent: 'flex-start',
+    } as const;
+
+    const bodyTextProps = { sx: { ml: { xs: 4, sm: 0 } } } as const;
+
+    const headingProps = {
+        container: true,
+        width: '5.5rem',
+        gap: 1,
+        direction: 'row',
+        flexWrap: 'nowrap',
+    } as const;
 
     // Define time/date
     const startDate = formatToPacific(eventItem.start_date, 'DD MMM, YYYY');
@@ -28,32 +41,26 @@ const VirtualSession = ({ eventItem }: EventProps) => {
 
     return (
         <>
-            <Grid container justifyContent="flex-start" size={12} sx={containerStyles}>
-                <Grid size={{ xs: 0, sm: 1 }} style={{ maxWidth: '2rem' }}>
-                    <FontAwesomeIcon icon={faCalendarDays} style={iconStyles} />
+            <Grid container direction="column" size={12} gap={1.5} justifyContent="flex-start">
+                <Grid {...rowContainerProps}>
+                    <Grid {...headingProps}>
+                        <FontAwesomeIcon icon={faCalendarDays} style={iconStyles} />
+                        <BodyText bold>Date</BodyText>
+                    </Grid>
+                    <BodyText {...bodyTextProps}>{startDate}</BodyText>
                 </Grid>
-                <Grid size={{ xs: 6, md: 3, xl: 2 }}>
-                    <BodyText bold>Date</BodyText>
+                <Grid {...rowContainerProps}>
+                    <Grid {...headingProps}>
+                        <FontAwesomeIcon icon={faClock} style={iconStyles} />
+                        <BodyText bold>Time</BodyText>
+                    </Grid>
+                    <BodyText {...bodyTextProps}>{`${startTime} to ${endTime} PT`}</BodyText>
                 </Grid>
-                <Grid size={{ xs: 12, md: 8, xl: 9 }}>
-                    <BodyText>{startDate}</BodyText>
+                <Grid {...rowContainerProps}>
+                    <Button variant="primary" size="large" href={eventItem.url} sx={{ mt: '1em' }}>
+                        {eventItem.url_label}
+                    </Button>
                 </Grid>
-            </Grid>
-            <Grid container justifyContent="flex-start" size={12} sx={containerStyles}>
-                <Grid size={{ xs: 0, sm: 1 }} style={{ maxWidth: '2rem' }}>
-                    <FontAwesomeIcon icon={faClock} style={iconStyles} />
-                </Grid>
-                <Grid size={{ xs: 6, md: 3, xl: 2 }}>
-                    <BodyText bold>Time</BodyText>
-                </Grid>
-                <Grid size={{ xs: 12, md: 8, xl: 9 }}>
-                    <BodyText>{`${startTime} to ${endTime} PT`}</BodyText>
-                </Grid>
-            </Grid>
-            <Grid container justifyContent="flex-start" size={12} sx={containerStyles}>
-                <Button variant="primary" size="large" href={eventItem.url} sx={{ mt: '2em' }}>
-                    {eventItem.url_label}
-                </Button>
             </Grid>
         </>
     );

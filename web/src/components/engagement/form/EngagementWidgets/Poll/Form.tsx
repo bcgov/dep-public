@@ -79,20 +79,17 @@ const Form = () => {
         loadTranslations();
     }, [pollWidget?.id, activeLanguageCode, widget?.id]);
 
-    const handleOnSubmit = (event: React.SyntheticEvent<HTMLFormElement>) => {
-        event.preventDefault();
+    const handleOnSubmit = () => {
         const answersForSubmission = [...pollAnswers];
-
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const eventTarget = event.target as any;
+        if (!pollWidgetState || answersForSubmission.length < 1) return;
         const restructuredData = {
-            title: eventTarget['title']?.value,
-            description: eventTarget['description']?.value,
+            title: pollWidgetState.title,
+            description: pollWidgetState.description,
             answers: answersForSubmission,
-            status: eventTarget['status']?.value,
+            status: pollWidgetState.status,
         };
         setPollAnswers(answersForSubmission);
-        onSubmit(restructuredData);
+        void onSubmit(restructuredData);
     };
 
     const savePollWidget = (data: DetailsForm) => (!pollWidget ? createPoll(data) : updatePoll(data));
@@ -306,7 +303,13 @@ const Form = () => {
             mt={'1em'}
         >
             <Grid>
-                <Button variant="primary" type="submit" disabled={isCreating} data-testid="save-button">
+                <Button
+                    variant="primary"
+                    type="button"
+                    onClick={handleOnSubmit}
+                    disabled={isCreating}
+                    data-testid="save-button"
+                >
                     Save & Close
                 </Button>
             </Grid>
@@ -323,24 +326,22 @@ const Form = () => {
                 <Divider sx={{ marginTop: '0.5em' }} />
             </Grid>
             <Grid size={12}>
-                <form onSubmit={(event) => handleOnSubmit(event)} id="timelineForm">
-                    <Grid container direction="row" alignItems={'flex-start'} justifyContent="flex-start" spacing={2}>
-                        <Grid size={12}>{engagementPublishedAlert}</Grid>
-                        {(!isEngagementPublished || (isEngagementPublished && !pollWidget)) && (
-                            <>
-                                {pollTitleField}
-                                {pollDescriptionField}
-                                {divider}
-                                {pollAnswersField}
-                            </>
-                        )}
-                        {divider}
-                        {pollStatusField}
-                        {divider}
-                        {pollPreview}
-                        {pollFormButtons}
-                    </Grid>
-                </form>
+                <Grid container direction="row" alignItems={'flex-start'} justifyContent="flex-start" spacing={2}>
+                    <Grid size={12}>{engagementPublishedAlert}</Grid>
+                    {(!isEngagementPublished || (isEngagementPublished && !pollWidget)) && (
+                        <>
+                            {pollTitleField}
+                            {pollDescriptionField}
+                            {divider}
+                            {pollAnswersField}
+                        </>
+                    )}
+                    {divider}
+                    {pollStatusField}
+                    {divider}
+                    {pollPreview}
+                    {pollFormButtons}
+                </Grid>
             </Grid>
         </Grid>
     );

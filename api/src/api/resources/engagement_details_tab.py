@@ -92,3 +92,26 @@ class EngagementDetailsTabsResource(Resource):
             return {'status': 'failure', 'message': err.error}, err.status_code
         except ValidationError as err:
             return {'status': 'failure', 'message': err.messages}, HTTPStatus.BAD_REQUEST
+
+
+@cors_preflight('DELETE, OPTIONS')
+@API.route('/<int:tab_id>')  # /api/engagement/<int:engagement_id>/details/<int:tab_id>
+class EngagementDetailsTabDeleteResource(Resource):
+    """Resource for deleting engagement details tabs."""
+
+    @staticmethod
+    @cross_origin(origins=allowedorigins())
+    @_jwt.requires_auth
+    @require_engagement_section_lock(
+        section_key=ResourceLockService.SECTION_AUTHORING_DETAILS,
+        error_builder=lock_error_status_failure,
+    )
+    def delete(engagement_id, tab_id):
+        """Delete a single details tab for an engagement."""
+        try:
+            EngagementDetailsTabService().delete_tab(engagement_id, tab_id)
+            return {'status': 'success'}, HTTPStatus.OK
+        except BusinessException as err:
+            return {'status': 'failure', 'message': err.error}, err.status_code
+        except ValidationError as err:
+            return {'status': 'failure', 'message': err.messages}, HTTPStatus.BAD_REQUEST

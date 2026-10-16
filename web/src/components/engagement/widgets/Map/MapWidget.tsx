@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { Heading2, Heading3 } from 'components/common/Typography';
+import { Heading3 } from 'components/common/Typography';
 import { Grid2 as Grid, Skeleton, Box, useMediaQuery, Theme, useTheme } from '@mui/material';
 import { Widget } from 'models/widget';
 import { useAppDispatch } from 'hooks';
@@ -61,9 +61,9 @@ const MapWidget = ({ widget }: MapWidgetProps) => {
         return (
             <Grid container size={12} justifyContent="flex-start" spacing={3}>
                 <Grid size={12}>
-                    <Heading2>
+                    <Heading3 sx={{ fontSize: '1.375rem' }}>
                         <Skeleton variant="rectangular" />
-                    </Heading2>
+                    </Heading3>
                 </Grid>
                 <Grid size={12}>
                     <Skeleton variant="rectangular" height="10em" />
@@ -86,6 +86,8 @@ const MapWidget = ({ widget }: MapWidgetProps) => {
         position: 'relative',
         width: '100%',
         paddingTop: '66.67%' /* 3:2 aspect ratio (height / width * 100) */,
+        borderRadius: '16px',
+        overflow: 'hidden',
     };
     const innerContainerStyles = {
         position: 'absolute',
@@ -95,6 +97,8 @@ const MapWidget = ({ widget }: MapWidgetProps) => {
         height: '100%',
         borderRadius: '16px',
         overflow: 'hidden',
+        border: '1px solid transparent', // Forces border radius to render correctly
+        m: '-1px', // Componesate for invisible border
     };
 
     return (
@@ -106,9 +110,9 @@ const MapWidget = ({ widget }: MapWidgetProps) => {
                 size={12}
                 paddingBottom={0}
             >
-                <Heading3 lineHeight="normal">{widget.title}</Heading3>
+                <Heading3 sx={{ fontSize: '1.375rem' }}>{widget.title}</Heading3>
             </Grid>
-            <Grid size={12}>
+            <Grid size={12} mt="1.5rem">
                 <Box sx={outerContainerStyles}>
                     <Box sx={innerContainerStyles}>
                         <MapWithMarkers

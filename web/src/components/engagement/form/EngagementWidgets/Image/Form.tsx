@@ -118,6 +118,7 @@ const Form = () => {
             widget_id: widget.id,
             file_id: image_url.split('/').pop()!.split('.')[0],
             engagement_id: widget.engagement_id,
+            engagement_details_tab_id: widget.engagement_details_tab_id,
             image_url: image_url,
             alt_text: alt_text,
             description: description,
@@ -228,15 +229,12 @@ const Form = () => {
         return updateImage(data);
     };
 
-    const uploadImageAndSubmit: React.FormEventHandler<HTMLFormElement> = (event) => {
-        event.preventDefault();
-        void (async () => {
-            if (previewImage) {
-                const image_url = await handleUploadImageFile();
-                setValue('image_url', image_url);
-            }
-            await handleSubmit(onSubmit)();
-        })();
+    const uploadImageAndSubmit = async () => {
+        if (previewImage) {
+            const image_url = await handleUploadImageFile();
+            setValue('image_url', image_url);
+        }
+        await handleSubmit(onSubmit)();
     };
 
     const onSubmit: SubmitHandler<ImageWidgetForm> = async (data: ImageWidgetForm) => {
@@ -262,91 +260,94 @@ const Form = () => {
                 <Divider sx={{ marginTop: '0.5em' }} />
             </Grid>
             <Grid size={12}>
-                <form onSubmit={uploadImageAndSubmit}>
-                    <Grid container direction="row" alignItems={'flex-start'} justifyContent="flex-start" spacing={2}>
-                        <Grid size={12}>
-                            <label htmlFor="description">
-                                <BodyText bold>Description</BodyText>
-                            </label>
-                            <Controller
-                                name="description"
-                                control={control}
-                                render={({ field }) => (
-                                    <TextField
-                                        {...field}
-                                        id="description"
-                                        placeholder="Description"
-                                        multiline
-                                        maxRows={4}
-                                        minRows={4}
-                                    />
-                                )}
-                            />
-                            <When condition={errors.description?.message !== undefined}>
-                                <SystemMessage sx={{ mt: 2 }} status="danger">
-                                    {errors.description?.message}
-                                </SystemMessage>
-                            </When>
+                <Grid container direction="row" alignItems={'flex-start'} justifyContent="flex-start" spacing={2}>
+                    <Grid size={12}>
+                        <label htmlFor="description">
+                            <BodyText bold>Description</BodyText>
+                        </label>
+                        <Controller
+                            name="description"
+                            control={control}
+                            render={({ field }) => (
+                                <TextField
+                                    {...field}
+                                    id="description"
+                                    placeholder="Description"
+                                    multiline
+                                    maxRows={4}
+                                    minRows={4}
+                                />
+                            )}
+                        />
+                        <When condition={errors.description?.message !== undefined}>
+                            <SystemMessage sx={{ mt: 2 }} status="danger">
+                                {errors.description?.message}
+                            </SystemMessage>
+                        </When>
+                    </Grid>
+                    <Grid size={12}>
+                        <label htmlFor="select-file-button">
+                            <BodyText bold>Image Upload</BodyText>
+                        </label>
+                        <Controller
+                            name="image_url"
+                            control={control}
+                            render={({ field }) => (
+                                <ImageUpload
+                                    height="15em"
+                                    handleAddFile={handleAddImageFile}
+                                    cropAspectRatio={3 / 2}
+                                    savedImageUrl={field.value}
+                                />
+                            )}
+                        />
+                        <When condition={errors.image_url?.message !== undefined}>
+                            <SystemMessage sx={{ mt: 2 }} status="danger">
+                                {errors.image_url?.message}
+                            </SystemMessage>
+                        </When>
+                    </Grid>
+                    <Grid size={12}>
+                        <label htmlFor="alt_text">
+                            <BodyText bold>Image Alt Text</BodyText>
+                        </label>
+                        <Controller
+                            name="alt_text"
+                            control={control}
+                            render={({ field }) => (
+                                <TextField {...field} id="alt_text" multiline maxRows={4} placeholder="Alt Text" />
+                            )}
+                        />
+                        <When condition={errors.alt_text?.message !== undefined}>
+                            <SystemMessage sx={{ mt: 2 }} status="danger">
+                                Error: {errors.alt_text?.message}
+                            </SystemMessage>
+                        </When>
+                    </Grid>
+                    <Grid
+                        size={12}
+                        container
+                        direction="row"
+                        alignItems={'flex-start'}
+                        justifyContent="flex-start"
+                        spacing={2}
+                        mt={'3em'}
+                    >
+                        <Grid>
+                            <Button
+                                variant="primary"
+                                type="button"
+                                onClick={() => void uploadImageAndSubmit()}
+                                disabled={isCreating}
+                            >
+                                Save & Close
+                            </Button>
                         </Grid>
-                        <Grid size={12}>
-                            <label htmlFor="select-file-button">
-                                <BodyText bold>Image Upload</BodyText>
-                            </label>
-                            <Controller
-                                name="image_url"
-                                control={control}
-                                render={({ field }) => (
-                                    <ImageUpload
-                                        height="15em"
-                                        handleAddFile={handleAddImageFile}
-                                        cropAspectRatio={3 / 2}
-                                        savedImageUrl={field.value}
-                                    />
-                                )}
-                            />
-                            <When condition={errors.image_url?.message !== undefined}>
-                                <SystemMessage sx={{ mt: 2 }} status="danger">
-                                    {errors.image_url?.message}
-                                </SystemMessage>
-                            </When>
-                        </Grid>
-                        <Grid size={12}>
-                            <label htmlFor="alt_text">
-                                <BodyText bold>Image Alt Text</BodyText>
-                            </label>
-                            <Controller
-                                name="alt_text"
-                                control={control}
-                                render={({ field }) => (
-                                    <TextField {...field} id="alt_text" multiline maxRows={4} placeholder="Alt Text" />
-                                )}
-                            />
-                            <When condition={errors.alt_text?.message !== undefined}>
-                                <SystemMessage sx={{ mt: 2 }} status="danger">
-                                    Error: {errors.alt_text?.message}
-                                </SystemMessage>
-                            </When>
-                        </Grid>
-                        <Grid
-                            size={12}
-                            container
-                            direction="row"
-                            alignItems={'flex-start'}
-                            justifyContent="flex-start"
-                            spacing={2}
-                            mt={'3em'}
-                        >
-                            <Grid>
-                                <Button variant="primary" type="submit" disabled={isCreating}>
-                                    Save & Close
-                                </Button>
-                            </Grid>
-                            <Grid>
-                                <Button onClick={() => setWidgetDrawerOpen(false)}>Cancel</Button>
-                            </Grid>
+                        <Grid>
+                            <Button onClick={() => setWidgetDrawerOpen(false)}>Cancel</Button>
                         </Grid>
                     </Grid>
-                </form>
+                </Grid>
             </Grid>
         </Grid>
     );

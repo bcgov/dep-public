@@ -265,7 +265,12 @@ const UploadFileDrawer = () => {
                             marginTop="8em"
                         >
                             <Grid>
-                                <Button variant="primary" loading={isUploadingFile} onClick={handleSubmit(onSubmit)}>
+                                <Button
+                                    variant="primary"
+                                    type="button"
+                                    loading={isUploadingFile}
+                                    onClick={handleSubmit(onSubmit)}
+                                >
                                     Save &amp; Close
                                 </Button>
                             </Grid>

@@ -227,114 +227,112 @@ const Form = () => {
             </Grid>
             <Grid size={12}>
                 <FormProvider {...methods}>
-                    <form onSubmit={handleSubmit(onSubmit)}>
-                        <Grid container direction="row" alignItems="baseline" justifyContent="flex-start" spacing={2}>
-                            <Grid size={12}>
-                                <ShapeFileUpload
-                                    data-testid="shapefile-upload"
-                                    handleAddFile={handleAddFile}
-                                    savedFileName={uploadName}
-                                    savedFile={methods.getValues('shapefile')}
-                                    aria-label={'Upload a shape file.'}
-                                />
-                            </Grid>
+                    <Grid container direction="row" alignItems="baseline" justifyContent="flex-start" spacing={2}>
+                        <Grid size={12}>
+                            <ShapeFileUpload
+                                data-testid="shapefile-upload"
+                                handleAddFile={handleAddFile}
+                                savedFileName={uploadName}
+                                savedFile={methods.getValues('shapefile')}
+                                aria-label={'Upload a shape file.'}
+                            />
+                        </Grid>
 
-                            <When condition={Boolean(filename)}>
-                                <Grid size={12}>
-                                    <BodyText bold mb="2px">
-                                        File Uploaded
-                                    </BodyText>
-                                    <Paper elevation={1} sx={{ width: '100%' }}>
-                                        <Grid
-                                            container
-                                            direction="row"
-                                            alignItems={'center'}
-                                            justifyContent="flex-start"
-                                        >
-                                            <Grid size="auto">
-                                                <Stack spacing={2} direction="row" alignItems="center">
-                                                    <FontAwesomeIcon
-                                                        icon={faLinkSimple}
-                                                        style={{ fontSize: '22px', color: '#757575' }}
-                                                    />
-                                                    <Typography>{mapData?.file_name}</Typography>
-                                                </Stack>
-                                            </Grid>
-                                            <IconButton
-                                                onClick={() => {
-                                                    methods.setValue('filename', undefined);
-                                                    methods.setValue('geojson', undefined);
-                                                }}
-                                                sx={{ padding: 0, margin: 0 }}
-                                                color="inherit"
-                                                aria-label="Remove GeoJSON"
-                                            >
-                                                <FontAwesomeIcon icon={faCircleXmark} style={{ fontSize: '22px' }} />
-                                            </IconButton>
+                        <When condition={Boolean(filename)}>
+                            <Grid size={12}>
+                                <BodyText bold mb="2px">
+                                    File Uploaded
+                                </BodyText>
+                                <Paper elevation={1} sx={{ width: '100%' }}>
+                                    <Grid container direction="row" alignItems={'center'} justifyContent="flex-start">
+                                        <Grid size="auto">
+                                            <Stack spacing={2} direction="row" alignItems="center">
+                                                <FontAwesomeIcon
+                                                    icon={faLinkSimple}
+                                                    style={{ fontSize: '22px', color: '#757575' }}
+                                                />
+                                                <Typography>{mapData?.file_name}</Typography>
+                                            </Stack>
                                         </Grid>
-                                    </Paper>
-                                </Grid>
-                            </When>
-                            <Grid size={12}>
-                                <BodyText bold mb="2px">
-                                    Latitude (Required)
-                                </BodyText>
-                                <BodyText>Latitude in British Columbia is between 48.30 and 60.00</BodyText>
-                                <ControlledTextField
-                                    name="latitude"
-                                    aria-label={
-                                        'Latitude: Latitude in British Columbia is between 48.30 and 60.00. Required field, numeric value with up to two decimal places.'
-                                    }
-                                />
+                                        <IconButton
+                                            onClick={() => {
+                                                methods.setValue('filename', undefined);
+                                                methods.setValue('geojson', undefined);
+                                            }}
+                                            sx={{ padding: 0, margin: 0 }}
+                                            color="inherit"
+                                            aria-label="Remove GeoJSON"
+                                        >
+                                            <FontAwesomeIcon icon={faCircleXmark} style={{ fontSize: '22px' }} />
+                                        </IconButton>
+                                    </Grid>
+                                </Paper>
                             </Grid>
-                            <Grid size={12}>
-                                <BodyText bold mb="2px">
-                                    Longitude (Required)
-                                </BodyText>
-                                <BodyText>Longitude in British Columbia is between  -139.06 and -114.03</BodyText>
-                                <ControlledTextField
-                                    name="longitude"
-                                    aria-label={
-                                        'Longitude: Longitude in British Columbia is between -139.06 and -114.03. Required field, numeric value with up to two decimal places.'
-                                    }
-                                />
-                            </Grid>
-                            <Grid size={12}>
-                                <BodyText bold mb="2px">
-                                    Marker Label (Optional)
-                                </BodyText>
-                                <BodyText>This text will appear next to your marker on the map</BodyText>
-                                <ControlledTextField
-                                    name="markerLabel"
-                                    aria-label="Marker label: This text will appear next to your marker on the map. Optional field, maximum 30 characters."
-                                />
-                            </Grid>
-                            <Grid size={12} container direction="row" justifyContent={'flex-end'}>
-                                <Grid>
-                                    <Button loading={calculatingZoom} onClick={handlePreviewMap}>
-                                        Preview Map
-                                    </Button>
-                                </Grid>
-                            </Grid>
-                            <Grid
-                                size={12}
-                                container
-                                direction="row"
-                                spacing={1}
-                                justifyContent={'flex-start'}
-                                marginTop="2em"
-                            >
-                                <Grid>
-                                    <Button variant="primary" type="submit" loading={isCreating}>
-                                        Save &amp; Close
-                                    </Button>
-                                </Grid>
-                                <Grid>
-                                    <Button onClick={() => setWidgetDrawerOpen(false)}>Cancel</Button>
-                                </Grid>
+                        </When>
+                        <Grid size={12}>
+                            <BodyText bold mb="2px">
+                                Latitude (Required)
+                            </BodyText>
+                            <BodyText>Latitude in British Columbia is between 48.30 and 60.00</BodyText>
+                            <ControlledTextField
+                                name="latitude"
+                                aria-label={
+                                    'Latitude: Latitude in British Columbia is between 48.30 and 60.00. Required field, numeric value with up to two decimal places.'
+                                }
+                            />
+                        </Grid>
+                        <Grid size={12}>
+                            <BodyText bold mb="2px">
+                                Longitude (Required)
+                            </BodyText>
+                            <BodyText>Longitude in British Columbia is between  -139.06 and -114.03</BodyText>
+                            <ControlledTextField
+                                name="longitude"
+                                aria-label={
+                                    'Longitude: Longitude in British Columbia is between -139.06 and -114.03. Required field, numeric value with up to two decimal places.'
+                                }
+                            />
+                        </Grid>
+                        <Grid size={12}>
+                            <BodyText bold mb="2px">
+                                Marker Label (Optional)
+                            </BodyText>
+                            <BodyText>This text will appear next to your marker on the map</BodyText>
+                            <ControlledTextField
+                                name="markerLabel"
+                                aria-label="Marker label: This text will appear next to your marker on the map. Optional field, maximum 30 characters."
+                            />
+                        </Grid>
+                        <Grid size={12} container direction="row" justifyContent={'flex-end'}>
+                            <Grid>
+                                <Button loading={calculatingZoom} onClick={handlePreviewMap}>
+                                    Preview Map
+                                </Button>
                             </Grid>
                         </Grid>
-                    </form>
+                        <Grid
+                            size={12}
+                            container
+                            direction="row"
+                            spacing={1}
+                            justifyContent={'flex-start'}
+                            marginTop="2em"
+                        >
+                            <Grid>
+                                <Button
+                                    variant="primary"
+                                    type="button"
+                                    onClick={handleSubmit(onSubmit)}
+                                    loading={isCreating}
+                                >
+                                    Save &amp; Close
+                                </Button>
+                            </Grid>
+                            <Grid>
+                                <Button onClick={() => setWidgetDrawerOpen(false)}>Cancel</Button>
+                            </Grid>
+                        </Grid>
+                    </Grid>
                 </FormProvider>
             </Grid>
         </Grid>

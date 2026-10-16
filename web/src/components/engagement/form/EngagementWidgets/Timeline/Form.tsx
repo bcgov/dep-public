@@ -148,6 +148,7 @@ const Form = () => {
         await postTimeline(widget.id, {
             widget_id: widget.id,
             engagement_id: widget.engagement_id,
+            engagement_details_tab_id: widget.engagement_details_tab_id ?? undefined,
             title: title,
             description: description,
             events: events,
@@ -238,21 +239,20 @@ const Form = () => {
         }
     };
 
-    const handleOnSubmit = (event: React.SyntheticEvent<HTMLFormElement>) => {
-        event.preventDefault();
+    const handleOnSubmit = () => {
         const eventsForSubmission = [...timelineEvents];
         eventsForSubmission.forEach((event, index) => {
             event.position = index;
         });
+        if (!timelineWidgetState || eventsForSubmission.length < 1) return;
         eventsForSubmission.sort((a, b) => a.position - b.position);
-        const formData = new FormData(event.currentTarget);
         const restructuredData = {
-            title: ((formData.get('title') as string) ?? '').trim(),
-            description: ((formData.get('description') as string) ?? '').trim(),
+            title: (timelineWidgetState.title ?? '').trim(),
+            description: ((timelineWidgetState.description as string) ?? '').trim(),
             events: eventsForSubmission,
         };
         setTimelineEvents(eventsForSubmission);
-        onSubmit(restructuredData);
+        void onSubmit(restructuredData);
     };
 
     const handleAddEvent = () => {
@@ -329,146 +329,145 @@ const Form = () => {
                 <Divider sx={{ marginTop: '0.5em' }} />
             </Grid>
             <Grid size={12}>
-                <form onSubmit={(event) => handleOnSubmit(event)} id="timelineForm">
-                    <Grid container direction="row" alignItems={'flex-start'} justifyContent="flex-start" spacing={2}>
-                        <Grid size={12}>
-                            <TextField
-                                title="Title"
-                                instructions="The title must be less than 255 characters."
-                                name="title"
-                                value={timelineWidgetState?.title}
-                                onChange={(newValue) => {
-                                    handleTextChange(newValue, 'title');
-                                }}
-                            />
-                        </Grid>
-                        <Grid size={12}>
-                            <TextField
-                                name="description"
-                                title="Description"
-                                multiline
-                                rows={4}
-                                value={timelineWidgetState?.description}
-                                onChange={(newValue) => {
-                                    handleTextChange(newValue, 'description');
-                                }}
-                            />
-                        </Grid>
-                        <Grid
-                            size={12}
-                            container
-                            direction="column"
-                            alignItems={'stretch'}
-                            justifyContent="flex-start"
-                            spacing={2}
-                            mt={'3em'}
-                        >
-                            {timelineEvents?.map((tEvent, index) => {
-                                return (
-                                    <Grid
-                                        className={`event${index + 1}`}
-                                        key={`event${index + 1}`}
-                                        spacing={1}
-                                        container
-                                        mb={'1em'}
-                                        size={12}
-                                    >
-                                        <Heading3 bold>{`Event ${index + 1}`}</Heading3>
+                <Grid container direction="row" alignItems={'flex-start'} justifyContent="flex-start" spacing={2}>
+                    <Grid size={12}>
+                        <TextField
+                            title="Title"
+                            instructions="The title must be less than 255 characters."
+                            name="title"
+                            value={timelineWidgetState?.title}
+                            onChange={(newValue) => {
+                                handleTextChange(newValue, 'title');
+                            }}
+                        />
+                    </Grid>
+                    <Grid size={12}>
+                        <TextField
+                            name="description"
+                            title="Description"
+                            multiline
+                            rows={4}
+                            value={timelineWidgetState?.description}
+                            onChange={(newValue) => {
+                                handleTextChange(newValue, 'description');
+                            }}
+                        />
+                    </Grid>
+                    <Grid
+                        size={12}
+                        container
+                        direction="column"
+                        alignItems={'stretch'}
+                        justifyContent="flex-start"
+                        spacing={2}
+                        mt={'3em'}
+                    >
+                        {timelineEvents?.map((tEvent, index) => {
+                            return (
+                                <Grid
+                                    className={`event${index + 1}`}
+                                    key={`event${index + 1}`}
+                                    spacing={1}
+                                    container
+                                    mb={'1em'}
+                                    size={12}
+                                >
+                                    <Heading3 bold>{`Event ${index + 1}`}</Heading3>
 
-                                        <Grid size={12}>
-                                            <BodyText bold>Event Description</BodyText>
-                                            <BodyText size="small">Describe the timeline event.</BodyText>
-                                            <TextField
-                                                name={'eventDescription' + (index + 1)}
-                                                id={'eventDescription' + (index + 1)}
-                                                value={tEvent.description}
-                                                onChange={(newValue) => {
-                                                    handleEventTextChange(newValue, index, 'description');
-                                                }}
-                                            />
-                                        </Grid>
-
-                                        <Grid size={12}>
-                                            <BodyText bold>Event Time</BodyText>
-                                            <BodyText size="small">When did the event happen?</BodyText>
-                                            <TextField
-                                                name={'eventTime' + (index + 1)}
-                                                id={'eventTime' + (index + 1)}
-                                                value={tEvent.time}
-                                                onChange={(newValue) => {
-                                                    handleEventTextChange(newValue, index, 'time');
-                                                }}
-                                            />
-                                        </Grid>
-
-                                        <Grid size={12}>
-                                            <BodyText bold>Event Status</BodyText>
-                                            <Select
-                                                name={'eventStatus' + (index + 1)}
-                                                id={'eventStatus' + (index + 1)}
-                                                variant="outlined"
-                                                value={tEvent.status?.toString()}
-                                                defaultValue="Select an event status"
-                                                fullWidth
-                                                onChange={(event: SelectChangeEvent<string>) => {
-                                                    handleSelectChange(event, index);
-                                                }}
-                                            >
-                                                {timelineEventStatusTypes.map((statusType) => (
-                                                    <MenuItem
-                                                        key={`status-type-${statusType.value || 1}`}
-                                                        value={statusType.value || 1}
-                                                    >
-                                                        {statusType.title || 'Pending'}
-                                                    </MenuItem>
-                                                ))}
-                                            </Select>
-                                        </Grid>
-
-                                        <Grid size={12} sx={{ marginTop: '8px' }}>
-                                            <Button
-                                                size="small"
-                                                disabled={timelineEvents.length <= 1}
-                                                value={index}
-                                                onClick={handleRemoveEvent}
-                                            >
-                                                Remove Event
-                                            </Button>
-                                        </Grid>
-
-                                        <Grid size={12}>
-                                            <Divider sx={{ marginTop: '1em' }} />
-                                        </Grid>
+                                    <Grid size={12}>
+                                        <BodyText bold>Event Description</BodyText>
+                                        <BodyText size="small">Describe the timeline event.</BodyText>
+                                        <TextField
+                                            name={'eventDescription' + (index + 1)}
+                                            id={'eventDescription' + (index + 1)}
+                                            value={tEvent.description}
+                                            onChange={(newValue) => {
+                                                handleEventTextChange(newValue, index, 'description');
+                                            }}
+                                        />
                                     </Grid>
-                                );
-                            })}
-                            <Grid>
-                                <Button size="small" variant="primary" onClick={() => handleAddEvent()}>
-                                    Add Event
-                                </Button>
-                            </Grid>
-                        </Grid>
 
-                        <Grid
-                            size={12}
-                            container
-                            direction="row"
-                            alignItems={'flex-start'}
-                            justifyContent="flex-start"
-                            spacing={2}
-                            mt={'3em'}
-                        >
-                            <Grid>
-                                <Button variant="primary" type="submit" disabled={isCreating}>
-                                    Save & Close
-                                </Button>
-                            </Grid>
-                            <Grid>
-                                <Button onClick={() => setWidgetDrawerOpen(false)}>Cancel</Button>
-                            </Grid>
+                                    <Grid size={12}>
+                                        <BodyText bold>Event Time</BodyText>
+                                        <BodyText size="small">When did the event happen?</BodyText>
+                                        <TextField
+                                            name={'eventTime' + (index + 1)}
+                                            id={'eventTime' + (index + 1)}
+                                            value={tEvent.time}
+                                            onChange={(newValue) => {
+                                                handleEventTextChange(newValue, index, 'time');
+                                            }}
+                                        />
+                                    </Grid>
+
+                                    <Grid size={12}>
+                                        <BodyText bold>Event Status</BodyText>
+                                        <Select
+                                            name={'eventStatus' + (index + 1)}
+                                            id={'eventStatus' + (index + 1)}
+                                            variant="outlined"
+                                            value={tEvent.status?.toString()}
+                                            defaultValue="Select an event status"
+                                            fullWidth
+                                            onChange={(event: SelectChangeEvent<string>) => {
+                                                handleSelectChange(event, index);
+                                            }}
+                                        >
+                                            {timelineEventStatusTypes.map((statusType) => (
+                                                <MenuItem
+                                                    key={`status-type-${statusType.value || 1}`}
+                                                    value={statusType.value || 1}
+                                                >
+                                                    {statusType.title || 'Pending'}
+                                                </MenuItem>
+                                            ))}
+                                        </Select>
+                                    </Grid>
+
+                                    <Grid size={12} sx={{ marginTop: '8px' }}>
+                                        <Button
+                                            type="button"
+                                            size="small"
+                                            disabled={timelineEvents.length <= 1}
+                                            value={index}
+                                            onClick={handleRemoveEvent}
+                                        >
+                                            Remove Event
+                                        </Button>
+                                    </Grid>
+
+                                    <Grid size={12}>
+                                        <Divider sx={{ marginTop: '1em' }} />
+                                    </Grid>
+                                </Grid>
+                            );
+                        })}
+                        <Grid>
+                            <Button size="small" variant="primary" type="button" onClick={handleAddEvent}>
+                                Add Event
+                            </Button>
                         </Grid>
                     </Grid>
-                </form>
+
+                    <Grid
+                        size={12}
+                        container
+                        direction="row"
+                        alignItems={'flex-start'}
+                        justifyContent="flex-start"
+                        spacing={2}
+                        mt={'3em'}
+                    >
+                        <Grid>
+                            <Button variant="primary" type="button" onClick={handleOnSubmit} disabled={isCreating}>
+                                Save & Close
+                            </Button>
+                        </Grid>
+                        <Grid>
+                            <Button onClick={() => setWidgetDrawerOpen(false)}>Cancel</Button>
+                        </Grid>
+                    </Grid>
+                </Grid>
             </Grid>
         </Grid>
     );
