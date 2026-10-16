@@ -344,13 +344,21 @@ const AuthoringDetails = () => {
         }
     };
 
-    const noTabsConfirm = () => {
-        setLockScopeWideningRequested(true);
-        setTabsEnabled(false);
-        const newTabs = getValues('details_tabs');
-        // Remove subsequent tabs when switching to no-tab mode. This action dirties the form.
-        updateTabs([newTabs[0]], true);
-        closeModal('disable tabs');
+    const noTabsConfirm = async () => {
+        try {
+            setLockScopeWideningRequested(true);
+            const newTabs = getValues('details_tabs');
+            const tabsToRemove = newTabs.filter((_, i) => i !== 0);
+            const deleteRequests = tabsToRemove.map((t) =>
+                withDetailsLock((headers) => deleteDetailsTab(engagementId, t.id, headers)),
+            );
+            await Promise.all(deleteRequests);
+            setTabsEnabled(false);
+            updateTabs([newTabs[0]], true);
+            closeModal('disable tabs');
+        } catch (e) {
+            console.error(`Failed to switch to no tabs mode: ${e}`);
+        }
     };
 
     const scrollToTabErrors = () => {
@@ -392,11 +400,7 @@ const AuthoringDetails = () => {
     ) => {
         if (source === 'add' && (event.key === 'Enter' || event.key === 'Spacebar' || event.key === ' ')) {
             event.preventDefault();
-            try {
-                await addTab();
-            } catch (e) {
-                console.error(`Failed to add a tab with keyboard key: ${e}`);
-            }
+            await addTab();
         } else if (source === 'tab' && (event.key === 'Delete' || event.key === 'Backspace')) {
             event.preventDefault();
             removeTab(event, index);
@@ -579,7 +583,9 @@ const AuthoringDetails = () => {
                         },
                         { text: 'deleted permanently.', bold: true },
                     ]}
-                    handleConfirm={deleteConfirm}
+                    handleConfirm={() => {
+                        void deleteConfirm();
+                    }}
                     handleClose={() => closeModal('delete tab')}
                     confirmButtonText={`Delete ${authoringDetailsTabs[delTabIndex]?.label || 'This Tab'}`}
                     cancelButtonText={'Cancel & Go Back'}
@@ -599,7 +605,9 @@ const AuthoringDetails = () => {
                             bold: false,
                         },
                     ]}
-                    handleConfirm={noTabsConfirm}
+                    handleConfirm={() => {
+                        void noTabsConfirm();
+                    }}
                     handleClose={() => closeModal('disable tabs')}
                     confirmButtonText={'Delete Tabs'}
                     cancelButtonText={'Cancel & Go Back'}
@@ -621,7 +629,7 @@ const AuthoringDetails = () => {
                     sx={tabRadioContainerStyles}
                     value={tabsEnabled ? 'true' : 'false'}
                     onChange={(_, value) => {
-                        value === 'true' ? enableTabs() : disableTabs();
+                        value === 'true' ? void enableTabs() : disableTabs();
                     }}
                 >
                     <FormControlLabel
@@ -693,7 +701,7 @@ const AuthoringDetails = () => {
                                         key={value.tempId}
                                         value={String(key)}
                                         onKeyDown={(event) => {
-                                            tabKeyDown(event, 'tab', key);
+                                            void tabKeyDown(event, 'tab', key);
                                         }}
                                         disableFocusRipple
                                         ref={currentTab === String(key) ? selectedTabRef : null}
@@ -718,7 +726,7 @@ const AuthoringDetails = () => {
                                                             removeTab(event, key);
                                                         }}
                                                         onKeyDown={(event) => {
-                                                            tabKeyDown(event, 'tabx', key);
+                                                            void tabKeyDown(event, 'tabx', key);
                                                         }}
                                                     >
                                                         <FontAwesomeIcon
@@ -755,8 +763,12 @@ const AuthoringDetails = () => {
                                 disabled={authoringDetailsTabs.length > 9}
                                 disableRipple
                                 sx={{ ...addTabButtonStyles }}
-                                onClick={() => addTab()}
-                                onKeyDown={(event) => tabKeyDown(event, 'add')}
+                                onClick={() => {
+                                    void addTab();
+                                }}
+                                onKeyDown={(event) => {
+                                    void tabKeyDown(event, 'add');
+                                }}
                             />
                         </TabList>
                     </AuthoringFormContainer>
