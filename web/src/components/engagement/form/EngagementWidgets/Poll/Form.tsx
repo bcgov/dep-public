@@ -23,6 +23,7 @@ import {
     getEngagementContentTranslationsByCode,
     syncEngagementContentTranslationsByCode,
 } from 'services/engagementContentTranslationService';
+import { useWidgetSectionLockRequest } from '../useWidgetSectionLockRequest';
 import { EngagementLoaderAdminData } from 'engagements/admin/EngagementLoaderAdmin';
 
 interface DetailsForm {
@@ -59,6 +60,7 @@ const Form = () => {
         usePollWidgetState(pollWidget, savedEngagement, widget);
     const { languageCode } = useParams<{ languageCode?: string }>();
     const activeLanguageCode = (languageCode ?? 'en').toLowerCase();
+    const { filterWidgetTranslations, withWidgetLock } = useWidgetSectionLockRequest(widget, activeLanguageCode);
 
     useEffect(() => {
         if (!pollWidget || !widget || activeLanguageCode === 'en') return;
@@ -137,9 +139,16 @@ const Form = () => {
                       ...existingTranslations.widgets,
                       { widget_id: widget.id, poll_title: data.title, poll_description: data.description },
                   ];
-            await syncEngagementContentTranslationsByCode(widget.engagement_id, activeLanguageCode, {
-                widgets: nextTranslations,
-            });
+            await withWidgetLock((headers) =>
+                syncEngagementContentTranslationsByCode(
+                    widget.engagement_id,
+                    activeLanguageCode,
+                    {
+                        widgets: filterWidgetTranslations(nextTranslations),
+                    },
+                    headers,
+                ),
+            );
         } else if (isEngagementPublished) {
             // if already published then only update status (language-neutral)
             await patchPoll(widget.id, pollWidget.id, { status: data.status });

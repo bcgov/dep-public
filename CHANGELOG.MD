@@ -17,6 +17,25 @@
     - Integrated with section lock system
 - **Bugfix** Set maximum width of landing hero container for long introductions that need to wrap.
 
+## October 13, 2026
+
+- **Bugfix** Fixed issue with engagement author locking affecting the ability to update certain widget details
+  - Updated widget forms to always include lock headers.
+  - Updated unit tests to account for the inclusion of lock headers. Added new test cases to verify the headers are being correctly applied.
+
+- **Feature** Updated public-facing engagement components to support RTL styling. [🎟️ DEP-383](https://citz-gdx.atlassian.net/browse/DEP-383)
+  - Set dir="auto" on the root of the app, allowing the whole app layout to automatically adjust for right-to-left (RTL) languages based on the first character direction of the content.
+  - Ensured that all text and layout components on the engagement page respect the text direction when applicable.
+    - Directional icons are mirrored appropriately in RTL mode.
+    - Layouts and spacing are adjusted to use inline-start and inline-end properties instead of left and right, ensuring proper alignment in both LTR and RTL modes.
+
+## October 8, 2026
+
+- **Feature** Added required taxa to each tenant. [🎟️ DEP-397](https://citz-gdx.atlassian.net/browse/DEP-397)
+  - Added a "required" flag to metadata, which makes taxa that have it mandatory/permanent.
+  - Required taxa cannot be deleted from a tenant or have their name or data type changed.
+  - Required taxa are automatically included when creating a new tenant.
+
 ## October 6, 2026
 
 - **Feature** Reworked public landing page hero/stats section. [🎟️ DEP-390](https://citz-gdx.atlassian.net/browse/DEP-390)
@@ -33,6 +52,9 @@
 
 ## October 2, 2026
 
+- **Feature** Added horizontal orientation for engagement cards. [🎟️ DEP-395](https://citz-gdx.atlassian.net/browse/DEP-395)
+  - Added an "orientation" prop to the engagement card component. This supports responsive values, so use cases like `orientation={{ xs: 'vertical', md: 'horizontal', lg: 'vertical' }}` are made easy.
+  - Fixed layouts expecting vertical cards to be 320px wide; they are now 343px wide.
 - **Feature** Increased engagement title length from 60 to 75 characters. [🎟️ DEP-394](https://citz-gdx.atlassian.net/browse/DEP-394)
   - Updated database, validation, and UI to support engagement titles up to 75 characters.
 

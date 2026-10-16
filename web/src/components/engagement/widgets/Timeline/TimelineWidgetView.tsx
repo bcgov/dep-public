@@ -230,7 +230,7 @@ const TimelineEvent = ({ event, isLast }: { event: TimelineEventType; isLast: bo
                             sx={{
                                 height: 'calc(100% + 2em)',
                                 width: '1.625rem',
-                                borderRight: '4px solid',
+                                borderInlineEnd: '4px solid',
                                 borderColor: 'blue.90',
                             }}
                         />

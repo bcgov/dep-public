@@ -25,11 +25,15 @@ export const widgetsApi = createApi({
             }),
             invalidatesTags: ['Widgets'],
         }),
-        updateWidget: builder.mutation<Widget, { id: number; engagementId: number; data: Partial<Widget> }>({
-            query: ({ engagementId, id, data }) => ({
+        updateWidget: builder.mutation<
+            Widget,
+            { id: number; engagementId: number; data: Partial<Widget>; headers?: Record<string, string> }
+        >({
+            query: ({ engagementId, id, data, headers }) => ({
                 url: `widgets/${id}/engagements/${engagementId}`,
                 method: 'PATCH',
                 body: data,
+                headers,
             }),
             invalidatesTags: ['Widgets'],
         }),

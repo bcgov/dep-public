@@ -6,9 +6,12 @@ from sqlalchemy.exc import SQLAlchemyError
 from api.models.tenant import Tenant as TenantModel
 from api.schemas.tenant import TenantSchema
 from api.services import authorization
+from api.services.metadata_taxon_service import MetadataTaxonService
 from api.services.object_storage_service import ObjectStorageService
 from api.utils.roles import Role
+
 from ..utils.cache import cache
+
 
 NOT_FOUND_MSG = 'Tenant not found.'
 
@@ -60,6 +63,7 @@ class TenantService:
         tenant = TenantModel(**normalized_data)
         try:
             tenant.save()
+            MetadataTaxonService.create_default_taxa_for_tenant(tenant.id)
         except SQLAlchemyError as e:
             current_app.logger.error('Error creating tenant {}', e)
             raise ValueError('Error creating tenant.') from e

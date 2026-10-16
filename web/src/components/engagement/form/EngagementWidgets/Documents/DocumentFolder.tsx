@@ -24,6 +24,7 @@ import {
     getEngagementContentTranslationsByCode,
     syncEngagementContentTranslationsByCode,
 } from 'services/engagementContentTranslationService';
+import { useWidgetSectionLockRequest } from '../useWidgetSectionLockRequest';
 
 const DocumentFolder = ({
     documentItem,
@@ -42,6 +43,10 @@ const DocumentFolder = ({
     const [document, setDocument] = useState<DocumentItem | undefined>(documentItem);
     const { languageCode } = useParams<{ languageCode?: string }>();
     const activeLanguageCode = (languageCode ?? 'en').toLowerCase();
+    const { filterWidgetTranslations, withWidgetLock } = useWidgetSectionLockRequest(
+        documentWidget,
+        activeLanguageCode,
+    );
 
     useEffect(() => {
         const updatedDocument = documents.find((document: DocumentItem) => document.id === documentItem.id);
@@ -86,9 +91,16 @@ const DocumentFolder = ({
                       },
                   ];
 
-            await syncEngagementContentTranslationsByCode(documentWidget.engagement_id, activeLanguageCode, {
-                documents_widgets: nextTranslations,
-            });
+            await withWidgetLock((headers) =>
+                syncEngagementContentTranslationsByCode(
+                    documentWidget.engagement_id,
+                    activeLanguageCode,
+                    {
+                        documents_widgets: filterWidgetTranslations(nextTranslations),
+                    },
+                    headers,
+                ),
+            );
         }
 
         await loadDocuments();

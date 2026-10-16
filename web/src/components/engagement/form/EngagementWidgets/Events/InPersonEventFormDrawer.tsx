@@ -32,6 +32,7 @@ import {
     syncEngagementContentTranslationsByCode,
     getLanguageIdByCode,
 } from 'services/engagementContentTranslationService';
+import { useWidgetSectionLockRequest } from '../useWidgetSectionLockRequest';
 
 dayjs.extend(tz);
 
@@ -78,6 +79,7 @@ const InPersonEventFormDrawer = () => {
     });
     const { languageCode } = useParams<{ languageCode?: string }>();
     const activeLanguageCode = (languageCode ?? 'en').toLowerCase();
+    const { filterWidgetTranslations, withWidgetLock } = useWidgetSectionLockRequest(widget, activeLanguageCode);
 
     const pad = (num: number) => {
         let timeString = num.toString();
@@ -174,9 +176,16 @@ const InPersonEventFormDrawer = () => {
                           },
                       ];
 
-                await syncEngagementContentTranslationsByCode(widget.engagement_id, activeLanguageCode, {
-                    events_widgets: nextTranslations,
-                });
+                await withWidgetLock((headers) =>
+                    syncEngagementContentTranslationsByCode(
+                        widget.engagement_id,
+                        activeLanguageCode,
+                        {
+                            events_widgets: filterWidgetTranslations(nextTranslations),
+                        },
+                        headers,
+                    ),
+                );
 
                 const languageId = await getLanguageIdByCode(activeLanguageCode);
                 await saveEventItemTranslation(eventToEdit.id, eventItemToEdit.id, languageId, {
@@ -225,9 +234,16 @@ const InPersonEventFormDrawer = () => {
                         title: event_name,
                     },
                 ];
-                await syncEngagementContentTranslationsByCode(widget.engagement_id, activeLanguageCode, {
-                    events_widgets: nextTranslations,
-                });
+                await withWidgetLock((headers) =>
+                    syncEngagementContentTranslationsByCode(
+                        widget.engagement_id,
+                        activeLanguageCode,
+                        {
+                            events_widgets: filterWidgetTranslations(nextTranslations),
+                        },
+                        headers,
+                    ),
+                );
 
                 const createdEventItemId = createdWidgetEvent.event_items?.[0]?.id;
                 if (createdEventItemId) {

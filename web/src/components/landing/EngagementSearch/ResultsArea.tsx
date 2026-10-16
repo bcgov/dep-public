@@ -114,7 +114,7 @@ const ResultsArea = () => {
                             alignItems: 'center',
                             justifyContent: 'center',
                             listStyleType: 'none',
-                            minWidth: '320px',
+                            minWidth: '343px',
                         }}
                     >
                         <EngagementTile passedEngagement={engagement} engagementId={engagement.id} />

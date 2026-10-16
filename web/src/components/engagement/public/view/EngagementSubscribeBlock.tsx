@@ -250,6 +250,7 @@ export const EngagementSubscribeBlock = () => {
 
                                             <Box sx={{ mb: '20px' }}>
                                                 <FormControlLabel
+                                                    sx={{ marginInline: '-11px 16px' }}
                                                     control={
                                                         <Checkbox
                                                             checked={hasConsent}

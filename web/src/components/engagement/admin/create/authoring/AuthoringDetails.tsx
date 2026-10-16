@@ -300,13 +300,6 @@ const AuthoringDetails = () => {
         updateTabs(newTabs, true);
     };
 
-    const editorChange = (newEditorState: EditorState, key: number): EditorState => {
-        const newTabs = [...getValues('details_tabs')];
-        newTabs[key].body = newEditorState;
-        updateTabs(newTabs, true);
-        return newEditorState;
-    };
-
     const deleteConfirm = async () => {
         setLockScopeWideningRequested(true);
         const newTabs = [...getValues('details_tabs')];
@@ -844,9 +837,7 @@ const AuthoringDetails = () => {
                                                 spellCheck
                                                 editorState={field.value}
                                                 aria-label={`Tab ${key + 1} Body`}
-                                                onEditorStateChange={(value) => {
-                                                    field.onChange(editorChange(value, key));
-                                                }}
+                                                onEditorStateChange={field.onChange}
                                                 handlePastedText={() => false}
                                                 toolbar={toolbar}
                                                 placeholder="Body Copy"

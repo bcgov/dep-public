@@ -4,14 +4,35 @@ import { faArrowRight } from '@fortawesome/pro-regular-svg-icons';
 import { Heading2, BodyText } from 'components/common/Typography';
 import { StatusChipSkeleton } from 'components/common/Indicators/StatusChip';
 import { colors } from 'styles/Theme';
+import { ResponsiveStyleValue } from '@mui/system';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { mapOrientation } from './EngagementTile';
 
-export const TileSkeleton = () => {
+export const TileSkeleton = ({
+    orientation = 'vertical',
+}: {
+    orientation?: ResponsiveStyleValue<'horizontal' | 'vertical'>;
+}) => {
     const randomBetween = (min: number, max: number) => Math.floor(Math.random() * (max - min + 1)) + min; //NOSONAR: non-cryptographically secure random() for UI purposes only
+
+    const cardWidth = mapOrientation(orientation, '704px', '343px');
+    const mediaHeight = mapOrientation(orientation, '289px', '147px');
+    const mediaWidth = mapOrientation(orientation, '230px', '343px');
+    const contentHeight = mapOrientation(orientation, '289px', '300px');
     return (
-        <Card sx={{ borderRadius: '24px', width: '343px' }}>
+        <Card
+            sx={{
+                borderRadius: '24px',
+                width: cardWidth,
+                '& button': {
+                    display: 'flex',
+                    flexDirection: mapOrientation(orientation, 'row', 'column'),
+                    justifyContent: 'flex-start',
+                },
+            }}
+        >
             <CardActionArea sx={{ cursor: 'progress' }}>
-                <CardMedia sx={{ height: '147px' }}>
+                <CardMedia sx={{ height: mediaHeight }}>
                     <Box
                         sx={{
                             position: 'absolute',
@@ -21,11 +42,14 @@ export const TileSkeleton = () => {
                     >
                         <StatusChipSkeleton />
                     </Box>
-                    <Skeleton height="147px" variant="rectangular" sx={{ bgcolor: colors.surface.blue[30] }} />
+                    <Skeleton
+                        variant="rectangular"
+                        sx={{ bgcolor: colors.surface.blue[30], height: mediaHeight, width: mediaWidth }}
+                    />
                 </CardMedia>
                 <CardContent
                     sx={{
-                        height: '300px',
+                        height: contentHeight,
                         p: 3,
                         boxSizing: 'border-box',
                         display: 'flex',

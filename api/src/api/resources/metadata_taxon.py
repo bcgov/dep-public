@@ -21,10 +21,12 @@ engagement. This API is located at /api/tenants/<tenant_id>/metadata/taxa
 from functools import wraps
 from http import HTTPStatus
 from typing import Callable
+
 from flask import abort, g, request
 from flask_cors import cross_origin
 from flask_restx import Namespace, Resource, fields
 from marshmallow.exceptions import ValidationError
+
 from api.auth import auth_methods
 from api.models.tenant import Tenant
 from api.services.metadata_taxon_service import MetadataTaxonService
@@ -62,6 +64,7 @@ taxon_return_model = API.model('MetadataTaxonReturn', {
     'tenant_id': fields.Integer(required=True, description='The tenant id'),
     'position': fields.Integer(required=False,
                                description="The taxon's position within the tenant"),
+    'is_required': fields.Boolean(required=False, description='Whether the taxon is required'),
     **taxon_model_dict
 })
 

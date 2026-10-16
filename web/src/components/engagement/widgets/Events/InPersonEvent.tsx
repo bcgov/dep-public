@@ -15,6 +15,7 @@ const InPersonEvent = ({ eventItem }: EventProps) => {
 
     const iconStyles = {
         display: 'flex',
+        marginInlineEnd: '0.8750em',
         fontSize: '1.5em',
         verticalAlign: 'middle',
         width: '1.5rem',

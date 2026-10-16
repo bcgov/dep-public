@@ -7,6 +7,16 @@ import {
     getEngagementContentTranslationsByCode,
     syncEngagementContentTranslationsByCode,
 } from 'services/engagementContentTranslationService';
+import { AuthoringFormContext } from 'components/engagement/admin/create/authoring/AuthoringFormContext';
+import { AuthoringContextType } from 'components/engagement/admin/create/authoring/types';
+import {
+    acquireEngagementSectionLock,
+    LOCK_TOKEN_HEADER,
+    releaseLock,
+    ResourceLockRecord,
+    SECTION_AUTHORING_DETAILS,
+    SECTION_AUTHORING_SUMMARY,
+} from 'services/resourceLockService';
 
 const mockDispatch = jest.fn();
 const mockUpdateWidgetUnwrap = jest.fn();
@@ -33,8 +43,16 @@ jest.mock('services/engagementContentTranslationService', () => ({
     syncEngagementContentTranslationsByCode: jest.fn(),
 }));
 
+jest.mock('services/resourceLockService', () => ({
+    ...jest.requireActual('services/resourceLockService'),
+    acquireEngagementSectionLock: jest.fn(),
+    releaseLock: jest.fn(),
+}));
+
 const mockedGetTranslations = jest.mocked(getEngagementContentTranslationsByCode);
 const mockedSyncTranslations = jest.mocked(syncEngagementContentTranslationsByCode);
+const mockedAcquireLock = jest.mocked(acquireEngagementSectionLock);
+const mockedReleaseLock = jest.mocked(releaseLock);
 
 const baseWidget: Widget = {
     id: 10,
@@ -45,30 +63,45 @@ const baseWidget: Widget = {
     items: [],
 };
 
-const renderWidgetTitle = (widget: Widget = baseWidget) => {
+const renderWidgetTitle = (
+    widget: Widget = baseWidget,
+    activeLockToken: string | null = 'test-lock-token',
+    widgets: Widget[] = [widget],
+) => {
     const setWidgets = jest.fn();
 
     render(
-        <WidgetDrawerContext.Provider
-            value={{
-                widgets: [widget],
-                setWidgets,
-                widgetDrawerOpen: false,
-                setWidgetDrawerOpen: jest.fn(),
-                widgetDrawerTabValue: 'widget-options',
-                setWidgetDrawerTabValue: jest.fn(),
-                isWidgetsLoading: false,
-                loadWidgets: jest.fn(async () => undefined),
-                deleteWidget: jest.fn(),
-                widgetLocation: WidgetLocation.Summary,
-                setWidgetLocation: jest.fn(),
-                widgetDetailsTabId: null,
-                setWidgetDetailsTabId: jest.fn(),
-                isWidgetInScope: jest.fn(() => true),
-            }}
+        <AuthoringFormContext.Provider
+            value={
+                {
+                    activeLockToken,
+                    activeLockSectionKey: activeLockToken ? SECTION_AUTHORING_SUMMARY : null,
+                    activeLockLanguageId: activeLockToken ? 127 : undefined,
+                    languageId: 127,
+                } as AuthoringContextType
+            }
         >
-            <WidgetTitle widget={widget} />
-        </WidgetDrawerContext.Provider>,
+            <WidgetDrawerContext.Provider
+                value={{
+                    widgets,
+                    setWidgets,
+                    widgetDrawerOpen: false,
+                    setWidgetDrawerOpen: jest.fn(),
+                    widgetDrawerTabValue: 'widget-options',
+                    setWidgetDrawerTabValue: jest.fn(),
+                    isWidgetsLoading: false,
+                    loadWidgets: jest.fn(async () => undefined),
+                    deleteWidget: jest.fn(),
+                    widgetLocation: WidgetLocation.Summary,
+                    setWidgetLocation: jest.fn(),
+                    widgetDetailsTabId: null,
+                    setWidgetDetailsTabId: jest.fn(),
+                    isWidgetInScope: jest.fn(() => true),
+                }}
+            >
+                <WidgetTitle widget={widget} />
+            </WidgetDrawerContext.Provider>
+        </AuthoringFormContext.Provider>,
     );
 
     return { setWidgets };
@@ -77,6 +110,19 @@ const renderWidgetTitle = (widget: Widget = baseWidget) => {
 describe('WidgetTitle language behavior', () => {
     beforeEach(() => {
         jest.clearAllMocks();
+        mockedAcquireLock.mockResolvedValue({
+            lock_token: 'acquired-lock-token',
+            lock_scope: 'engagement_section:20:authoring.summary:lang:127',
+            resource_type: 'engagement_section',
+            resource_id: 20,
+            section_key: SECTION_AUTHORING_SUMMARY,
+            language_id: 127,
+            owner: { user_sub: 'test-user' },
+            owner_session_id: 'test-session',
+            acquired_at: '2025-01-01T00:00:00Z',
+            is_mine: true,
+        } as ResourceLockRecord);
+        mockedReleaseLock.mockResolvedValue({ released: true });
     });
 
     test('updates base widget title for English', async () => {
@@ -96,6 +142,7 @@ describe('WidgetTitle language behavior', () => {
                 id: 10,
                 engagementId: 20,
                 data: { title: 'Updated English Title' },
+                headers: { [LOCK_TOKEN_HEADER]: 'test-lock-token' },
             });
         });
 
@@ -106,10 +153,15 @@ describe('WidgetTitle language behavior', () => {
     test('updates translation bucket for non-English', async () => {
         const { useParams } = jest.requireMock('react-router');
         useParams.mockReturnValue({ languageCode: 'fr' });
+        const detailsWidget = { ...baseWidget, id: 102, location: WidgetLocation.Details };
+        const summaryWidget = { ...baseWidget, id: 104 };
 
         mockedGetTranslations.mockResolvedValue({
             details_tabs: [],
-            widgets: [{ id: 1, widget_id: 10, title: 'Ancien titre' }],
+            widgets: [
+                { id: 1, widget_id: detailsWidget.id, title: 'Ancien titre' },
+                { id: 2, widget_id: summaryWidget.id, title: 'Titre existant' },
+            ],
             timeline_widgets: [],
             events_widgets: [],
             documents_widgets: [],
@@ -124,7 +176,7 @@ describe('WidgetTitle language behavior', () => {
             image_widgets: [],
         });
 
-        renderWidgetTitle();
+        const { setWidgets } = renderWidgetTitle(detailsWidget, null, [detailsWidget, summaryWidget]);
 
         fireEvent.click(screen.getByRole('button'));
         fireEvent.change(screen.getByRole('textbox'), { target: { value: 'Titre mis a jour' } });
@@ -132,11 +184,23 @@ describe('WidgetTitle language behavior', () => {
 
         await waitFor(() => {
             expect(mockedGetTranslations).toHaveBeenCalledWith(20, 'fr');
-            expect(mockedSyncTranslations).toHaveBeenCalledWith(20, 'fr', {
-                widgets: [{ id: 1, widget_id: 10, title: 'Titre mis a jour' }],
-            });
+            expect(mockedSyncTranslations).toHaveBeenCalledWith(
+                20,
+                'fr',
+                {
+                    widgets: [{ id: 1, widget_id: detailsWidget.id, title: 'Titre mis a jour' }],
+                },
+                { [LOCK_TOKEN_HEADER]: 'acquired-lock-token' },
+            );
         });
 
         expect(mockUpdateWidget).not.toHaveBeenCalled();
+        expect(mockedAcquireLock).toHaveBeenCalledWith({
+            engagementId: 20,
+            sectionKey: SECTION_AUTHORING_DETAILS,
+            languageId: 127,
+        });
+        expect(mockedReleaseLock).toHaveBeenCalledWith('acquired-lock-token');
+        expect(setWidgets).not.toHaveBeenCalled();
     });
 });

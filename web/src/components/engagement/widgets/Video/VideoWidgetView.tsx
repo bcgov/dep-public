@@ -217,21 +217,14 @@ const VideoOverlay = ({ videoOverlayTitle, source, videoSources }: VideoOverlayP
             justifyContent="center"
             alignItems="center"
         >
-            <Grid
-                container
-                size={12}
-                borderRadius="16px 16px 0 0"
-                zIndex="10000"
-                padding="0.65rem 1rem"
-                bgcolor="black"
-            >
+            <Grid container size={12} borderRadius="16px 16px 0 0" zIndex="1000" padding="0.65rem 1rem" bgcolor="black">
                 <Grid container alignItems="center" size={12} color={colors.surface.white}>
                     <BodyText size="small" textOverflow="ellipsis" whiteSpace="nowrap" overflow="hidden" width="100%">
                         <FontAwesomeIcon
                             icon={videoSources.find((vs) => vs.name === source)?.icon || faQuestionCircle}
                             style={{
                                 fontSize: '1.9rem',
-                                paddingRight: '0.65rem',
+                                paddingInlineEnd: '0.65rem',
                                 color: colors.surface.white,
                                 verticalAlign: 'middle',
                             }}

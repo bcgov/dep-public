@@ -138,7 +138,7 @@ const MapWidget = ({ widget }: MapWidgetProps) => {
                             icon={faExpand}
                             style={{ color: isDarkMode ? colors.surface.white : Palette.text.primary }}
                         />
-                        <span style={{ paddingLeft: '0.5rem', color: 'inherit' }}>View Expanded Map</span>
+                        <span style={{ paddingInlineStart: '0.5rem', color: 'inherit' }}>View Expanded Map</span>
                     </Link>
                 </Grid>
                 <ExpandModal map={map} markerLabel={markerLabel} open={open} setOpen={setOpen} />

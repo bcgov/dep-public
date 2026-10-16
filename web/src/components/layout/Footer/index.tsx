@@ -111,7 +111,14 @@ const Footer = () => {
     ];
 
     return (
-        <Grid container component="footer" spacing={0} sx={{ mt: isEngagementPage ? 0 : '2rem' }} aria-label="footer">
+        <Grid
+            dir="auto"
+            container
+            component="footer"
+            spacing={0}
+            sx={{ mt: isEngagementPage ? 0 : '2rem' }}
+            aria-label="footer"
+        >
             {/* Footer acknowledgement container */}
             <Grid
                 size={12}

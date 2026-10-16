@@ -29,6 +29,7 @@ import {
     syncEngagementContentTranslationsByCode,
     TimelineWidgetTranslation,
 } from 'services/engagementContentTranslationService';
+import { useWidgetSectionLockRequest } from '../useWidgetSectionLockRequest';
 
 interface DetailsForm {
     title: string;
@@ -48,6 +49,7 @@ const Form = () => {
     const [isCreating, setIsCreating] = React.useState(false);
     const { languageCode } = useParams<{ languageCode?: string }>();
     const activeLanguageCode = (languageCode ?? 'en').toLowerCase();
+    const { filterWidgetTranslations, withWidgetLock } = useWidgetSectionLockRequest(widget, activeLanguageCode);
 
     const newEvent: TimelineEvent = {
         id: 0,
@@ -190,9 +192,16 @@ const Form = () => {
                 timelineWidget.id,
                 languageId,
             );
-            await syncEngagementContentTranslationsByCode(widget.engagement_id, activeLanguageCode, {
-                timeline_widgets: [...otherTranslations, updatedRecord],
-            });
+            await withWidgetLock((headers) =>
+                syncEngagementContentTranslationsByCode(
+                    widget.engagement_id,
+                    activeLanguageCode,
+                    {
+                        timeline_widgets: filterWidgetTranslations([...otherTranslations, updatedRecord]),
+                    },
+                    headers,
+                ),
+            );
             await Promise.all(
                 data.events
                     .filter((event) => event.id > 0)
