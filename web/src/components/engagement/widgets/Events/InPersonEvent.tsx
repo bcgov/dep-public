@@ -12,17 +12,34 @@ export interface EventProps {
 
 const InPersonEvent = ({ eventItem }: EventProps) => {
     // Define styles
-    const containerStyles = {
-        // alignItems: 'center',
-        paddingInlineStart: '0 !important',
-    };
+
     const iconStyles = {
         display: 'flex',
         marginInlineEnd: '0.8750em',
         fontSize: '1.5em',
-        width: '1em',
         verticalAlign: 'middle',
+        width: '1.5rem',
     };
+
+    const rowContainerProps = {
+        container: true,
+        direction: { xs: 'column', sm: 'row' },
+        flexWrap: 'nowrap',
+        size: 12,
+        justifyContent: 'flex-start',
+    } as const;
+
+    const bodyTextProps = { sx: { ml: { xs: 4, sm: 0 } } } as const;
+
+    const headingProps = {
+        container: true,
+        minWidth: '7.5rem',
+        width: '7.5rem',
+        gap: 1,
+        direction: 'row',
+        flexWrap: 'nowrap',
+        justifyContent: 'flex-start',
+    } as const;
 
     // Parse the address into multiple lines
     const parsedAddress = eventItem.location_address?.split(',') || [''];
@@ -36,56 +53,39 @@ const InPersonEvent = ({ eventItem }: EventProps) => {
     const endTime = formatToPacific(eventItem.end_date, 'h:mm a');
 
     return (
-        <>
-            <Grid container justifyContent="flex-start" size={12} sx={containerStyles} marginBottom={1}>
-                <Grid container size={12}>
-                    <Grid size={{ xs: 0, md: 1 }} style={{ maxWidth: '2rem' }}>
-                        <FontAwesomeIcon icon={faLocationDot} style={iconStyles} />
-                    </Grid>
-                    <Grid size={{ xs: 6, md: 3, xl: 2 }}>
-                        <BodyText bold>Location</BodyText>
-                    </Grid>
-                    <Grid size={{ xs: 12, md: 8, xl: 8 }}>
-                        <BodyText sx={{ mb: 'inherit' }}>{eventItem.location_name}</BodyText>
-                    </Grid>
+        <Grid container direction="column" size={12} gap={1.5} justifyContent="flex-start">
+            <Grid {...rowContainerProps}>
+                <Grid {...headingProps}>
+                    <FontAwesomeIcon icon={faLocationDot} style={iconStyles} />
+                    <BodyText bold>Location</BodyText>
                 </Grid>
-                <Grid container size={12}>
-                    <Grid size={{ xs: 0, md: 1 }} style={{ maxWidth: '2rem' }}>
-                        <div style={{ opacity: 0, ...iconStyles }}></div>
-                    </Grid>
-                    <Grid size={{ xs: 6, md: 3, xl: 2 }} alignSelf="flex-start">
-                        <BodyText bold>Address</BodyText>
-                    </Grid>
-                    <Grid size={{ xs: 12, md: 8, xl: 8 }}>
-                        {finalAddress.map((aLine) => {
-                            return <BodyText>{aLine ?? ''}</BodyText>;
-                        })}
-                    </Grid>
-                </Grid>
+                <BodyText {...bodyTextProps}>{eventItem.location_name}</BodyText>
             </Grid>
-            <Grid container justifyContent="flex-start" size={12} sx={containerStyles}>
-                <Grid size={{ xs: 0, sm: 1 }} style={{ maxWidth: '2rem' }}>
-                    <FontAwesomeIcon icon={faCalendarDays} style={iconStyles} />
+            <Grid {...rowContainerProps} mb={1}>
+                <Grid {...headingProps}>
+                    <BodyText bold ml={4}>
+                        Address
+                    </BodyText>
                 </Grid>
-                <Grid size={{ xs: 6, md: 3, xl: 2 }}>
+                {finalAddress.map((aLine) => {
+                    return <BodyText {...bodyTextProps}>{aLine ?? ''}</BodyText>;
+                })}
+            </Grid>
+            <Grid {...rowContainerProps}>
+                <Grid {...headingProps}>
+                    <FontAwesomeIcon icon={faCalendarDays} style={iconStyles} />
                     <BodyText bold>Date</BodyText>
                 </Grid>
-                <Grid size={{ xs: 12, md: 8, xl: 9 }}>
-                    <BodyText>{startDate}</BodyText>
-                </Grid>
+                <BodyText {...bodyTextProps}>{startDate}</BodyText>
             </Grid>
-            <Grid container justifyContent="flex-start" size={12} sx={containerStyles}>
-                <Grid size={{ xs: 0, sm: 1 }} style={{ maxWidth: '2rem' }}>
+            <Grid {...rowContainerProps}>
+                <Grid {...headingProps}>
                     <FontAwesomeIcon icon={faClock} style={iconStyles} />
-                </Grid>
-                <Grid size={{ xs: 6, md: 3, xl: 2 }}>
                     <BodyText bold>Time</BodyText>
                 </Grid>
-                <Grid size={{ xs: 12, md: 8, xl: 9 }}>
-                    <BodyText>{`${startTime} to ${endTime} PT`}</BodyText>
-                </Grid>
+                <BodyText {...bodyTextProps}>{`${startTime} to ${endTime} PT`}</BodyText>
             </Grid>
-        </>
+        </Grid>
     );
 };
 

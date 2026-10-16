@@ -99,7 +99,7 @@ export const LandingHero = () => {
                 px={{ xs: '1em', sm: '2em', md: '3em' }}
                 width={{ xs: '100%', md: 'fit-content' }}
                 minWidth={{ xs: '0', md: '45rem' }}
-                maxWidth="100%"
+                maxWidth={{ xs: '100%', md: '720px' }}
                 gap="1.5em"
                 sx={{ backgroundColor: `white` }}
             >

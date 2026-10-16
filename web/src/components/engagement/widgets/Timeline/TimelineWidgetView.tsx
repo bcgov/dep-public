@@ -1,12 +1,12 @@
 import React, { Suspense, useEffect, useMemo, useState } from 'react';
-import { Grid2 as Grid, Skeleton, Paper, ThemeProvider, Box } from '@mui/material';
+import { Grid2 as Grid, Skeleton, Paper, ThemeProvider, Box, SvgIcon } from '@mui/material';
 import { Widget } from 'models/widget';
 import { TimelineEvent as TimelineEventType, EventStatus, TimelineWidget } from 'models/timelineWidget';
 import { fetchTimelineWidgets, getTimelineEventTranslationsByLanguage } from 'services/widgetService/TimelineService';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { BaseTheme } from 'styles/Theme';
 import { BodyText, Heading3 } from 'components/common/Typography';
-import { faCircle, faCircleHalf } from '@fortawesome/pro-solid-svg-icons';
+import { faCircle } from '@fortawesome/pro-solid-svg-icons';
 import { useEngagementLoaderData } from 'components/engagement/preview/PreviewLoaderDataContext';
 import { resolveTranslationValue } from 'components/engagement/public/view/engagementTranslationResolution';
 import { getLanguageIdByCode } from 'services/engagementContentTranslationService';
@@ -116,9 +116,11 @@ const TimelineWidgetView = ({ widget }: TimelineWidgetProps) => {
 
     return (
         <Suspense fallback={<Skeleton variant="rectangular" height={200} />}>
-            <Grid container gap="1rem">
+            <Grid container gap="1rem" size={12}>
                 <Grid size={12}>
-                    <Heading3 weight="thin">{resolvedTimelineTitle}</Heading3>
+                    <Heading3 weight="thin" style={{ fontSize: '1.375rem' }}>
+                        {resolvedTimelineTitle}
+                    </Heading3>
                 </Grid>
                 <Grid size={12}>
                     <BodyText>{resolvedTimelineDescription}</BodyText>
@@ -138,7 +140,7 @@ const TimelineWidgetView = ({ widget }: TimelineWidgetProps) => {
                 >
                     <ThemeProvider theme={BaseTheme}>
                         {timelineWidget.events.map((event, index) => (
-                            <Grid container size={12} key={event.id} direction="row">
+                            <Grid container size={12} key={event.id} direction="column">
                                 <TimelineEvent
                                     event={{
                                         ...event,
@@ -172,12 +174,27 @@ export default TimelineWidgetView;
 
 const TimelineEvent = ({ event, isLast }: { event: TimelineEventType; isLast: boolean }) => {
     return (
-        <Grid container direction="row" gap={2} alignItems="stretch" justifyContent="flex-start">
+        <Grid
+            className="timeline-event-first-container"
+            container
+            direction="row"
+            gap={2}
+            justifyContent="flex-start"
+            flexWrap="nowrap"
+            size={12}
+        >
             {/* Left side with icon and line */}
-            <Grid container alignItems="stretch" direction="column" sx={{ width: '3rem' }}>
+            <Grid
+                className="timeline-event-second-container"
+                container
+                direction="column"
+                minWidth="fit-content"
+                width="3rem"
+            >
                 {/* Event Icon */}
-                <Grid>
+                <Grid className="timeline-event-non-container-grid">
                     <Paper
+                        className="timeline-event-mui-paper"
                         sx={{
                             height: '1.5em',
                             width: '1.5em',
@@ -193,7 +210,16 @@ const TimelineEvent = ({ event, isLast }: { event: TimelineEventType; isLast: bo
                     >
                         {event.status === EventStatus.Completed && <FontAwesomeIcon icon={faCircle} />}
                         {event.status === EventStatus.InProgress && (
-                            <FontAwesomeIcon rotation={270} icon={faCircleHalf} />
+                            <SvgIcon viewBox="0 0 34.75 34.75" sx={{ transform: 'scale(1.24)' }}>
+                                {' '}
+                                <g transform="translate(0 15)">
+                                    {' '}
+                                    <path
+                                        d="M34.9313 1.36215C34.9313 11.0824 27.1117 18.9621 17.4656 18.9621C7.81964 18.9621 0 11.0824 0 1.36215C0 1.36215 10.056 7.18038 17.4656 2.42881C24.8753 -2.32275 34.9313 1.36215 34.9313 1.36215Z"
+                                        fill="currentColor"
+                                    />{' '}
+                                </g>{' '}
+                            </SvgIcon>
                         )}
                     </Paper>
                 </Grid>
@@ -203,7 +229,7 @@ const TimelineEvent = ({ event, isLast }: { event: TimelineEventType; isLast: bo
                         <Box
                             sx={{
                                 height: 'calc(100% + 2em)',
-                                width: 'calc(50% + 2px)',
+                                width: '1.625rem',
                                 borderInlineEnd: '4px solid',
                                 borderColor: 'blue.90',
                             }}
@@ -213,11 +239,11 @@ const TimelineEvent = ({ event, isLast }: { event: TimelineEventType; isLast: bo
             </Grid>
 
             {/* Right side with event content */}
-            <Grid size="auto" minHeight={isLast ? '0' : '6em'}>
-                <BodyText size="large" bold>
+            <Grid size={9} minHeight={isLast ? '0' : '6em'}>
+                <BodyText size="regular" bold>
                     {event.description} ({['Pending', 'In Progress', 'Completed'][event.status - 1]})
                 </BodyText>
-                <BodyText>{event.time}</BodyText>
+                <BodyText size="small">{event.time}</BodyText>
             </Grid>
         </Grid>
     );

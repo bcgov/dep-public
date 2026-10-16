@@ -85,6 +85,7 @@ const Form = () => {
         await postVideo(widget.id, {
             widget_id: widget.id,
             engagement_id: widget.engagement_id,
+            engagement_details_tab_id: widget.engagement_details_tab_id || undefined,
             video_url: videoUrl,
             description: description || '',
             location: widget.location in WidgetLocation ? widget.location : null,
@@ -200,50 +201,47 @@ const Form = () => {
             </Grid>
             <Grid size={12}>
                 <FormProvider {...methods}>
-                    <form onSubmit={handleSubmit(onSubmit)} aria-label="Video widget form">
+                    <Grid container direction="row" alignItems={'flex-start'} justifyContent="flex-start" spacing={2}>
+                        <Grid size={12}>
+                            <BodyText bold>Description (Optional)</BodyText>
+                            <ControlledTextField
+                                name="description"
+                                aria-label="Description: optional."
+                                multiline
+                                rows={4}
+                            />
+                        </Grid>
+                        <Grid size={12}>
+                            <BodyText bold>Video Link</BodyText>
+                            <BodyText>
+                                The video must be hosted on one of the following platforms: YouTube, Vimeo
+                            </BodyText>
+                            <ControlledTextField name="videoUrl" aria-label="Video URL: required." />
+                        </Grid>
                         <Grid
+                            size={12}
                             container
                             direction="row"
                             alignItems={'flex-start'}
                             justifyContent="flex-start"
                             spacing={2}
+                            mt={'3em'}
                         >
-                            <Grid size={12}>
-                                <BodyText bold>Description (Optional)</BodyText>
-                                <ControlledTextField
-                                    name="description"
-                                    aria-label="Description: optional."
-                                    multiline
-                                    rows={4}
-                                />
+                            <Grid>
+                                <Button
+                                    variant="primary"
+                                    type="button"
+                                    onClick={handleSubmit(onSubmit)}
+                                    disabled={isCreating}
+                                >
+                                    Save & Close
+                                </Button>
                             </Grid>
-                            <Grid size={12}>
-                                <BodyText bold>Video Link</BodyText>
-                                <BodyText>
-                                    The video must be hosted on one of the following platforms: YouTube, Vimeo
-                                </BodyText>
-                                <ControlledTextField name="videoUrl" aria-label="Video URL: required." />
-                            </Grid>
-                            <Grid
-                                size={12}
-                                container
-                                direction="row"
-                                alignItems={'flex-start'}
-                                justifyContent="flex-start"
-                                spacing={2}
-                                mt={'3em'}
-                            >
-                                <Grid>
-                                    <Button variant="primary" type="submit" disabled={isCreating}>
-                                        Save & Close
-                                    </Button>
-                                </Grid>
-                                <Grid>
-                                    <Button onClick={() => setWidgetDrawerOpen(false)}>Cancel</Button>
-                                </Grid>
+                            <Grid>
+                                <Button onClick={() => setWidgetDrawerOpen(false)}>Cancel</Button>
                             </Grid>
                         </Grid>
-                    </form>
+                    </Grid>
                 </FormProvider>
             </Grid>
         </Grid>

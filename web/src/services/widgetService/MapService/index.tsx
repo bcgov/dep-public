@@ -18,6 +18,7 @@ export const fetchMaps = async (widget_id: number): Promise<WidgetMap[]> => {
 interface PostMapRequest {
     widget_id: number;
     engagement_id: number;
+    engagement_details_tab_id?: number | null;
     longitude: number;
     latitude: number;
     marker_label?: string;
@@ -37,6 +38,9 @@ export const postMap = async (widget_id: number, data: PostMapRequest): Promise<
         }
         if (data.longitude) {
             formdata.append('longitude', data.longitude.toString());
+        }
+        if (data.engagement_details_tab_id) {
+            formdata.append('engagement_details_tab_id', String(data.engagement_details_tab_id));
         }
         formdata.append('engagement_id', data.engagement_id.toString());
         formdata.append('marker_label', data.marker_label ? data.marker_label : '');

@@ -9,7 +9,7 @@ import { Controller, useFormContext } from 'react-hook-form';
 import { TextField } from 'components/common/Input/TextInput';
 import { colors } from 'styles/Theme';
 import { RichTextArea } from 'components/common/Input/RichTextArea';
-import { AuthoringTemplateOutletContext, FormDetailsTab } from './types';
+import { AuthoringTemplateOutletContext, createDefaultFormDetailsTab, FormDetailsTab } from './types';
 import { EditorState } from 'draft-js';
 import WidgetPicker from '../widgets';
 import { WidgetLocation } from 'models/widget';
@@ -20,11 +20,16 @@ import { AuthoringLoaderData } from './authoringLoader';
 import { defaultValuesObject, EngagementUpdateData } from './AuthoringContext';
 import { getEditorStateFromRaw } from 'components/common/RichTextEditor/utils';
 import { useAuthoringFormContext } from './AuthoringFormContext';
-import { createDefaultDetailsTab } from 'models/engagementDetailsTab';
+import { deleteDetailsTab, postDetailsTabs } from 'services/engagementDetailsTabService';
+import {
+    acquireEngagementSectionLock,
+    LOCK_TOKEN_HEADER,
+    SECTION_AUTHORING_DETAILS,
+} from 'services/resourceLockService';
 
 const AuthoringDetails = () => {
     const { setDefaultValues, fetcher, pageName }: AuthoringTemplateOutletContext = useOutletContext();
-    const { setLockScopeWideningRequested } = useAuthoringFormContext();
+    const { setLockScopeWideningRequested, activeLockToken } = useAuthoringFormContext();
     const {
         setValue,
         getValues,
@@ -77,7 +82,7 @@ const AuthoringDetails = () => {
     const authoringDetailsTabs = watch('details_tabs');
     const defaultDetailsTabValues = useMemo(
         () => ({
-            ...createDefaultDetailsTab(),
+            ...createDefaultFormDetailsTab(),
             engagement_id: engagementId,
             body: EditorState.createEmpty(),
         }),
@@ -123,87 +128,145 @@ const AuthoringDetails = () => {
 
     useEffect(() => {
         let isActive = true;
-        setIsHydrating(true);
 
-        detailsTabs.then((tabs) => {
-            if (!isActive) {
-                return;
-            }
+        const hydrateTabs = async () => {
+            setIsHydrating(true);
 
-            let nextTabs = [defaultDetailsTabValues];
+            try {
+                const tabs = await detailsTabs;
 
-            if (Array.isArray(tabs) && tabs.length > 0 && tabs[0].engagement_id === engagementId) {
-                const parsedTabs: FormDetailsTab[] = tabs.map((t) => {
-                    // t.body may be a string (from API) or object (from form state)
-                    const bodyString = typeof t.body === 'string' ? t.body : JSON.stringify(t.body);
-                    return {
-                        id: t.id || defaultDetailsTabValues.id,
-                        tempId: crypto.randomUUID(), // Each tab must receive a new unique ID
-                        engagement_id: t.engagement_id || engagementId,
-                        label: t.label || defaultDetailsTabValues.label,
-                        slug: t.slug || defaultDetailsTabValues.slug,
-                        heading: t.heading || defaultDetailsTabValues.heading,
-                        body: getEditorStateFromRaw(bodyString),
-                        sort_index: t.sort_index || defaultDetailsTabValues.sort_index,
-                    };
-                });
-                nextTabs = [...parsedTabs].sort((a, b) => a.sort_index - b.sort_index);
-            }
-
-            const newValues = {
-                ...defaultValuesObject,
-                form_source: pageName,
-                id: engagementId,
-                details_tabs: nextTabs,
-            };
-
-            reset(newValues);
-            setDefaultValues(newValues);
-            setTabsEnabled(nextTabs.length >= 2);
-            setCurrentTab((previousTab) => {
-                if (previousTab && nextTabs[Number(previousTab)]) {
-                    return previousTab;
+                if (!isActive) {
+                    return;
                 }
-                return '0';
-            });
-            setIsHydrating(false);
-        });
+
+                let nextTabs: FormDetailsTab[];
+
+                const hasExistingTabs =
+                    Array.isArray(tabs) && tabs.length > 0 && tabs[0].engagement_id === engagementId;
+
+                if (hasExistingTabs) {
+                    /* Hydrate with existing tab data */
+                    nextTabs = tabs
+                        .map((t) => {
+                            const bodyString = typeof t.body === 'string' ? t.body : JSON.stringify(t.body);
+
+                            return {
+                                id: t.id || defaultDetailsTabValues.id,
+                                tempId: crypto.randomUUID(),
+                                engagement_id: t.engagement_id || engagementId,
+                                label: t.label || defaultDetailsTabValues.label,
+                                slug: t.slug || defaultDetailsTabValues.slug,
+                                heading: t.heading || defaultDetailsTabValues.heading,
+                                body: getEditorStateFromRaw(bodyString),
+                                sort_index: t.sort_index || defaultDetailsTabValues.sort_index,
+                            };
+                        })
+                        .sort((a, b) => a.sort_index - b.sort_index);
+                } else {
+                    /* Create tab 1 and save to DB */
+                    const createdTabs = await withDetailsLock((headers) =>
+                        postDetailsTabs(
+                            engagementId,
+                            [
+                                {
+                                    id: -1,
+                                    engagement_id: engagementId,
+                                    label: defaultDetailsTabValues.label,
+                                    slug: defaultDetailsTabValues.slug,
+                                    heading: defaultDetailsTabValues.heading,
+                                    sort_index: 1,
+                                    body: '',
+                                },
+                            ],
+                            headers,
+                        ),
+                    );
+                    if (!createdTabs?.[0]) {
+                        return;
+                    }
+                    nextTabs = [
+                        {
+                            ...defaultDetailsTabValues,
+                            id: createdTabs[0].id,
+                            tempId: crypto.randomUUID(),
+                        },
+                    ];
+                }
+
+                /* Transfer values to form and reset */
+                const newValues = {
+                    ...defaultValuesObject,
+                    form_source: pageName,
+                    id: engagementId,
+                    details_tabs: nextTabs,
+                };
+                reset(newValues);
+                setDefaultValues(newValues);
+                setTabsEnabled(nextTabs.length >= 2);
+
+                setCurrentTab((previousTab) => {
+                    if (previousTab && nextTabs[Number(previousTab)]) {
+                        return previousTab;
+                    }
+
+                    return '0';
+                });
+            } finally {
+                if (isActive) {
+                    setIsHydrating(false);
+                }
+            }
+        };
+
+        void hydrateTabs();
 
         return () => {
             isActive = false;
         };
     }, [defaultDetailsTabValues, detailsTabs, engagementId, pageName, reset, setDefaultValues]);
 
-    const addTab = () => {
+    const addTab = async () => {
         const newTabs = [...getValues('details_tabs')];
         if (newTabs.length > 9) {
             return; // Maximum 10 tabs
         }
         setLockScopeWideningRequested(true);
         const renumberedTabs = renumberTabs(newTabs);
+        const newIndex = newTabs.length + 1;
         const newTab: FormDetailsTab = {
-            ...createDefaultDetailsTab(),
+            tempId: crypto.randomUUID(),
+            id: -1,
             engagement_id: engagementId,
-            label: `Tab ${newTabs.length + 1}`,
-            slug: `tab_${newTabs.length + 1}`,
+            label: `Tab ${newIndex}`,
+            heading: '',
+            slug: `tab_${newIndex}`,
             body: getEditorStateFromRaw(''),
-            sort_index: newTabs.length + 1,
+            sort_index: newIndex,
         };
-        updateTabs([...renumberedTabs, newTab], true);
-        setCurrentTab(String(renumberedTabs.length));
+        // Remove tempId for post request
+        const submissionTab = (({ tempId, ...tab }) => tab)(newTab);
+        try {
+            const createdTabs = await withDetailsLock((headers) =>
+                postDetailsTabs(engagementId, [{ ...submissionTab, body: '' }], headers),
+            );
+            if (!createdTabs?.[0]?.id) {
+                throw new Error('Tab creation did not return an ID');
+            }
+            const newTabWithId = { ...newTab, id: createdTabs[0].id };
+            updateTabs([...renumberedTabs, newTabWithId], true);
+            setCurrentTab(String(renumberedTabs.length));
+        } catch (e) {
+            console.error(`Failed to save new tab: ${e}`);
+        }
     };
 
     const renumberTabs = (tabs: FormDetailsTab[]): FormDetailsTab[] => {
         return tabs.map((tab, index) => {
             const isDefaultNumericTabLabel = /^Tab\s+\d+$/i.test(tab.label.trim());
-
-            if (isDefaultNumericTabLabel) {
-                tab.label = `Tab ${index + 1}`;
-                tab.slug = `tab_${index + 1}`;
-            }
-
-            tab.sort_index = index + 1;
-            return tab;
+            const label = isDefaultNumericTabLabel ? `Tab ${index + 1}` : tab.label;
+            const slug = isDefaultNumericTabLabel ? `tab_${index + 1}` : tab.slug;
+            const sortIndex = index + 1;
+            return { ...tab, label, slug, sort_index: sortIndex };
         });
     };
 
@@ -237,29 +300,41 @@ const AuthoringDetails = () => {
         updateTabs(newTabs, true);
     };
 
-    const deleteConfirm = () => {
+    const deleteConfirm = async () => {
         setLockScopeWideningRequested(true);
         const newTabs = [...getValues('details_tabs')];
-        newTabs.splice(delTabIndex, 1);
-        const renumberedTabs = renumberTabs(newTabs);
-        if (String(delTabIndex) === currentTab) {
-            // If the selected tab was deleted, select the tab before it.
-            setCurrentTab(String(Math.max(0, delTabIndex - 1)));
-        } else if (!renumberedTabs[Number(currentTab)]) {
-            // If the tab no longer exists because of renumbering, choose the new last tab.
-            setCurrentTab(String(renumberedTabs.length - 1));
+        const deletedTabId = newTabs[delTabIndex]?.id;
+        try {
+            if (!deletedTabId) throw new Error('Could not retrieve engagement details tab ID');
+            await withDetailsLock((headers) => deleteDetailsTab(engagementId, deletedTabId, headers));
+            newTabs.splice(delTabIndex, 1);
+            const renumberedTabs = renumberTabs(newTabs);
+            if (String(delTabIndex) === currentTab) {
+                // If the selected tab was deleted, select the tab before it.
+                setCurrentTab(String(Math.max(0, delTabIndex - 1)));
+            } else if (!renumberedTabs[Number(currentTab)]) {
+                // If the tab no longer exists because of renumbering, choose the new last tab.
+                setCurrentTab(String(renumberedTabs.length - 1));
+            }
+            updateTabs(renumberedTabs, true);
+        } catch (e) {
+            console.error(`Unable to delete engagement details tab: ${e}`);
+        } finally {
+            closeModal('delete tab');
         }
-        updateTabs(renumberedTabs, true);
-        closeModal('delete tab');
     };
 
     const updateTabs = (newTabs: FormDetailsTab[], dirtied: boolean) => {
         setValue('details_tabs', newTabs, { shouldDirty: dirtied });
     };
 
-    const enableTabs = () => {
-        setTabsEnabled(true);
-        addTab();
+    const enableTabs = async () => {
+        try {
+            await addTab();
+            setTabsEnabled(true);
+        } catch (e) {
+            console.error(`Failed to enable tabs: ${e}`);
+        }
     };
 
     const disableTabs = () => {
@@ -269,13 +344,21 @@ const AuthoringDetails = () => {
         }
     };
 
-    const noTabsConfirm = () => {
-        setLockScopeWideningRequested(true);
-        setTabsEnabled(false);
-        const newTabs = getValues('details_tabs');
-        // Remove subsequent tabs when switching to no-tab mode. This action dirties the form.
-        updateTabs([newTabs[0]], true);
-        closeModal('disable tabs');
+    const noTabsConfirm = async () => {
+        try {
+            setLockScopeWideningRequested(true);
+            const newTabs = getValues('details_tabs');
+            const tabsToRemove = newTabs.filter((_, i) => i !== 0);
+            const deleteRequests = tabsToRemove.map((t) =>
+                withDetailsLock((headers) => deleteDetailsTab(engagementId, t.id, headers)),
+            );
+            await Promise.all(deleteRequests);
+            setTabsEnabled(false);
+            updateTabs([newTabs[0]], true);
+            closeModal('disable tabs');
+        } catch (e) {
+            console.error(`Failed to switch to no tabs mode: ${e}`);
+        }
     };
 
     const scrollToTabErrors = () => {
@@ -310,14 +393,14 @@ const AuthoringDetails = () => {
         setUpdateFocus(true);
     };
 
-    const tabKeyDown = (
+    const tabKeyDown = async (
         event: React.KeyboardEvent<HTMLButtonElement | HTMLDivElement | HTMLSpanElement>,
         source: string,
         index = -1,
     ) => {
         if (source === 'add' && (event.key === 'Enter' || event.key === 'Spacebar' || event.key === ' ')) {
             event.preventDefault();
-            addTab();
+            await addTab();
         } else if (source === 'tab' && (event.key === 'Delete' || event.key === 'Backspace')) {
             event.preventDefault();
             removeTab(event, index);
@@ -330,6 +413,23 @@ const AuthoringDetails = () => {
                 setUpdateFocus(true);
             }
         }
+    };
+
+    const withDetailsLock = async <T,>(task: (headers: Record<string, string>) => Promise<T>): Promise<T> => {
+        if (activeLockToken) {
+            return task({
+                [LOCK_TOKEN_HEADER]: activeLockToken,
+            });
+        }
+
+        const lock = await acquireEngagementSectionLock({
+            engagementId,
+            sectionKey: SECTION_AUTHORING_DETAILS,
+        });
+
+        return task({
+            [LOCK_TOKEN_HEADER]: lock.lock_token,
+        });
     };
 
     // WYSIWYG text editor toolbar items
@@ -483,7 +583,9 @@ const AuthoringDetails = () => {
                         },
                         { text: 'deleted permanently.', bold: true },
                     ]}
-                    handleConfirm={deleteConfirm}
+                    handleConfirm={() => {
+                        void deleteConfirm();
+                    }}
                     handleClose={() => closeModal('delete tab')}
                     confirmButtonText={`Delete ${authoringDetailsTabs[delTabIndex]?.label || 'This Tab'}`}
                     cancelButtonText={'Cancel & Go Back'}
@@ -503,7 +605,9 @@ const AuthoringDetails = () => {
                             bold: false,
                         },
                     ]}
-                    handleConfirm={noTabsConfirm}
+                    handleConfirm={() => {
+                        void noTabsConfirm();
+                    }}
                     handleClose={() => closeModal('disable tabs')}
                     confirmButtonText={'Delete Tabs'}
                     cancelButtonText={'Cancel & Go Back'}
@@ -525,7 +629,7 @@ const AuthoringDetails = () => {
                     sx={tabRadioContainerStyles}
                     value={tabsEnabled ? 'true' : 'false'}
                     onChange={(_, value) => {
-                        value === 'true' ? enableTabs() : disableTabs();
+                        value === 'true' ? void enableTabs() : disableTabs();
                     }}
                 >
                     <FormControlLabel
@@ -597,7 +701,7 @@ const AuthoringDetails = () => {
                                         key={value.tempId}
                                         value={String(key)}
                                         onKeyDown={(event) => {
-                                            tabKeyDown(event, 'tab', key);
+                                            void tabKeyDown(event, 'tab', key);
                                         }}
                                         disableFocusRipple
                                         ref={currentTab === String(key) ? selectedTabRef : null}
@@ -622,7 +726,7 @@ const AuthoringDetails = () => {
                                                             removeTab(event, key);
                                                         }}
                                                         onKeyDown={(event) => {
-                                                            tabKeyDown(event, 'tabx', key);
+                                                            void tabKeyDown(event, 'tabx', key);
                                                         }}
                                                     >
                                                         <FontAwesomeIcon
@@ -659,8 +763,12 @@ const AuthoringDetails = () => {
                                 disabled={authoringDetailsTabs.length > 9}
                                 disableRipple
                                 sx={{ ...addTabButtonStyles }}
-                                onClick={() => addTab()}
-                                onKeyDown={(event) => tabKeyDown(event, 'add')}
+                                onClick={() => {
+                                    void addTab();
+                                }}
+                                onKeyDown={(event) => {
+                                    void tabKeyDown(event, 'add');
+                                }}
                             />
                         </TabList>
                     </AuthoringFormContainer>
@@ -772,7 +880,7 @@ const AuthoringDetails = () => {
                                 <Grid>
                                     <WidgetPicker
                                         location={WidgetLocation.Details}
-                                        detailsTabId={tab.id > 0 ? tab.id : undefined}
+                                        detailsTabId={tab.id}
                                         tabIndex={key + 1}
                                     />
                                 </Grid>

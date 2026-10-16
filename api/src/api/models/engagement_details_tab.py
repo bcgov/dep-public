@@ -34,10 +34,12 @@ class EngagementDetailsTab(BaseModel):
             .all()
 
     @classmethod
-    def bulk_insert_details_tabs(cls, insert_mappings: list) -> None:
-        """Insert multiple engagement details tabs."""
-        db.session.bulk_insert_mappings(cls, insert_mappings)
+    def bulk_insert_details_tabs(cls, insert_mappings: list):
+        """Insert multiple engagement details tabs and return the created records."""
+        records = [cls(**mapping) for mapping in insert_mappings]
+        db.session.add_all(records)
         db.session.commit()
+        return records
 
     @classmethod
     def bulk_update_details_tabs(cls, update_mappings: list) -> None:

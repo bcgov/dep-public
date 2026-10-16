@@ -40,10 +40,12 @@ class EngagementDetailsTabService:
         for tab_data in tabs_data:
             EngagementDetailsTabService._validate_tab_data(tab_data)
             EngagementDetailsTabService._coerce_body(tab_data)
+            tab_data = dict(tab_data)
+            if not tab_data.get('id') or tab_data.get('id') == -1:
+                tab_data.pop('id', None)
             tab_data['engagement_id'] = engagement_id
             inserts.append(tab_data)
-        EngagementDetailsTabModel.bulk_insert_details_tabs(inserts)
-        created_records = EngagementDetailsTabModel.find_by_engagement_id(engagement_id)
+        created_records = EngagementDetailsTabModel.bulk_insert_details_tabs(inserts)
         return EngagementDetailsTabSchema(many=True).dump(created_records)
 
     @staticmethod

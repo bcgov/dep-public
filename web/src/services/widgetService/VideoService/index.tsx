@@ -17,6 +17,7 @@ export const fetchVideoWidgets = async (widget_id: number): Promise<VideoWidget[
 interface PostVideoRequest {
     widget_id: number;
     engagement_id: number;
+    engagement_details_tab_id?: number | null;
     video_url: string;
     description: string;
     location: WidgetLocation | null;
