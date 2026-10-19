@@ -111,7 +111,9 @@ export const PrimaryButton: React.FC<ButtonProps> = ({
             variant="contained"
             onClick={onClick}
             disabled={disabled}
-            startIcon={icon && iconPosition === 'left' ? icon : undefined}
+            startIcon={
+                icon && (iconPosition === 'left' || (hasOtherChildren && iconPosition === undefined)) ? icon : undefined
+            }
             endIcon={icon && iconPosition === 'right' ? icon : undefined}
             sx={[
                 {
@@ -280,7 +282,9 @@ const TertiaryButton = ({
             variant="text"
             onClick={onClick}
             disabled={disabled}
-            startIcon={icon && iconPosition === 'left' ? icon : undefined}
+            startIcon={
+                icon && (iconPosition === 'left' || (hasOtherChildren && iconPosition === undefined)) ? icon : undefined
+            }
             endIcon={icon && iconPosition === 'right' ? icon : undefined}
             sx={[
                 {
