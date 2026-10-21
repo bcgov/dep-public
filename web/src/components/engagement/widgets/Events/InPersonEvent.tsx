@@ -21,21 +21,22 @@ const InPersonEvent = ({ eventItem }: EventProps) => {
     const startDate = formatToPacific(eventItem.start_date, 'DD MMM, YYYY');
     const startTime = formatToPacific(eventItem.start_date, 'h:mm a');
     const endTime = formatToPacific(eventItem.end_date, 'h:mm a');
+    const source = 'in-person';
 
     return (
         <Grid container direction="column" size={12} gap={1.5} justifyContent="flex-start">
-            <EventRow icon={faLocationDot} label="Location">
+            <EventRow icon={faLocationDot} label="Location" source={source}>
                 <BodyText>{eventItem.location_name}</BodyText>
             </EventRow>
-            <EventRow label="Address">
+            <EventRow label="Address" source={source}>
                 {finalAddress.map((aLine) => {
                     return <BodyText key={aLine}>{aLine ?? ''}</BodyText>;
                 })}
             </EventRow>
-            <EventRow icon={faCalendarDays} label="Date">
+            <EventRow icon={faCalendarDays} label="Date" source={source}>
                 <BodyText>{startDate}</BodyText>
             </EventRow>
-            <EventRow icon={faClock} label="Time">
+            <EventRow icon={faClock} label="Time" source={source}>
                 <BodyText>{`${startTime} to ${endTime} PT`}</BodyText>
             </EventRow>
         </Grid>

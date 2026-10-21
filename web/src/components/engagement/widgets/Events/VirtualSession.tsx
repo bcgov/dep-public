@@ -12,13 +12,14 @@ const VirtualSession = ({ eventItem }: EventProps) => {
     const startDate = formatToPacific(eventItem.start_date, 'DD MMM, YYYY');
     const startTime = formatToPacific(eventItem.start_date, 'h:mm a');
     const endTime = formatToPacific(eventItem.end_date, 'h:mm a');
+    const source = 'virtual';
 
     return (
         <Grid container direction="column" size={12} gap={1.5} justifyContent="flex-start">
-            <EventRow icon={faCalendarDays} label="Date">
+            <EventRow icon={faCalendarDays} label="Date" source={source}>
                 <BodyText>{startDate}</BodyText>
             </EventRow>
-            <EventRow icon={faClock} label="Time">
+            <EventRow icon={faClock} label="Time" source={source}>
                 <BodyText>{`${startTime} to ${endTime} PT`}</BodyText>
             </EventRow>
             <Button variant="primary" size="large" href={eventItem.url} sx={{ width: 'max-content', mt: '1.5rem' }}>
