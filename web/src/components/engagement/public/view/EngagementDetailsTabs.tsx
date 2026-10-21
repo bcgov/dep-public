@@ -100,13 +100,7 @@ export const EngagementDetailsTabs = () => {
         >
             <EngagementPreviewTag required>Details Section</EngagementPreviewTag>
             <Grid container pt={0} pb="6.5rem" px={Layout.padding.default} size={12}>
-                <Grid
-                    container
-                    direction={{ xs: 'column', md: 'row' }}
-                    margin="0 auto"
-                    width={Layout.width.default}
-                    maxWidth="100%"
-                >
+                <Grid container margin="0 auto" width={Layout.width.default} maxWidth="100%">
                     {displayTabs.length > 0 && (
                         <TabContext value={selectedTab}>
                             <TabList
@@ -166,13 +160,7 @@ export const EngagementDetailsTabs = () => {
                                     value={String(key)}
                                     sx={{ padding: 0, width: '100%' }}
                                 >
-                                    <Grid
-                                        direction={{ xs: 'column', md: 'row' }}
-                                        container
-                                        size={12}
-                                        columnGap="3rem"
-                                        rowGap="1rem"
-                                    >
+                                    <Grid container size={12} columnGap="3rem" rowGap="1rem">
                                         <Grid container direction="column" size={{ xs: 12, md: 6, lg: 8 }}>
                                             <Heading2
                                                 decorated
