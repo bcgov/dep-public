@@ -93,14 +93,14 @@ const RecursiveDocumentTree = ({ documentItem, expandedItems }: DocumentTreeProp
         />
     );
 
-    const slots = documentItem.type === DOCUMENT_TYPE.FOLDER ? undefined : { icon: () => DocumentIcon(documentItem) };
+    const fileIcon = documentItem.type === DOCUMENT_TYPE.FOLDER ? undefined : () => DocumentIcon(documentItem);
 
     return (
         <TreeItem
             sx={treeItemStyles(documentItem.type === DOCUMENT_TYPE.FOLDER)}
             itemId={documentItem.id.toString()}
             label={<DocumentLabel documentItem={documentItem} expandedItems={expandedItems} />}
-            slots={slots}
+            slots={{ icon: fileIcon }}
         >
             {documentItem.children?.map((document: DocumentItem) => (
                 <RecursiveDocumentTree key={document.id} documentItem={document} />

@@ -214,7 +214,7 @@ const WhoIsListeningForm = () => {
                     </Button>
                 </Grid>
                 <Grid>
-                    <Button onClick={() => setWidgetDrawerOpen(false)}>{`Cancel`}</Button>
+                    <Button onClick={() => setWidgetDrawerOpen(false)}>Cancel</Button>
                 </Grid>
             </Grid>
         </Grid>

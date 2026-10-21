@@ -275,7 +275,9 @@ const UploadFileDrawer = () => {
                                 </Button>
                             </Grid>
                             <Grid>
-                                <Button disabled={isUploadingFile} onClick={() => handleClose()}>{`Cancel`}</Button>
+                                <Button disabled={isUploadingFile} onClick={() => handleClose()}>
+                                    Cancel
+                                </Button>
                             </Grid>
                         </Grid>
                     </Grid>

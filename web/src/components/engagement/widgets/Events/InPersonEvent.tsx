@@ -15,7 +15,7 @@ const InPersonEvent = ({ eventItem }: EventProps) => {
 
     const iconStyles = {
         display: 'flex',
-        marginInlineEnd: '0.8750em',
+        marginInlineEnd: '0.5em',
         fontSize: '1.5em',
         verticalAlign: 'middle',
         width: '1.5rem',
@@ -29,12 +29,12 @@ const InPersonEvent = ({ eventItem }: EventProps) => {
         justifyContent: 'flex-start',
     } as const;
 
-    const bodyTextProps = { sx: { ml: { xs: 4, sm: 0 } } } as const;
+    const bodyTextProps = { sx: { ml: { xs: 5.5, sm: 0 } } } as const;
 
     const headingProps = {
         container: true,
-        minWidth: '7.5rem',
-        width: '7.5rem',
+        minWidth: '8rem',
+        width: '8rem',
         gap: 1,
         direction: 'row',
         flexWrap: 'nowrap',
@@ -63,7 +63,7 @@ const InPersonEvent = ({ eventItem }: EventProps) => {
             </Grid>
             <Grid {...rowContainerProps} mb={1}>
                 <Grid {...headingProps}>
-                    <BodyText bold ml={4}>
+                    <BodyText bold ml={5.5}>
                         Address
                     </BodyText>
                 </Grid>

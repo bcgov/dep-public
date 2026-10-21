@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Tab, Grid2 as Grid, useMediaQuery, Theme } from '@mui/material';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
-import { getEditorStateFromRaw } from 'components/common/RichTextEditor/utils';
+import { getEditorStateFromRaw, getRawFromEditorState } from 'components/common/RichTextEditor/utils';
 import { BodyText, Heading2 } from 'components/common/Typography';
 import { colors } from 'components/common';
 import { RichTextArea } from 'components/common/Input/RichTextArea';
@@ -33,16 +33,20 @@ interface FormDetailsTabWithWidget extends PublicDetailsTab {
 }
 
 const parseAndSortTabs = (tabs: EngagementDetailsTab[]): FormDetailsTabWithWidget[] => {
-    const parsedTabs: FormDetailsTabWithWidget[] = tabs.map((t) => ({
-        id: Number(t.id) || -1,
-        engagement_id: t.engagement_id || 0,
-        label: t.label || '',
-        slug: t.slug || '',
-        heading: t.heading || '',
-        body: getEditorStateFromRaw(typeof t.body === 'string' ? t.body : JSON.stringify(t.body || '')),
-        sort_index: t.sort_index || -1,
-        widget: true,
-    }));
+    const parsedTabs: FormDetailsTabWithWidget[] = tabs
+        .map((t) => ({
+            id: Number(t.id) || -1,
+            engagement_id: t.engagement_id || 0,
+            label: t.label || '',
+            slug: t.slug || '',
+            heading: t.heading || '',
+            body: getEditorStateFromRaw(typeof t.body === 'string' ? t.body : JSON.stringify(t.body || '')),
+            sort_index: t.sort_index || -1,
+            widget: true,
+        }))
+        .filter(
+            (t) => t?.label && t.heading && JSON.parse(getRawFromEditorState(t.body))?.blocks?.length > 0 && t.slug,
+        ); // Filter out any empty tabs
     return [...parsedTabs].sort((a, b) => a.sort_index - b.sort_index);
 };
 

@@ -1,7 +1,6 @@
 ## October 16, 2026
 
-- **Bugfix** Fixed miscelaneous widget issues. [🎟️ DEP-387](https://citz-gdx.atlassian.net/browse/DEP-387)
-  - Fixed border radius on map widget
+- **Bugfix** Fixed miscellaneous widget issues. [🎟️ DEP-387](https://citz-gdx.atlassian.net/browse/DEP-387)
   - Fixed layout of events widget at all viewports
   - Image widget content alignment adjusted
   - Fixed specificity issues with widget picker button in details tabs
@@ -15,7 +14,8 @@
   - Changed tab create/delete system to follow object permanence model instead of form model
     - Allows for adding widgets to a tab before engagement is saved
     - Integrated with section lock system
-- **Bugfix** Set maximum width of landing hero container for long introductions that need to wrap.
+- **Bugfix** Set maximum width of landing hero container for long introductions that need to wrap
+- **Bugfix** Fixed engagement creation by changing action route from parent to actual component
 
 ## October 13, 2026
 

@@ -61,7 +61,7 @@ const MapWidget = ({ widget }: MapWidgetProps) => {
         return (
             <Grid container size={12} justifyContent="flex-start" spacing={3}>
                 <Grid size={12}>
-                    <Heading3 sx={{ fontSize: '1.375rem' }}>
+                    <Heading3 size="large">
                         <Skeleton variant="rectangular" />
                     </Heading3>
                 </Grid>
@@ -97,8 +97,6 @@ const MapWidget = ({ widget }: MapWidgetProps) => {
         height: '100%',
         borderRadius: '16px',
         overflow: 'hidden',
-        border: '1px solid transparent', // Forces border radius to render correctly
-        m: '-1px', // Componesate for invisible border
     };
 
     return (
@@ -110,7 +108,7 @@ const MapWidget = ({ widget }: MapWidgetProps) => {
                 size={12}
                 paddingBottom={0}
             >
-                <Heading3 sx={{ fontSize: '1.375rem' }}>{widget.title}</Heading3>
+                <Heading3 size="large">{widget.title}</Heading3>
             </Grid>
             <Grid size={12} mt="1.5rem">
                 <Box sx={outerContainerStyles}>

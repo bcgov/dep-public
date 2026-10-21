@@ -1,5 +1,5 @@
 import React, { Suspense, useEffect, useMemo, useState } from 'react';
-import { Grid2 as Grid, Skeleton, Paper, ThemeProvider, Box, SvgIcon } from '@mui/material';
+import { Grid2 as Grid, Skeleton, Paper, ThemeProvider, Box } from '@mui/material';
 import { Widget } from 'models/widget';
 import { TimelineEvent as TimelineEventType, EventStatus, TimelineWidget } from 'models/timelineWidget';
 import { fetchTimelineWidgets, getTimelineEventTranslationsByLanguage } from 'services/widgetService/TimelineService';
@@ -10,6 +10,8 @@ import { faCircle } from '@fortawesome/pro-solid-svg-icons';
 import { useEngagementLoaderData } from 'components/engagement/preview/PreviewLoaderDataContext';
 import { resolveTranslationValue } from 'components/engagement/public/view/engagementTranslationResolution';
 import { getLanguageIdByCode } from 'services/engagementContentTranslationService';
+import { ReactComponent as HalfFullSvg } from 'assets/images/halfFull.svg';
+
 interface TimelineWidgetProps {
     widget: Widget;
 }
@@ -118,7 +120,7 @@ const TimelineWidgetView = ({ widget }: TimelineWidgetProps) => {
         <Suspense fallback={<Skeleton variant="rectangular" height={200} />}>
             <Grid container gap="1rem" size={12}>
                 <Grid size={12}>
-                    <Heading3 weight="thin" style={{ fontSize: '1.375rem' }}>
+                    <Heading3 weight="thin" size="large">
                         {resolvedTimelineTitle}
                     </Heading3>
                 </Grid>
@@ -209,18 +211,7 @@ const TimelineEvent = ({ event, isLast }: { event: TimelineEventType; isLast: bo
                         }}
                     >
                         {event.status === EventStatus.Completed && <FontAwesomeIcon icon={faCircle} />}
-                        {event.status === EventStatus.InProgress && (
-                            <SvgIcon viewBox="0 0 34.75 34.75" sx={{ transform: 'scale(1.24)' }}>
-                                {' '}
-                                <g transform="translate(0 15)">
-                                    {' '}
-                                    <path
-                                        d="M34.9313 1.36215C34.9313 11.0824 27.1117 18.9621 17.4656 18.9621C7.81964 18.9621 0 11.0824 0 1.36215C0 1.36215 10.056 7.18038 17.4656 2.42881C24.8753 -2.32275 34.9313 1.36215 34.9313 1.36215Z"
-                                        fill="currentColor"
-                                    />{' '}
-                                </g>{' '}
-                            </SvgIcon>
-                        )}
+                        {event.status === EventStatus.InProgress && <HalfFullSvg />}
                     </Paper>
                 </Grid>
                 {/* Dividing line */}

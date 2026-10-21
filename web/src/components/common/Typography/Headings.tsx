@@ -103,12 +103,21 @@ export const Heading2 = ({
     );
 };
 
+const headingSizes = {
+    tiny: '1rem',
+    small: '1.125rem',
+    medium: '1.25rem',
+    large: '1.375rem',
+    huge: '1.5rem',
+};
+
 /**
  * Heading3 component for rendering a tertiary heading.
  * This component uses the MUI Typography component to render a heading with customizable styles.
  * @param {props.children} - The content of the heading.
  * @param {props.weight} - The font weight of the heading, can be 'bold', 'regular', or 'thin'.
  * @param {props.bold} - Shortcut for setting font weight to bold, takes precedence over the weight prop if both are provided.
+ * @param {props.size} - An optional param that allows you to choose a font size.
  * @param {props.component} - The HTML element to use for the heading, defaults to 'h3'.
  * @param {props} - Additional props to pass to the Typography component.
  * @returns JSX.Element: A styled heading element.
@@ -117,11 +126,13 @@ export const Heading3 = ({
     children,
     weight,
     bold,
+    size,
     component,
     ...props
 }: {
     children: React.ReactNode;
     weight?: HeadingWeight;
+    size?: 'tiny' | 'small' | 'medium' | 'large' | 'huge';
     component?: React.ElementType;
 } & HeadingProps) => {
     return (
@@ -129,7 +140,7 @@ export const Heading3 = ({
             component={component || 'h3'}
             variant="h3"
             lineHeight={1.5}
-            fontSize="1.25rem"
+            fontSize={size ? headingSizes[size] : headingSizes.medium}
             fontStyle="normal"
             fontWeight={bold ? 'bold' : fontWeight(weight)}
             {...props}

@@ -60,7 +60,7 @@ const ImageWidgetView = ({ widget }: ImageWidgetProps) => {
             <Paper elevation={1} sx={{ padding: '1em' }}>
                 <Grid container justifyContent="flex-start" spacing={3}>
                     <Grid size={12}>
-                        <Heading3 style={{ fontWeight: 'lighter', fontSize: '1.375rem' }} mb={0}>
+                        <Heading3 weight="thin" size="large" mb={0}>
                             <Skeleton variant="rectangular" />
                         </Heading3>
                     </Grid>
@@ -92,7 +92,7 @@ const ImageWidgetView = ({ widget }: ImageWidgetProps) => {
 
     return (
         <Grid container direction="column" size={12} gap={2} alignItems="flex-start" id="starting-point">
-            <Heading3 style={{ fontWeight: 'lighter', fontSize: '1.375rem' }} mb={0}>
+            <Heading3 weight="thin" size="large" mb={0}>
                 {widget.title}
             </Heading3>
             <BodyText mb="1.5rem">{resolvedImageDescription}</BodyText>

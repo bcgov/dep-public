@@ -139,59 +139,23 @@ const AuthoringDetails = () => {
                     return;
                 }
 
-                let nextTabs: FormDetailsTab[];
+                /* Hydrate with existing tab data */
+                const nextTabs = tabs
+                    .map((t) => {
+                        const bodyString = typeof t.body === 'string' ? t.body : JSON.stringify(t.body);
 
-                const hasExistingTabs =
-                    Array.isArray(tabs) && tabs.length > 0 && tabs[0].engagement_id === engagementId;
-
-                if (hasExistingTabs) {
-                    /* Hydrate with existing tab data */
-                    nextTabs = tabs
-                        .map((t) => {
-                            const bodyString = typeof t.body === 'string' ? t.body : JSON.stringify(t.body);
-
-                            return {
-                                id: t.id || defaultDetailsTabValues.id,
-                                tempId: crypto.randomUUID(),
-                                engagement_id: t.engagement_id || engagementId,
-                                label: t.label || defaultDetailsTabValues.label,
-                                slug: t.slug || defaultDetailsTabValues.slug,
-                                heading: t.heading || defaultDetailsTabValues.heading,
-                                body: getEditorStateFromRaw(bodyString),
-                                sort_index: t.sort_index || defaultDetailsTabValues.sort_index,
-                            };
-                        })
-                        .sort((a, b) => a.sort_index - b.sort_index);
-                } else {
-                    /* Create tab 1 and save to DB */
-                    const createdTabs = await withDetailsLock((headers) =>
-                        postDetailsTabs(
-                            engagementId,
-                            [
-                                {
-                                    id: -1,
-                                    engagement_id: engagementId,
-                                    label: defaultDetailsTabValues.label,
-                                    slug: defaultDetailsTabValues.slug,
-                                    heading: defaultDetailsTabValues.heading,
-                                    sort_index: 1,
-                                    body: '',
-                                },
-                            ],
-                            headers,
-                        ),
-                    );
-                    if (!createdTabs?.[0]) {
-                        return;
-                    }
-                    nextTabs = [
-                        {
-                            ...defaultDetailsTabValues,
-                            id: createdTabs[0].id,
+                        return {
+                            id: t.id || defaultDetailsTabValues.id,
                             tempId: crypto.randomUUID(),
-                        },
-                    ];
-                }
+                            engagement_id: t.engagement_id || engagementId,
+                            label: t.label || defaultDetailsTabValues.label,
+                            slug: t.slug || defaultDetailsTabValues.slug,
+                            heading: t.heading || defaultDetailsTabValues.heading,
+                            body: getEditorStateFromRaw(bodyString),
+                            sort_index: t.sort_index || defaultDetailsTabValues.sort_index,
+                        };
+                    })
+                    .sort((a, b) => a.sort_index - b.sort_index);
 
                 /* Transfer values to form and reset */
                 const newValues = {

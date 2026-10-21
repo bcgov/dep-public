@@ -298,7 +298,9 @@ const AddFileDrawer = () => {
                                 </Button>
                             </Grid>
                             <Grid>
-                                <Button type="button" onClick={() => handleClose()}>{`Cancel`}</Button>
+                                <Button type="button" onClick={() => handleClose()}>
+                                    Cancel
+                                </Button>
                             </Grid>
                         </Grid>
                     </Grid>

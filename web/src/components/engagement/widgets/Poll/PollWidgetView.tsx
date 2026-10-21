@@ -220,7 +220,7 @@ const PollWidgetView = ({ widget }: PollWidgetViewProps) => {
     return (
         <Grid container gap="2.5rem" size={12} direction="column">
             <Grid size={12}>
-                <Heading3 weight="thin" style={{ fontSize: '1.375rem' }}>
+                <Heading3 weight="thin" size="large">
                     {widget.title}
                 </Heading3>
             </Grid>

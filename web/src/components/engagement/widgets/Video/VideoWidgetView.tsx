@@ -219,7 +219,14 @@ const VideoOverlay = ({ videoOverlayTitle, source, videoSources }: VideoOverlayP
         >
             <Grid container size={12} borderRadius="16px 16px 0 0" zIndex="1000" padding="0.65rem 1rem" bgcolor="black">
                 <Grid container alignItems="center" size={12} color={colors.surface.white}>
-                    <BodyText size="small" textOverflow="ellipsis" whiteSpace="nowrap" overflow="hidden" width="100%">
+                    <BodyText
+                        size="small"
+                        color="inherit"
+                        textOverflow="ellipsis"
+                        whiteSpace="nowrap"
+                        overflow="hidden"
+                        width="100%"
+                    >
                         <FontAwesomeIcon
                             icon={videoSources.find((vs) => vs.name === source)?.icon || faQuestionCircle}
                             style={{
