@@ -29,6 +29,7 @@ from api.schemas.engagement import EngagementSchema
 from api.schemas.suggested_engagement import SuggestedEngagementSyncItemSchema
 from api.services import authorization
 from api.services.engagement_file_service import EngagementFileService
+from api.services.engagement_details_tab_service import EngagementDetailsTabService
 from api.services.engagement_settings_service import EngagementSettingsService
 from api.services.object_storage_service import ObjectStorageService
 from api.services.project_service import ProjectService
@@ -240,6 +241,8 @@ class EngagementService:
             eng_model.id,
             requested_languages if requested_languages is not None else []
         )
+
+        EngagementDetailsTabService.create_default_tab(eng_model.id)
 
         eng_model.commit()
         email_util.publish_to_email_queue(

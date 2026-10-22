@@ -147,9 +147,9 @@ const VideoWidgetView = ({ widget }: VideoWidgetProps) => {
     };
 
     return (
-        <Grid container size={12} justifyContent={{ xs: 'center' }} alignItems="center" rowSpacing={2}>
+        <Grid container size={12} justifyContent="flex-start" alignItems="flex-start" direction="column" rowSpacing={2}>
             <Grid size={12} sx={{ height: widget.title.length ? 'auto' : '0px' }}>
-                <Heading3 fontWeight="lighter" fontSize="1.5rem">
+                <Heading3 fontWeight="lighter" fontSize="1.375rem">
                     {widget.title}
                 </Heading3>
             </Grid>
@@ -197,8 +197,8 @@ const VideoWidgetView = ({ widget }: VideoWidgetProps) => {
                     />
                 </Grid>
             </Grid>
-            <Grid size={12} pt="0.5rem">
-                <BodyText>{videoDuration}</BodyText>
+            <Grid size={12} mt="-0.5rem">
+                <BodyText size="small">{videoDuration}</BodyText>
             </Grid>
         </Grid>
     );
@@ -219,7 +219,14 @@ const VideoOverlay = ({ videoOverlayTitle, source, videoSources }: VideoOverlayP
         >
             <Grid container size={12} borderRadius="16px 16px 0 0" zIndex="1000" padding="0.65rem 1rem" bgcolor="black">
                 <Grid container alignItems="center" size={12} color={colors.surface.white}>
-                    <BodyText size="small" textOverflow="ellipsis" whiteSpace="nowrap" overflow="hidden" width="100%">
+                    <BodyText
+                        size="small"
+                        color="inherit"
+                        textOverflow="ellipsis"
+                        whiteSpace="nowrap"
+                        overflow="hidden"
+                        width="100%"
+                    >
                         <FontAwesomeIcon
                             icon={videoSources.find((vs) => vs.name === source)?.icon || faQuestionCircle}
                             style={{

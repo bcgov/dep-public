@@ -266,7 +266,12 @@ const AddContactDrawer = () => {
                             marginTop="8em"
                         >
                             <Grid>
-                                <Button variant="primary" loading={isCreatingContact} onClick={handleSubmit(onSubmit)}>
+                                <Button
+                                    variant="primary"
+                                    type="button"
+                                    loading={isCreatingContact}
+                                    onClick={handleSubmit(onSubmit)}
+                                >
                                     Save &amp; Close
                                 </Button>
                             </Grid>

@@ -1,10 +1,11 @@
 {
-    "$schema": "http://json-schema.org/draft-07/schema",
-    "$id": "https://dep.gov.bc.ca/.well_known/schemas/engagement_details_tab",
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "$id": "https://dep.gov.bc.ca/.well_known/schemas/engagement_details_tab",
+
+  "type": "array",
+
+  "items": {
     "type": "object",
-    "title": "The root schema",
-    "description": "The root schema comprises the entire JSON document.",
-    "default": {},
     "examples": [
       {
         "engagement_id": 1,
@@ -15,11 +16,19 @@
         "sort_index": 1
       }
     ],
-    "required": ["engagement_id", "label", "slug", "title", "body", "sort_index"],
+    "required": [
+      "engagement_id",
+      "label",
+      "slug",
+      "heading",
+      "body",
+      "sort_index"
+    ],
     "properties": {
       "engagement_id": {
         "$id": "#/properties/engagement_id",
-        "type": "number",
+        "type": "integer",
+        "minimum": 1,
         "title": "Engagement id",
         "description": "The engagement to which this details tab belongs.",
         "examples": [1, 5, 25, 934]
@@ -54,11 +63,12 @@
       },
       "sort_index": {
         "$id": "#/properties/sort_index",
-        "type": "number",
+        "type": "integer",
+        "minimum": 1,
         "title": "Sort Index",
         "description": "The sort index of this details tab.",
         "examples": [5, 9, 2, 0]
       }
     }
   }
-  
+}

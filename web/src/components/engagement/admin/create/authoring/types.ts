@@ -8,6 +8,7 @@ import { FetcherWithComponents } from 'react-router';
 import { EngagementDetailsTab } from 'models/engagementDetailsTab';
 import { EngagementStatus } from 'constants/engagementStatus';
 import { ResourceLockRecord, ResourceLocks } from 'services/resourceLockService';
+import { getEditorStateFromRaw } from 'components/common/RichTextEditor/utils';
 
 export interface AuthoringNavProps {
     open: boolean;
@@ -104,4 +105,18 @@ export interface AuthoringTemplateOutletContext {
 
 export type FormDetailsTab = Omit<EngagementDetailsTab, 'body'> & {
     body: EditorState;
+    tempId: `${string}-${string}-${string}-${string}-${string}`;
+};
+
+export const createDefaultFormDetailsTab = (): FormDetailsTab => {
+    return {
+        id: -1,
+        tempId: crypto.randomUUID(),
+        engagement_id: -1,
+        label: 'Tab 1',
+        slug: 'tab_1',
+        heading: '',
+        body: getEditorStateFromRaw(''),
+        sort_index: 1,
+    };
 };

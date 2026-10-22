@@ -6,6 +6,7 @@ import { ListeningWidget } from 'models/listeningWidget';
 interface PostListeningWidgetRequest {
     widget_id: number;
     engagement_id: number;
+    engagement_details_tab_id?: number | null;
     description: string;
 }
 

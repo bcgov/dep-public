@@ -6,10 +6,12 @@ import { fetchTimelineWidgets, getTimelineEventTranslationsByLanguage } from 'se
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { BaseTheme } from 'styles/Theme';
 import { BodyText, Heading3 } from 'components/common/Typography';
-import { faCircle, faCircleHalf } from '@fortawesome/pro-solid-svg-icons';
+import { faCircle } from '@fortawesome/pro-solid-svg-icons';
 import { useEngagementLoaderData } from 'components/engagement/preview/PreviewLoaderDataContext';
 import { resolveTranslationValue } from 'components/engagement/public/view/engagementTranslationResolution';
 import { getLanguageIdByCode } from 'services/engagementContentTranslationService';
+import { ReactComponent as HalfFullSvg } from 'assets/images/halfFull.svg';
+
 interface TimelineWidgetProps {
     widget: Widget;
 }
@@ -116,7 +118,7 @@ const TimelineWidgetView = ({ widget }: TimelineWidgetProps) => {
 
     return (
         <Suspense fallback={<Skeleton variant="rectangular" height={200} />}>
-            <Grid container gap="1rem">
+            <Grid container gap="1rem" size={12}>
                 <Grid size={12}>
                     <Heading3 weight="thin">{resolvedTimelineTitle}</Heading3>
                 </Grid>
@@ -138,7 +140,7 @@ const TimelineWidgetView = ({ widget }: TimelineWidgetProps) => {
                 >
                     <ThemeProvider theme={BaseTheme}>
                         {timelineWidget.events.map((event, index) => (
-                            <Grid container size={12} key={event.id} direction="row">
+                            <Grid container size={12} key={event.id} direction="column">
                                 <TimelineEvent
                                     event={{
                                         ...event,
@@ -172,12 +174,27 @@ export default TimelineWidgetView;
 
 const TimelineEvent = ({ event, isLast }: { event: TimelineEventType; isLast: boolean }) => {
     return (
-        <Grid container direction="row" gap={2} alignItems="stretch" justifyContent="flex-start">
+        <Grid
+            className="timeline-event-first-container"
+            container
+            direction="row"
+            gap={2}
+            justifyContent="flex-start"
+            flexWrap="nowrap"
+            size={12}
+        >
             {/* Left side with icon and line */}
-            <Grid container alignItems="stretch" direction="column" sx={{ width: '3rem' }}>
+            <Grid
+                className="timeline-event-second-container"
+                container
+                direction="column"
+                minWidth="fit-content"
+                width="3rem"
+            >
                 {/* Event Icon */}
-                <Grid>
+                <Grid className="timeline-event-non-container-grid">
                     <Paper
+                        className="timeline-event-mui-paper"
                         sx={{
                             height: '1.5em',
                             width: '1.5em',
@@ -192,9 +209,7 @@ const TimelineEvent = ({ event, isLast }: { event: TimelineEventType; isLast: bo
                         }}
                     >
                         {event.status === EventStatus.Completed && <FontAwesomeIcon icon={faCircle} />}
-                        {event.status === EventStatus.InProgress && (
-                            <FontAwesomeIcon rotation={270} icon={faCircleHalf} />
-                        )}
+                        {event.status === EventStatus.InProgress && <HalfFullSvg />}
                     </Paper>
                 </Grid>
                 {/* Dividing line */}
@@ -203,7 +218,7 @@ const TimelineEvent = ({ event, isLast }: { event: TimelineEventType; isLast: bo
                         <Box
                             sx={{
                                 height: 'calc(100% + 2em)',
-                                width: 'calc(50% + 2px)',
+                                width: '1.625rem',
                                 borderInlineEnd: '4px solid',
                                 borderColor: 'blue.90',
                             }}
@@ -213,11 +228,11 @@ const TimelineEvent = ({ event, isLast }: { event: TimelineEventType; isLast: bo
             </Grid>
 
             {/* Right side with event content */}
-            <Grid size="auto" minHeight={isLast ? '0' : '6em'}>
-                <BodyText size="large" bold>
+            <Grid size={9} minHeight={isLast ? '0' : '6em'}>
+                <BodyText size="regular" bold>
                     {event.description} ({['Pending', 'In Progress', 'Completed'][event.status - 1]})
                 </BodyText>
-                <BodyText>{event.time}</BodyText>
+                <BodyText size="small">{event.time}</BodyText>
             </Grid>
         </Grid>
     );

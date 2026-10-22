@@ -81,7 +81,7 @@ class EngagementWidget(Resource):
         """Remove widget for an engagement."""
         try:
             WidgetService().delete_widget(engagement_id, widget_id)
-            return 'Widget successfully removed', HTTPStatus.OK
+            return {'message': 'Widget successfully removed'}, HTTPStatus.OK
         except KeyError as err:
             return str(err), HTTPStatus.INTERNAL_SERVER_ERROR
         except ValueError as err:

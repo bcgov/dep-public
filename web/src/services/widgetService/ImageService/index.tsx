@@ -18,6 +18,7 @@ interface PostImageRequest {
     widget_id: number;
     file_id: string;
     engagement_id: number;
+    engagement_details_tab_id?: number | null;
     image_url: string;
     alt_text?: string;
     description?: string;

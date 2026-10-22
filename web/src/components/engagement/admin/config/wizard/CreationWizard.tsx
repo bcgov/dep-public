@@ -33,22 +33,20 @@ const EngagementCreationWizard = () => {
     const onSubmit = async (data: EngagementConfigurationData) => {
         const startDate = `${data.start_date.format('YYYY-MM-DD')} ${data.start_time.format('HH:mm')}:00`; // Don't save seconds
         const endDate = `${data.end_date.format('YYYY-MM-DD')} ${data.end_time.format('HH:mm')}:00`; // Don't save seconds
-        fetcher.submit(
-            createSearchParams({
-                name: data.name,
-                feedback_methods: data.feedback_methods,
-                start_date: formatToUTC(startDate, 'YYYY-MM-DD HH:mm:ss'),
-                end_date: formatToUTC(endDate, 'YYYY-MM-DD HH:mm:ss'),
-                languages: data.languages.map((l) => l.code),
-                is_internal: data.is_internal ? 'true' : 'false',
-                slug: data.slug,
-                users: data.users.map((u) => u.external_id),
-            }),
-            {
-                method: 'post',
-                action: `${getPath(ROUTES.ENGAGEMENT_CREATE)}/`,
-            },
-        );
+        const params = createSearchParams({
+            name: data.name,
+            feedback_methods: data.feedback_methods,
+            start_date: formatToUTC(startDate, 'YYYY-MM-DD HH:mm:ss'),
+            end_date: formatToUTC(endDate, 'YYYY-MM-DD HH:mm:ss'),
+            languages: data.languages.map((l) => l.code),
+            is_internal: data.is_internal ? 'true' : 'false',
+            slug: data.slug,
+            users: data.users.map((u) => u.external_id),
+        });
+        fetcher.submit(params, {
+            method: 'post',
+            action: `${getPath(ROUTES.ENGAGEMENT_CREATE)}/`,
+        });
     };
 
     return (

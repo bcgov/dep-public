@@ -417,6 +417,7 @@ export const BaseTheme = createTheme({
         },
         h3: {
             fontWeight: 500,
+            fontSize: '1.375rem',
         },
         h4: {
             fontWeight: 500,
@@ -539,7 +540,7 @@ export const DarkTheme = createTheme({
         },
         h3: {
             fontWeight: 300,
-            fontSize: '1.5rem',
+            fontSize: '1.375rem',
         },
         subtitle2: {
             fontWeight: 500,
@@ -560,6 +561,12 @@ export const AdminTheme = createTheme({
     ...BaseTheme,
     palette: {
         ...BaseTheme.palette,
+    },
+    typography: {
+        h3: {
+            fontSize: '1.25rem',
+            fontWeight: 300,
+        },
     },
     components: {
         ...BaseTheme.components,

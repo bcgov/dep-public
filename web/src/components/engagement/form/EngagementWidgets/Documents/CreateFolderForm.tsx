@@ -111,6 +111,7 @@ const CreateFolderForm = () => {
                                     sx={{ mb: 1 }}
                                     loading={creatingFolder}
                                     onClick={handleCreateFolder}
+                                    type="button"
                                 >
                                     Save
                                 </Button>

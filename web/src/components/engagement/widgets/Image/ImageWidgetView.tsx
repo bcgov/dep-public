@@ -6,7 +6,7 @@ import { useAppDispatch } from 'hooks';
 import { openNotification } from 'services/notificationService/notificationSlice';
 import { ImageWidget } from 'models/imageWidget';
 import { fetchImageWidgets } from 'services/widgetService/ImageService';
-import { BodyText, Heading2 } from 'components/common/Typography';
+import { BodyText, Heading3 } from 'components/common/Typography';
 import { useEngagementLoaderData } from 'components/engagement/preview/PreviewLoaderDataContext';
 import { resolveTranslationValue } from 'components/engagement/public/view/engagementTranslationResolution';
 
@@ -60,9 +60,9 @@ const ImageWidgetView = ({ widget }: ImageWidgetProps) => {
             <Paper elevation={1} sx={{ padding: '1em' }}>
                 <Grid container justifyContent="flex-start" spacing={3}>
                     <Grid size={12}>
-                        <Heading2>
+                        <Heading3 weight="thin" mb={0}>
                             <Skeleton variant="rectangular" />
-                        </Heading2>
+                        </Heading3>
                     </Grid>
                     <Grid size={12}>
                         <Skeleton variant="rectangular" height="20em" />
@@ -91,19 +91,11 @@ const ImageWidgetView = ({ widget }: ImageWidgetProps) => {
         }).value ?? imageWidget.alt_text;
 
     return (
-        <Grid container size={12} alignItems="center" rowSpacing={2}>
-            <Grid
-                container
-                justifyContent={{ xs: 'center', md: 'flex-start' }}
-                flexDirection={'column'}
-                size={12}
-                paddingBottom={0}
-            >
-                <Heading2>{widget.title}</Heading2>
-            </Grid>
-            <Grid size={12}>
-                <BodyText>{resolvedImageDescription}</BodyText>
-            </Grid>
+        <Grid container direction="column" size={12} gap={2} alignItems="flex-start" id="starting-point">
+            <Heading3 weight="thin" mb={0}>
+                {widget.title}
+            </Heading3>
+            <BodyText mb="1.5rem">{resolvedImageDescription}</BodyText>
             <Grid
                 container
                 size={12}

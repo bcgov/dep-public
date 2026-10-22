@@ -67,16 +67,12 @@ const ExpandIcon = () => (
 );
 
 const DocumentIcon = (documentItem: DocumentItem) => {
-    if (documentItem.type === DOCUMENT_TYPE.FOLDER) {
-        return null;
-    } else {
-        return (
-            <FontAwesomeIcon
-                icon={getFileIcon(documentItem.url ?? '', documentItem.is_uploaded ?? false)}
-                style={{ height: iconSize, maxWidth: iconSize }}
-            />
-        );
-    }
+    return (
+        <FontAwesomeIcon
+            icon={getFileIcon(documentItem.url ?? '', documentItem.is_uploaded ?? false)}
+            style={{ height: iconSize, maxWidth: iconSize }}
+        />
+    );
 };
 
 const ThinkingIcon = () => <FontAwesomeIcon icon={faFaceThinking} style={{ height: iconSize, color: 'inherit' }} />;
@@ -97,12 +93,14 @@ const RecursiveDocumentTree = ({ documentItem, expandedItems }: DocumentTreeProp
         />
     );
 
+    const fileIcon = documentItem.type === DOCUMENT_TYPE.FOLDER ? undefined : () => DocumentIcon(documentItem);
+
     return (
         <TreeItem
             sx={treeItemStyles(documentItem.type === DOCUMENT_TYPE.FOLDER)}
             itemId={documentItem.id.toString()}
             label={<DocumentLabel documentItem={documentItem} expandedItems={expandedItems} />}
-            slots={{ icon: () => DocumentIcon(documentItem) }}
+            slots={{ icon: fileIcon }}
         >
             {documentItem.children?.map((document: DocumentItem) => (
                 <RecursiveDocumentTree key={document.id} documentItem={document} />
@@ -211,9 +209,11 @@ const DocumentWidget = ({ widget }: DocumentWidgetProps) => {
     };
 
     return (
-        <Grid container size={12} gap="1rem">
+        <Grid container size={12} gap="1rem" direction="column">
             <Grid size={12}>
-                <Heading3 weight="thin">{widget.title}</Heading3>
+                <Heading3 weight="thin" fontSize="1.375rem">
+                    {widget.title}
+                </Heading3>
             </Grid>
             <Grid
                 size={12}

@@ -97,9 +97,7 @@ export const LandingHero = () => {
                 margin="0"
                 py="4em"
                 px={{ xs: '1em', sm: '2em', md: '3em' }}
-                width={{ xs: '100%', md: 'fit-content' }}
-                minWidth={{ xs: '0', md: '45rem' }}
-                maxWidth="100%"
+                maxWidth="45rem"
                 gap="1.5em"
                 sx={{ backgroundColor: `white` }}
             >

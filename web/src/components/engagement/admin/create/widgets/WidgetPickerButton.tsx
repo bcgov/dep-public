@@ -36,12 +36,15 @@ export const WidgetPickerButton = ({
     const activeLanguageCode = (languageCode ?? 'en').toLowerCase();
     const [translatedTitles, setTranslatedTitles] = useState<Map<number, string>>(new Map());
     const validDetailsTabId = detailsTabId && detailsTabId > 0 ? detailsTabId : undefined;
-    const locationWidgets = widgets.filter(
-        (w) =>
-            w.location === location &&
-            (location !== WidgetLocation.Details ||
-                (w.engagement_details_tab_id ?? null) === (validDetailsTabId ?? null)),
-    );
+    const locationWidgets = widgets.filter((w) => {
+        if (w.location !== location) {
+            return false;
+        }
+        if (location === WidgetLocation.Details) {
+            return validDetailsTabId !== undefined && w.engagement_details_tab_id === validDetailsTabId;
+        }
+        return true;
+    });
 
     useEffect(() => {
         if (activeLanguageCode === 'en' || locationWidgets.length === 0) {

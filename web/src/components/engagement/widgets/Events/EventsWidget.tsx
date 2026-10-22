@@ -8,7 +8,7 @@ import { Switch, Case } from 'react-if';
 import { EventItemTranslation, getEventItemTranslations, getEvents } from 'services/widgetService/EventService';
 import VirtualSession from './VirtualSession';
 import InPersonEvent from './InPersonEvent';
-import { Heading2, BodyText } from 'components/common/Typography';
+import { BodyText, Heading3 } from 'components/common/Typography';
 import { BaseTheme } from 'styles/Theme';
 import { useEngagementLoaderData } from 'components/engagement/preview/PreviewLoaderDataContext';
 import { resolveTranslationValue } from 'components/engagement/public/view/engagementTranslationResolution';
@@ -100,9 +100,9 @@ const EventsWidget = ({ widget }: EventsWidgetProps) => {
     if (isLoading) {
         return (
             <Grid container justifyContent="flex-start" flexDirection={'column'} size={12} paddingBottom={0}>
-                <Heading2 mb={0} pb={0}>
+                <Heading3 mb={0}>
                     <Skeleton variant="rectangular" sx={{ width: '90%' }} />
-                </Heading2>
+                </Heading3>
                 <BodyText m="1rem 0 1.5rem;">
                     <Skeleton variant="text" sx={{ width: '80%' }} />
                 </BodyText>
@@ -131,7 +131,7 @@ const EventsWidget = ({ widget }: EventsWidgetProps) => {
     }
 
     return (
-        <Grid container justifyContent="flex-start" flexDirection={'column'} size={12} paddingBottom={0}>
+        <Grid container justifyContent="flex-start" flexDirection="column" rowGap={4} size={12} paddingBottom={0}>
             {events.map((event: Event) => {
                 const eventItem = event.event_items[0];
                 const resolvedEventName =
@@ -176,13 +176,13 @@ const EventsWidget = ({ widget }: EventsWidgetProps) => {
                 };
 
                 return (
-                    <React.Fragment key={event.id}>
-                        <Heading2 mb={0} pb={0}>
+                    <Grid container direction="column" size={12} key={event.id}>
+                        <Heading3 weight="thin" mb={0}>
                             {resolvedEventName}
-                        </Heading2>
-                        <BodyText m="1rem 0 1.5rem;">{localizedEventItem.description}</BodyText>
+                        </Heading3>
+                        <BodyText m="1rem 0 2.5rem">{localizedEventItem.description}</BodyText>
                         <ThemeProvider key={event.id} theme={BaseTheme}>
-                            <Paper elevation={1} sx={{ minHeight: '12em', p: '2em' }}>
+                            <Paper elevation={1} sx={{ minHeight: '12em', p: '2em', width: '100%' }}>
                                 <Grid
                                     container
                                     columnSpacing={1}
@@ -206,7 +206,7 @@ const EventsWidget = ({ widget }: EventsWidgetProps) => {
                                 </Grid>
                             </Paper>
                         </ThemeProvider>
-                    </React.Fragment>
+                    </Grid>
                 );
             })}
         </Grid>

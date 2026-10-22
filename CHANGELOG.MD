@@ -1,3 +1,22 @@
+## October 16, 2026
+
+- **Bugfix** Fixed miscellaneous widget issues. [🎟️ DEP-387](https://citz-gdx.atlassian.net/browse/DEP-387)
+  - Fixed layout of events widget at all viewports
+  - Image widget content alignment adjusted
+  - Fixed specificity issues with widget picker button in details tabs
+  - Fixed unintentional engagement form submits when a widget is created
+  - Fixed document widget folder chevrons not displaying
+  - Fixed errors caused by string return on widget delete (instead of JSON)
+  - Fixed details tab JSON schema in API to accurately show that it's for an array, not a single object
+  - Fixed image widget form populating with data from a different tab
+  - Added details tab ID to widget submission forms
+  - Removed all instances of a form within a form
+  - Changed tab create/delete system to follow object permanence model instead of form model
+    - Allows for adding widgets to a tab before engagement is saved
+    - Integrated with section lock system
+- **Bugfix** Set maximum width of landing hero container for long introductions that need to wrap
+- **Bugfix** Fixed engagement creation by changing action route from parent to actual component
+
 ## October 13, 2026
 
 - **Bugfix** Fixed issue with engagement author locking affecting the ability to update certain widget details

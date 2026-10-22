@@ -8,6 +8,7 @@ import { AppConfig } from 'config';
 interface PostTimelineRequest {
     widget_id: number;
     engagement_id: number;
+    engagement_details_tab_id?: number;
     title: string;
     description: string;
     events: TimelineEvent[];

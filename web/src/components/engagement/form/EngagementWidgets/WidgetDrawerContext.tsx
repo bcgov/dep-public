@@ -85,13 +85,7 @@ export const WidgetDrawerProvider = ({
             return true;
         }
 
-        const widgetDetailsTab = widget.engagement_details_tab_id ?? null;
-
-        if (widgetDetailsTab === widgetDetailsTabId) {
-            return true;
-        }
-
-        return widgetDetailsTab === null;
+        return widget.engagement_details_tab_id === widgetDetailsTabId;
     };
 
     const deleteWidget = async (widgetId: number) => {

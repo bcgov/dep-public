@@ -218,7 +218,7 @@ const PollWidgetView = ({ widget }: PollWidgetViewProps) => {
     const cachedPollDetails = useMemo(() => fetchPollDetails(widget.id), [widget.id]);
 
     return (
-        <Grid container gap="1rem" size={12}>
+        <Grid container gap="2.5rem" size={12} direction="column">
             <Grid size={12}>
                 <Heading3 weight="thin">{widget.title}</Heading3>
             </Grid>

@@ -288,12 +288,19 @@ const AddFileDrawer = () => {
                             marginTop="8em"
                         >
                             <Grid>
-                                <Button variant="primary" loading={isCreatingFile} onClick={handleSubmit(onSubmit)}>
+                                <Button
+                                    variant="primary"
+                                    type="button"
+                                    loading={isCreatingFile}
+                                    onClick={handleSubmit(onSubmit)}
+                                >
                                     Save &amp; Close
                                 </Button>
                             </Grid>
                             <Grid>
-                                <Button onClick={() => handleClose()}>{`Cancel`}</Button>
+                                <Button type="button" onClick={() => handleClose()}>
+                                    Cancel
+                                </Button>
                             </Grid>
                         </Grid>
                     </Grid>
