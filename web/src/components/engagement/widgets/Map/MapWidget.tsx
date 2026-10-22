@@ -61,7 +61,7 @@ const MapWidget = ({ widget }: MapWidgetProps) => {
         return (
             <Grid container size={12} justifyContent="flex-start" spacing={3}>
                 <Grid size={12}>
-                    <Heading3 size="large">
+                    <Heading3>
                         <Skeleton variant="rectangular" />
                     </Heading3>
                 </Grid>
@@ -108,7 +108,7 @@ const MapWidget = ({ widget }: MapWidgetProps) => {
                 size={12}
                 paddingBottom={0}
             >
-                <Heading3 size="large">{widget.title}</Heading3>
+                <Heading3>{widget.title}</Heading3>
             </Grid>
             <Grid size={12} mt="1.5rem">
                 <Box sx={outerContainerStyles}>

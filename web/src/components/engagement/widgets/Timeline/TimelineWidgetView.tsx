@@ -120,9 +120,7 @@ const TimelineWidgetView = ({ widget }: TimelineWidgetProps) => {
         <Suspense fallback={<Skeleton variant="rectangular" height={200} />}>
             <Grid container gap="1rem" size={12}>
                 <Grid size={12}>
-                    <Heading3 weight="thin" size="large">
-                        {resolvedTimelineTitle}
-                    </Heading3>
+                    <Heading3 weight="thin">{resolvedTimelineTitle}</Heading3>
                 </Grid>
                 <Grid size={12}>
                     <BodyText>{resolvedTimelineDescription}</BodyText>

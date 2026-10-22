@@ -16,13 +16,19 @@ export const EventRow = ({
     children: React.ReactNode;
 }) => {
     return (
-        <Grid container size={12} gap={1}>
-            <Grid container size="auto" alignItems="flex-start" width="36px">
-                {icon && <FontAwesomeIcon icon={icon} fontSize="28px" />}
+        <Grid container size={12} gap={0.5}>
+            <Grid
+                container
+                size="auto"
+                justifyContent="flex-start"
+                alignItems={{ xs: 'flex-start', sm: 'center' }}
+                width="32px"
+            >
+                {icon && <FontAwesomeIcon icon={icon} fontSize="24px" />}
             </Grid>
             <Grid container direction={{ xs: 'column', sm: 'row' }}>
-                <Grid container width={source === 'in-person' ? '84px' : '54px'}>
-                    <BodyText bold lineHeight="28px">
+                <Grid container width={source === 'in-person' ? '88px' : '52px'}>
+                    <BodyText bold lineHeight="24px">
                         {label}
                     </BodyText>
                 </Grid>

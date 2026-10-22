@@ -177,7 +177,7 @@ const EventsWidget = ({ widget }: EventsWidgetProps) => {
 
                 return (
                     <Grid container direction="column" size={12} key={event.id}>
-                        <Heading3 weight="thin" size="large" mb={0}>
+                        <Heading3 weight="thin" mb={0}>
                             {resolvedEventName}
                         </Heading3>
                         <BodyText m="1rem 0 2.5rem">{localizedEventItem.description}</BodyText>
