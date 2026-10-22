@@ -563,6 +563,7 @@ export const AdminTheme = createTheme({
         ...BaseTheme.palette,
     },
     typography: {
+        ...BaseTheme.typography,
         h3: {
             fontSize: '1.25rem',
             fontWeight: 300,
