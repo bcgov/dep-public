@@ -559,14 +559,15 @@ export const DarkTheme = createTheme({
 
 export const AdminTheme = createTheme({
     ...BaseTheme,
+    typography: {
+        ...BaseTheme.typography,
+        h3: {
+            ...BaseTheme.typography.h3,
+            fontSize: '1.25rem',
+        },
+    },
     palette: {
         ...BaseTheme.palette,
-    },
-    typography: {
-        h3: {
-            fontSize: '1.25rem',
-            fontWeight: 300,
-        },
     },
     components: {
         ...BaseTheme.components,

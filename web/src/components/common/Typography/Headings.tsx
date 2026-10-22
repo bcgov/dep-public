@@ -129,7 +129,7 @@ export const Heading3 = ({
             component={component || 'h3'}
             variant="h3"
             lineHeight={1.5}
-            fontSize={(theme) => theme.typography.h3.fontSize}
+            fontSize={(theme) => theme.typography.h3.fontSize || '20px'}
             fontStyle="normal"
             fontWeight={bold ? 'bold' : fontWeight(weight)}
             {...props}
