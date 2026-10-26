@@ -31,6 +31,8 @@ interface PaginationProps {
     onChange: (event: React.ChangeEvent<unknown>, page: number) => void | undefined;
 }
 
+type PageListProps = Pick<PaginationProps, 'page' | 'count' | 'onChange'>;
+
 /**
  * A custom pagination component.
  * It includes icon + text previous/next buttons, <page> of <count> summary, and custom page number display logic.
@@ -88,7 +90,7 @@ export const Pagination = (props: PaginationProps) => {
     );
 };
 
-const PageList = (props: PaginationProps) => {
+const PageList = (props: PageListProps) => {
     const { page, count, onChange } = props;
     const { t: translate } = useAppTranslation();
 

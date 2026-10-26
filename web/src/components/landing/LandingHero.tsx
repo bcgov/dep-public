@@ -68,12 +68,6 @@ export const LandingHero = () => {
         },
     };
 
-    const linkStyles = {
-        alignSelf: { xs: 'flex-start', md: 'center' },
-        mr: { xs: '0.5rem', sm: 0 },
-        maxWidth: '100%',
-    };
-
     const boxShadow =
         '0 20px 11px 0 rgba(0, 0, 0, 0.00), 0 12px 10px 0 rgba(0, 0, 0, 0.01), ' +
         '0 7px 9px 0 rgba(0, 0, 0, 0.05), 0 3px 6px 0 rgba(0, 0, 0, 0.09), 0 1px 3px 0 rgba(0, 0, 0, 0.10)';

@@ -450,7 +450,7 @@ const SelectedFilterTags = ({
     if (
         selectedStatuses.length === 0 &&
         !params.has('region') &&
-        !Array.from(params.keys()).some((key) => /^(?:meta(?:_|-)|taxon-)/.test(key))
+        !Array.from(params.keys()).some((key) => /^(?:meta-)/.test(key))
     ) {
         return <Grid height="28px" my={1} />;
     }
