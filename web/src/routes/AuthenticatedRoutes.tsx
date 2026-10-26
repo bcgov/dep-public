@@ -117,7 +117,7 @@ const AuthenticatedRoutes = resolveLazyRouteTree(
                 handle={{
                     // Exclude extraneous "Engagements" when viewing an individual engagement by marking as index page
                     crumb: () => ({ isIndex: true, name: 'Engagements' }),
-                    viewSwitcher: async () => ({ label: 'View Public Page', href: getPath(ROUTES.PUBLIC_SEARCH) }),
+                    viewSwitcher: () => ({ label: 'View Public Page', href: getPath(ROUTES.PUBLIC_SEARCH) }),
                 }}
             >
                 <LazyRoute index ComponentLazy={() => import('engagements/listing')} />

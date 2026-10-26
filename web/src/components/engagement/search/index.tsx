@@ -51,11 +51,11 @@ const clearedSearchFilters = (searchParams: string, filters: MetadataFilter[]) =
     nextParams.delete('status');
     filters.forEach((filter) => {
         nextParams.delete(metadataParam(filter.taxon_id, filters));
-        nextParams.delete(`meta_${filter.taxon_id}`);
+        nextParams.delete(`meta-${filter.taxon_id}`);
     });
     nextParams.delete('region');
     Array.from(nextParams.keys())
-        .filter((key) => /^(?:meta(?:_|-)|taxon-)/.test(key))
+        .filter((key) => /^(?:meta-)/.test(key))
         .forEach((key) => nextParams.delete(key));
     nextParams.delete('page');
     return nextParams;
@@ -138,12 +138,20 @@ export const EngagementSearch = () => {
         return () => resizeObserver.disconnect();
     }, [filterMenuOpen, updateFilterFade]);
 
-    const setQueryParams = (newQueryParams: URLSearchParams) => {
-        const nextSearch = `?${newQueryParams.toString()}`;
-        setNextFilterState(nextSearch);
-        setSearchLoading(true);
-        navigate('./' + nextSearch);
-    };
+    const setQueryParams = React.useCallback(
+        (newQueryParams: URLSearchParams) => {
+            const nextSearch = `?${newQueryParams.toString()}`;
+            setNextFilterState(nextSearch);
+            setSearchLoading(true);
+            navigate('./' + nextSearch);
+        },
+        [navigate],
+    );
+
+    const searchFilterContextValue = React.useMemo(
+        () => ({ nextFilterState, updateFilterState: setQueryParams }),
+        [nextFilterState, setQueryParams],
+    );
 
     const handleSearch = () => {
         const newQueryParams = new URLSearchParams(nextFilterState);
@@ -162,7 +170,7 @@ export const EngagementSearch = () => {
     };
 
     return (
-        <EngagementSearchFilterContext.Provider value={{ nextFilterState, updateFilterState: setQueryParams }}>
+        <EngagementSearchFilterContext.Provider value={searchFilterContextValue}>
             <Grid container size={12} justifyContent="center" spacing={3} px={Layout.padding.default}>
                 <Grid container size={12} maxWidth={Layout.width.default}>
                     <Grid size={12} pt={4}>
@@ -460,7 +468,7 @@ const SelectedFilterTags = ({
         const key = metadataParam(taxonId, filters);
         const remaining = metadataParamValues(nextParams, taxonId, filters).filter((item) => item !== value);
         nextParams.delete(key);
-        nextParams.delete(`meta_${taxonId}`);
+        nextParams.delete(`meta-${taxonId}`);
         if (
             filters
                 .find((filter) => filter.taxon_id === taxonId)
@@ -599,15 +607,7 @@ const FilterMenu = ({
         const key = metadataParam(taxonId, filters);
         const remaining = metadataParamValues(params, taxonId, filters).filter((v) => v !== value);
         params.delete(key);
-        params.delete(`meta_${taxonId}`);
-        if (
-            filters
-                .find((filter) => filter.taxon_id === taxonId)
-                ?.name?.trim()
-                .toLowerCase() === 'region'
-        ) {
-            params.delete('region');
-        }
+        params.delete(`meta-${taxonId}`);
         (checked ? [...remaining, value] : remaining).forEach((v) => params.append(key, v));
         params.delete('page');
         setQueryParams(params);
@@ -913,7 +913,7 @@ const MetadataOptions = ({
     onToggle: (value: string, checked: boolean) => void;
 }) => {
     const [expanded, setExpanded] = React.useState(false);
-    const values = [...filter.values].sort();
+    const values = [...filter.values].toSorted((a, b) => a.localeCompare(b));
     // Selected values stay visible even when collapsed
     const visible = expanded ? values : values.filter((v, i) => i < VISIBLE_OPTIONS || selected.includes(v));
     const hiddenCount = values.length - visible.length;

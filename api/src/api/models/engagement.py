@@ -252,47 +252,53 @@ class Engagement(BaseModel):
 
     @staticmethod
     def _filter_by_engagement_status(query, search_options):
-        if not search_options.get('public_search'):
-            statuses = [int(status)
-                        for status in search_options.get('engagement_status', [])]
-            if not statuses:
-                return query
+        if search_options.get('public_search'):
+            return Engagement._filter_by_public_engagement_status(query, search_options)
+        return Engagement._filter_by_admin_engagement_status(query, search_options)
 
-            allowed_statuses = [
-                Status.Draft.value,
-                Status.Published.value,
-                Status.Closed.value,
-                Status.Scheduled.value
-            ]
-            status_filter = [Engagement.status_id.in_(
-                [status for status in statuses if status in allowed_statuses])]
+    @staticmethod
+    def _filter_by_admin_engagement_status(query, search_options):
+        statuses = [int(status) for status in search_options.get('engagement_status', [])]
+        if not statuses:
+            return query
 
-            if EngagementDisplayStatus.Upcoming.value in statuses:
-                status_filter.append(
-                    and_(
-                        Engagement.status_id == Status.Published.value,
-                        Engagement.start_date > datetime.now()
-                    )
-                )
-            if EngagementDisplayStatus.Open.value in statuses:
-                status_filter.append(
-                    and_(
-                        Engagement.status_id == Status.Published.value,
-                        Engagement.start_date <= datetime.now(),
-                        Engagement.end_date > datetime.now()
-                    )
-                )
-            if EngagementDisplayStatus.Closed.value in statuses:
-                status_filter.append(
-                    and_(
-                        Engagement.status_id == Status.Published.value,
-                        Engagement.end_date < datetime.now()
-                    )
-                )
-            if EngagementDisplayStatus.Unpublished.value in statuses:
-                status_filter.append(Engagement.status_id == Status.Unpublished.value)
-            return query.filter(or_(*status_filter))
+        allowed_statuses = [
+            Status.Draft.value,
+            Status.Published.value,
+            Status.Closed.value,
+            Status.Scheduled.value,
+        ]
+        status_filter = [Engagement.status_id.in_(
+            [status for status in statuses if status in allowed_statuses])]
 
+        if EngagementDisplayStatus.Upcoming.value in statuses:
+            status_filter.append(
+                and_(
+                    Engagement.status_id == Status.Published.value,
+                    Engagement.start_date > datetime.now()
+                )
+            )
+        if EngagementDisplayStatus.Open.value in statuses:
+            status_filter.append(
+                and_(
+                    Engagement.status_id == Status.Published.value,
+                    Engagement.start_date <= datetime.now(),
+                    Engagement.end_date > datetime.now()
+                )
+            )
+        if EngagementDisplayStatus.Closed.value in statuses:
+            status_filter.append(
+                and_(
+                    Engagement.status_id == Status.Published.value,
+                    Engagement.end_date < datetime.now()
+                )
+            )
+        if EngagementDisplayStatus.Unpublished.value in statuses:
+            status_filter.append(Engagement.status_id == Status.Unpublished.value)
+        return query.filter(or_(*status_filter))
+
+    @staticmethod
+    def _filter_by_public_engagement_status(query, search_options):
         statuses = [status.lower() for status in search_options.get('engagement_status', [])]
         if not statuses:
             return query

@@ -23,7 +23,7 @@ const UnauthenticatedRoutes = resolveLazyRouteTree(
             loaderLazy={() => import('components/engagement/search/engagementSearchLoader')}
             handle={{
                 crumb: () => ({ name: 'Search results' }),
-                viewSwitcher: async () => ({ label: 'View Admin Page', href: getPath(ROUTES.ENGAGEMENTS) }),
+                viewSwitcher: () => ({ label: 'View Admin Page', href: getPath(ROUTES.ENGAGEMENTS) }),
             }}
         />
         <Route path=":slug">

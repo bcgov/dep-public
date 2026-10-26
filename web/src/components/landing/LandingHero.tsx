@@ -5,13 +5,13 @@ import { BodyText, Heading1 } from 'components/common/Typography';
 import LandingSection from './LandingSection';
 import { AuthKeyCloakContext } from 'components/auth/AuthKeycloakContext';
 import { useAppSelector, useAppTranslation } from 'hooks';
-import { PrimaryButton } from 'components/common/Input/Button';
+import { Button } from 'components/common/Input/Button';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowRightLong } from '@fortawesome/pro-light-svg-icons';
 import { faMagnifyingGlass } from '@fortawesome/pro-solid-svg-icons';
 import { colors } from 'styles/Theme';
 import { Await, useLoaderData, useSearchParams } from 'react-router';
-import { Link } from 'components/common/Navigation/Link';
+import { Link, RouterLinkRenderer } from 'components/common/Navigation/Link';
 import { getPath, ROUTES } from 'routes/routes';
 import { LandingLoaderData } from './landingLoader';
 
@@ -138,7 +138,7 @@ export const LandingHero = () => {
                     <Box component="span" style={{ fontSize: '0.75rem' }}>
                         or
                     </Box>
-                    <React.Suspense fallback={null}>
+                    <React.Suspense fallback={<Select sx={selectStyles} />}>
                         <Await resolve={regionFilter}>
                             {(filterableRegion) =>
                                 filterableRegion && (
@@ -149,7 +149,7 @@ export const LandingHero = () => {
                                         displayEmpty={true}
                                         renderValue={(selected) =>
                                             selected && selected !== 'None' ? (
-                                                searchParams.get('region')
+                                                searchParams.get('meta-region')
                                             ) : (
                                                 <Box component="span" style={{ opacity: 0.42 }}>
                                                     {translate('landing.hero.regionSelectPlaceholder')}
@@ -157,14 +157,14 @@ export const LandingHero = () => {
                                             )
                                         }
                                         sx={selectStyles}
-                                        value={searchParams.get('region') || ''}
+                                        value={searchParams.get('meta-region') || ''}
                                         onChange={(event) => {
                                             const newValue = event.target.value;
                                             const newParams = new URLSearchParams(searchParams);
                                             if (newValue === 'None') {
-                                                newParams.delete('region');
+                                                newParams.delete('meta-region');
                                             } else {
-                                                newParams.set('region', newValue);
+                                                newParams.set('meta-region', newValue);
                                             }
                                             setSearchParams(newParams);
                                         }}
@@ -196,14 +196,15 @@ export const LandingHero = () => {
                         rowGap="1rem"
                         width={{ xs: '100%', sm: 'fit-content' }}
                     >
-                        <Link
-                            sx={linkStyles}
-                            to={`${getPath(ROUTES.PUBLIC_SEARCH)}${searchPageParams.size ? `?${searchPageParams}` : ''}`}
+                        <Button
+                            variant="primary"
+                            LinkComponent={RouterLinkRenderer}
+                            href={getPath(ROUTES.PUBLIC_SEARCH) + (searchPageParams.size ? `?${searchPageParams}` : '')}
+                            type="button"
+                            sx={{ height: '2.5rem', px: '1.5rem' }}
                         >
-                            <PrimaryButton type="button" sx={{ height: '2.5rem', px: '1.5rem' }}>
-                                {translate('landing.hero.search')}
-                            </PrimaryButton>
-                        </Link>
+                            {translate('landing.hero.search')}
+                        </Button>
                         {isTabletOrSmaller && <BrowseAllLink>{translate('landing.hero.browseAllShort')}</BrowseAllLink>}
                     </Grid>
                 </Grid>

@@ -39,9 +39,10 @@ export const metadataParam = (taxonId: number, filters: MetadataFilter[]) => {
 
 export const metadataParamValues = (params: URLSearchParams, taxonId: number, filters: MetadataFilter[]) => {
     const key = metadataParam(taxonId, filters);
-    const values = params.getAll(key).length > 0 ? params.getAll(key) : params.getAll(`meta_${taxonId}`);
+    const values = params.getAll(key) || params.getAll(`meta-${taxonId}`);
     const filter = filters.find((item) => item.taxon_id === taxonId);
-    return values.length > 0 ? values : filter?.name?.trim().toLowerCase() === 'region' ? params.getAll('region') : [];
+    const legacyRegionValues = filter?.name?.trim().toLowerCase() === 'region' ? params.getAll('region') : [];
+    return values.length > 0 ? values : legacyRegionValues;
 };
 
 export const metadataCountKey = (taxonId: number, value: string) => `${taxonId}:${value}`;
