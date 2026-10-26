@@ -166,5 +166,122 @@
             "loadingMetadataFilters": "Loading metadata filters",
             "metadataFiltersError": "Metadata filters could not be refreshed."
         }
+    },
+    "buttonText": {
+        "provideFeedback": "Share Your Thoughts",
+        "viewEngagement": "View Engagement",
+        "viewFeedback": "View Feedback"
+    },
+    "subscription": {
+        "subscribe": "You have successfully confirmed your subscription. Thank you.",
+        "unSubscribe": [
+            "We are sorry to see you go.",
+            "We wanted to confirm that you have been successfully unsubscribed from all of our emails.",
+            "You will no longer receive any communications from us.",
+            "Thank you."
+        ],
+        "notification": "Error Subscribing to Engagement",
+        "paragraph": "Description"
+    },
+    "dashboard": {
+        "header": "What We Heard",
+        "buttonText": {
+            "readComments": "Read Comments",
+            "exportToPDF": "Export to PDF"
+        },
+        "engagementLink": "Back to engagement",
+        "errorBox": {
+            "header": "Error",
+            "body": "Click to reload"
+        },
+        "noData": "No Data Available",
+        "projectLocation": "Project Location",
+        "surveyEmailsSent": "Survey Emails Sent",
+        "surveysCompleted": "SurveysCompleted",
+        "submissionTrend": {
+            "label": "Live Activity - Engagement",
+            "filter": {
+                "label": "Select Date Range ",
+                "from": "From: ",
+                "to": "To: ",
+                "reset": "Reset All Filters",
+                "toggleBy": [
+                    "Weekly",
+                    "Monthly"
+                ]
+            }
+        },
+        "barBlock": {
+            "label": "Survey Results",
+            "questionLabel": "Click on a question to view results below",
+            "charType": [
+                "Show as Bar Chart",
+                "Show as TreeMap Chart"
+            ],
+            "button": "Read Comments",
+            "questionBarBlock": "Question"
+        }
+    },
+    "commentDashboard": {
+        "block": {
+            "header": "Comments",
+            "buttonText": "View Report",
+            "engagementLink": "Back to engagement",
+            "notification": {
+                "header": "View Report",
+                "text": "The report will only be available to view after the engagement period is over and the engagement is closed."
+            }
+        },
+        "table": {
+            "emptyText": "Engagement does not have any published comments",
+            "label": [
+                "Comment",
+                "Comment Date"
+            ]
+        }
+    },
+    "surveyEdit": {
+        "editForm": {
+            "button": {
+                "cancel": "Cancel",
+                "submit": "Submit Changes"
+            }
+        },
+        "surveyEditNotification": {
+            "verificationError": "Verification token is invalid.",
+            "invalidToken": "Invalid token",
+            "engagementError": "Invalid engagementId",
+            "loadedSubmissionError": "Error occurred while loading your answers",
+            "loadedEngagementError": "Error occurred while loading engagement",
+            "success": "Survey was successfully updated",
+            "updateSurveyError": "Error occurred during survey update"
+        }
+    },
+    "surveySubmit": {
+        "backToEngagement": "Back to Engagement",
+        "inValidToken": {
+            "header": "Oops! Something Went Wrong",
+            "bodyLine1": "You are trying to access a survey through an invalid link, please check the possible reasons:",
+            "reasons": [
+                "The survey link is expired (24 hours).",
+                "This link has already been previously used.",
+                "The engagement period is over."
+            ]
+        },
+        "surveyForm": {
+            "button": {
+                "cancel": "Cancel",
+                "submit": "Submit"
+            }
+        },
+        "surveySubmitNotification": {
+            "verificationError": "Verification not found or does not match survey",
+            "invalidToken": "Verification token is invalid.",
+            "invalidSurvey": "The survey id passed was erroneous",
+            "surveyError": "Error occurred while loading saved survey",
+            "engagementError": "Error occurred while loading saved engagement data",
+            "success": "Survey was successfully submitted",
+            "submissionError": "Error occurred during survey submission"
+        }
     }
 }
