@@ -2,6 +2,7 @@ import React from 'react';
 import withLanguageParam from './LanguageParam';
 import { Route } from 'react-router';
 import LazyRoute, { resolveLazyRouteTree } from './LazyRoute';
+import { getPath, ROUTES } from './routes';
 
 const UnauthenticatedRoutes = resolveLazyRouteTree(
     <LazyRoute
@@ -11,12 +12,19 @@ const UnauthenticatedRoutes = resolveLazyRouteTree(
         handle={{ crumb: () => ({ name: 'Home' }) }}
         id="public-root"
     >
-        <LazyRoute index ComponentLazy={() => import('components/landing')} />
+        <LazyRoute
+            index
+            ComponentLazy={() => import('components/landing')}
+            loaderLazy={() => import('components/landing/landingLoader')}
+        />
         <LazyRoute
             path="search"
             ComponentLazy={() => import('components/engagement/search')}
             loaderLazy={() => import('components/engagement/search/engagementSearchLoader')}
-            handle={{ crumb: () => ({ name: 'Search results' }) }}
+            handle={{
+                crumb: () => ({ name: 'Search results' }),
+                viewSwitcher: async () => ({ label: 'View Admin Page', href: getPath(ROUTES.ENGAGEMENTS) }),
+            }}
         />
         <Route path=":slug">
             <LazyRoute index ComponentLazy={() => import('routes/SlugLanguageRedirect')} />

@@ -1,6 +1,6 @@
 import dayjs from 'dayjs';
 
-export const selectDataTypes = ['text', 'number', 'url', 'email', 'phone'];
+export const selectDataTypes = ['text', 'number', 'url', 'email', 'phone', 'geo_area'];
 export const dateTimeTypes = ['date', 'time', 'datetime'];
 export const filterValues = ['', 'None'];
 
@@ -76,5 +76,13 @@ export const metadataTypes = [
         isSelectable: false,
         isSubstance: true,
         default: 'false',
+    },
+    {
+        db_name: 'geo_area',
+        readable_name: 'geographical area',
+        data_type: 'string',
+        isSelectable: true,
+        isSubstance: false,
+        default: ['None'],
     },
 ];

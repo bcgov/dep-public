@@ -29,6 +29,7 @@ from api.utils.filter_types import filter_map
 from .base_model import BaseModel
 from .db import db
 from .engagement_metadata import EngagementMetadata as EngagementMetadataModel
+from .engagement_metadata import MetadataTaxon
 from .engagement_status import EngagementStatus
 
 
@@ -110,37 +111,11 @@ class Engagement(BaseModel):
             search_options=None,
     ):
         """Get engagements paginated."""
-        query = db.session.query(Engagement).join(EngagementStatus)
+        query = cls._get_engagements_query(external_user_id, scope_options, search_options)
 
-        query = cls._add_tenant_filter(query)
+        sort = cls._get_sort_order(pagination_options, search_options)
 
-        if search_options:
-            query = cls._filter_by_search_text(query, search_options)
-
-            query = cls._filter_by_created_date(query, search_options)
-
-            query = cls._filter_by_published_date(query, search_options)
-
-            query = cls._filter_by_engagement_status(query, search_options)
-
-            query = cls._filter_by_metadata(query, search_options)
-
-        query = cls._filter_by_internal(query, search_options)
-
-        if scope_options.restricted:
-            if scope_options.include_assigned:
-                # the engagement status ids that should not be filtered out
-                exception_status_ids = scope_options.engagement_status_ids
-                query = cls._filter_by_assigned_engagements(
-                    query, external_user_id, exception_status_ids)
-            else:
-                # the engagement status ids of the engagements that should fetched
-                statuses = scope_options.engagement_status_ids
-                query = cls._filter_by_statuses(query, statuses)
-
-        sort = cls._get_sort_order(pagination_options)
-
-        query = query.order_by(sort)
+        query = query.order_by(*sort)
 
         no_pagination_options = not pagination_options.page or not pagination_options.size
         if no_pagination_options:
@@ -159,6 +134,32 @@ class Engagement(BaseModel):
         total_count = query.count()
 
         return items, total_count
+
+    @classmethod
+    def count_engagements(cls, external_user_id, scope_options: EngagementScopeOptions, search_options=None):
+        """Count engagements matching the supplied search criteria."""
+        return cls._get_engagements_query(external_user_id, scope_options, search_options).count()
+
+    @classmethod
+    def _get_engagements_query(cls, external_user_id, scope_options, search_options):
+        query = cls._add_tenant_filter(db.session.query(Engagement).join(EngagementStatus))
+        if search_options:
+            if search_options.get('public_search'):
+                query = query.filter(Engagement.status_id != Status.Unpublished.value)
+            query = cls._filter_by_search_text(query, search_options)
+            query = cls._filter_by_created_date(query, search_options)
+            query = cls._filter_by_published_date(query, search_options)
+            query = cls._filter_by_engagement_status(query, search_options)
+            query = cls._filter_by_metadata(query, search_options)
+
+        query = cls._filter_by_internal(query, search_options)
+        if scope_options.restricted:
+            if scope_options.include_assigned:
+                query = cls._filter_by_assigned_engagements(
+                    query, external_user_id, scope_options.engagement_status_ids)
+            else:
+                query = cls._filter_by_statuses(query, scope_options.engagement_status_ids)
+        return query
 
     @classmethod
     def edit_engagement(cls, engagement_data: dict, commit: bool = True) -> Optional[Engagement]:
@@ -232,35 +233,87 @@ class Engagement(BaseModel):
         return records
 
     @staticmethod
-    def _get_sort_order(pagination_options):
-        sort = asc(text(pagination_options.sort_key)) if pagination_options.sort_order == 'asc' \
-            else desc(text(pagination_options.sort_key))
-        return sort
+    def _get_sort_order(pagination_options, search_options):
+        search_options = search_options or {}
+        if not search_options.get('public_search'):
+            sort = asc(text(pagination_options.sort_key)) if pagination_options.sort_order == 'asc' \
+                else desc(text(pagination_options.sort_key))
+            return (sort,)
+
+        search_text = search_options.get('search_text', '')
+        # default to sort by relevance with secondary sort by created date
+        sort_by = Engagement.name.ilike('%' + (search_text or '') + '%'), Engagement.created_date.desc()
+        sort_key = pagination_options.sort_key
+        if sort_key == 'newest':
+            sort_by = (Engagement.created_date.desc(),)
+        elif sort_key == 'oldest':
+            sort_by = (Engagement.created_date.asc(),)
+        return sort_by
 
     @staticmethod
     def _filter_by_engagement_status(query, search_options):
-        statuses = [int(status)
-                    for status in search_options.get('engagement_status', [])]
+        if not search_options.get('public_search'):
+            statuses = [int(status)
+                        for status in search_options.get('engagement_status', [])]
+            if not statuses:
+                return query
+
+            allowed_statuses = [
+                Status.Draft.value,
+                Status.Published.value,
+                Status.Closed.value,
+                Status.Scheduled.value
+            ]
+            status_filter = [Engagement.status_id.in_(
+                [status for status in statuses if status in allowed_statuses])]
+
+            if EngagementDisplayStatus.Upcoming.value in statuses:
+                status_filter.append(
+                    and_(
+                        Engagement.status_id == Status.Published.value,
+                        Engagement.start_date > datetime.now()
+                    )
+                )
+            if EngagementDisplayStatus.Open.value in statuses:
+                status_filter.append(
+                    and_(
+                        Engagement.status_id == Status.Published.value,
+                        Engagement.start_date <= datetime.now(),
+                        Engagement.end_date > datetime.now()
+                    )
+                )
+            if EngagementDisplayStatus.Closed.value in statuses:
+                status_filter.append(
+                    and_(
+                        Engagement.status_id == Status.Published.value,
+                        Engagement.end_date < datetime.now()
+                    )
+                )
+            if EngagementDisplayStatus.Unpublished.value in statuses:
+                status_filter.append(Engagement.status_id == Status.Unpublished.value)
+            return query.filter(or_(*status_filter))
+
+        statuses = [status.lower() for status in search_options.get('engagement_status', [])]
         if not statuses:
             return query
 
         allowed_statuses = [
-            Status.Draft.value,
-            Status.Published.value,
-            Status.Closed.value,
-            Status.Scheduled.value
+            Status.Draft.name.lower(),
+            Status.Published.name.lower(),
+            Status.Closed.name.lower(),
+            Status.Scheduled.name.lower(),
         ]
         status_filter = [Engagement.status_id.in_(
-            [status for status in statuses if status in allowed_statuses])]
+            [Status[status.title()] for status in statuses if status in allowed_statuses])]
 
-        if EngagementDisplayStatus.Upcoming.value in statuses:
+        if EngagementDisplayStatus.Upcoming.name.lower() in statuses:
             status_filter.append(
                 and_(
                     Engagement.status_id == Status.Published.value,
                     Engagement.start_date > datetime.now()
                 )
             )
-        if EngagementDisplayStatus.Open.value in statuses:
+        if EngagementDisplayStatus.Open.name.lower() in statuses:
             status_filter.append(
                 and_(
                     Engagement.status_id == Status.Published.value,
@@ -268,15 +321,14 @@ class Engagement(BaseModel):
                     Engagement.end_date > datetime.now()
                 )
             )
-        if EngagementDisplayStatus.Closed.value in statuses:
+        if EngagementDisplayStatus.Closed.name.lower() in statuses:
             status_filter.append(
                 and_(
                     Engagement.status_id == Status.Published.value,
                     Engagement.end_date < datetime.now()
                 )
             )
-
-        if EngagementDisplayStatus.Unpublished.value in statuses:
+        if EngagementDisplayStatus.Unpublished.name.lower() in statuses:
             status_filter.append(Engagement.status_id ==
                                  Status.Unpublished.value)
         query = query.filter(or_(*status_filter))
@@ -323,12 +375,24 @@ class Engagement(BaseModel):
         if 'metadata' not in search_options:
             return query
 
+        public_only = search_options.get('filterable_metadata')
+        public_filter_types = {}
+        if public_only:
+            # Only public taxa (those with a filter type) may be filtered on; the stored type is authoritative
+            public_filter_types = dict(
+                query.session.query(MetadataTaxon.id, MetadataTaxon.filter_type)
+                .filter(MetadataTaxon.filter_type.isnot(None)).all())
+
         for criterion in search_options['metadata']:
             taxon_id = criterion.get('taxon_id')
             values = criterion.get('values')
 
+            requested_type = criterion.get('filter_type')
+            if public_only:
+                requested_type = public_filter_types.get(taxon_id)
+
             # pick the type of filtering to apply
-            filter_type = filter_map.get(criterion.get('filter_type'))
+            filter_type = filter_map.get(requested_type)
 
             if any([taxon_id is None, values is None, filter_type is None]):
                 continue  # skip invalid criteria

@@ -254,6 +254,24 @@ export const Palette = {
 export const BaseTheme = createTheme({
     palette: Palette,
     components: {
+        MuiAccordion: {
+            styleOverrides: {
+                root: {
+                    boxShadow: 'none',
+                    width: '100%',
+                    m: 0,
+                    overflow: 'clip',
+                    borderWidth: '1px',
+                    borderColor: Palette.gray[40],
+                    borderLeftStyle: 'solid',
+                    borderRightStyle: 'solid',
+                    borderTopStyle: 'solid',
+                    '&:last-of-type': {
+                        borderBottomStyle: 'solid',
+                    },
+                },
+            },
+        },
         MuiPaper: {
             styleOverrides: {
                 root: {
@@ -373,19 +391,55 @@ export const BaseTheme = createTheme({
                 },
             },
         },
-        MuiRadio: {
+        MuiCheckbox: {
             defaultProps: {
                 sx: {
+                    maxWidth: '37.2px',
+                    maxHeight: '37.2px',
+                    backgroundColor: Palette.background.default,
+                    color: Palette.gray[90],
                     '& .MuiSvgIcon-root': {
-                        fontSize: '1.75rem',
-                        '&[data-testid=RadioButtonCheckedIcon]': {
-                            fontSize: '1.375rem',
-                            marginTop: '0.1875rem',
-                            marginLeft: '0.1875rem',
+                        fontSize: '1.33333333rem',
+                        '&[data-testid=CheckBoxIcon]': {
+                            color: Palette.blue.bc,
                         },
                     },
                     '&.Mui-checked': {
+                        fontSize: '1.33333333rem',
                         fontWeight: 'bold',
+                        '& .MuiSvgIcon-root[data-testid=CheckBoxOutlineBlankIcon]': {
+                            fontSize: '1.33333333rem',
+                            color: Palette.blue.bc,
+                        },
+                    },
+                },
+            },
+        },
+        MuiRadio: {
+            defaultProps: {
+                sx: {
+                    backgroundColor: Palette.background.default,
+                    color: Palette.gray[90],
+                    '& .MuiSvgIcon-root': {
+                        fontSize: '1.2rem',
+                        '&[data-testid=RadioButtonCheckedIcon]': {
+                            border: '1px solid transparent',
+                            fontSize: '1.2rem',
+                            color: Palette.white,
+                            borderRadius: '50%',
+                            backgroundColor: Palette.blue.bc,
+                        },
+                    },
+                    fontSize: '1.2rem',
+                    '&.Mui-checked': {
+                        fontSize: '1.2rem',
+                        fontWeight: 'bold',
+                        '& .MuiSvgIcon-root[data-testid=RadioButtonUncheckedIcon]': {
+                            color: Palette.blue.bc,
+                        },
+                        '& .MuiSvgIcon-root[data-testid=RadioButtonCheckedIcon]': {
+                            transform: 'scale(0.8333333333333)',
+                        },
                     },
                 },
             },
@@ -574,7 +628,6 @@ export const AdminTheme = createTheme({
         MuiChip: {
             styleOverrides: {
                 root: {
-                    borderRadius: '0.25rem',
                     padding: '0 0.25rem',
                     fontSize: '0.875rem',
                 },
@@ -594,11 +647,12 @@ export const AdminTheme = createTheme({
             defaultProps: {
                 sx: {
                     '& .MuiSvgIcon-root': {
-                        fontSize: '1.25rem',
+                        color: colors.surface.gray[110],
+                        fontSize: '1.75rem',
                         '&[data-testid=RadioButtonCheckedIcon]': {
-                            fontSize: '1rem',
-                            marginTop: '0.125rem',
-                            marginLeft: '0.125rem',
+                            fontSize: '1.375rem',
+                            marginTop: '0.1875rem',
+                            marginLeft: '0.1875rem',
                         },
                     },
                     '&.Mui-checked': {

@@ -9,6 +9,7 @@ export const useIsManagementRoute = () => {
 export const ROUTES = {
     // Public routes
     PUBLIC_LANDING: '/',
+    PUBLIC_SEARCH: '/search',
     PUBLIC_ENGAGEMENT_BY_SLUG: '/:slug/:language',
     PUBLIC_DASHBOARD_BY_SLUG: '/:slug/:language/dashboard/:dashboardType',
     PUBLIC_COMMENTS_BY_SLUG: '/:slug/:language/comments/:dashboardType',

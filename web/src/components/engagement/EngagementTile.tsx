@@ -91,31 +91,31 @@ const EngagementTile = ({ passedEngagement, engagementId, orientation = 'vertica
     }
 
     if (!loadedEngagement) {
-        return <BodyText size="large">{translate('landingPage.tile.error')}</BodyText>;
+        return <BodyText size="large">{translate('landing.tile.error')}</BodyText>;
     }
 
     const getEngagementCTA = () => {
         switch (loadedEngagement?.submission_status) {
             case SubmissionStatus.Open:
-                return translate('landingPage.tile.cta.open');
+                return translate('landing.tile.cta.open');
             case SubmissionStatus.Closed:
-                return translate('landingPage.tile.cta.closed');
+                return translate('landing.tile.cta.closed');
             case SubmissionStatus.ClosedWithResults:
-                return translate('landingPage.tile.cta.closedWithResults');
+                return translate('landing.tile.cta.closedWithResults');
             default:
-                return translate('landingPage.tile.cta.upcoming');
+                return translate('landing.tile.cta.upcoming');
         }
     };
 
     const getImportantDateLabel = () => {
         switch (loadedEngagement?.submission_status) {
             case SubmissionStatus.Open:
-                return translate('landingPage.tile.openUntil');
+                return translate('landing.tile.openUntil');
             case SubmissionStatus.Closed:
             case SubmissionStatus.ClosedWithResults:
-                return translate('landingPage.tile.closedOn');
+                return translate('landing.tile.closedOn');
             default:
-                return translate('landingPage.tile.opensOn');
+                return translate('landing.tile.opensOn');
         }
     };
 

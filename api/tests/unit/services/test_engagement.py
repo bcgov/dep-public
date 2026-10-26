@@ -29,6 +29,7 @@ from api.models.engagement_translation import EngagementTranslation
 from api.models.language import Language
 from api.services import authorization
 from api.services.engagement_service import EngagementService
+from api.services.metadata_taxon_service import MetadataTaxonService
 from api.utils.enums import CompositeRoleId
 from api.utils.roles import Role
 from tests.utilities.factory_scenarios import TestEngagementInfo, TestJwtClaims
@@ -39,6 +40,70 @@ from tests.utilities.factory_utils import (
 
 fake = Faker()
 date_format = '%Y-%m-%d'
+
+
+def test_get_metadata_counts(session):
+    """Assert metadata counts use public filters and preserve search context."""
+    filters = [
+        {
+            'taxon_id': 10,
+            'filter_type': 'chips_all',
+            'values': ['A', 'B'],
+        },
+        {
+            'taxon_id': 20,
+            'filter_type': 'checkbox',
+            'values': ['X'],
+        },
+    ]
+    payload = {
+        'search_text': 'search',
+        'engagement_status': ['open'],
+        'metadata': [
+            {'taxon_id': 10, 'values': ['A', 'unavailable']},
+            {'taxon_id': 20, 'values': ['X']},
+            {'taxon_id': 30, 'values': ['ignored']},
+        ],
+    }
+    service = EngagementService()
+    calls = []
+
+    def count_engagements(user_id, options):
+        calls.append(options)
+        return len(calls)
+
+    with patch.object(MetadataTaxonService, 'get_filter_options', return_value=filters):
+        with patch.object(service, 'count_engagements', side_effect=count_engagements):
+            result = service.get_metadata_counts(1, payload, None)
+
+    assert result['status_counts'] == {
+        'open': 1,
+        'upcoming': 2,
+        'closed': 3,
+        'cancelled': 4,
+    }
+    assert result['metadata_counts'] == {
+        '10:A': 5,
+        '10:B': 7,
+        '20:X': 9,
+    }
+    assert result['metadata_total_counts'] == {
+        '10:A': 6,
+        '10:B': 8,
+        '20:X': 10,
+    }
+    assert calls[4]['metadata'] == [
+        {'taxon_id': 20, 'filter_type': 'checkbox', 'values': ['X']},
+        {'taxon_id': 10, 'filter_type': 'chips_all', 'values': ['A']},
+    ]
+    assert calls[4]['search_text'] == 'search'
+    assert calls[5]['metadata'] == [
+        {'taxon_id': 10, 'filter_type': 'chips_all', 'values': ['A']},
+    ]
+    assert calls[5]['search_text'] == ''
+    assert calls[5]['engagement_status'] == []
+    assert calls[0]['exclude_internal'] is True
+    assert calls[0]['public_search'] is True
 
 
 def test_create_engagement(session, monkeypatch):  # pylint:disable=unused-argument

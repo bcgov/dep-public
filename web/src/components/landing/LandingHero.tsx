@@ -1,5 +1,5 @@
 import React, { useContext } from 'react';
-import { Box, Grid2 as Grid, Input, InputAdornment, Link, MenuItem, Select, Theme, useMediaQuery } from '@mui/material';
+import { Box, Grid2 as Grid, Input, InputAdornment, MenuItem, Select, Theme, useMediaQuery } from '@mui/material';
 import LandingPageBanner from 'assets/images/LandingPageBanner.png';
 import { BodyText, Heading1 } from 'components/common/Typography';
 import LandingSection from './LandingSection';
@@ -10,27 +10,24 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowRightLong } from '@fortawesome/pro-light-svg-icons';
 import { faMagnifyingGlass } from '@fortawesome/pro-solid-svg-icons';
 import { colors } from 'styles/Theme';
-import { useSearchParams } from 'react-router';
+import { Await, useLoaderData, useSearchParams } from 'react-router';
+import { Link } from 'components/common/Navigation/Link';
+import { getPath, ROUTES } from 'routes/routes';
+import { LandingLoaderData } from './landingLoader';
 
 export const LandingHero = () => {
     const { isAuthenticated } = useContext(AuthKeyCloakContext);
     const isTabletOrSmaller = useMediaQuery((theme: Theme) => theme.breakpoints.down('sm'), { noSsr: true });
     const tenant = useAppSelector((state) => state.tenant);
     const [searchParams, setSearchParams] = useSearchParams();
+    const [searchText, setSearchText] = React.useState(searchParams.get('q') ?? searchParams.get('search_text') ?? '');
+    const { regionFilter } = useLoaderData() as LandingLoaderData;
     const { t: translate } = useAppTranslation();
 
-    // Replace static regions with real region metadata when the time comes
-    const regions = [
-        'Vancouver',
-        'Vancouver Island',
-        'Okanagan',
-        'Kootenays',
-        'Northern BC',
-        'Cariboo',
-        'Thompson',
-        'Fraser Valley',
-        'Peace River',
-    ];
+    const searchPageParams = new URLSearchParams({
+        ...Object.fromEntries(searchParams),
+        q: searchText,
+    });
 
     // Styles
 
@@ -116,20 +113,13 @@ export const LandingHero = () => {
                     <Input
                         id="hero-area-input"
                         name="hero-area-input"
-                        defaultValue={searchParams.get('search_text') || ''} // Search text persists on reload
+                        value={searchText}
                         aria-label={translate('landing.hero.aria.search')}
                         placeholder={translate('landing.hero.searchPlaceholder')}
                         disableUnderline={true}
                         sx={inputStyles}
                         onChange={(event) => {
-                            const newParams = new URLSearchParams(searchParams);
-                            const newSearchText = event.target.value;
-                            if (newSearchText === '') {
-                                newParams.delete('search_text'); // Remove param if user cleared the input
-                            } else {
-                                newParams.set('search_text', newSearchText);
-                            }
-                            setSearchParams(newParams);
+                            setSearchText(event.target.value);
                         }}
                         slotProps={{
                             input: {
@@ -148,50 +138,56 @@ export const LandingHero = () => {
                     <Box component="span" style={{ fontSize: '0.75rem' }}>
                         or
                     </Box>
-                    <Select
-                        id="hero-area-select"
-                        name="hero-area-select"
-                        aria-label={translate('landing.hero.aria.regionSelect')}
-                        displayEmpty={true}
-                        renderValue={(selected) =>
-                            // Resolves to a real value if one is selected, otherwise shows the placeholder
-                            // 'None' resolves to placeholder
-                            selected && selected !== 'None' ? (
-                                searchParams.get('region')
-                            ) : (
-                                <Box component="span" style={{ opacity: 0.42 }}>
-                                    {translate('landing.hero.regionSelectPlaceholder')}
-                                </Box>
-                            )
-                        }
-                        sx={selectStyles}
-                        value={searchParams.get('region') || ''} // Region value persists on reload
-                        onChange={(event) => {
-                            const newValue = event.target.value;
-                            const newParams = new URLSearchParams(searchParams);
-                            if (newValue === 'None') {
-                                newParams.delete('region'); // Remove region param if user selected 'None'
-                            } else {
-                                newParams.set('region', newValue);
+                    <React.Suspense fallback={null}>
+                        <Await resolve={regionFilter}>
+                            {(filterableRegion) =>
+                                filterableRegion && (
+                                    <Select
+                                        id="hero-area-select"
+                                        name="hero-area-select"
+                                        aria-label={translate('landing.hero.aria.regionSelect')}
+                                        displayEmpty={true}
+                                        renderValue={(selected) =>
+                                            selected && selected !== 'None' ? (
+                                                searchParams.get('region')
+                                            ) : (
+                                                <Box component="span" style={{ opacity: 0.42 }}>
+                                                    {translate('landing.hero.regionSelectPlaceholder')}
+                                                </Box>
+                                            )
+                                        }
+                                        sx={selectStyles}
+                                        value={searchParams.get('region') || ''}
+                                        onChange={(event) => {
+                                            const newValue = event.target.value;
+                                            const newParams = new URLSearchParams(searchParams);
+                                            if (newValue === 'None') {
+                                                newParams.delete('region');
+                                            } else {
+                                                newParams.set('region', newValue);
+                                            }
+                                            setSearchParams(newParams);
+                                        }}
+                                        inputProps={{
+                                            'aria-label': `Select an area to filter the engagements.`,
+                                        }}
+                                        MenuProps={{
+                                            disableScrollLock: true,
+                                        }}
+                                    >
+                                        <MenuItem key="hero-area-none" value="None">
+                                            {translate('landing.hero.regionSelectNoneValue')}
+                                        </MenuItem>
+                                        {filterableRegion.values.map((value) => (
+                                            <MenuItem key={`hero-area-${value}-option`} value={value}>
+                                                {value}
+                                            </MenuItem>
+                                        ))}
+                                    </Select>
+                                )
                             }
-                            setSearchParams(newParams);
-                        }}
-                        inputProps={{
-                            'aria-label': `Select an area to filter the engagements.`,
-                        }}
-                        MenuProps={{
-                            disableScrollLock: true,
-                        }}
-                    >
-                        <MenuItem key={`hero-area-none`} value="None">
-                            {translate('landing.hero.regionSelectNoneValue')}
-                        </MenuItem>
-                        {regions?.map((pv) => (
-                            <MenuItem key={`hero-area-${pv}-option`} value={pv}>
-                                {pv}
-                            </MenuItem>
-                        ))}
-                    </Select>
+                        </Await>
+                    </React.Suspense>
                     <Grid
                         container
                         mt={{ xs: '1rem', sm: '0' }}
@@ -202,7 +198,7 @@ export const LandingHero = () => {
                     >
                         <Link
                             sx={linkStyles}
-                            href={`/search${searchParams.toString() ? '?' + searchParams.toString() : ''}`}
+                            to={`${getPath(ROUTES.PUBLIC_SEARCH)}${searchPageParams.size ? `?${searchPageParams}` : ''}`}
                         >
                             <PrimaryButton type="button" sx={{ height: '2.5rem', px: '1.5rem' }}>
                                 {translate('landing.hero.search')}
@@ -220,7 +216,7 @@ export const LandingHero = () => {
 const BrowseAllLink = ({ children }: { children: React.ReactNode }) => {
     return (
         <Link
-            href="/search"
+            to={`${getPath(ROUTES.PUBLIC_SEARCH)}`}
             sx={{
                 color: 'type.primary',
                 textDecoration: 'none',

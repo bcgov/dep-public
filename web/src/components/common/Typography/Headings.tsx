@@ -77,8 +77,8 @@ export const Heading2 = ({
             component={component || 'h2'}
             lineHeight="1.5"
             fontSize="1.5rem"
-            mb="1.5rem"
-            mt="0.5rem"
+            mb={props.mb ?? '1.5rem'}
+            mt={props.mt ?? '0.5rem'}
             fontWeight={bold ? 'bold' : fontWeight(weight)}
             {...props}
             sx={[
