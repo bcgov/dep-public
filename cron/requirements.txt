@@ -11,7 +11,7 @@ MarkupSafe==3.0.3
 PyJWT==2.15.0
 SQLAlchemy-Utils==0.42.1
 SQLAlchemy==1.4.52
-Werkzeug==3.1.7
+Werkzeug==3.1.9
 alembic==1.18.4
 aniso8601==10.0.1
 attrs==26.1.0
