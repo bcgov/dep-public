@@ -110,31 +110,50 @@
         }
     },
     "search": {
-        "foundSingle": "Found {0} engagement",
-        "foundMultiple": "Found {0} engagements",
-        "clear": "Clear Filters",
-        "sortBy": "Sort by",
-        "sort": {
-            "newestCreated": "Newest (created)",
-            "oldestCreated": "Oldest (created)",
-            "newestUpdated": "Newest (updated)",
-            "oldestUpdated": "Oldest (updated)"
+        "sectionHeading": "Find engagements",
+        "queryPlaceholder": "By keyword",
+        "searchAction": "Search",
+        "resultsHeading": "Search results",
+        "foundSingle": "{0} engagement found",
+        "foundMultiple": "{0} engagements found",
+        "noResults": {
+            "heading": "No results found",
+            "suggestionsIntro": "To improve your search:",
+            "suggestion1": "Remove or change some of the applied filters",
+            "suggestion2": "Make sure all keywords are spelled correctly",
+            "suggestion3": "Try a different keyword",
+            "browseAll": "Browse all engagement opportunities"
         },
-        "status": {
-            "all": "All Engagements",
-            "open": "Open Engagements",
-            "closed": "Closed Engagements",
-            "upcoming": "Upcoming Engagements"
+        "clear": "Clear Filters",
+        "sortAndFilter": "Sort and filter",
+        "expandAll": "Expand all",
+        "collapseAll": "Collapse all",
+        "applyFilters": "Show {0} engagements",
+        "applyFiltersSingle": "Show 1 engagement",
+        "sort": {
+            "categoryName": "Sort by",
+            "bestMatch": "Best Match",
+            "newest": "Newest",
+            "oldest": "Oldest"
+        },
+        "statusFilter": {
+            "categoryName": "Status",
+            "open": "Open",
+            "upcoming": "Upcoming",
+            "closed": "Closed",
+            "closedWithResults": "Closed with results"
+        },
+        "metadataFilter": {
+            "fallbackName": "Filter",
+            "viewMore": "View {0} more",
+            "viewLess": "View less"
         },
         "aria": {
-            "closeDrawer": "Close filter options",
-            "openDrawer": "Open more filter options",
             "deleteFilterChip": "{0} filter - press to remove",
             "metadataFilterChip": "{0} filter - {1}",
             "selected": "Applied",
-            "notSelected": "Not Applied",
-            "applyFilters": "Apply Filters and close filter options",
-            "statusFilter": "Engagement Status Selector - {0} selected",
+            "notSelected": "Not applied",
+            "applyFilters": "Apply filters and close filter options",
             "searchForm": "Search public engagement opportunities",
             "appliedFilters": "Applied search filters",
             "queryInput": "Search engagements by keyword",
@@ -145,7 +164,6 @@
             "metadataFiltersError": "Metadata filters could not be refreshed."
         }
     },
-
     "buttonText": {
         "provideFeedback": "Share Your Thoughts",
         "viewEngagement": "View Engagement",
