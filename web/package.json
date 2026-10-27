@@ -69,6 +69,7 @@
     "html2canvas": "^1.4.1",
     "i18next": "^25.4.0",
     "identity-obj-proxy": "^3.0.0",
+    "immutable": "3.8.4",
     "immutability-helper": "^3.1.1",
     "jest-resolve": "^30.2.0",
     "jsonwebtoken": "^9.0.3",
@@ -123,6 +124,13 @@
     "webpack-manifest-plugin": "^6.0.1",
     "workbox-webpack-plugin": "^7.4.1",
     "yup": "^0.32.11"
+  },
+  "overrides": {
+    "react-draft-wysiwyg": {
+      "linkify-it": "5.0.2"
+    },
+    "immutable@<3.8.4": "3.8.4",
+    "immutable@^5.0.2": "5.1.8"
   },
   "scripts": {
     "ensure:bcgov-formio": "node scripts/ensure-bcgov-formio.js",
