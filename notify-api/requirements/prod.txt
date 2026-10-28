@@ -2,7 +2,7 @@ gunicorn
 Flask
 Flask-Script
 flask-restx
-flask-jwt-oidc
+flask-jwt-oidc>=0.8.0
 python-dotenv
 jsonschema
 requests
