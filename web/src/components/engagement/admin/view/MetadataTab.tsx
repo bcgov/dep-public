@@ -5,7 +5,7 @@ import { Controller, useForm } from 'react-hook-form';
 import { createSearchParams, Form, useFetcher, useParams, useRouteLoaderData } from 'react-router';
 import { Button } from 'components/common/Input/Button';
 import { EngagementLoaderAdminData } from '../EngagementLoaderAdmin';
-import { MetadataTaxon } from 'models/engagement';
+import { MetadataFormValue, MetadataTaxon } from 'models/engagement';
 import { useAppDispatch } from 'hooks';
 import { openNotification } from 'services/notificationService/notificationSlice';
 import { AlertColor } from 'services/notificationService/types';
@@ -29,7 +29,7 @@ export const MetadataTab = () => {
     } = useRouteLoaderData('single-engagement') as EngagementLoaderAdminData;
     const { engagementId } = useParams();
     const [firstRender, setFirstRender] = useState<boolean>(true);
-    const [customValues, setCustomValues] = useState<string[][]>([]);
+    const [customValues, setCustomValues] = useState<MetadataFormValue[][]>([]);
     const [taxa, setTaxa] = useState<MetadataTaxon[]>([]);
 
     const defaultValues: EngagementMetadataSubmission = {
@@ -74,12 +74,11 @@ export const MetadataTab = () => {
 
     // Get the form fields from the available taxons
     const buildForm = (t: MetadataTaxon[]) => {
-        const defaults: (string | string[])[] = [];
+        const defaults: MetadataFormValue[][] = [];
         t.forEach((taxon) => {
             if ((!taxon.position && taxon.position !== 0) || (!taxon.id && taxon.id !== 0)) return; // Protect 0 values
-            defaults[taxon.position] = metadataTypes.find((mdt) => mdt.db_name === taxon.data_type)?.default ?? [
-                'none',
-            ]; // Default selection
+            defaults[taxon.position] = (metadataTypes.find((mdt) => mdt.db_name === taxon.data_type)
+                ?.default as unknown as MetadataFormValue[]) ?? [{ value: 'None', position: 0 }]; // Default selection
         });
         engMetaForm.setValue('metadata', defaults);
     };
@@ -100,8 +99,8 @@ export const MetadataTab = () => {
 
             const missingValues = metadata
                 .filter((m) => m.taxon_id === taxon.id)
-                .map((m) => m.value)
-                .filter((value) => !(taxon.preset_values ?? []).includes(value));
+                .map((m) => ({ id: m.id, value: m.value, position: m.position }) as unknown as MetadataFormValue)
+                .filter((value) => !(taxon.preset_values ?? []).some((v) => v.value === value.value));
 
             return missingValues.length > 0
                 ? {
@@ -122,11 +121,13 @@ export const MetadataTab = () => {
             const key = matching.position as number;
             if (!key && key !== 0) return;
             // Convert date, time, and datetime to Pacific timezone for display on the form
-            const newValue = dateTimeTypes.includes(matching.data_type as string) ? formatToPacific(m.value) : m.value;
+            const newValue = dateTimeTypes.includes(matching.data_type as string)
+                ? { ...m, position: m.position as number, value: formatToPacific(m.value) }
+                : { ...m, position: m.position as number };
 
             newMeta[key] = Array.isArray(newMeta[key])
-                ? [...(newMeta[key] as string[]).filter((v) => v !== 'None'), newValue]
-                : newValue;
+                ? [...newMeta[key].filter((v) => v.value !== 'None'), newValue]
+                : [newValue];
         });
 
         engMetaForm.setValue('metadata', newMeta);
@@ -146,15 +147,17 @@ export const MetadataTab = () => {
                     if (!isDirty) return;
                     // Convert dates and times to string and UTC timezone
                     let values = dateTimeTypes.includes(taxon.data_type as string)
-                        ? formatToUTC(m as string | Dayjs)
+                        ? [{ ...m?.[0], value: formatToUTC(m?.[0]?.value as string | Dayjs) }]
                         : m;
                     // Filter out default values and normalize values to strings
                     if (Array.isArray(values) && values.length > 0) {
-                        values = values.filter((md) => !filterValues.includes(String(md))).map(String);
+                        values = values
+                            .filter((md) => !filterValues.includes(String(md.value)))
+                            .map((m) => ({ ...m, value: String(m.value) }));
                     } else {
-                        values = [String(values)]; // Normalize to string type within array
+                        const singleMeta = values as unknown as MetadataFormValue;
+                        values = [{ ...singleMeta, value: String(singleMeta.value) }]; // Normalize value to string
                     }
-                    if (!values) return;
                     return {
                         taxon_id: taxon.id,
                         values: values,
@@ -162,14 +165,15 @@ export const MetadataTab = () => {
                 })
                 ?.filter(Boolean); // Remove blank results
 
-            const customOptions: { value: unknown[]; taxon_id: number }[] = [];
+            const customOptions: { value: MetadataFormValue[]; taxon_id: number }[] = [];
             customValues.forEach((cv, i) => {
                 const matching = taxa.find((t) => t.position === i);
                 // Only save the custom option to the database if include_freeform is true for the taxon
                 if (matching?.include_freeform) {
-                    const oldValues = [...(matching.preset_values || [])];
-                    const iteratedValues = [...(customOptions[i]?.value || [])]; // Other custom values on same taxon
-                    const newValues = [...new Set([...oldValues, ...iteratedValues, ...cv])]; // No duplicates
+                    const oldPresetValues = [...(matching.preset_values || [])];
+                    const newValues = [...oldPresetValues, ...(cv || [])].filter(
+                        (value, index, arr) => arr.findIndex((v) => v.value === value.value) === index,
+                    );
                     customOptions.push({ value: newValues, taxon_id: matching.id });
                 }
             });
@@ -256,7 +260,7 @@ export const MetadataTab = () => {
                                                     <MetadataSelect
                                                         taxa={taxa}
                                                         taxon={taxon}
-                                                        value={field.value as string[]}
+                                                        value={[...field.value]}
                                                         onChange={field.onChange}
                                                         customValues={customValues}
                                                         setCustomValues={setCustomValues}
@@ -264,10 +268,18 @@ export const MetadataTab = () => {
                                                 </Case>
                                                 <Case condition={taxon.data_type === 'long_text'}>
                                                     <TextField
-                                                        multiline={true}
+                                                        multiline
                                                         minRows={4}
-                                                        value={String(field.value)}
-                                                        onChange={field.onChange}
+                                                        value={String(field.value?.[0]?.value || '')}
+                                                        onChange={(e) =>
+                                                            field.onChange([
+                                                                {
+                                                                    ...(field.value?.[0] ?? {}),
+                                                                    value: e.target.value,
+                                                                    position: 1,
+                                                                },
+                                                            ])
+                                                        }
                                                         sx={{
                                                             '& .MuiOutlinedInput-root': {
                                                                 borderRadius: '8px',
@@ -277,8 +289,6 @@ export const MetadataTab = () => {
                                                 </Case>
                                                 <Case condition={taxon.data_type === 'date'}>
                                                     <DatePicker
-                                                        value={dayjs(String(field.value))}
-                                                        onChange={field.onChange}
                                                         sx={dateAndTimeStyles}
                                                         slotProps={{
                                                             textField: {
@@ -286,12 +296,24 @@ export const MetadataTab = () => {
                                                                 helperText: null,
                                                             },
                                                         }}
+                                                        value={
+                                                            field.value?.[0]?.value
+                                                                ? dayjs(String(field.value[0].value))
+                                                                : null
+                                                        }
+                                                        onChange={(newValue) =>
+                                                            field.onChange([
+                                                                {
+                                                                    ...(field.value?.[0] ?? {}),
+                                                                    value: newValue,
+                                                                    position: 1,
+                                                                },
+                                                            ])
+                                                        }
                                                     />
                                                 </Case>
                                                 <Case condition={taxon.data_type === 'time'}>
                                                     <TimePicker
-                                                        value={dayjs(String(field.value))}
-                                                        onChange={field.onChange}
                                                         sx={dateAndTimeStyles}
                                                         slotProps={{
                                                             textField: {
@@ -299,12 +321,24 @@ export const MetadataTab = () => {
                                                                 helperText: null,
                                                             },
                                                         }}
+                                                        value={
+                                                            field.value?.[0]?.value
+                                                                ? dayjs(String(field.value[0].value))
+                                                                : null
+                                                        }
+                                                        onChange={(newValue) =>
+                                                            field.onChange([
+                                                                {
+                                                                    ...(field.value?.[0] ?? {}),
+                                                                    value: newValue,
+                                                                    position: 1,
+                                                                },
+                                                            ])
+                                                        }
                                                     />
                                                 </Case>
                                                 <Case condition={taxon.data_type === 'datetime'}>
                                                     <DateTimePicker
-                                                        value={dayjs(String(field.value))}
-                                                        onChange={field.onChange}
                                                         sx={dateAndTimeStyles}
                                                         slotProps={{
                                                             textField: {
@@ -312,14 +346,36 @@ export const MetadataTab = () => {
                                                                 helperText: null,
                                                             },
                                                         }}
+                                                        value={
+                                                            field.value?.[0]?.value
+                                                                ? dayjs(String(field.value[0].value))
+                                                                : null
+                                                        }
+                                                        onChange={(newValue) =>
+                                                            field.onChange([
+                                                                {
+                                                                    ...(field.value?.[0] ?? {}),
+                                                                    value: newValue,
+                                                                    position: 1,
+                                                                },
+                                                            ])
+                                                        }
                                                     />
                                                 </Case>
                                                 <Case condition={taxon.data_type === 'boolean'}>
                                                     <span>
                                                         False{' '}
                                                         <MUISwitch
-                                                            checked={String(field.value) === 'true'}
-                                                            onChange={(e) => field.onChange(String(e.target.checked))}
+                                                            checked={String(field.value?.[0]?.value) === 'true'}
+                                                            onChange={(e) =>
+                                                                field.onChange([
+                                                                    {
+                                                                        ...(field.value?.[0] ?? {}),
+                                                                        value: String(e.target.checked),
+                                                                        position: 1,
+                                                                    },
+                                                                ])
+                                                            }
                                                         />{' '}
                                                         True
                                                     </span>
@@ -382,7 +438,10 @@ const MetadataSelect = ({
         setCustomValueModalOpen(false);
         if (selectedTaxonPosition === undefined || !inputText) return;
         const newValues = [...customValues];
-        newValues[selectedTaxonPosition] = [...(newValues[selectedTaxonPosition] || []), inputText]; // Form value is array
+        newValues[selectedTaxonPosition] = [
+            ...(newValues[selectedTaxonPosition] || []),
+            { value: inputText, position: allOptions.length + 1 },
+        ]; // Form value is array
         setCustomValues(newValues);
     };
 
@@ -405,7 +464,7 @@ const MetadataSelect = ({
             ...(taxa.find((t) => t.position === Number(selectedTaxonPosition))?.preset_values || []),
             ...(customValues[selectedTaxonPosition as number] || []),
         ];
-        if (valuesToCheck.includes(value)) {
+        if (valuesToCheck.some((vtc) => vtc.value === value)) {
             setError(errorPrefix + 'The option already exists.');
             return false;
         }
@@ -487,17 +546,30 @@ const MetadataSelect = ({
                     sx={{ maxWidth: '100%' }}
                     multiple={taxonIsMulti}
                     name={`metadata-${taxon.id}-${taxon.name}`}
-                    value={value}
+                    value={value.map((v) => v?.value).filter(Boolean)}
                     onChange={(e) => {
-                        let newValue = e.target.value;
-                        const eventValueIsArray = Array.isArray(newValue) && newValue.length > 1;
+                        let selectedValues = Array.isArray(e.target.value) ? e.target.value : [e.target.value];
                         // Deal with special cases for multi-select with 'None' selection
-                        if (taxonIsMulti && newValue.includes('None')) {
-                            newValue = !value.includes('None')
+                        if (taxonIsMulti && selectedValues.includes('None')) {
+                            selectedValues = !value.some((v) => v.value === 'None')
                                 ? ['None']
-                                : (newValue as string[]).filter((v) => v !== 'None');
+                                : selectedValues.filter((v) => v !== 'None');
                         }
-                        onChange(eventValueIsArray && taxonIsMulti ? [...newValue] : [newValue]);
+                        const convertedValues = selectedValues.map((selectedValue) => {
+                            const existingValue = value.find((v) => v.value === selectedValue);
+
+                            if (existingValue) {
+                                return existingValue;
+                            }
+
+                            const option = allOptions.find((o) => o.value === selectedValue);
+
+                            return {
+                                id: option?.id,
+                                value: selectedValue,
+                            };
+                        });
+                        onChange(convertedValues);
                     }}
                     inputProps={{
                         'aria-label': `Select a value for the ${taxon.name}.`,
@@ -507,9 +579,9 @@ const MetadataSelect = ({
                         None
                     </MenuItem>
                     {taxonHasOptions &&
-                        allOptions?.map((pv) => (
-                            <MenuItem key={`${taxon.id}-${taxon.name}-${pv}-option`} value={pv}>
-                                {pv}
+                        allOptions?.map((mfv: MetadataFormValue) => (
+                            <MenuItem key={`${taxon.id}-${taxon.name}-${mfv.value}-option`} value={mfv.value}>
+                                {mfv.value}
                             </MenuItem>
                         ))}
                 </Select>

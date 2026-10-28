@@ -24,7 +24,7 @@ import { faCircleQuestion } from '@fortawesome/pro-regular-svg-icons/faCircleQue
 import { Palette } from 'styles/Theme';
 import * as yup from 'yup';
 import React, { JSX, useContext, useEffect } from 'react';
-import { MetadataTaxon } from 'models/engagement';
+import { MetadataFormValue, MetadataTaxon } from 'models/engagement';
 import { ActionContext } from './ActionContext';
 import { useAppDispatch } from 'hooks';
 import { If, Then, Else } from 'react-if';
@@ -34,7 +34,7 @@ import PresetValuesEditor from './presetFieldsEditor/PresetValuesEditor';
 import { useForm, SubmitHandler, Controller, FormProvider } from 'react-hook-form';
 import { openNotification } from 'services/notificationService/notificationSlice';
 import { Button } from 'components/common/Input/Button';
-import { faFilterSlash, faSave } from '@fortawesome/pro-regular-svg-icons';
+import { faArrowDownWideShort, faArrowUpWideShort, faFilterSlash, faSave } from '@fortawesome/pro-regular-svg-icons';
 import { BodyText, Heading3 } from 'components/common/Typography';
 
 const HelpTooltip = ({ children }: { children: string | string[] }) => {
@@ -83,11 +83,21 @@ const TaxonEditForm = ({ taxon }: { taxon: MetadataTaxon }): JSX.Element => {
             freeform: taxon.freeform ?? false,
             one_per_engagement: taxon.one_per_engagement ?? false,
             data_type: taxon.data_type ?? 'text',
-            preset_values: taxon.preset_values ?? [],
+            preset_values: taxon.preset_values ? parsePresetValues(taxon.preset_values) : [],
             filter_type: taxon.filter_type ?? 'none',
             include_freeform: taxon.include_freeform ?? false,
         });
     }, [taxon, reset]);
+
+    const parsePresetValues = (meta: MetadataFormValue[]) => {
+        if (!Array.isArray(meta) || !meta.length) return [];
+        // Legacy conversion. Convert array of strings to array of metadata form values.
+        if (meta.every((m) => typeof m === 'string')) {
+            return meta.map((v, i) => ({ value: v, position: i + 1 }));
+        }
+        // Modern structure. Sort existing data by position property.
+        return meta.sort((a, b) => a.position - b.position);
+    };
 
     // Watch data_type to update taxonType
     const dataType = watch('data_type');
@@ -97,6 +107,12 @@ const TaxonEditForm = ({ taxon }: { taxon: MetadataTaxon }): JSX.Element => {
     const isValidFilter = watch('filter_type') !== 'none';
     const presetValues = watch('preset_values');
 
+    const presetValueSchema: yup.AnySchema = yup.object({
+        id: yup.number(),
+        value: taxonType.yupValidator ?? yup.mixed(),
+        position: yup.number().required(),
+    });
+
     const schema = yup.object().shape({
         name: yup.string().required('Name is required').max(64, 'Name is too long! Limit: 64 characters.'),
         description: yup.string().max(255, 'Description is too long! Limit: 255 characters.'),
@@ -104,14 +120,11 @@ const TaxonEditForm = ({ taxon }: { taxon: MetadataTaxon }): JSX.Element => {
         one_per_engagement: taxonType.supportsMulti ? yup.boolean() : yup.boolean().oneOf([true]),
         data_type: yup.string().required('Type is required'),
         preset_values: yup.mixed().when('data_type', {
-            is: (value: string) => taxonType.supportsPresetValues,
+            is: () => taxonType.supportsPresetValues,
             then: yup.mixed().when('freeform', {
                 is: false,
-                then: yup
-                    .array()
-                    .of(taxonType.yupValidator ?? yup.mixed())
-                    .required('Preset value is required'),
-                otherwise: yup.array().of(taxonType.yupValidator ?? yup.mixed()),
+                then: yup.array().of(presetValueSchema).required('Preset value is required'),
+                otherwise: yup.array().of(presetValueSchema),
             }),
             otherwise: yup.mixed().strip(),
         }),
@@ -193,6 +206,18 @@ const TaxonEditForm = ({ taxon }: { taxon: MetadataTaxon }): JSX.Element => {
         return /Mac|iPod|iPhone|iPad/.test(navigator.platform);
     };
     const modifierKey = !isMac() ? 'Ctrl' : '⌘';
+
+    const sortPresetValues = (direction: string) => {
+        const newValues = methods.getValues('preset_values');
+        newValues?.sort((a, b) =>
+            direction === 'normal' ? a.value.localeCompare(b.value) : b.value.localeCompare(a.value),
+        );
+        const positionedValues = newValues?.map((nv, i) => ({
+            ...nv,
+            position: i + 1,
+        }));
+        methods.setValue('preset_values', positionedValues, { shouldDirty: true });
+    };
 
     // Whether the options can be limited to preset values
     const allowLimiting = taxonType.supportsFreeform && (presetValues?.length ?? 0) > 0;
@@ -315,6 +340,40 @@ const TaxonEditForm = ({ taxon }: { taxon: MetadataTaxon }): JSX.Element => {
                             </HelpTooltip>
                         </Grid>
                         <PresetValuesEditor control={methods.control} name="preset_values" />
+                        <Grid container m="0.5rem 0 0" p={0} gap={1}>
+                            <Button
+                                variant="secondary"
+                                disabled={Number(methods?.getValues('preset_values')?.length) === 0}
+                                size="small"
+                                type="button"
+                                icon={
+                                    <FontAwesomeIcon
+                                        icon={faArrowDownWideShort}
+                                        style={{ fontSize: '20px', paddingRight: '5px' }}
+                                    />
+                                }
+                                aria-label="Sort preset values alphabetically."
+                                onClick={() => sortPresetValues('normal')}
+                            >
+                                Sort A to Z
+                            </Button>
+                            <Button
+                                variant="secondary"
+                                disabled={Number(methods?.getValues('preset_values')?.length) === 0}
+                                size="small"
+                                type="button"
+                                icon={
+                                    <FontAwesomeIcon
+                                        icon={faArrowUpWideShort}
+                                        style={{ fontSize: '20px', paddingRight: '5px' }}
+                                    />
+                                }
+                                aria-label="Sort preset values reverse-alphabetically."
+                                onClick={() => sortPresetValues('reverse')}
+                            >
+                                Sort Z to A
+                            </Button>
+                        </Grid>
                     </Grid>
                     <Grid
                         component={Collapse}

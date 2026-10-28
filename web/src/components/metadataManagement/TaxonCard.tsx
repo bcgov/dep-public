@@ -200,8 +200,8 @@ export const TaxonCard: React.FC<TaxonCardProps> = ({ taxon, isExpanded, onExpan
                                         <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap">
                                             {taxon.preset_values?.map((chip) => (
                                                 <Chip
-                                                    key={chip}
-                                                    label={chip}
+                                                    key={chip.value}
+                                                    label={chip.value}
                                                     size="small"
                                                     sx={{ margin: '2px !important' }}
                                                 />

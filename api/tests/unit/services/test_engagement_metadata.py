@@ -100,32 +100,70 @@ def test_update_engagement_metadata(session):
 def test_bulk_update_engagement_metadata(session):
     """Assert that engagement metadata can be updated in bulk."""
     taxon, engagement, _, _ = factory_metadata_requirements()
-    for i in range(4):
+
+    created_metadata = [
         factory_engagement_metadata_model({
             'engagement_id': engagement.id,
             'taxon_id': taxon.id,
-            'value': f'old value {i}'
+            'value': f'old value {i}',
+            'position': i + 1,
         })
+        for i in range(4)
+    ]
+
     existing_metadata = engagement_metadata_service.get_by_engagement(
-        engagement.id)
-    # The initial data is created with 4 metadata entries
+        engagement.id
+    )
+
     assert len(existing_metadata) == 4
-    new_values = [f'new value {i}' for i in range(3)]
+
+    new_values = [
+        {
+            'id': created_metadata[i].id,
+            'value': f'new value {i}',
+            'position': i + 1,
+        }
+        for i in range(3)
+    ]
+
     metadata_updated = engagement_metadata_service.update_by_taxon(
-        engagement.id, taxon.id, new_values)
-    # Check that the extra metadata entry was removed
+        engagement.id,
+        taxon.id,
+        new_values,
+    )
+
     assert len(metadata_updated) == 3
-    # and that the values were updated
+
     for i, meta in enumerate(metadata_updated):
-        assert meta['value'] == new_values[i]
-    new_values_2 = [f'newer value {i}' for i in range(5)]
+        assert meta['value'] == f'new value {i}'
+
+    new_values_2 = [
+        {
+            'id': metadata_updated[i]['id'],
+            'value': f'newer value {i}',
+            'position': i + 1,
+        }
+        for i in range(3)
+    ] + [
+        {
+            'value': f'newer value {i}',
+            'position': i + 1,
+        }
+        for i in range(3, 5)
+    ]
+
     metadata_updated_2 = engagement_metadata_service.update_by_taxon(
-        engagement.id, taxon.id, new_values_2)
-    # now the array should be longer
+        engagement.id,
+        taxon.id,
+        new_values_2,
+    )
+
     assert len(metadata_updated_2) == 5
-    # and the values should be updated again
+
     for i, meta in enumerate(metadata_updated_2):
-        assert meta['value'] == new_values_2[i], f'{meta}, {new_values_2[i]}'
+        assert meta['value'] == f'newer value {i}', (
+            f'{meta}, newer value {i}'
+        )
 
 
 def test_delete_engagement_metadata(session):

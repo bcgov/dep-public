@@ -28,6 +28,7 @@ class EngagementMetadata(BaseModel):
                          db.ForeignKey('engagement_metadata_taxa.id', ondelete='CASCADE'), nullable=False, index=True)
     taxon = db.relationship('MetadataTaxon', backref='entries')
     value = db.Column(db.Text, index=True, nullable=False)
+    position = db.Column(db.Integer, nullable=True)
 
     @property
     def tenant(self):
@@ -150,21 +151,64 @@ class MetadataTaxon(BaseModel):
         return f'<MetadataTaxon #{self.id}: {self.name}>'
 
     @property
-    def preset_values(self) -> list[str]:
-        """Get preset values - any metadata entries with no specific engagement."""
-        return [entry.value for entry in self.entries if entry.engagement_id is None]
+    def preset_values(self) -> list[dict]:
+        """Return preset values for this taxon sorted by position."""
+        entries = sorted(
+            (
+                entry
+                for entry in self.entries
+                if entry.engagement_id is None
+            ),
+            key=lambda e: e.position or 0,
+        )
+
+        return [
+            {
+                'id': entry.id,
+                'value': entry.value,
+                'position': entry.position,
+            }
+            for entry in entries
+        ]
 
     @preset_values.setter
     @transactional()
-    def preset_values(self, values: list[str]) -> None:
-        # Update preset values to match the provided list
-        for entry in self.entries:
-            if entry.engagement_id is None and entry.value not in values:
+    def preset_values(self, values: list[dict]) -> None:
+        """Synchronize this taxon's preset values with the provided values."""
+        existing_entries = {
+            entry.id: entry
+            for entry in self.entries
+            if entry.engagement_id is None
+        }
+
+        incoming_ids = {
+            item['id']
+            for item in values
+            if item.get('id') is not None
+        }
+
+        # Delete removed values
+        for entry_id, entry in existing_entries.items():
+            if entry_id not in incoming_ids:
                 entry.delete()
-        for value in values:
-            if value not in self.preset_values:
-                entry = EngagementMetadata(taxon_id=self.id, value=value)
-                entry.save()
+
+        # Create/update values and positions
+        for item in values:
+            entry_id = item.get('id')
+            metadata_value = item['value']
+            position = item.get('position')
+
+            existing_entry = existing_entries.get(entry_id)
+
+            if existing_entry:
+                existing_entry.value = metadata_value
+                existing_entry.position = position
+            else:
+                EngagementMetadata(
+                    taxon_id=self.id,
+                    value=metadata_value,
+                    position=position,
+                ).save()
 
     @transactional()
     def move_to_position(self, new_position: int) -> None:

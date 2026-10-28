@@ -45,6 +45,13 @@ API = Namespace('metadata_taxa', description='Endpoints for managing the taxa '
 taxon_service = MetadataTaxonService()
 
 
+preset_value_model = API.model('PresetValue', {
+    'id': fields.Integer(required=False),
+    'value': fields.String(required=True),
+    'position': fields.Integer(required=False),
+})
+
+
 taxon_modify_model = API.model('MetadataTaxon', taxon_model_dict := {
     'name': fields.String(required=False, description='The name of the taxon'),
     'description': fields.String(required=False, description='The taxon description'),
@@ -52,8 +59,11 @@ taxon_modify_model = API.model('MetadataTaxon', taxon_model_dict := {
     'data_type': fields.String(required=False, description='The data type for the taxon'),
     'one_per_engagement': fields.Boolean(required=False, description='Whether the taxon is limited'
                                          ' to one entry per engagement'),
-    'preset_values': fields.List(fields.String(), required=False,
-                                 description='The preset values for the taxon'),
+    'preset_values': fields.List(
+        fields.Nested(preset_value_model),
+        required=False,
+        description='The preset values for the taxon'
+    ),
     'filter_type': fields.String(required=False, description='The filter type for the taxon (if any)'),
     'include_freeform': fields.Boolean(required=False, description='Whether to include freeform '
                                        'values in the user-facing filter options')

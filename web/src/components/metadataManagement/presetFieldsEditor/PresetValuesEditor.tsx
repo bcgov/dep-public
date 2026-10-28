@@ -4,6 +4,7 @@ import { Control, Controller, FieldError } from 'react-hook-form';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCircleXmark } from '@fortawesome/pro-regular-svg-icons/faCircleXmark';
 import { faPlusCircle } from '@fortawesome/pro-regular-svg-icons';
+import { MetadataFormValue } from 'models/engagement';
 
 const PresetValuesEditor = ({
     control, // The control object (from react-hook-form)
@@ -33,11 +34,32 @@ const PresetValuesEditor = ({
                     );
                 });
 
-                const onArrayChange = (_event: SyntheticEvent<Element, Event> | null, newValue: string[] | null) => {
-                    newValue = newValue ?? [...value, inputValue];
-                    newValue = newValue.map((v: string) => v.trim()).filter(Boolean);
-                    onChange(newValue);
-                    setInputValue(''); // Clear the input value after change
+                const onArrayChange = (
+                    _event: SyntheticEvent<Element, Event> | null,
+                    newValue: Array<string | MetadataFormValue> | null,
+                ) => {
+                    const updatedValues = (newValue ?? [])
+                        .map((item, index) => {
+                            // Normalize values to MetadataFormValue objects
+                            if (typeof item === 'string') {
+                                const existingValue = value.find((v: MetadataFormValue) => v.value === item);
+
+                                return {
+                                    id: existingValue?.id,
+                                    value: item.trim(),
+                                    position: index + 1,
+                                };
+                            }
+                            return {
+                                id: item.id,
+                                value: item.value?.trim() ?? '',
+                                position: index + 1,
+                            };
+                        })
+                        .filter((v) => v.value); // Remove blank entries
+
+                    onChange(updatedValues);
+                    setInputValue('');
                 };
 
                 return (
@@ -45,7 +67,7 @@ const PresetValuesEditor = ({
                         multiple
                         freeSolo
                         options={[]}
-                        value={value || []}
+                        value={value.map((v: MetadataFormValue) => v.value) || []}
                         inputValue={inputValue}
                         onInputChange={(_event, newInputValue) => {
                             setInputValue(newInputValue);
@@ -79,7 +101,10 @@ const PresetValuesEditor = ({
                                                 <IconButton
                                                     title="Add value to the list"
                                                     onClick={() => {
-                                                        onArrayChange(null, [...value, inputValue]);
+                                                        onArrayChange(null, [
+                                                            ...value,
+                                                            { value: inputValue, position: value.length + 1 },
+                                                        ]);
                                                     }}
                                                 >
                                                     <FontAwesomeIcon icon={faPlusCircle} style={{ fontSize: '22px' }} />

@@ -55,13 +55,19 @@ export interface Status {
     status_name: string;
 }
 
+export interface MetadataFormValue {
+    id?: number;
+    value: string;
+    position: number;
+}
+
 export interface MetadataTaxonModify {
     name?: string; // The name of the taxon, optional
     description?: string; // The description of the taxon, optional
     freeform?: boolean; // Whether the taxon is freeform, optional
     data_type?: string; // The data type for the taxon, optional
     one_per_engagement?: boolean; // Whether the taxon is limited to one entry per engagement, optional
-    preset_values?: string[]; // The preset values for the taxon
+    preset_values?: MetadataFormValue[]; // The preset values for the taxon
     filter_type?: string | null; // The filter type for the taxon, optional
     include_freeform?: boolean; // Whether to include freeform values in options for filtering, optional
 }
@@ -79,6 +85,7 @@ export interface EngagementMetadata {
     value: string; // The content of the metadata
     taxon_id: number; // ID of the taxon this metadata is for
     engagement_id?: number; // The ID of the relevant engagement
+    position?: number; // The position of the metadata in the taxon preset_values list
 }
 
 export interface EngagementSettings {

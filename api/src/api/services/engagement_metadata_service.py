@@ -140,44 +140,61 @@ class EngagementMetadataService:
 
     @staticmethod
     @transactional()
-    def update_by_taxon(engagement_id: int, taxon_id: int, values: List[str]) -> List[dict]:
-        """
-        Update engagement metadata by taxon.
+    def update_by_taxon(
+        engagement_id: int,
+        taxon_id: int,
+        values: list[dict]
+    ) -> list[dict]:
+        """Update engagement metadata by taxon."""
+        existing_metadata = {
+            entry.id: entry
+            for entry in EngagementMetadata.query.filter_by(
+                engagement_id=engagement_id,
+                taxon_id=taxon_id,
+            ).all()
+        }
 
-        Args:
-            engagement_id: The ID of the engagement.
-            taxon_id: The ID of the metadata taxon.
-            values: The values to store for the taxon.
-        Returns:
-            The updated metadata as a list.
-        """
-        query = EngagementMetadata.query.filter_by(
-            engagement_id=engagement_id, taxon_id=taxon_id)
-        metadata = query.all()
-        if len(metadata) > len(values):
-            for i in range(len(values), len(metadata)):
-                metadata[i].delete()
-        metadata = query.all()  # remove deleted entries from the list
-        for i, value in enumerate(values):
-            if i < len(metadata):
-                metadata[i].value = value
-        if len(values) > len(metadata):
-            for i in range(len(metadata), len(values)):
-                metadata.append(EngagementMetadata(
-                    engagement_id=engagement_id, taxon_id=taxon_id, value=values[i]
-                ))
-        db.session.add_all(metadata)
-        return EngagementMetadataSchema(many=True).dump(metadata)
+        incoming_ids = {
+            item['id']
+            for item in values
+            if item.get('id') is not None
+        }
+
+        # delete removed entries
+        for metadata_id, metadata_entry in existing_metadata.items():
+            if metadata_id not in incoming_ids:
+                metadata_entry.delete()
+
+        result: list[EngagementMetadata] = []
+
+        # create/update entries
+        for item in values:
+            metadata_id = item.get('id')
+            metadata_value = item['value']
+            position = item.get('position')
+
+            existing_entry = existing_metadata.get(metadata_id)
+
+            if existing_entry:
+                existing_entry.value = metadata_value
+                existing_entry.position = position
+                result.append(existing_entry)
+            else:
+                entry = EngagementMetadata(
+                    engagement_id=engagement_id,
+                    taxon_id=taxon_id,
+                    value=metadata_value,
+                    position=position,
+                )
+                entry.save()
+                result.append(entry)
+
+        return EngagementMetadataSchema(many=True).dump(result)
 
     @staticmethod
     @transactional()
     def delete(metadata_id: int) -> None:
-        """
-        Delete engagement metadata.
-
-        Args:
-            id: The ID of the engagement metadata.
-        """
+        """Delete engagement metadata."""
         metadata = EngagementMetadata.query.get(metadata_id)
         if not metadata:
             raise KeyError(f'Engagement metadata with id {metadata_id}'

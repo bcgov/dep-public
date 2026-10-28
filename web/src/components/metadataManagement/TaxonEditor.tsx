@@ -224,10 +224,10 @@ export const TaxonEditor = () => {
                                         orderedMetadataTaxa.map((taxon: MetadataTaxon, index) => {
                                             return (
                                                 <ThemeProvider
+                                                    key={taxon.id}
                                                     theme={taxon.id === selectedTaxon?.id ? DarkTheme : BaseTheme}
                                                 >
                                                     <TaxonCard
-                                                        key={taxon.id}
                                                         taxon={taxon}
                                                         index={index}
                                                         onExpand={handleExpandTaxon}
