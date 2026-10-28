@@ -211,7 +211,7 @@ export const LandingHero = () => {
 const BrowseAllLink = ({ children }: { children: React.ReactNode }) => {
     return (
         <Link
-            to={`${getPath(ROUTES.PUBLIC_SEARCH)}?status=openz`}
+            to={`${getPath(ROUTES.PUBLIC_SEARCH)}?status=open`}
             sx={{
                 color: 'type.primary',
                 textDecoration: 'none',
