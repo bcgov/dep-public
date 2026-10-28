@@ -322,7 +322,7 @@ def test_get_filters(session):
             'position': 1,
         }
     ]
-    
+
     # Get filters
     filters = taxon_service.get_filter_options(tenant.id)
     assert len(filters) == 4  # out of 5, only 4 should be filterable

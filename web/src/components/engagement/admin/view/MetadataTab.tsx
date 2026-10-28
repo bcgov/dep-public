@@ -274,7 +274,7 @@ export const MetadataTab = () => {
                                                         onChange={(e) =>
                                                             field.onChange([
                                                                 {
-                                                                    ...(field.value?.[0] ?? {}),
+                                                                    ...field.value?.[0],
                                                                     value: e.target.value,
                                                                     position: 1,
                                                                 },
@@ -304,7 +304,7 @@ export const MetadataTab = () => {
                                                         onChange={(newValue) =>
                                                             field.onChange([
                                                                 {
-                                                                    ...(field.value?.[0] ?? {}),
+                                                                    ...field.value?.[0],
                                                                     value: newValue,
                                                                     position: 1,
                                                                 },
@@ -329,7 +329,7 @@ export const MetadataTab = () => {
                                                         onChange={(newValue) =>
                                                             field.onChange([
                                                                 {
-                                                                    ...(field.value?.[0] ?? {}),
+                                                                    ...field.value?.[0],
                                                                     value: newValue,
                                                                     position: 1,
                                                                 },
@@ -354,7 +354,7 @@ export const MetadataTab = () => {
                                                         onChange={(newValue) =>
                                                             field.onChange([
                                                                 {
-                                                                    ...(field.value?.[0] ?? {}),
+                                                                    ...field.value?.[0],
                                                                     value: newValue,
                                                                     position: 1,
                                                                 },
@@ -370,7 +370,7 @@ export const MetadataTab = () => {
                                                             onChange={(e) =>
                                                                 field.onChange([
                                                                     {
-                                                                        ...(field.value?.[0] ?? {}),
+                                                                        ...field.value?.[0],
                                                                         value: String(e.target.checked),
                                                                         position: 1,
                                                                     },
