@@ -303,7 +303,10 @@ export const DateTimeRangePickerWithCalculation = () => {
                                 </Grid>
                                 <Grid container direction="row" spacing={1}>
                                     <Grid>
-                                        <EngagementStatusChip statusId={SubmissionStatus.Open} />
+                                        <EngagementStatusChip
+                                            sx={{ borderColor: 'success.dark' }}
+                                            statusId={SubmissionStatus.Open}
+                                        />
                                     </Grid>
                                     <Grid>
                                         <BodyText bold display="inline">

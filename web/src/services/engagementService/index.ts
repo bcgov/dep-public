@@ -41,6 +41,31 @@ export interface GetEngagementsParams {
     tenant_id?: number;
 }
 
+export interface EngagementSearchParams extends Omit<GetEngagementsParams, 'engagement_status'> {
+    engagement_status?: string[];
+}
+
+export interface EngagementSearchCounts {
+    status_counts: Record<string, number>;
+    metadata_counts: Record<string, number>;
+    metadata_total_counts: Record<string, number>;
+}
+
+export const getEngagementSearchCounts = async (
+    params: Pick<EngagementSearchParams, 'search_text' | 'engagement_status' | 'published_from_date'> & {
+        metadata: Array<{ taxon_id: number; filter_type: string; values: string[] }>;
+    },
+): Promise<EngagementSearchCounts> => {
+    const response = await http.PostRequest<EngagementSearchCounts>(
+        Endpoints.Engagement.SEARCH_METADATA_COUNTS,
+        params,
+    );
+    if (response.data) {
+        return response.data;
+    }
+    throw new Error('Failed to fetch engagement search counts');
+};
+
 const handleAxiosError = (e: AxiosError) => {
     if (e?.response?.data && typeof e.response.data === 'string' && e.response.data.length < 200) {
         throw new Error(e.response.data);
@@ -55,8 +80,11 @@ const handleAxiosError = (e: AxiosError) => {
     }
 };
 
-export const getEngagements = async (params: GetEngagementsParams = {}): Promise<Page<Engagement>> => {
-    const responseData = await http.GetRequest<Page<Engagement>>(Endpoints.Engagement.GET_LIST, params);
+const fetchEngagements = async (
+    endpoint: string,
+    params: GetEngagementsParams | EngagementSearchParams,
+): Promise<Page<Engagement>> => {
+    const responseData = await http.GetRequest<Page<Engagement>>(endpoint, params);
     return (
         responseData.data ?? {
             items: [],
@@ -64,6 +92,12 @@ export const getEngagements = async (params: GetEngagementsParams = {}): Promise
         }
     );
 };
+
+export const getEngagements = async (params: GetEngagementsParams = {}): Promise<Page<Engagement>> =>
+    fetchEngagements(Endpoints.Engagement.GET_LIST, params);
+
+export const getPublicEngagementSearch = async (params: EngagementSearchParams = {}): Promise<Page<Engagement>> =>
+    fetchEngagements(Endpoints.Engagement.SEARCH, params);
 
 export const getEngagement = async (engagementId: number): Promise<Engagement> => {
     const url = replaceUrl(Endpoints.Engagement.GET, 'engagement_id', String(engagementId));

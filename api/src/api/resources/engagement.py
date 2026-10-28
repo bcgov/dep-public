@@ -29,6 +29,7 @@ from api.models import db
 from api.models.pagination_options import PaginationOptions
 from api.models.tenant import Tenant as TenantModel
 from api.resources.lock_validation_decorators import require_engagement_patch_lock
+from api.resources.metadata_taxon import ensure_tenant_access
 from api.schemas.engagement import EngagementSchema
 from api.schemas.engagement_file import EngagementFileSchema
 from api.services import authorization
@@ -147,6 +148,111 @@ class EngagementDelete(Resource):
             return str(err), HTTPStatus.BAD_REQUEST
 
 
+@cors_preflight('POST, OPTIONS')
+@API.route('/search/metadata-counts')
+class EngagementMetadataCounts(Resource):
+    """Return all public metadata and status counts for an engagement search."""
+
+    @staticmethod
+    @cross_origin(origins=allowedorigins())
+    @auth.optional
+    @ensure_tenant_access()
+    def post(tenant: TenantModel):
+        """Fetch metadata counts for engagement search."""
+        payload = request.get_json()
+        if not isinstance(payload, dict):
+            return 'Invalid request body', HTTPStatus.BAD_REQUEST
+
+        tenant_id = tenant.id
+        if not tenant_id:
+            return 'Tenant is required', HTTPStatus.BAD_REQUEST
+
+        metadata = payload.get('metadata', [])
+        statuses = payload.get('engagement_status', [])
+        if (
+            not isinstance(metadata, list) or
+            not all(isinstance(item, dict) for item in metadata) or
+            not isinstance(statuses, list) or
+            not all(isinstance(status, str) for status in statuses)
+        ):
+            return 'Invalid search filters', HTTPStatus.BAD_REQUEST
+
+        counts = EngagementService().get_metadata_counts(
+            int(tenant_id), payload, TokenInfo.get_id())
+        return counts, HTTPStatus.OK
+
+
+def _get_engagements(public_search=False):
+    """Fetch engagements using the search contract for the calling endpoint."""
+    try:
+        args = request.args
+        external_user_id = TokenInfo.get_id()
+
+        pagination_options = PaginationOptions(
+            page=args.get('page', 1, int),
+            size=args.get('size', 10, int),
+            sort_key=args.get('sort_key', 'name', str),
+            sort_order=args.get('sort_order', 'asc', str),
+        )
+
+        metadata = []
+        metadata_param = args.get('metadata')
+        if isinstance(metadata_param, str) and metadata_param:
+            parsed_metadata = json.loads(metadata_param)
+            if not isinstance(parsed_metadata, list) or not all(isinstance(item, dict) for item in parsed_metadata):
+                parsed_metadata = []
+            metadata = parsed_metadata
+
+        search_options = {
+            'search_text': args.get('search_text', '', type=str),
+            'engagement_status': args.getlist('engagement_status[]'),
+            'created_from_date': args.get('created_from_date', None, type=str),
+            'created_to_date': args.get('created_to_date', None, type=str),
+            'published_from_date': args.get('published_from_date', None, type=str),
+            'published_to_date': args.get('published_to_date', None, type=str),
+            'metadata': metadata,
+            'exclude_internal': external_user_id is None,
+            'filterable_metadata': args.get(
+                'filterable_metadata',
+                default=False,
+                type=lambda v: v.lower() == 'true'
+            ),
+            'has_team_access': args.get(
+                'has_team_access',
+                default=False,
+                type=lambda v: v.lower() == 'true'
+            ),
+            'public_search': public_search,
+        }
+
+        engagement_records = EngagementService().get_engagements_paginated(
+            external_user_id,
+            pagination_options,
+            search_options,
+            include_banner_url=args.get(
+                'include_banner_url',
+                default=False,
+                type=lambda v: v.lower() == 'true'
+            ),
+        )
+        return engagement_records, HTTPStatus.OK
+    except ValueError as err:
+        return str(err), HTTPStatus.INTERNAL_SERVER_ERROR
+
+
+@cors_preflight('GET, OPTIONS')
+@API.route('/search')
+class EngagementSearch(Resource):
+    """Resource for public engagement search."""
+
+    @staticmethod
+    @cross_origin(origins=allowedorigins())
+    @auth.optional
+    def get():
+        """Fetch engagements using public search filters and sorting."""
+        return _get_engagements(public_search=True)
+
+
 @cors_preflight('GET, POST, PATCH, OPTIONS')
 @API.route('/')
 class Engagements(Resource):
@@ -156,70 +262,8 @@ class Engagements(Resource):
     @cross_origin(origins=allowedorigins())
     @auth.optional
     def get():
-        """Fetch engagements."""
-        try:
-            args = request.args
-            external_user_id = TokenInfo.get_id()
-
-            pagination_options = PaginationOptions(
-                page=args.get('page', 1, int),
-                size=args.get('size', 10, int),
-                sort_key=args.get('sort_key', 'name', str),
-                sort_order=args.get('sort_order', 'asc', str),
-            )
-
-            exclude_internal = None
-            if external_user_id is None:
-                exclude_internal = True
-
-            metadata = []
-            metadata_param = args.get('metadata')
-            if isinstance(metadata_param, str) and metadata_param:
-                parsed_metadata = json.loads(metadata_param)
-                if not isinstance(parsed_metadata, list) or not all(isinstance(item, dict) for item in parsed_metadata):
-                    # if metadata is not a list of dictionaries, it is in the wrong format.
-                    # blank it to avoid any issues.
-                    parsed_metadata = []
-                metadata = parsed_metadata
-
-            search_options = {
-                'search_text': args.get('search_text', '', type=str),
-                'engagement_status': args.getlist('engagement_status[]'),
-                'created_from_date': args.get('created_from_date', None, type=str),
-                'created_to_date': args.get('created_to_date', None, type=str),
-                'published_from_date': args.get('published_from_date', None, type=str),
-                'published_to_date': args.get('published_to_date', None, type=str),
-                'metadata': metadata,
-                'exclude_internal': exclude_internal,
-                'filterable_metadata': args.get(
-                    'filterable_metadata',
-                    default=False,
-                    type=lambda v: v.lower() == 'true'
-                ),
-                # the membership changing pages sometimes need only engagements where users can add a member.
-                # pass this has_team_access to restrict searches only within engagements they have access on.
-                'has_team_access': args.get(
-                    'has_team_access',
-                    default=False,
-                    type=lambda v: v.lower() == 'true'
-                ),
-            }
-
-            engagement_records = EngagementService() \
-                .get_engagements_paginated(
-                external_user_id,
-                pagination_options,
-                search_options,
-                include_banner_url=args.get(
-                    'include_banner_url',
-                    default=False,
-                    type=lambda v: v.lower() == 'true'
-                ),
-            )
-
-            return engagement_records, HTTPStatus.OK
-        except ValueError as err:
-            return str(err), HTTPStatus.INTERNAL_SERVER_ERROR
+        """Fetch engagements using the legacy admin search contract."""
+        return _get_engagements()
 
     @staticmethod
     @cross_origin(origins=allowedorigins())

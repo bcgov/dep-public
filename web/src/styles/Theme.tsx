@@ -70,45 +70,45 @@ export const colors = {
     },
     surface: {
         gray: {
-            10: '#FAF9F8',
-            20: '#F3F2F1',
-            30: '#EDEBE9',
-            40: '#E1DFDD',
-            50: '#D2D0CE',
-            60: '#C8C6C4',
-            70: '#A19F9D',
-            80: '#7A7876',
-            90: '#3B3A39',
-            100: '#323130',
-            110: '#201F1E',
+            10: '#FAF9F8' as const,
+            20: '#F3F2F1' as const,
+            30: '#EDEBE9' as const,
+            40: '#E1DFDD' as const,
+            50: '#D2D0CE' as const,
+            60: '#C8C6C4' as const,
+            70: '#A19F9D' as const,
+            80: '#7A7876' as const,
+            90: '#3B3A39' as const,
+            100: '#323130' as const,
+            110: '#201F1E' as const,
         },
         blue: {
-            10: '#F1F8FF',
-            20: '#D8EBFF',
-            30: '#C0DFFF',
-            40: '#A7D2FF',
-            50: '#8EC6FF',
-            60: '#76BAFF',
-            70: '#4E97E0',
-            80: '#2B71B8',
-            90: '#12508F',
-            100: '#053662',
-            bc: '#053662',
+            10: '#F1F8FF' as const,
+            20: '#D8EBFF' as const,
+            30: '#C0DFFF' as const,
+            40: '#A7D2FF' as const,
+            50: '#8EC6FF' as const,
+            60: '#76BAFF' as const,
+            70: '#4E97E0' as const,
+            80: '#2B71B8' as const,
+            90: '#12508F' as const,
+            100: '#053662' as const,
+            bc: '#053662' as const,
         },
         gold: {
-            10: '#FFF8E8',
-            20: '#FFECBE',
-            30: '#FFE095',
-            40: '#FFD46C',
-            50: '#FFC843',
-            60: '#FCBA19',
-            bc: '#FCBA19',
-            70: '#D39706',
-            80: '#AA7900',
-            90: '#825C00',
-            100: '#593F00',
+            10: '#FFF8E8' as const,
+            20: '#FFECBE' as const,
+            30: '#FFE095' as const,
+            40: '#FFD46C' as const,
+            50: '#FFC843' as const,
+            60: '#FCBA19' as const,
+            bc: '#FCBA19' as const,
+            70: '#D39706' as const,
+            80: '#AA7900' as const,
+            90: '#825C00' as const,
+            100: '#593F00' as const,
         },
-        white: '#FFFFFF',
+        white: '#FFFFFF' as const,
     },
     notification: {
         info: {
@@ -254,6 +254,21 @@ export const Palette = {
 export const BaseTheme = createTheme({
     palette: Palette,
     components: {
+        MuiAccordion: {
+            styleOverrides: {
+                root: {
+                    boxShadow: 'none',
+                    width: '100%',
+                    m: 0,
+                    overflow: 'clip',
+                    border: '1px solid',
+                    borderColor: Palette.gray[40],
+                    '&:not(:last-of-type)': {
+                        borderBottomStyle: 'hidden',
+                    },
+                },
+            },
+        },
         MuiPaper: {
             styleOverrides: {
                 root: {
@@ -373,19 +388,55 @@ export const BaseTheme = createTheme({
                 },
             },
         },
-        MuiRadio: {
+        MuiCheckbox: {
             defaultProps: {
                 sx: {
+                    maxWidth: '37.2px',
+                    maxHeight: '37.2px',
+                    backgroundColor: Palette.background.default,
+                    color: Palette.gray[90],
                     '& .MuiSvgIcon-root': {
-                        fontSize: '1.75rem',
-                        '&[data-testid=RadioButtonCheckedIcon]': {
-                            fontSize: '1.375rem',
-                            marginTop: '0.1875rem',
-                            marginLeft: '0.1875rem',
+                        fontSize: '1.33333333rem',
+                        '&[data-testid=CheckBoxIcon]': {
+                            color: Palette.blue.bc,
                         },
                     },
                     '&.Mui-checked': {
+                        fontSize: '1.33333333rem',
                         fontWeight: 'bold',
+                        '& .MuiSvgIcon-root[data-testid=CheckBoxOutlineBlankIcon]': {
+                            fontSize: '1.33333333rem',
+                            color: Palette.blue.bc,
+                        },
+                    },
+                },
+            },
+        },
+        MuiRadio: {
+            defaultProps: {
+                sx: {
+                    backgroundColor: Palette.background.default,
+                    color: Palette.gray[90],
+                    '& .MuiSvgIcon-root': {
+                        fontSize: '1.2rem',
+                        '&[data-testid=RadioButtonCheckedIcon]': {
+                            border: '1px solid transparent',
+                            fontSize: '1.2rem',
+                            color: Palette.white,
+                            borderRadius: '50%',
+                            backgroundColor: Palette.blue.bc,
+                        },
+                    },
+                    fontSize: '1.2rem',
+                    '&.Mui-checked': {
+                        fontSize: '1.2rem',
+                        fontWeight: 'bold',
+                        '& .MuiSvgIcon-root[data-testid=RadioButtonUncheckedIcon]': {
+                            color: Palette.blue.bc,
+                        },
+                        '& .MuiSvgIcon-root[data-testid=RadioButtonCheckedIcon]': {
+                            transform: 'scale(0.8333333333333)',
+                        },
                     },
                 },
             },
@@ -574,7 +625,6 @@ export const AdminTheme = createTheme({
         MuiChip: {
             styleOverrides: {
                 root: {
-                    borderRadius: '0.25rem',
                     padding: '0 0.25rem',
                     fontSize: '0.875rem',
                 },
@@ -594,11 +644,12 @@ export const AdminTheme = createTheme({
             defaultProps: {
                 sx: {
                     '& .MuiSvgIcon-root': {
-                        fontSize: '1.25rem',
+                        color: colors.surface.gray[110],
+                        fontSize: '1.75rem',
                         '&[data-testid=RadioButtonCheckedIcon]': {
-                            fontSize: '1rem',
-                            marginTop: '0.125rem',
-                            marginLeft: '0.125rem',
+                            fontSize: '1.375rem',
+                            marginTop: '0.1875rem',
+                            marginLeft: '0.1875rem',
                         },
                     },
                     '&.Mui-checked': {

@@ -16,17 +16,17 @@
 Test suite to ensure that the Engagement model routines are working as expected.
 """
 
-from faker import Faker
 import pytest
+from faker import Faker
 
 from api.constants.engagement_status import Status
 from api.models import db
-from api.models.engagement_metadata import EngagementMetadata
 from api.models.engagement import Engagement as EngagementModel
+from api.models.engagement_metadata import EngagementMetadata
 from api.models.engagement_scope_options import EngagementScopeOptions
 from api.models.pagination_options import PaginationOptions
-from tests.utilities.factory_utils import factory_engagement_model, factory_metadata_taxon_model
 from tests.utilities.factory_scenarios import TestEngagementInfo
+from tests.utilities.factory_utils import factory_engagement_model, factory_metadata_taxon_model
 
 
 fake = Faker()
@@ -77,6 +77,28 @@ def test_get_engagements_paginated_name_search(session):
     assert count == 1  # Name search brings up only search result
 
 
+@pytest.mark.parametrize('sort_key', ['newest', 'oldest', 'relevance'])
+def test_get_engagements_paginated_sort_options(session, sort_key):
+    """Public search sort options are expanded as valid SQL order expressions."""
+    factory_engagement_model()
+    options = PaginationOptions(page=1, size=10, sort_key=sort_key, sort_order='asc')
+    scope = EngagementScopeOptions(
+        restricted=False,
+        include_assigned=False,
+        engagement_status_ids=None,
+    )
+
+    results, count = EngagementModel.get_engagements_paginated(
+        123,
+        options,
+        scope,
+        {'search_text': '', 'public_search': True},
+    )
+
+    assert count == 1
+    assert len(results) == 1
+
+
 def test_get_engagements_paginated_status_search(session):
     """Assert that an engagement can be created and fetched."""
     for _ in range(0, 11):
@@ -111,7 +133,7 @@ def test_get_engagements_paginated_status_search(session):
         scope_options,
         {
             **search_options,
-            'engagement_status': [Status.Closed.value],
+            'engagement_status': [str(Status.Closed.value)],
         }
     )
     assert count == 2
@@ -122,7 +144,7 @@ def test_get_engagements_paginated_status_search(session):
         scope_options,
         {
             **search_options,
-            'engagement_status': [Status.Published.value],
+            'engagement_status': [str(Status.Published.value)],
         }
     )
     assert count == 11
@@ -134,7 +156,7 @@ def test_get_engagements_paginated_status_search(session):
         scope_options,
         {
             **search_options,
-            'engagement_status': [Status.Published.value, Status.Closed.value],
+            'engagement_status': [str(Status.Published.value), str(Status.Closed.value)],
         }
     )
     assert count == 13
@@ -154,11 +176,48 @@ def test_get_engagements_paginated_status_search(session):
         scope_options,
         {
             **search_options,
-            'engagement_status': [Status.Published.value, Status.Closed.value],
+            'engagement_status': [str(Status.Published.value), str(Status.Closed.value)],
         }
     )
     assert count == 13
     assert len(result) == 2
+
+
+def test_get_engagements_paginated_public_status_search(session):
+    """Public search accepts named statuses independently of the admin status IDs."""
+    factory_engagement_model(status=Status.Closed.value)
+    options = PaginationOptions(page=None, size=None, sort_key='relevance', sort_order='asc')
+    scope = EngagementScopeOptions(restricted=False)
+
+    results, count = EngagementModel.get_engagements_paginated(
+        123,
+        options,
+        scope,
+        {'search_text': '', 'engagement_status': ['closed'], 'public_search': True},
+    )
+
+    assert count == 1
+    assert results[0].status_id == Status.Closed.value
+
+
+def test_public_engagement_search_excludes_unpublished(session):
+    """Public search never includes unpublished engagements, even when explicitly filtered."""
+    factory_engagement_model(status=Status.Unpublished.value)
+    published = factory_engagement_model(status=Status.Published.value)
+    options = PaginationOptions(page=None, size=None, sort_key='relevance', sort_order='asc')
+    scope = EngagementScopeOptions(restricted=False)
+
+    for statuses in ([], ['unpublished']):
+        results, count = EngagementModel.get_engagements_paginated(
+            123,
+            options,
+            scope,
+            {'search_text': '', 'engagement_status': statuses, 'public_search': True},
+        )
+
+        expected_ids = [published.id] if not statuses else []
+        assert count == len(expected_ids)
+        assert [engagement.id for engagement in results] == expected_ids
 
 
 def test_get_engagements_metadata_match_all(session):

@@ -44,14 +44,14 @@ const getSecondaryButtonStyles = (color: ButtonProps['color'], isDarkMode: boole
     const textColor = isCustom ? resolvedColor : 'text.primary';
     const darkTextColor = isCustom ? `color-mix(in srgb, ${textColor}, black 20%)` : textColor;
 
-    let borderColor = colors.surface.gray[80];
+    let borderColor = `${colors.surface.gray[80]}`;
     if (isCustom) {
         borderColor = resolvedColor;
     } else if (isDarkMode) {
         borderColor = 'white';
     }
 
-    let darkBorderColor = colors.surface.gray[100];
+    let darkBorderColor = `${colors.surface.gray[100] + ''}`;
     if (isCustom) {
         darkBorderColor = `color-mix(in srgb, ${borderColor}, black 20%)`;
     } else if (isDarkMode) {

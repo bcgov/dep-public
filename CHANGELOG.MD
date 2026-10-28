@@ -1,3 +1,11 @@
+## October 26, 2026
+- **Feature** Added public engagement search page [🎟️ DEP-413](https://citz-gdx.atlassian.net/browse/DEP-413)
+  - Updated engagement API endpoint to separate admin and public search functionality. This makes it easier to maintain consistent behaviour on the public search page when the user is signed in.
+  - Added endpoint for quickly getting counts of available results for various filter options.
+  - Results now display on the public search page
+  - Implemented search filters and sorting options for public engagement search results.
+  - Updated metadata filtering behaviour to align with public engagement search requirements.
+
 ## October 16, 2026
 
 - **Bugfix** Fixed miscellaneous widget issues. [🎟️ DEP-387](https://citz-gdx.atlassian.net/browse/DEP-387)

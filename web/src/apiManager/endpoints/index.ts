@@ -3,6 +3,8 @@ import { AppConfig } from 'config';
 const Endpoints = {
     Engagement: {
         GET_LIST: `${AppConfig.apiUrl}/engagements/`,
+        SEARCH: `${AppConfig.apiUrl}/engagements/search`,
+        SEARCH_METADATA_COUNTS: `${AppConfig.apiUrl}/engagements/search/metadata-counts`,
         CREATE: `${AppConfig.apiUrl}/engagements/`,
         UPDATE: `${AppConfig.apiUrl}/engagements/`,
         GET: `${AppConfig.apiUrl}/engagements/engagement_id`,

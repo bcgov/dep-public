@@ -235,10 +235,9 @@ const TaxonEditForm = ({ taxon }: { taxon: MetadataTaxon }): JSX.Element => {
                         <Controller
                             name="name"
                             control={control}
-                            disabled={taxon.is_required}
                             render={({ field }) => (
                                 <TextField
-                                    disabled={field.disabled}
+                                    disabled={taxon.is_required}
                                     placeholder="Enter taxon name"
                                     error={!!methods.formState.errors.name}
                                     helperText={methods.formState.errors.name?.message}
@@ -282,9 +281,8 @@ const TaxonEditForm = ({ taxon }: { taxon: MetadataTaxon }): JSX.Element => {
                             <Controller
                                 name="data_type"
                                 control={control}
-                                disabled={taxon.is_required}
                                 render={({ field }) => (
-                                    <Select {...field}>
+                                    <Select {...field} disabled={taxon.is_required}>
                                         {Object.entries(TaxonTypes).map(([key, type]: [string, TaxonType]) => (
                                             <MenuItem key={key} value={key}>
                                                 <Grid container spacing={1} alignItems="center">
@@ -377,7 +375,7 @@ const TaxonEditForm = ({ taxon }: { taxon: MetadataTaxon }): JSX.Element => {
                     <Grid component={Collapse} in={!!taxonType.supportedFilters} timeout="auto" unmountOnExit>
                         <Grid container justifyContent="flex-start" alignItems="left">
                             <BodyText bold marginRight={1}>
-                                Engagement Filtering
+                                Filter Behaviour
                             </BodyText>
                             <HelpTooltip>
                                 Selecting a filter style allows the public to use this taxon to narrow down which
@@ -422,7 +420,7 @@ const TaxonEditForm = ({ taxon }: { taxon: MetadataTaxon }): JSX.Element => {
                                                             />
                                                         </Grid>
                                                     )}
-                                                    <Grid>Show as {filter.name}</Grid>
+                                                    <Grid>{filter.name}</Grid>
                                                 </Grid>
                                             </MenuItem>
                                         ))}

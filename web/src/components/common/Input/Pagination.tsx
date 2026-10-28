@@ -27,8 +27,11 @@ const buttonStyles = {
 interface PaginationProps {
     page: number;
     count: number;
+    ariaLabel?: string;
     onChange: (event: React.ChangeEvent<unknown>, page: number) => void | undefined;
 }
+
+type PageListProps = Pick<PaginationProps, 'page' | 'count' | 'onChange'>;
 
 /**
  * A custom pagination component.
@@ -41,7 +44,7 @@ interface PaginationProps {
  * @returns {JSX.Element | null}
  */
 export const Pagination = (props: PaginationProps) => {
-    const { onChange, page, count } = props;
+    const { onChange, page, count, ariaLabel } = props;
     if (!page || !Number.isFinite(page) || !count || !Number.isFinite(count) || !onChange) return null;
 
     const { t: translate } = useAppTranslation();
@@ -49,9 +52,16 @@ export const Pagination = (props: PaginationProps) => {
 
     return (
         <Grid container alignItems="center" gap={1} flexDirection={{ xs: 'column', sm: 'row' }}>
-            <Grid container component="nav" alignItems="center" flexWrap="nowrap" gap={{ xs: 0.5, md: 1 }}>
+            <Grid
+                container
+                component="nav"
+                aria-label={ariaLabel ?? translate('common.paginationNavigation')}
+                alignItems="center"
+                flexWrap="nowrap"
+                gap={{ xs: 0.5, md: 1 }}
+            >
                 <Button
-                    aria-label="Go to previous page"
+                    aria-label={translate('common.paginationGoToPrevious')}
                     sx={{ ...buttonStyles, p: isMobile ? '0 1rem' : '0 1.5rem' }}
                     startIcon={isMobile ? null : <FontAwesomeIcon icon={faChevronLeft} />}
                     disabled={page === 1}
@@ -63,7 +73,7 @@ export const Pagination = (props: PaginationProps) => {
                 <PageList page={page} count={count} onChange={onChange} />
 
                 <Button
-                    aria-label="Go to next page"
+                    aria-label={translate('common.paginationGoToNext')}
                     sx={{ ...buttonStyles, p: isMobile ? '0 1rem' : '0 1.5rem' }}
                     endIcon={isMobile ? null : <FontAwesomeIcon icon={faChevronRight} />}
                     disabled={page === count}
@@ -73,20 +83,16 @@ export const Pagination = (props: PaginationProps) => {
                 </Button>
             </Grid>
 
-            <BodyText
-                aria-label={`Currently on page ${page} of ${count}`}
-                p="8px"
-                fontWeight={400}
-                color={colors.surface.gray[80]}
-            >
-                {`${translate('common.paginationPage')} ${page} ${translate('common.paginationOf')} ${count}`}
+            <BodyText p="8px" fontWeight={400} color={colors.surface.gray[80]}>
+                {`${translate('common.paginationProgress').replace('{0}', page.toString()).replace('{1}', count.toString())}`}
             </BodyText>
         </Grid>
     );
 };
 
-const PageList = (props: PaginationProps) => {
+const PageList = (props: PageListProps) => {
     const { page, count, onChange } = props;
+    const { t: translate } = useAppTranslation();
 
     // First page
     const pageButtons = [1];
@@ -122,7 +128,7 @@ const PageList = (props: PaginationProps) => {
                 if (pb > 0) {
                     return (
                         <Button
-                            aria-label={`Go to page ${pb}`}
+                            aria-label={translate('common.paginationGoToPage').replace('{0}', pb.toString())}
                             key={`page-${pb}`}
                             disabled={isCurrentPage ? true : undefined}
                             variant={isCurrentPage ? 'primary' : 'secondary'}
