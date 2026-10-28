@@ -42,10 +42,19 @@ metadata_update_model = API.model('EngagementMetadataUpdate', model_dict := {
     'value': fields.String(required=True, description='The value of the metadata entry'),
 })
 
+metadata_bulk_value_model = API.model('EngagementMetadataValue', {
+    'id': fields.Integer(required=False, description='The id of the metadata entry'),
+    'value': fields.String(required=True, description='The value of the metadata entry'),
+    'position': fields.Integer(required=False, description='The position of the metadata entry'),
+})
+
 metadata_bulk_update_model = API.model('EngagementMetadataBulkUpdate', {
     'taxon_id': fields.Integer(required=True, description='The id of the taxon'),
-    'values': fields.List(fields.String, required=True,
-                          description='The values to save to the taxon'),
+    'values': fields.List(
+        fields.Nested(metadata_bulk_value_model),
+        required=True,
+        description='The values to save to the taxon',
+    ),
 })
 
 metadata_create_model = API.model('EngagementMetadataCreate', model_dict := {

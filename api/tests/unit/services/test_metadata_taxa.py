@@ -135,21 +135,70 @@ def test_modify_presets(session):
     """Assert that taxon preset values can be updated."""
     taxon_service = MetadataTaxonService()
     tenant, _ = factory_taxon_requirements()
-    taxon = taxon_service.create(tenant.id,
-                                 TestEngagementMetadataTaxonInfo.taxon1)
+
+    taxon = taxon_service.create(
+        tenant.id,
+        TestEngagementMetadataTaxonInfo.taxon1,
+    )
+
     assert taxon.get('id') is not None
     assert taxon['preset_values'] == []
+
     taxon_existing = taxon_service.get_by_id(taxon['id'])
     assert taxon_existing is not None
     assert taxon['preset_values'] == taxon_existing['preset_values']
-    taxon['preset_values'] = ['foo', 'bar', 'baz']
+
     taxon_updated = taxon_service.update(
-        taxon['id'], {'preset_values': ['foo', 'bar', 'baz']})
-    assert taxon_updated['preset_values'] == ['foo', 'bar', 'baz']
-    taxon['preset_values'] = ['foo', 'baz']
+        taxon['id'],
+        {
+            'preset_values': [
+                {
+                    'value': 'foo',
+                    'position': 1,
+                },
+                {
+                    'value': 'bar',
+                    'position': 2,
+                },
+                {
+                    'value': 'baz',
+                    'position': 3,
+                },
+            ]
+        },
+    )
+
+    assert len(taxon_updated['preset_values']) == 3
+
+    assert taxon_updated['preset_values'][0]['value'] == 'foo'
+    assert taxon_updated['preset_values'][1]['value'] == 'bar'
+    assert taxon_updated['preset_values'][2]['value'] == 'baz'
+
+    foo_id = taxon_updated['preset_values'][0]['id']
+    baz_id = taxon_updated['preset_values'][2]['id']
+
     taxon_updated = taxon_service.update(
-        taxon['id'], {'preset_values': ['foo', 'baz']})
-    assert taxon_updated['preset_values'] == ['foo', 'baz']
+        taxon['id'],
+        {
+            'preset_values': [
+                {
+                    'id': foo_id,
+                    'value': 'foo',
+                    'position': 1,
+                },
+                {
+                    'id': baz_id,
+                    'value': 'baz',
+                    'position': 2,
+                },
+            ]
+        },
+    )
+
+    assert len(taxon_updated['preset_values']) == 2
+
+    assert taxon_updated['preset_values'][0]['value'] == 'foo'
+    assert taxon_updated['preset_values'][1]['value'] == 'baz'
 
 
 def test_delete_taxon(session):
@@ -246,10 +295,34 @@ def test_get_filters(session):
     engagement_metadata_service.create(engagement.id, taxon4['id'], 'qux')
     engagement_metadata_service.create(engagement.id, taxon5['id'], 'quux')
     # Preset values - these should appear on filterable taxa no matter what
-    MetadataTaxon.query.get(taxon2['id']).preset_values = ['grault']
-    MetadataTaxon.query.get(taxon3['id']).preset_values = ['garply']
-    MetadataTaxon.query.get(taxon4['id']).preset_values = ['waldo']
-    MetadataTaxon.query.get(taxon5['id']).preset_values = ['fred']
+    MetadataTaxon.query.get(taxon2['id']).preset_values = [
+        {
+            'value': 'grault',
+            'position': 1,
+        }
+    ]
+
+    MetadataTaxon.query.get(taxon3['id']).preset_values = [
+        {
+            'value': 'garply',
+            'position': 1,
+        }
+    ]
+
+    MetadataTaxon.query.get(taxon4['id']).preset_values = [
+        {
+            'value': 'waldo',
+            'position': 1,
+        }
+    ]
+
+    MetadataTaxon.query.get(taxon5['id']).preset_values = [
+        {
+            'value': 'fred',
+            'position': 1,
+        }
+    ]
+
     # Get filters
     filters = taxon_service.get_filter_options(tenant.id)
     assert len(filters) == 4  # out of 5, only 4 should be filterable

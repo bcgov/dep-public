@@ -282,6 +282,7 @@ const engagementMetadata: EngagementMetadata = {
     engagement_id: 1,
     taxon_id: 1,
     value: 'test',
+    position: 1,
 };
 
 const engagementMetadataTaxon: MetadataTaxon = {
@@ -291,7 +292,7 @@ const engagementMetadataTaxon: MetadataTaxon = {
     data_type: 'text',
     one_per_engagement: false,
     freeform: true,
-    preset_values: ['test'],
+    preset_values: [{ value: 'test', position: 1, id: 1 }],
     position: 1,
     is_required: false,
 };

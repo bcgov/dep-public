@@ -70,7 +70,7 @@ export const DefaultAutocomplete = ({ taxon, taxonType, field, setValue, errors,
             multiple={!taxon.one_per_engagement}
             freeSolo={taxon.freeform}
             includeInputInList
-            options={taxon.preset_values ?? []}
+            options={taxon.preset_values?.map((pv) => pv.value) ?? []}
             inputValue={inputValue}
             onChange={(_event, newValue) => {
                 if (taxon.one_per_engagement) {

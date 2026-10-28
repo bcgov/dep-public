@@ -90,12 +90,50 @@ def test_metadata_taxon_presets(session):
     """Assert that metadata taxon preset values can be edited."""
     taxon = factory_metadata_taxon_model()
     taxon.save()
+
     assert taxon.id is not None
     assert taxon.preset_values == []
-    taxon.preset_values = ['foo', 'bar', 'baz']
+
+    taxon.preset_values = [
+        {
+            'value': 'foo',
+            'position': 1,
+        },
+        {
+            'value': 'bar',
+            'position': 2,
+        },
+        {
+            'value': 'baz',
+            'position': 3,
+        },
+    ]
+
     taxon_existing = MetadataTaxon.find_by_id(taxon.id)
-    assert taxon_existing.preset_values[0] == 'foo'
-    assert taxon_existing.preset_values == ['foo', 'bar', 'baz']
-    taxon.preset_values = ['foo', 'baz']
+
+    assert len(taxon_existing.preset_values) == 3
+    assert taxon_existing.preset_values[0]['value'] == 'foo'
+    assert taxon_existing.preset_values[1]['value'] == 'bar'
+    assert taxon_existing.preset_values[2]['value'] == 'baz'
+
+    foo_id = taxon_existing.preset_values[0]['id']
+    baz_id = taxon_existing.preset_values[2]['id']
+
+    taxon.preset_values = [
+        {
+            'id': foo_id,
+            'value': 'foo',
+            'position': 1,
+        },
+        {
+            'id': baz_id,
+            'value': 'baz',
+            'position': 2,
+        },
+    ]
+
     taxon_existing = MetadataTaxon.find_by_id(taxon.id)
-    assert taxon_existing.preset_values == ['foo', 'baz']
+
+    assert len(taxon_existing.preset_values) == 2
+    assert taxon_existing.preset_values[0]['value'] == 'foo'
+    assert taxon_existing.preset_values[1]['value'] == 'baz'

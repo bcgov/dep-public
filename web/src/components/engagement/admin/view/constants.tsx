@@ -11,7 +11,7 @@ export const metadataTypes = [
         data_type: 'string', // Real form data type
         isSelectable: true, // Appropriate for a select box
         isSubstance: true, // Substance or item, affects phrasing
-        default: ['None'],
+        default: [{ value: 'None', position: 0 }],
     },
     {
         db_name: 'long_text',
@@ -27,7 +27,7 @@ export const metadataTypes = [
         data_type: 'string', // Functionally, it is a string in the form
         isSelectable: true,
         isSubstance: false,
-        default: ['None'],
+        default: [{ value: 'None', position: 0 }],
     },
     {
         db_name: 'url',
@@ -35,7 +35,7 @@ export const metadataTypes = [
         data_type: 'string',
         isSelectable: true,
         isSubstance: false,
-        default: ['None'],
+        default: [{ value: 'None', position: 0 }],
     },
     {
         db_name: 'phone',
@@ -43,7 +43,7 @@ export const metadataTypes = [
         data_type: 'string',
         isSelectable: true,
         isSubstance: false,
-        default: ['None'],
+        default: [{ value: 'None', position: 0 }],
     },
     {
         db_name: 'date',

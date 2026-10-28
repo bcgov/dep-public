@@ -142,38 +142,85 @@ def test_update_engagement_metadata(client, jwt, session):
 def test_bulk_update_engagement_metadata(client, jwt, session):
     """Test that metadata values can be updated in bulk."""
     taxon, engagement, _, headers = factory_metadata_requirements(jwt)
-    for i in range(4):
+
+    existing_metadata = [
         factory_engagement_metadata_model({
             'engagement_id': engagement.id,
             'taxon_id': taxon.id,
-            'value': f'old value {i}'
+            'value': f'old value {i}',
+            'position': i + 1,
         })
-    response = client.patch(f'/api/engagements/{engagement.id}/metadata',
-                            headers=headers,
-                            data=json.dumps({
-                                'taxon_id': taxon.id,
-                                'values': [f'new value {i}' for i in range(3)]
-                            }),
-                            content_type=ContentType.JSON.value)
-    assert response.status_code == HTTPStatus.OK, (f'Wrong response code; '
-                                                   f'HTTP {response.status_code} -> {response.text}')
+        for i in range(4)
+    ]
+
+    response = client.patch(
+        f'/api/engagements/{engagement.id}/metadata',
+        headers=headers,
+        data=json.dumps({
+            'taxon_id': taxon.id,
+            'values': [
+                {
+                    'id': existing_metadata[i].id,
+                    'value': f'new value {i}',
+                    'position': i + 1,
+                }
+                for i in range(3)
+            ],
+        }),
+        content_type=ContentType.JSON.value,
+    )
+
+    assert response.status_code == HTTPStatus.OK, (
+        f'Wrong response code; HTTP {response.status_code} -> {response.text}'
+    )
     assert response.json is not None
     assert len(response.json) == 3
-    response = client.patch(f'/api/engagements/{engagement.id}/metadata',
-                            headers=headers,
-                            data=json.dumps({
-                                'taxon_id': taxon.id,
-                                'values': [f'newer value {i}' for i in range(5)]
-                            }),
-                            content_type=ContentType.JSON.value)
-    assert response.status_code == HTTPStatus.OK, (f'Wrong response code; '
-                                                   f'HTTP {response.status_code} -> {response.text}')
+
+    updated_metadata = EngagementMetadataService().get_by_engagement(
+        engagement.id,
+        taxon_id=taxon.id,
+    )
+
+    response = client.patch(
+        f'/api/engagements/{engagement.id}/metadata',
+        headers=headers,
+        data=json.dumps({
+            'taxon_id': taxon.id,
+            'values': [
+                {
+                    'id': updated_metadata[i]['id'],
+                    'value': f'newer value {i}',
+                    'position': i + 1,
+                }
+                for i in range(3)
+            ] + [
+                {
+                    'value': f'newer value {i}',
+                    'position': i + 1,
+                }
+                for i in range(3, 5)
+            ],
+        }),
+        content_type=ContentType.JSON.value,
+    )
+
+    assert response.status_code == HTTPStatus.OK, (
+        f'Wrong response code; HTTP {response.status_code} -> {response.text}'
+    )
     assert response.json is not None
     assert len(response.json) == 5
-    assert all(meta['value'] ==
-               f'newer value {i}' for i, meta in enumerate(response.json))
-    assert len(EngagementMetadataService(
-    ).get_by_engagement(engagement.id, taxon_id=taxon.id)) == 5
+
+    assert all(
+        meta['value'] == f'newer value {i}'
+        for i, meta in enumerate(response.json)
+    )
+
+    assert len(
+        EngagementMetadataService().get_by_engagement(
+            engagement.id,
+            taxon_id=taxon.id,
+        )
+    ) == 5
 
 
 def test_delete_engagement_metadata(client, jwt, session):

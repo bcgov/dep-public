@@ -92,17 +92,47 @@ def test_update_taxon_preset_values(client, jwt, session):
     """Test that taxon preset values can be updated."""
     tenant, headers = factory_taxon_requirements(jwt)
     taxon = factory_metadata_taxon_model(tenant.id)
+
     assert taxon.preset_values == []
-    response = client.patch(f'{TAXON_ENDPOINT}/{taxon.id}',
-                            headers=headers,
-                            data=json.dumps(
-                                {'preset_values': ['value1', 'value2']}),
-                            content_type=ContentType.JSON.value)
+
+    response = client.patch(
+        f'{TAXON_ENDPOINT}/{taxon.id}',
+        headers=headers,
+        data=json.dumps({
+            'preset_values': [
+                {
+                    'value': 'value1',
+                    'position': 1,
+                },
+                {
+                    'value': 'value2',
+                    'position': 2,
+                },
+            ]
+        }),
+        content_type=ContentType.JSON.value,
+    )
+
     assert response.status_code == HTTPStatus.OK, response.text
     assert response.json.get('id') is not None, response.json
-    assert response.json.get('preset_values') == ['value1', 'value2']
-    assert MetadataTaxon.query.get(response.json.get(
-        'id')).preset_values == ['value1', 'value2']
+
+    preset_values = response.json.get('preset_values')
+    assert len(preset_values) == 2
+
+    assert preset_values[0]['value'] == 'value1'
+    assert preset_values[0]['position'] == 1
+
+    assert preset_values[1]['value'] == 'value2'
+    assert preset_values[1]['position'] == 2
+
+    persisted_taxon = MetadataTaxon.query.get(response.json.get('id'))
+
+    assert len(persisted_taxon.preset_values) == 2
+    assert persisted_taxon.preset_values[0]['value'] == 'value1'
+    assert persisted_taxon.preset_values[0]['position'] == 1
+
+    assert persisted_taxon.preset_values[1]['value'] == 'value2'
+    assert persisted_taxon.preset_values[1]['position'] == 2
 
 
 def test_reorder_tenant_metadata_taxa(client, jwt, session):

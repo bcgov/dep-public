@@ -45,7 +45,10 @@ class MetadataTaxonService:
                     values = list({entry.value for entry in taxon.entries})
                 else:
                     # Just use the preset values
-                    values = taxon.preset_values
+                    values = [
+                        preset_value['value']
+                        for preset_value in taxon.preset_values
+                    ]
                 # Don't return the filter if the user has no options; this prevents
                 # the frontend from displaying a useless filter
                 if values:

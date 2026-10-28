@@ -31,6 +31,7 @@ class EngagementMetadataSchema(SQLAlchemyAutoSchema):
 
     value = fields.String(validate=validate.Length(max=512))
     taxon_id = fields.Integer(required=True)
+    position = fields.Integer(required=False)
 
     @pre_load
     def check_immutable_fields(self, data, **kwargs):
@@ -82,7 +83,7 @@ class MetadataTaxonSchema(SQLAlchemyAutoSchema):
 
         The rest is handled in the preset_values property setter.
         """
-        return [str(value) for value in values]
+        return values
 
     @pre_load
     def check_immutable_fields(self, data, **kwargs):

@@ -1,3 +1,4 @@
+import { MetadataFormValue } from 'models/engagement';
 import { ActionFunction } from 'react-router';
 import { bulkPatchEngagementMetadata, patchMetadataTaxon } from 'services/engagementMetadataService';
 
@@ -11,7 +12,7 @@ export const metadataAction: ActionFunction = async ({ request }) => {
         try {
             const customValues = JSON.parse(formData.get('custom_values') as string) as {
                 taxon_id: number;
-                value: string[];
+                value: MetadataFormValue[];
             }[];
             if (Array.isArray(customValues) && customValues.length > 0) {
                 const customValuePromises = customValues
