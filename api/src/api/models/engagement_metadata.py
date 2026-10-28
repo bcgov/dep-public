@@ -208,7 +208,7 @@ class MetadataTaxon(BaseModel):
                     taxon_id=self.id,
                     value=metadata_value,
                     position=position,
-                ).save()
+                ).flush()
 
     @transactional()
     def move_to_position(self, new_position: int) -> None:

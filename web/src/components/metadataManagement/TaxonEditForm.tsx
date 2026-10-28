@@ -31,7 +31,7 @@ import { If, Then, Else } from 'react-if';
 import { TaxonTypes } from './TaxonTypes';
 import { TaxonType } from './types';
 import PresetValuesEditor from './presetFieldsEditor/PresetValuesEditor';
-import { useForm, SubmitHandler, Controller, FormProvider } from 'react-hook-form';
+import { useForm, SubmitHandler, Controller, FormProvider, UseFormReturn } from 'react-hook-form';
 import { openNotification } from 'services/notificationService/notificationSlice';
 import { Button } from 'components/common/Input/Button';
 import { faArrowDownWideShort, faArrowUpWideShort, faFilterSlash, faSave } from '@fortawesome/pro-regular-svg-icons';
@@ -91,11 +91,6 @@ const TaxonEditForm = ({ taxon }: { taxon: MetadataTaxon }): JSX.Element => {
 
     const parsePresetValues = (meta: MetadataFormValue[]) => {
         if (!Array.isArray(meta) || !meta.length) return [];
-        // Legacy conversion. Convert array of strings to array of metadata form values.
-        if (meta.every((m) => typeof m === 'string')) {
-            return meta.map((v, i) => ({ value: v, position: i + 1 }));
-        }
-        // Modern structure. Sort existing data by position property.
         return meta.sort((a, b) => a.position - b.position);
     };
 
@@ -206,18 +201,6 @@ const TaxonEditForm = ({ taxon }: { taxon: MetadataTaxon }): JSX.Element => {
         return /Mac|iPod|iPhone|iPad/.test(navigator.platform);
     };
     const modifierKey = !isMac() ? 'Ctrl' : '⌘';
-
-    const sortPresetValues = (direction: string) => {
-        const newValues = methods.getValues('preset_values');
-        newValues?.sort((a, b) =>
-            direction === 'normal' ? a.value.localeCompare(b.value) : b.value.localeCompare(a.value),
-        );
-        const positionedValues = newValues?.map((nv, i) => ({
-            ...nv,
-            position: i + 1,
-        }));
-        methods.setValue('preset_values', positionedValues, { shouldDirty: true });
-    };
 
     // Whether the options can be limited to preset values
     const allowLimiting = taxonType.supportsFreeform && (presetValues?.length ?? 0) > 0;
@@ -339,38 +322,12 @@ const TaxonEditForm = ({ taxon }: { taxon: MetadataTaxon }): JSX.Element => {
                         </Grid>
                         <PresetValuesEditor control={methods.control} name="preset_values" />
                         <Grid container m="0.5rem 0 0" p={0} gap={1}>
-                            <Button
-                                variant="secondary"
-                                disabled={Number(methods?.getValues('preset_values')?.length) === 0}
-                                size="small"
-                                type="button"
-                                icon={
-                                    <FontAwesomeIcon
-                                        icon={faArrowDownWideShort}
-                                        style={{ fontSize: '20px', paddingRight: '5px' }}
-                                    />
-                                }
-                                aria-label="Sort preset values alphabetically."
-                                onClick={() => sortPresetValues('normal')}
-                            >
+                            <SortButton methods={methods} direction="normal">
                                 Sort A to Z
-                            </Button>
-                            <Button
-                                variant="secondary"
-                                disabled={Number(methods?.getValues('preset_values')?.length) === 0}
-                                size="small"
-                                type="button"
-                                icon={
-                                    <FontAwesomeIcon
-                                        icon={faArrowUpWideShort}
-                                        style={{ fontSize: '20px', paddingRight: '5px' }}
-                                    />
-                                }
-                                aria-label="Sort preset values reverse-alphabetically."
-                                onClick={() => sortPresetValues('reverse')}
-                            >
+                            </SortButton>
+                            <SortButton methods={methods} direction="reverse">
                                 Sort Z to A
-                            </Button>
+                            </SortButton>
                         </Grid>
                     </Grid>
                     <Grid
@@ -592,6 +549,47 @@ const TaxonEditForm = ({ taxon }: { taxon: MetadataTaxon }): JSX.Element => {
                 </Grid>
             </FormGroup>
         </FormProvider>
+    );
+};
+
+const SortButton = ({
+    methods,
+    direction,
+    children,
+}: {
+    methods: UseFormReturn<MetadataTaxon>;
+    direction: 'normal' | 'reverse';
+    children: string;
+}) => {
+    const sortPresetValues = (direction: 'normal' | 'reverse') => {
+        const newValues = methods.getValues('preset_values') as MetadataFormValue[];
+        newValues?.sort((a, b) =>
+            direction === 'normal' ? a.value.localeCompare(b.value) : b.value.localeCompare(a.value),
+        );
+        const positionedValues = newValues?.map((nv, i) => ({
+            ...nv,
+            position: i + 1,
+        }));
+        methods.setValue('preset_values', positionedValues, { shouldDirty: true });
+    };
+
+    return (
+        <Button
+            variant="secondary"
+            disabled={Number(methods?.getValues('preset_values')?.length) === 0}
+            size="small"
+            type="button"
+            icon={
+                <FontAwesomeIcon
+                    icon={direction === 'normal' ? faArrowDownWideShort : faArrowUpWideShort}
+                    style={{ fontSize: '20px', paddingRight: '5px' }}
+                />
+            }
+            aria-label={`Sort preset values ${direction == 'normal' ? 'alphabetically' : 'reverse-alphabetically'}.`}
+            onClick={() => sortPresetValues(direction)}
+        >
+            {children}
+        </Button>
     );
 };
 
