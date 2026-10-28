@@ -1,3 +1,8 @@
+## October 28, 2026
+- **Feature** Added alphabetic sorting for metadata chips in Metadata Management section. [🎟️ DEP-411](https://citz-gdx.atlassian.net/browse/DEP-411)
+  - Updated MetadataTab component to work with new preset_values data structure
+  - Updated API and db to store position for metadata
+
 ## October 26, 2026
 - **Feature** Added public engagement search page [🎟️ DEP-413](https://citz-gdx.atlassian.net/browse/DEP-413)
   - Updated engagement API endpoint to separate admin and public search functionality. This makes it easier to maintain consistent behaviour on the public search page when the user is signed in.
