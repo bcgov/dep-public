@@ -226,7 +226,7 @@ export const TaxonCard: React.FC<TaxonCardProps> = ({ taxon, isExpanded, onExpan
                                     >
                                         <Typography variant="body1" pl={1}>
                                             {taxon.filter_type
-                                                ? MetadataFilterTypes[taxon.filter_type].name
+                                                ? `${MetadataFilterTypes[taxon.filter_type].name}:`
                                                 : 'Filtering by this field is turned off.'}
                                         </Typography>
                                         {taxon.filter_type && (

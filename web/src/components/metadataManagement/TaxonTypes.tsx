@@ -138,6 +138,7 @@ export const TaxonTypes: { [key: string]: TaxonType } = {
         supportsPresetValues: true,
         supportsFreeform: true,
         supportsMulti: true,
+        supportedFilters: [MetadataFilterTypes.chips_all, MetadataFilterTypes.chips_any],
         yupValidator: yup.string(),
     },
 };

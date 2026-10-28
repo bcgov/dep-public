@@ -290,6 +290,40 @@ def test_search_engagements_by_status(client, jwt,
     assert rv.status_code == expected_status
 
 
+def test_admin_and_public_engagement_search_use_separate_contracts(
+        client, jwt, session, setup_admin_user_and_claims):  # pylint:disable=unused-argument
+    """Admin and public search endpoints pass their distinct status and sort modes."""
+    _, claims = setup_admin_user_and_claims
+    headers = factory_auth_header(jwt=jwt, claims=claims)
+    with patch.object(
+            EngagementService,
+            'get_engagements_paginated',
+            return_value={'items': [], 'total': 0}) as get_engagements:
+        admin_response = client.get(
+            '/api/engagements/?sort_key=engagement.created_date&sort_order=desc'
+            '&engagement_status%5B%5D=6',
+            headers=headers,
+            content_type=ContentType.JSON.value,
+        )
+        public_response = client.get(
+            '/api/engagements/search?sort_key=newest&sort_order=asc'
+            '&engagement_status%5B%5D=open',
+            headers=headers,
+            content_type=ContentType.JSON.value,
+        )
+
+    assert admin_response.status_code == HTTPStatus.OK
+    assert public_response.status_code == HTTPStatus.OK
+    admin_options = get_engagements.call_args_list[0].args[2]
+    public_options = get_engagements.call_args_list[1].args[2]
+    assert admin_options['engagement_status'] == ['6']
+    assert admin_options['public_search'] is False
+    assert public_options['engagement_status'] == ['open']
+    assert public_options['public_search'] is True
+    assert get_engagements.call_args_list[0].args[1].sort_key == 'engagement.created_date'
+    assert get_engagements.call_args_list[1].args[1].sort_key == 'newest'
+
+
 def test_search_engagements(client, jwt, session,
                             setup_admin_user_and_claims):  # pylint:disable=unused-argument
     """Verify the functionality of searching engagements with different access levels."""

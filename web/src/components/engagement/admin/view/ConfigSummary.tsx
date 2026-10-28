@@ -176,7 +176,7 @@ export const ConfigSummary = () => {
                                     <Grid width={{ xs: '100%', sm: '82px' }}>
                                         <EngagementStatusChip
                                             statusId={SubmissionStatus.Open}
-                                            sx={{ '&>span.MuiChip-label': { padding: '4px 12px' } }}
+                                            sx={{ borderColor: 'success.dark' }}
                                         />
                                     </Grid>
                                     <Grid>

@@ -15,15 +15,20 @@ export const TileSkeleton = ({
 }) => {
     const randomBetween = (min: number, max: number) => Math.floor(Math.random() * (max - min + 1)) + min; //NOSONAR: non-cryptographically secure random() for UI purposes only
 
-    const cardWidth = mapOrientation(orientation, '704px', '343px');
+    const cardMinWidth = mapOrientation(orientation, '620px', '343px');
+    const cardMaxWidth = mapOrientation(orientation, '806px', '343px');
     const mediaHeight = mapOrientation(orientation, '289px', '147px');
-    const mediaWidth = mapOrientation(orientation, '230px', '343px');
-    const contentHeight = mapOrientation(orientation, '289px', '300px');
+    const mediaWidth = mapOrientation(orientation, '33.3%', '343px');
+    const contentWidth = mapOrientation(orientation, '440px', '100%');
+    const contentHeight = mapOrientation(orientation, '289px', '345px');
+
     return (
         <Card
             sx={{
                 borderRadius: '24px',
-                width: cardWidth,
+                width: '100%',
+                minWidth: cardMinWidth,
+                maxWidth: cardMaxWidth,
                 '& button': {
                     display: 'flex',
                     flexDirection: mapOrientation(orientation, 'row', 'column'),
@@ -32,7 +37,7 @@ export const TileSkeleton = ({
             }}
         >
             <CardActionArea sx={{ cursor: 'progress' }}>
-                <CardMedia sx={{ height: mediaHeight }}>
+                <CardMedia sx={{ height: mediaHeight, width: mediaWidth }}>
                     <Box
                         sx={{
                             position: 'absolute',
@@ -44,12 +49,13 @@ export const TileSkeleton = ({
                     </Box>
                     <Skeleton
                         variant="rectangular"
-                        sx={{ bgcolor: colors.surface.blue[30], height: mediaHeight, width: mediaWidth }}
+                        sx={{ bgcolor: colors.surface.blue[30], height: mediaHeight, width: '100%' }}
                     />
                 </CardMedia>
                 <CardContent
                     sx={{
                         height: contentHeight,
+                        width: contentWidth,
                         p: 3,
                         boxSizing: 'border-box',
                         display: 'flex',
@@ -63,7 +69,7 @@ export const TileSkeleton = ({
                                 <Skeleton width="160px" />
                             </BodyText>
                         </Grid>
-                        <Heading2 weight="thin" component="p" sx={{ fontSize: '22px', m: 0, lineHeight: 'normal' }}>
+                        <Heading2 weight="thin" mb="0" component="p" sx={{ fontSize: '22px', lineHeight: 'normal' }}>
                             <Skeleton height="30px" width={randomBetween(170, 290)} />
                             <Skeleton height="30px" width={randomBetween(100, 220)} />
                         </Heading2>

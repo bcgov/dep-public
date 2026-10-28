@@ -79,10 +79,10 @@ export const metadataTypes = [
     },
     {
         db_name: 'geo_area',
-        readable_name: 'geo area',
+        readable_name: 'geographical area',
         data_type: 'string',
         isSelectable: true,
         isSubstance: false,
-        default: [{ value: 'None', position: 0 }],
+        default: ['None'],
     },
 ];

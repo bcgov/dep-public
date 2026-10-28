@@ -31,6 +31,7 @@ from api.services import authorization
 from api.services.engagement_file_service import EngagementFileService
 from api.services.engagement_details_tab_service import EngagementDetailsTabService
 from api.services.engagement_settings_service import EngagementSettingsService
+from api.services.metadata_taxon_service import MetadataTaxonService
 from api.services.object_storage_service import ObjectStorageService
 from api.services.project_service import ProjectService
 from api.utils import email_util, notification
@@ -155,6 +156,115 @@ class EngagementService:
                     ]
 
         return {'items': engagements, 'total': total}
+
+    def count_engagements(self, external_user_id, search_options):
+        """Count engagements matching the supplied search filters."""
+        scope_options = self._get_scope_options(
+            TokenInfo.get_user_roles(),
+            search_options.get('has_team_access', False),
+        )
+        return EngagementModel.count_engagements(external_user_id, scope_options, search_options)
+
+    def get_metadata_counts(self, tenant_id: int, payload: dict, external_user_id):
+        """Get status and public metadata counts for an engagement search."""
+        filters = MetadataTaxonService.get_filter_options(tenant_id)
+        search_options = self._build_metadata_search_options(
+            payload, filters, external_user_id)
+        status_counts = self._get_metadata_status_counts(
+            external_user_id, search_options)
+        metadata_counts, metadata_total_counts = self._get_metadata_filter_counts(
+            external_user_id, search_options, filters)
+
+        return {
+            'status_counts': status_counts,
+            'metadata_counts': metadata_counts,
+            'metadata_total_counts': metadata_total_counts,
+        }
+
+    @staticmethod
+    def _build_metadata_search_options(payload, filters, external_user_id):
+        metadata = payload.get('metadata', [])
+        public_filters = {item['taxon_id']: item for item in filters}
+        normalized_metadata = []
+        for criterion in metadata:
+            filter_option = public_filters.get(criterion.get('taxon_id'))
+            values = criterion.get('values')
+            if not filter_option or not isinstance(values, list):
+                continue
+            accepted_values = [value for value in values if value in filter_option['values']]
+            if accepted_values:
+                normalized_metadata.append({
+                    'taxon_id': filter_option['taxon_id'],
+                    'filter_type': filter_option['filter_type'],
+                    'values': accepted_values,
+                })
+
+        search_text = payload.get('search_text', '')
+        return {
+            'search_text': search_text if isinstance(search_text, str) else '',
+            'engagement_status': payload.get('engagement_status', []),
+            'published_from_date': payload.get('published_from_date', '1970-01-01'),
+            'metadata': normalized_metadata,
+            'filterable_metadata': True,
+            'exclude_internal': external_user_id is None,
+            'has_team_access': False,
+            'public_search': True,
+        }
+
+    def _get_metadata_status_counts(self, external_user_id, search_options):
+        statuses = ('open', 'upcoming', 'closed', 'cancelled')
+        return {
+            status: self.count_engagements(
+                external_user_id,
+                {**search_options, 'engagement_status': [status]},
+            )
+            for status in statuses
+        }
+
+    def _get_metadata_filter_counts(self, external_user_id, search_options, filters):
+        metadata_counts = {}
+        metadata_total_counts = {}
+
+        for filter_option in filters:
+            taxon_id = filter_option['taxon_id']
+            for value in filter_option['values']:
+                key = f'{taxon_id}:{value}'
+                current_values = next(
+                    (item.get('values', []) for item in search_options['metadata']
+                     if item.get('taxon_id') == taxon_id),
+                    [],
+                )
+                candidate_values = (
+                    list(dict.fromkeys(current_values + [value]))
+                    if filter_option['filter_type'] == 'chips_all'
+                    else [value]
+                )
+                contextual_metadata = [
+                    item for item in search_options['metadata']
+                    if item.get('taxon_id') != taxon_id
+                ] + [{
+                    'taxon_id': taxon_id,
+                    'filter_type': filter_option['filter_type'],
+                    'values': candidate_values,
+                }]
+                metadata_counts[key] = self.count_engagements(
+                    external_user_id,
+                    {**search_options, 'metadata': contextual_metadata},
+                )
+                total_options = {
+                    **search_options,
+                    'search_text': '',
+                    'engagement_status': [],
+                    'metadata': [{
+                        'taxon_id': taxon_id,
+                        'filter_type': filter_option['filter_type'],
+                        'values': [value],
+                    }],
+                }
+                metadata_total_counts[key] = self.count_engagements(
+                    external_user_id, total_options)
+
+        return metadata_counts, metadata_total_counts
 
     @staticmethod
     def _get_scope_options(user_roles, has_team_access):

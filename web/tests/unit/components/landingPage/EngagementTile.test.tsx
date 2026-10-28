@@ -2,7 +2,7 @@ import React from 'react';
 import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { MemoryRouter } from 'react-router';
-import EngagementTile from 'components/landing/EngagementSearch/EngagementTile';
+import EngagementTile from 'components/engagement/EngagementTile';
 import { createDefaultEngagement, Engagement } from 'models/engagement';
 import { SubmissionStatus } from 'constants/engagementStatus';
 import { getEngagement } from 'services/engagementService';
@@ -70,13 +70,13 @@ describe('EngagementTile', () => {
                 <EngagementTile engagementId={1} />
             </MemoryRouter>,
         );
-        await waitFor(() => expect(screen.getByText('landingPage.tile.error')).toBeInTheDocument());
+        await waitFor(() => expect(screen.getByText('landing.tile.error')).toBeInTheDocument());
     });
 
     it('shows the "upcoming" call to action and opening start date', async () => {
         renderTile({ ...baseEngagement, submission_status: SubmissionStatus.Upcoming });
         await waitFor(() => expect(screen.getByText('Test Engagement')).toBeInTheDocument());
-        expect(screen.getByText('landingPage.tile.cta.upcoming')).toBeInTheDocument();
+        expect(screen.getByText('landing.tile.cta.upcoming')).toBeInTheDocument();
         const time = screen.getByText('Jan 17, 2026');
         expect(time.closest('time')).toHaveAttribute('dateTime', '2026-01-17');
     });
@@ -84,7 +84,7 @@ describe('EngagementTile', () => {
     it('shows the "open" call to action and closing end date', async () => {
         renderTile({ ...baseEngagement, submission_status: SubmissionStatus.Open });
         await waitFor(() => expect(screen.getByText('Test Engagement')).toBeInTheDocument());
-        expect(screen.getByText('landingPage.tile.cta.open')).toBeInTheDocument();
+        expect(screen.getByText('landing.tile.cta.open')).toBeInTheDocument();
         const time = screen.getByText('Sep 30, 2026');
         expect(time.closest('time')).toHaveAttribute('dateTime', '2026-09-30');
     });
@@ -92,14 +92,14 @@ describe('EngagementTile', () => {
     it('shows the "closed" call to action and closed end date', async () => {
         renderTile({ ...baseEngagement, submission_status: SubmissionStatus.Closed });
         await waitFor(() => expect(screen.getByText('Test Engagement')).toBeInTheDocument());
-        expect(screen.getByText('landingPage.tile.cta.closed')).toBeInTheDocument();
+        expect(screen.getByText('landing.tile.cta.closed')).toBeInTheDocument();
         expect(screen.getByText('Sep 30, 2026')).toBeInTheDocument();
     });
 
     it('shows the "closed with results" call to action and closed end date', async () => {
         renderTile({ ...baseEngagement, submission_status: SubmissionStatus.ClosedWithResults });
         await waitFor(() => expect(screen.getByText('Test Engagement')).toBeInTheDocument());
-        expect(screen.getByText('landingPage.tile.cta.closedWithResults')).toBeInTheDocument();
+        expect(screen.getByText('landing.tile.cta.closedWithResults')).toBeInTheDocument();
         expect(screen.getByText('Sep 30, 2026')).toBeInTheDocument();
     });
 

@@ -2,9 +2,7 @@ import { IconProp } from '@fortawesome/fontawesome-svg-core';
 import { SxProps } from '@mui/material';
 import { MetadataFilter } from 'components/metadataManagement/types';
 import { EngagementDisplayStatus } from 'constants/engagementStatus';
-import { Engagement } from 'models/engagement';
 import { ReactNode } from 'react';
-import { Page } from 'services/type';
 
 export type SortOrder = 'desc' | 'asc';
 
@@ -17,22 +15,6 @@ export interface SearchFilters {
     meta_filters?: MetadataFilter[];
     engagement_status?: EngagementDisplayStatus[];
     search_text?: string;
-}
-
-export interface SearchParams {
-    page?: string;
-    size?: string;
-    sort_key?: string;
-    sort_order?: string;
-    include_banner_url?: string;
-    meta_filters?: string;
-    engagement_status?: string;
-    search_text?: string;
-}
-
-export interface LandingLoaderData {
-    engagements: Promise<Page<Engagement> | undefined>;
-    allMetaFilters: Promise<MetadataFilter[] | undefined>;
 }
 
 export interface LandingSectionProps {

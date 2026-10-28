@@ -1,13 +1,94 @@
 {
     "common": {
         "logout": "Logout",
+        "headerTitleAreaLabel": "Header Title Area",
+        "logoutAreaLabel": "Logout Button",
+        "defaultBCText": "British Columbia Logo",
+        "defaultText": "Site Logo",
         "paginationPrevious": "Previous",
         "paginationNext": "Next",
-        "paginationPage": "Page",
-        "paginationOf": "of"
+        "paginationProgress": "Page {0} of {1}",
+        "paginationNavigation": "Pagination controls"
     },
-    "header": {},
+    "notFound": {
+        "paragraph": "Suggestions to help you find what you're looking for:",
+        "list": [
+            "Check that the web URL has been entered correctly",
+            "Go to our",
+            "homepage",
+            "and browse through our past and current engagements",
+            "Telephone Device for the Deaf (TDD) across B.C.: 711",
+            "If you would like to email us, please contact *********@gov.bc.ca."
+        ],
+        "header": [
+            "The page you're looking for cannot be found.",
+            "The page you're looking for might have been removed, moved or is temporarily unavailable."
+        ]
+    },
+    "notAvailable": {
+        "label": "Sorry, this engagement is not available."
+    },
+    "footer": {
+        "acknowledgement": "The B.C. Public Service acknowledges the territories of First Nations around B.C. and is grateful to carry out our work on these lands. We acknowledge the rights, interests, priorities, and concerns of all Indigenous Peoples - First Nations, Métis, and Inuit - respecting and acknowledging their distinct cultures, histories, rights, laws, and governments.",
+        "moreInfo": {
+            "title": "MORE INFO",
+            "home": "Home",
+            "about": "About gov.bc.ca",
+            "disclaimer": "Disclaimer",
+            "privacy": "Privacy",
+            "accessibility": "Accessibility",
+            "copyright": "Copyright",
+            "contact": "Contact us"
+        },
+        "statement": {
+            "sentence": "We can help in over 220 languages and through other accessible options.",
+            "methods": "Call, email or text us,",
+            "or": "or",
+            "centre": "find a service centre."
+        },
+        "copyrightNotice": "Government of British Columbia",
+        "login": "Admin Login",
+        "appVersion": "App version",
+        "apiVersion": "API version"
+    },
+    "feedback": {
+        "websiteFeedback": "Website Feedback",
+        "notification": {
+            "success": "Your Feedback has been sent.",
+            "error": "Error occurred while sending your feedback."
+        },
+        "submitModal": {
+            "header": "Thank you for your feedback",
+            "button": "Close"
+        },
+        "feedbackModal": {
+            "label": ["How do you like our feedback platform?", "What else would you like to share with us?"],
+            "disclaimer": "Please do not include any personal information in your feedback. Feedback that includes personal information will be deleted.",
+            "button": "Submit"
+        }
+    },
+    "comment": {
+        "admin": {
+            "review": {
+                "threatTextOne": "Select this option if there is a threat/menace in the comment(s). No email will be sent. Contact",
+                "threatTextTwo": "at"
+            }
+        }
+    },
     "landing": {
+        "tile": {
+            "error": "Error while loading",
+            "status": "Status:",
+            "cta": {
+                "upcoming": "View engagement",
+                "open": "Share feedback",
+                "closed": "View engagement",
+                "closedWithResults": "View results"
+            },
+            "opensOn": "Opens on {0}",
+            "openUntil": "Open until {0}",
+            "closedOn": "Closed on {0}"
+        },
         "hero": {
             "browseAllShort": "Browse all open",
             "browseAllLong": "Browse all open engagements",
@@ -29,46 +110,58 @@
         }
     },
     "search": {
-        "countEngagement": "engagement",
-        "countFound": "found",
-        "drawer": {
-            "openButton": "Filter",
-            "title": "Filter Engagements",
-            "apply": "Apply Filters",
-            "statusFilter": "Engagement Status",
-            "filterHeader": "Filter by {0}"
+        "sectionHeading": "Find engagements",
+        "queryPlaceholder": "By keyword",
+        "searchAction": "Search",
+        "resultsHeading": "Search results",
+        "foundSingle": "{0} engagement found",
+        "foundMultiple": "{0} engagements found",
+        "noResults": {
+            "heading": "No results found",
+            "suggestionsIntro": "To improve your search:",
+            "suggestion1": "Remove or change some of the applied filters",
+            "suggestion2": "Make sure all keywords are spelled correctly",
+            "suggestion3": "Try a different keyword",
+            "browseAll": "Browse all engagement opportunities"
         },
         "clear": "Clear Filters",
-        "sortBy": "Sort by",
+        "sortAndFilter": "Sort and filter",
+        "expandAll": "Expand all",
+        "collapseAll": "Collapse all",
+        "applyFilters": "Show {0} engagements",
+        "applyFiltersSingle": "Show 1 engagement",
         "sort": {
-            "newestCreated": "Newest (created)",
-            "oldestCreated": "Oldest (created)",
-            "newestUpdated": "Newest (updated)",
-            "oldestUpdated": "Oldest (updated)"
+            "categoryName": "Sort by",
+            "bestMatch": "Best Match",
+            "newest": "Newest",
+            "oldest": "Oldest"
         },
-        "status": {
-            "all": "All Engagements",
-            "open": "Open Engagements",
-            "closed": "Closed Engagements",
-            "upcoming": "Upcoming Engagements"
+        "statusFilter": {
+            "categoryName": "Status",
+            "open": "Open",
+            "upcoming": "Upcoming",
+            "closed": "Closed",
+            "closedWithResults": "Closed with results"
+        },
+        "metadataFilter": {
+            "fallbackName": "Filter",
+            "viewMore": "View {0} more",
+            "viewLess": "View less"
         },
         "aria": {
-            "closeDrawer": "Close filter options",
-            "openDrawer": "Open more filter options",
             "deleteFilterChip": "{0} filter - press to remove",
             "metadataFilterChip": "{0} filter - {1}",
             "selected": "Applied",
-            "notSelected": "Not Applied",
-            "applyFilters": "Apply Filters and close filter options",
-            "statusFilter": "Engagement Status Selector - {0} selected"
-        }
-    },
-    "comment": {
-        "admin": {
-            "review": {
-                "threatTextOne": "Select this option if there is a threat/menace in the comment(s). No email will be sent. Contact",
-                "threatTextTwo": "at"
-            }
+            "notSelected": "Not applied",
+            "applyFilters": "Apply filters and close filter options",
+            "searchForm": "Search public engagement opportunities",
+            "appliedFilters": "Applied search filters",
+            "queryInput": "Search engagements by keyword",
+            "closeFilterDialog": "Close sort and filter dialog",
+            "loadingResults": "Loading search results",
+            "loadingStatusFilters": "Loading engagement status filters",
+            "loadingMetadataFilters": "Loading metadata filters",
+            "metadataFiltersError": "Metadata filters could not be refreshed."
         }
     },
     "buttonText": {
@@ -177,17 +270,6 @@
             "engagementError": "Error occurred while loading saved engagement data",
             "success": "Survey was successfully submitted",
             "submissionError": "Error occurred during survey submission"
-        }
-    },
-    "NoResults": {
-        "header": "Unfortunately we couldn’t find any matching engagements.",
-        "paragraph": "Here are some things you can try:",
-        "list": ["Reduce the number of filters applied", "Clear all applied filters", "Use a more generic search term"],
-        "contact": {
-            "header": "Still can’t find what you’re looking for?",
-            "paragraph": "Please contact us, we are here to help.",
-            "telephone": "Telephone",
-            "email": "Email"
         }
     }
 }
