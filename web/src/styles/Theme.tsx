@@ -261,13 +261,10 @@ export const BaseTheme = createTheme({
                     width: '100%',
                     m: 0,
                     overflow: 'clip',
-                    borderWidth: '1px',
+                    border: '1px solid',
                     borderColor: Palette.gray[40],
-                    borderLeftStyle: 'solid',
-                    borderRightStyle: 'solid',
-                    borderTopStyle: 'solid',
-                    '&:last-of-type': {
-                        borderBottomStyle: 'solid',
+                    '&:not(:last-of-type)': {
+                        borderBottomStyle: 'hidden',
                     },
                 },
             },
