@@ -115,6 +115,7 @@ def test_bulk_update_engagement_metadata(session):
         engagement.id
     )
 
+    # The initial data is created with 4 metadata entries
     assert len(existing_metadata) == 4
 
     new_values = [
@@ -132,6 +133,7 @@ def test_bulk_update_engagement_metadata(session):
         new_values,
     )
 
+    # and that the values were updated
     assert len(metadata_updated) == 3
 
     for i, meta in enumerate(metadata_updated):
@@ -158,6 +160,7 @@ def test_bulk_update_engagement_metadata(session):
         new_values_2,
     )
 
+    # and the values should be updated again
     assert len(metadata_updated_2) == 5
 
     for i, meta in enumerate(metadata_updated_2):
