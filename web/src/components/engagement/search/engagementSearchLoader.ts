@@ -1,7 +1,6 @@
 import { getPublicEngagementSearch, getEngagementSearchCounts } from 'services/engagementService';
 import { Engagement } from 'models/engagement';
 import { getMetadataFilters } from 'services/engagementMetadataService';
-// import { defaultLandingStatuses, defaultSearchFilters } from '../constants';
 import { Page } from 'services/type';
 import { MetadataFilter } from 'components/metadataManagement/types';
 
@@ -25,7 +24,8 @@ const metadataNameSlug = (name?: string) =>
         .replace(/[\u0300-\u036f]/g, '')
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, '-')
-        .replace(/^-|-$/g, '');
+        .replace(/^-|-$/g, '')
+        .replace(/--+/g, '-');
 
 export const metadataParam = (taxonId: number, filters: MetadataFilter[]) => {
     const filter = filters.find((item) => item.taxon_id === taxonId);

@@ -20,7 +20,7 @@ export const LandingHero = () => {
     const isTabletOrSmaller = useMediaQuery((theme: Theme) => theme.breakpoints.down('sm'), { noSsr: true });
     const tenant = useAppSelector((state) => state.tenant);
     const [searchParams, setSearchParams] = useSearchParams();
-    const [searchText, setSearchText] = React.useState(searchParams.get('q') ?? searchParams.get('search_text') ?? '');
+    const [searchText, setSearchText] = React.useState('');
     const { regionFilter } = useLoaderData() as LandingLoaderData;
     const { t: translate } = useAppTranslation();
 
@@ -211,7 +211,7 @@ export const LandingHero = () => {
 const BrowseAllLink = ({ children }: { children: React.ReactNode }) => {
     return (
         <Link
-            to={`${getPath(ROUTES.PUBLIC_SEARCH)}`}
+            to={`${getPath(ROUTES.PUBLIC_SEARCH)}?status=openz`}
             sx={{
                 color: 'type.primary',
                 textDecoration: 'none',

@@ -81,6 +81,7 @@ export const EngagementSearch = () => {
     React.useEffect(() => {
         let active = true;
         loaderData.engagements.then(
+            // Executes when the promise resolves successfully
             (results) => {
                 if (active) {
                     setSettledEngagements(loaderData.engagements);
@@ -88,6 +89,7 @@ export const EngagementSearch = () => {
                     setSearchLoading(false);
                 }
             },
+            // Executes when the promise is rejected
             () => {
                 if (active) {
                     setSettledEngagements(loaderData.engagements);

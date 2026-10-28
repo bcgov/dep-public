@@ -127,11 +127,11 @@ const EngagementTile = ({ passedEngagement, engagementId, orientation = 'vertica
 
     const { name, banner_url } = loadedEngagement;
 
-    const cardMinWidth = mapOrientation(orientation, '704px', '343px');
+    const cardMinWidth = mapOrientation(orientation, '620px', '343px');
     const cardMaxWidth = mapOrientation(orientation, '806px', '343px');
     const mediaHeight = mapOrientation(orientation, '289px', '147px');
     const mediaWidth = mapOrientation(orientation, '33.3%', '343px');
-    const contentWidth = mapOrientation(orientation, '426px', '100%');
+    const contentWidth = mapOrientation(orientation, '440px', '100%');
     const contentHeight = mapOrientation(orientation, '289px', '345px');
 
     return (
