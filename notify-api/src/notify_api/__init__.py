@@ -16,7 +16,6 @@
 import os
 
 from flask import Flask
-from jose import jwt as jose_jwt
 
 from notify_api.auth import jwt as jwt_manager
 from notify_api.config import get_named_config
