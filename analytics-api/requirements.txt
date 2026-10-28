@@ -40,7 +40,6 @@ psycopg2-binary==2.9.9
 pyasn1==0.6.4
 pyrsistent==0.19.3
 python-dotenv==1.2.2
-python-jose==3.5.0
 pytz==2026.1.post1
 requests==2.33.0
 rsa==4.9
