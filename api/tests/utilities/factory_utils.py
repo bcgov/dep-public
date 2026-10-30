@@ -280,7 +280,7 @@ def factory_metadata_taxon_model(
     return taxon
 
 
-def factory_staff_user_model(external_id=None, user_info: dict = TestUserInfo.user_staff_1):
+def factory_staff_user_model(external_id=None, user_info: dict = TestUserInfo.user_staff_1, username=None):
     """Produce a staff user model."""
     # Generate a external id if not passed
     external_id = external_id or fake.uuid4()
@@ -291,6 +291,7 @@ def factory_staff_user_model(external_id=None, user_info: dict = TestUserInfo.us
         middle_name=user_info['middle_name'],
         email_address=user_info['email_address'],
         status_id=user_info['status_id'],
+        username=username or f'test-{fake.pyint()}@idir',
     )
     user.save()
     return user
@@ -470,6 +471,7 @@ def factory_uploaded_file_model(tenant_id: int, **overrides):
         size=overrides.get('size', 1024),
         status=overrides.get('status', UploadedFileStatus.UPLOADED),
         uploaded_at=overrides.get('uploaded_at', utc_now()),
+        created_by=overrides.get('created_by', 'fake1@idir')
     )
     uploaded_file.save()
     return uploaded_file

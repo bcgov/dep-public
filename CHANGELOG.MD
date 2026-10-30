@@ -1,9 +1,20 @@
+## October 30, 2026
+
+- **Feature** Added "Uploaded by" column to Engagement Files tab. [🎟️ DEP-408](https://citz-gdx.atlassian.net/browse/DEP-408)
+  - Created a db relationship to use the created_by value in uploaded_files to extract full_name from staff_users via username
+  - Added column in front-end component and mapped property
+  - Added "Uploaded by" property to file image preview
+- **Bugfix** Disabled scroll lock on some components to avoid double scroll bar compensation
+  - Affects file tab action menu and file preview lightbox
+
 ## October 28, 2026
+
 - **Feature** Added alphabetic sorting for metadata chips in Metadata Management section. [🎟️ DEP-411](https://citz-gdx.atlassian.net/browse/DEP-411)
   - Updated MetadataTab component to work with new preset_values data structure
   - Updated API and db to store position for metadata
 
 ## October 26, 2026
+
 - **Feature** Added public engagement search page [🎟️ DEP-413](https://citz-gdx.atlassian.net/browse/DEP-413)
   - Updated engagement API endpoint to separate admin and public search functionality. This makes it easier to maintain consistent behaviour on the public search page when the user is signed in.
   - Added endpoint for quickly getting counts of available results for various filter options.
