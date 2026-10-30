@@ -583,9 +583,9 @@ const TaxonEditForm = ({ taxon }: { taxon: MetadataTaxon }): JSX.Element => {
                                 >
                                     <BodyText bold>What people will see</BodyText>
                                     <BodyText size="small">
-                                        {selectedFilter
-                                            ? `A “${taxon.name}” filter with ${isFreeform && watch('include_freeform') ? 'preset and staff-entered custom' : 'preset'} choices. ${MetadataFilterTypes[selectedFilter.code].details}`
-                                            : `“${taxon.name}” will not appear as a public search filter.`}
+                                        {(selectedFilter &&
+                                            `A “${taxon.name}” filter with ${isFreeform && watch('include_freeform') ? 'preset and staff-entered custom' : 'preset'} choices. ${MetadataFilterTypes[selectedFilter.code].details}`) ||
+                                            `“${taxon.name}” will not appear as a public search filter.`}
                                     </BodyText>
                                     {wildcardEnabled && wildcardName?.trim() && (
                                         <BodyText size="small" sx={{ mt: 1 }}>
