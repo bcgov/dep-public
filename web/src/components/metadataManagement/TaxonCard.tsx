@@ -140,6 +140,10 @@ export const TaxonCard: React.FC<TaxonCardProps> = ({ taxon, isExpanded, onExpan
                                     width: '100%',
                                     maxHeight: '1.5em',
                                     whiteSpace: 'nowrap',
+                                    '&::after': {
+                                        content: taxon.is_required ? '"*"' : '""',
+                                        color: isSelected ? 'error.light' : 'error.main',
+                                    },
                                 }}
                             >
                                 {taxon.name}
@@ -234,6 +238,12 @@ export const TaxonCard: React.FC<TaxonCardProps> = ({ taxon, isExpanded, onExpan
                                                 {MetadataFilterTypes[taxon.filter_type].details}
                                             </Typography>
                                         )}
+                                        {taxon.include_freeform && taxon.filter_type && (
+                                            <Typography variant="body1" pl={1}>
+                                                Staff-entered custom options are also available as public filter
+                                                choices.
+                                            </Typography>
+                                        )}
                                     </DetailsRow>
                                 )}
                             </Grid>
@@ -259,7 +269,7 @@ export const TaxonCardSkeleton: React.FC = () => {
                 alignItems: 'center', // Center items vertically
                 padding: '10px',
                 width: '100%',
-                height: '62px',
+                height: '60px',
                 marginBottom: '1em',
             }}
             elevation={1}
@@ -270,7 +280,7 @@ export const TaxonCardSkeleton: React.FC = () => {
                 direction="row"
                 justifyContent="space-between"
                 alignItems="center"
-                sx={{ width: '100%', p: 0.1 }}
+                sx={{ width: '100%' }}
             >
                 <Grid container size={12} alignItems="center" spacing={{ xs: 1, sm: 2 }} direction="row">
                     <Grid size="auto">

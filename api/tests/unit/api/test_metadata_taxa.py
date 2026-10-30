@@ -135,6 +135,25 @@ def test_update_taxon_preset_values(client, jwt, session):
     assert persisted_taxon.preset_values[1]['position'] == 2
 
 
+def test_update_taxon_wildcard_settings(client, jwt, session):
+    """Taxon wildcard settings can be persisted through the management API."""
+    tenant, headers = factory_taxon_requirements(jwt)
+    taxon = factory_metadata_taxon_model(tenant.id)
+    response = client.patch(
+        f'{TAXON_ENDPOINT}/{taxon.id}',
+        headers=headers,
+        data=json.dumps({
+            'wildcard_enabled': True,
+            'wildcard_name': 'Province-wide',
+        }),
+        content_type=ContentType.JSON.value,
+    )
+
+    assert response.status_code == HTTPStatus.OK, response.text
+    assert response.json['wildcard_enabled'] is True
+    assert response.json['wildcard_name'] == 'Province-wide'
+
+
 def test_reorder_tenant_metadata_taxa(client, jwt, session):
     """Test that metadata taxa can be reordered."""
     tenant, headers = factory_taxon_requirements(jwt)

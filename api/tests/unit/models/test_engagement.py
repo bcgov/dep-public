@@ -363,6 +363,63 @@ def test_get_engagements_metadata_match_any(session):
     assert count == 6
 
 
+def test_get_engagements_metadata_wildcard_matches_selected_values(session):
+    """An engagement wildcard matches every selected value for its taxon."""
+    taxon = factory_metadata_taxon_model(1, {
+        'name': 'Region',
+        'description': 'Region',
+        'data_type': 'geo_area',
+        'position': 1,
+        'freeform': False,
+    })
+    taxon.filter_type = 'chips_all'
+    taxon.wildcard_enabled = True
+    taxon.wildcard_name = 'Province-wide'
+    taxon.save()
+    wildcard_engagement = factory_engagement_model({
+        **TestEngagementInfo.engagement1,
+        'tenant_id': 1,
+        'slug': 'wildcard-region-engagement',
+    })
+    direct_engagement = factory_engagement_model({
+        **TestEngagementInfo.engagement1,
+        'tenant_id': 1,
+        'slug': 'direct-region-engagement',
+    })
+    unrelated_engagement = factory_engagement_model({
+        **TestEngagementInfo.engagement1,
+        'tenant_id': 1,
+        'slug': 'unrelated-region-engagement',
+    })
+    wildcard_engagement.metadata.append(EngagementMetadata(
+        taxon_id=taxon.id, value='Province-wide'))
+    direct_engagement.metadata.extend([
+        EngagementMetadata(taxon_id=taxon.id, value='North'),
+        EngagementMetadata(taxon_id=taxon.id, value='South'),
+    ])
+    unrelated_engagement.metadata.append(EngagementMetadata(
+        taxon_id=taxon.id, value='East'))
+
+    results, count = EngagementModel.get_engagements_paginated(
+        123,
+        PaginationOptions(page=None, size=None,
+                          sort_key='name', sort_order=''),
+        EngagementScopeOptions(restricted=False),
+        {
+            'metadata': [{
+                'taxon_id': taxon.id,
+                'filter_type': 'chips_all',
+                'values': ['North', 'South'],
+            }],
+            'filterable_metadata': True,
+        },
+    )
+
+    result_ids = {engagement.id for engagement in results}
+    assert count == 2
+    assert result_ids == {wildcard_engagement.id, direct_engagement.id}
+
+
 def test_delete_engagement_success(session):
     """Assert that delete removes the engagement and returns the deleted instance."""
     engagement = factory_engagement_model()

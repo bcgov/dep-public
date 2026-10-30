@@ -1,3 +1,10 @@
+## October 30, 2026
+- **Feature** Added "all-values" option for metadata selection, supporting "Province-wide" option [🎟️ DEP-412](https://citz-gdx.atlassian.net/browse/DEP-412)
+  - Updated DB schema to allow storing whether a taxon has the "all-values" option and the option's label.
+  - Updated TaxonEditor to allow adding the "all-values" option for relevant metadata selections.
+  - Updated MetadataTab component to include the "all-values" option on engagements.
+  - Updated search logic to always return "all-values" engagements when filtering by the relevant taxon
+
 ## October 28, 2026
 - **Feature** Added alphabetic sorting for metadata chips in Metadata Management section. [🎟️ DEP-411](https://citz-gdx.atlassian.net/browse/DEP-411)
   - Updated MetadataTab component to work with new preset_values data structure

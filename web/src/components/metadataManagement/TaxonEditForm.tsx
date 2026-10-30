@@ -8,7 +8,6 @@ import {
     Grid2 as Grid,
     MenuItem,
     Tooltip,
-    Avatar,
     Collapse,
     Box,
     useMediaQuery,
@@ -20,8 +19,6 @@ import { faPen } from '@fortawesome/pro-solid-svg-icons/faPen';
 import { faXmark } from '@fortawesome/pro-regular-svg-icons/faXmark';
 import { faTrash } from '@fortawesome/pro-solid-svg-icons/faTrash';
 import { faCircleExclamation } from '@fortawesome/pro-solid-svg-icons/faCircleExclamation';
-import { faCircleQuestion } from '@fortawesome/pro-regular-svg-icons/faCircleQuestion';
-import { Palette } from 'styles/Theme';
 import * as yup from 'yup';
 import React, { JSX, useContext, useEffect } from 'react';
 import { MetadataFormValue, MetadataTaxon } from 'models/engagement';
@@ -30,24 +27,71 @@ import { useAppDispatch } from 'hooks';
 import { If, Then, Else } from 'react-if';
 import { TaxonTypes } from './TaxonTypes';
 import { TaxonType } from './types';
+import { MetadataFilterTypes } from './MetadataFilterTypes';
 import PresetValuesEditor from './presetFieldsEditor/PresetValuesEditor';
 import { useForm, SubmitHandler, Controller, FormProvider, UseFormReturn } from 'react-hook-form';
 import { openNotification } from 'services/notificationService/notificationSlice';
 import { Button } from 'components/common/Input/Button';
-import { faArrowDownWideShort, faArrowUpWideShort, faFilterSlash, faSave } from '@fortawesome/pro-regular-svg-icons';
+import {
+    faArrowDownWideShort,
+    faArrowUpWideShort,
+    faListCheck,
+    faCog,
+    faGlobe,
+    faFilterSlash,
+    faSave,
+    IconDefinition,
+} from '@fortawesome/pro-regular-svg-icons';
 import { BodyText, Heading3 } from 'components/common/Typography';
 
-const HelpTooltip = ({ children }: { children: string | string[] }) => {
-    if (Array.isArray(children)) children = children.join(' ');
+const FormSection = ({
+    title,
+    description,
+    children,
+    icon,
+}: {
+    title: string;
+    description: string;
+    children: React.ReactNode;
+    icon?: IconDefinition;
+}) => {
     return (
-        <Tooltip title={children}>
-            <FontAwesomeIcon
-                icon={faCircleQuestion}
-                style={{ fontSize: '20px', color: Palette.primary.main }}
-                tabIndex={0}
-                aria-label={children}
-            />
-        </Tooltip>
+        <Grid
+            container
+            spacing={1}
+            component="section"
+            aria-label={title}
+            sx={{ border: '1px solid', backgroundColor: 'white', borderColor: 'gray.40', borderRadius: 1, p: 2 }}
+        >
+            <Grid container size={12} spacing={1}>
+                {icon && (
+                    <Grid
+                        container
+                        alignItems="center"
+                        justifyContent="center"
+                        sx={{
+                            backgroundColor: 'blue.10',
+                            color: 'blue.100',
+                            p: 1,
+                            borderRadius: 1,
+                            width: '36px',
+                            height: '36px',
+                        }}
+                    >
+                        <FontAwesomeIcon icon={icon} style={{ color: 'inherit', fontSize: '20px' }} />
+                    </Grid>
+                )}
+                <Grid size="grow">
+                    <BodyText size="huge" bold>
+                        {title}
+                    </BodyText>
+                    <BodyText size="small">{description}</BodyText>
+                </Grid>
+            </Grid>
+            <Grid container size={12} direction="column" mt={1} gap={1}>
+                {children}
+            </Grid>
+        </Grid>
     );
 };
 
@@ -65,6 +109,8 @@ const TaxonEditForm = ({ taxon }: { taxon: MetadataTaxon }): JSX.Element => {
             preset_values: taxon.preset_values,
             filter_type: taxon.filter_type,
             include_freeform: taxon.include_freeform,
+            wildcard_enabled: taxon.wildcard_enabled,
+            wildcard_name: taxon.wildcard_name,
         },
     });
     const {
@@ -86,6 +132,8 @@ const TaxonEditForm = ({ taxon }: { taxon: MetadataTaxon }): JSX.Element => {
             preset_values: taxon.preset_values ? parsePresetValues(taxon.preset_values) : [],
             filter_type: taxon.filter_type ?? 'none',
             include_freeform: taxon.include_freeform ?? false,
+            wildcard_enabled: taxon.wildcard_enabled ?? false,
+            wildcard_name: taxon.wildcard_name ?? '',
         });
     }, [taxon, reset]);
 
@@ -99,8 +147,12 @@ const TaxonEditForm = ({ taxon }: { taxon: MetadataTaxon }): JSX.Element => {
     const taxonType = TaxonTypes[dataType as keyof typeof TaxonTypes];
     // Watch freeform to update label
     const isFreeform = watch('freeform');
-    const isValidFilter = watch('filter_type') !== 'none';
+    const filterType = watch('filter_type');
+    const isValidFilter = filterType !== 'none';
     const presetValues = watch('preset_values');
+    const selectedFilter = (taxonType.supportedFilters ?? []).find((filter) => filter.code === filterType);
+    const wildcardEnabled = watch('wildcard_enabled');
+    const wildcardName = watch('wildcard_name');
 
     const presetValueSchema: yup.AnySchema = yup.object({
         id: yup.number(),
@@ -137,6 +189,25 @@ const TaxonEditForm = ({ taxon }: { taxon: MetadataTaxon }): JSX.Element => {
             },
             then: yup.boolean().optional(),
             otherwise: yup.boolean().strip(),
+        }),
+        wildcard_enabled: yup.boolean().when('data_type', {
+            is: (value: string) => TaxonTypes[value]?.supportsPresetValues,
+            then: yup.boolean().optional(),
+            otherwise: yup.boolean().strip(),
+        }),
+        wildcard_name: yup.string().when('wildcard_enabled', {
+            is: true,
+            then: yup
+                .string()
+                .trim()
+                .required('A wildcard name is required.')
+                .max(64, 'Name is too long!')
+                .test(
+                    'wildcard-name-not-preset',
+                    'The wildcard name cannot match a preset value.',
+                    (value) => !value || !(presetValues ?? []).some((preset) => preset.value === value),
+                ),
+            otherwise: yup.string().nullable(),
         }),
     });
 
@@ -184,6 +255,8 @@ const TaxonEditForm = ({ taxon }: { taxon: MetadataTaxon }): JSX.Element => {
             preset_values: TaxonTypes[data.data_type ?? 'text'].supportsPresetValues ? data.preset_values : [],
             filter_type: data.filter_type === 'none' ? null : data.filter_type,
             include_freeform: data.include_freeform,
+            wildcard_enabled: taxonType.supportsPresetValues && data.wildcard_enabled,
+            wildcard_name: taxonType.supportsPresetValues ? data.wildcard_name?.trim() || null : null,
         };
         updateMetadataTaxon(updatedTaxon);
     };
@@ -208,15 +281,10 @@ const TaxonEditForm = ({ taxon }: { taxon: MetadataTaxon }): JSX.Element => {
     return (
         <FormProvider {...methods}>
             <FormGroup onKeyDown={handleKeys}>
-                <Grid container spacing={2} direction="column" sx={{ width: '100%', maxWidth: '40em' }}>
+                <Grid container spacing={2} direction="column" sx={{ width: '100%', maxWidth: '700px' }}>
                     <Grid container direction="row">
                         <Grid size="grow" container alignItems="center">
-                            {!isSmallScreen && (
-                                <Avatar sx={{ backgroundColor: 'primary.main', marginRight: '0.5em' }}>
-                                    <FontAwesomeIcon icon={faPen} style={{ fontSize: '20px' }} />
-                                </Avatar>
-                            )}
-                            <Heading3>Edit taxon</Heading3>
+                            <Heading3 weight="bold">Edit metadata field</Heading3>
                         </Grid>
                         <Tooltip title={taxon.is_required ? 'This taxon is required and cannot be deleted.' : ''}>
                             <Grid size="auto" justifySelf="flex-end">
@@ -238,247 +306,307 @@ const TaxonEditForm = ({ taxon }: { taxon: MetadataTaxon }): JSX.Element => {
                             </Grid>
                         </Tooltip>
                     </Grid>
-                    <Grid>
-                        <BodyText bold>Taxon Name</BodyText>
-                        <Controller
-                            name="name"
-                            control={control}
-                            render={({ field }) => (
-                                <TextField
-                                    disabled={taxon.is_required}
-                                    placeholder="Enter taxon name"
-                                    error={!!methods.formState.errors.name}
-                                    helperText={methods.formState.errors.name?.message}
-                                    value={field.value}
-                                    onChange={field.onChange}
-                                />
-                            )}
-                        />
-                    </Grid>
-                    <Grid>
-                        <BodyText bold>Taxon Description</BodyText>
-                        <Controller
-                            name="description"
-                            control={control}
-                            render={({ field, fieldState }) => (
-                                <TextField
-                                    fullWidth
-                                    multiline
-                                    minRows={2}
-                                    maxRows={8}
-                                    placeholder="[Optional] Enter a description"
-                                    value={field.value}
-                                    onChange={field.onChange}
-                                    error={!!fieldState?.error}
-                                    helperText={fieldState?.error?.message}
-                                />
-                            )}
-                        />
-                    </Grid>
-                    <Grid>
-                        <Grid container justifyContent="flex-start" alignItems="left">
-                            <BodyText bold marginRight={1}>
-                                Data Type
-                            </BodyText>
-                            <HelpTooltip>
-                                The type of data that this taxon will store. Affects the availability of some other
-                                options.
-                            </HelpTooltip>
-                        </Grid>
-                        <FormControl fullWidth>
+                    <FormSection
+                        icon={faCog}
+                        title="Field setup"
+                        description="Choose what this field is called and what kind of information it collects."
+                    >
+                        <Grid>
+                            <BodyText bold>Field name</BodyText>
                             <Controller
-                                name="data_type"
+                                name="name"
                                 control={control}
                                 render={({ field }) => (
-                                    <Select {...field} disabled={taxon.is_required}>
-                                        {Object.entries(TaxonTypes).map(([key, type]: [string, TaxonType]) => (
-                                            <MenuItem key={key} value={key}>
-                                                <Grid container spacing={1} alignItems="center">
-                                                    <Grid width="30px" textAlign="center">
-                                                        <FontAwesomeIcon
-                                                            icon={type.icon}
-                                                            style={{ fontSize: '22px' }}
-                                                        />
-                                                    </Grid>
-                                                    <Grid>{type.name}</Grid>
-                                                </Grid>
-                                            </MenuItem>
-                                        ))}
-                                    </Select>
+                                    <TextField
+                                        disabled={taxon.is_required}
+                                        placeholder="Enter taxon name"
+                                        error={!!methods.formState.errors.name}
+                                        helperText={methods.formState.errors.name?.message}
+                                        value={field.value}
+                                        onChange={field.onChange}
+                                    />
                                 )}
                             />
-                        </FormControl>
-                    </Grid>
-                    <Grid component={Collapse} in={taxonType.supportsPresetValues} timeout="auto" unmountOnExit>
-                        <Grid container justifyContent="flex-start" alignItems="left">
-                            <BodyText bold marginRight={1}>
-                                Preset Values
-                            </BodyText>
-                            <HelpTooltip>
-                                These values will be shown to staff as possible options when creating engagements.
-                                {(Boolean(taxonType.supportedFilters) || '') &&
-                                    "If filtering is enabled below, they are also publicly visible as the filter's options."}
-                            </HelpTooltip>
                         </Grid>
-                        <PresetValuesEditor control={methods.control} name="preset_values" />
-                        <Grid container m="0.5rem 0 0" p={0} gap={1}>
-                            <SortButton methods={methods} direction="normal">
-                                Sort A to Z
-                            </SortButton>
-                            <SortButton methods={methods} direction="reverse">
-                                Sort Z to A
-                            </SortButton>
-                        </Grid>
-                    </Grid>
-                    <Grid
-                        component={Collapse}
-                        in={taxonType.supportsPresetValues && allowLimiting}
-                        timeout="auto"
-                        unmountOnExit
-                    >
-                        <FormControlLabel
-                            control={
-                                <Controller
-                                    name="freeform"
-                                    control={control}
-                                    render={({ field: { onChange, value } }) => {
-                                        return (
-                                            <Switch
-                                                checked={value && allowLimiting}
-                                                onChange={(e) => onChange(e.target.checked)}
-                                            />
-                                        );
-                                    }}
-                                />
-                            }
-                            label={
-                                <Box display="flex" alignItems="center">
-                                    <Box ml={1} mr={1}>
-                                        Allow custom values
-                                    </Box>
-                                    <HelpTooltip>
-                                        If enabled, users can enter custom values when creating engagements. Otherwise,
-                                        only preset values can be used.
-                                    </HelpTooltip>
-                                </Box>
-                            }
-                        />
-                    </Grid>
-                    <Grid component={Collapse} in={taxonType.supportsMulti} timeout="auto" unmountOnExit>
-                        <FormControlLabel
-                            control={
-                                <Controller
-                                    name="one_per_engagement"
-                                    control={control}
-                                    render={({ field: { onChange, value } }) => (
-                                        <Switch checked={!value} onChange={(e) => onChange(!e.target.checked)} />
-                                    )}
-                                />
-                            }
-                            label={
-                                <Box display="flex" alignItems="center">
-                                    <Box ml={1} mr={1}>
-                                        Allow multiple values
-                                    </Box>
-                                    <HelpTooltip>
-                                        When enabled, users can enter multiple values for this taxon in a single
-                                        engagement. Otherwise, only one value can be entered.
-                                    </HelpTooltip>
-                                </Box>
-                            }
-                        />
-                    </Grid>
-                    <Grid component={Collapse} in={!!taxonType.supportedFilters} timeout="auto" unmountOnExit>
-                        <Grid container justifyContent="flex-start" alignItems="left">
-                            <BodyText bold marginRight={1}>
-                                Filter Behaviour
-                            </BodyText>
-                            <HelpTooltip>
-                                Selecting a filter style allows the public to use this taxon to narrow down which
-                                engagements they want to see. "No filtering" means it will not be publicly shown. For
-                                details on the selected filter, expand and read the blue highlighted {taxon.name ?? ''}{' '}
-                                card.`
-                            </HelpTooltip>
-                        </Grid>
-                        <FormControl fullWidth>
+                        <Grid>
+                            <BodyText bold>Field description</BodyText>
                             <Controller
-                                name="filter_type"
+                                name="description"
                                 control={control}
-                                render={({ field: { onChange, value, ...fieldProps } }) => (
-                                    <Select
-                                        error={!!methods.formState.errors.filter_type}
-                                        value={value || 'none'} // Display "none" when value is null or undefined
-                                        onChange={onChange}
-                                        {...fieldProps}
-                                    >
-                                        <MenuItem value="none">
-                                            <Grid container alignItems="center" spacing={1}>
-                                                {!isSmallScreen && (
-                                                    <Grid>
-                                                        {/* <FilterAltOff /> */}
-                                                        <FontAwesomeIcon
-                                                            icon={faFilterSlash}
-                                                            style={{ fontSize: '22px' }}
-                                                        />
-                                                    </Grid>
-                                                )}
-                                                <Grid>No filtering</Grid>
-                                            </Grid>
-                                        </MenuItem>
-                                        {(taxonType.supportedFilters ?? []).map((filter) => (
-                                            <MenuItem key={filter.code} value={filter.code}>
-                                                <Grid container alignItems="center" spacing={1}>
-                                                    {!isSmallScreen && (
-                                                        <Grid>
+                                render={({ field, fieldState }) => (
+                                    <TextField
+                                        fullWidth
+                                        multiline
+                                        minRows={2}
+                                        maxRows={8}
+                                        placeholder="[Optional] Enter a description"
+                                        value={field.value}
+                                        onChange={field.onChange}
+                                        error={!!fieldState?.error}
+                                        helperText={fieldState?.error?.message}
+                                    />
+                                )}
+                            />
+                        </Grid>
+                        <Grid>
+                            <BodyText bold>Data type</BodyText>
+                            <BodyText size="small" sx={{ mb: 1 }}>
+                                The data type determines which choices and settings are available for this field.
+                            </BodyText>
+                            <FormControl fullWidth>
+                                <Controller
+                                    name="data_type"
+                                    control={control}
+                                    render={({ field }) => (
+                                        <Select {...field} disabled={taxon.is_required}>
+                                            {Object.entries(TaxonTypes).map(([key, type]: [string, TaxonType]) => (
+                                                <MenuItem key={key} value={key}>
+                                                    <Grid container spacing={1} alignItems="center">
+                                                        <Grid width="30px" textAlign="center">
                                                             <FontAwesomeIcon
-                                                                icon={filter.icon}
+                                                                icon={type.icon}
                                                                 style={{ fontSize: '22px' }}
                                                             />
                                                         </Grid>
-                                                    )}
-                                                    <Grid>{filter.name}</Grid>
-                                                </Grid>
-                                            </MenuItem>
-                                        ))}
-                                    </Select>
-                                )}
-                            ></Controller>
-                        </FormControl>
-                    </Grid>
-                    <Grid
-                        component={Collapse}
-                        in={Boolean(taxonType.allowFreeformInFilter && isFreeform && isValidFilter)}
-                        timeout="auto"
-                        unmountOnExit
-                    >
-                        <FormControlLabel
-                            control={
-                                <Controller
-                                    name="include_freeform"
-                                    control={control}
-                                    render={({ field: { onChange, value } }) => (
-                                        <Switch checked={value} onChange={(e) => onChange(e.target.checked)} />
+                                                        <Grid>{type.name}</Grid>
+                                                    </Grid>
+                                                </MenuItem>
+                                            ))}
+                                        </Select>
                                     )}
                                 />
-                            }
-                            label={
-                                <Box display="flex" alignItems="center">
-                                    <Box ml={1} mr={1}>
-                                        Include custom values as filter options
-                                    </Box>
-                                    <HelpTooltip>
-                                        If enabled, custom values entered on engagements will be available as filter
-                                        options, in addition to the preset values.
-                                    </HelpTooltip>
-                                </Box>
-                            }
-                        />
+                            </FormControl>
+                        </Grid>
+                    </FormSection>
+                    <Grid component={Collapse} in={taxonType.supportsPresetValues} timeout="auto" unmountOnExit>
+                        <FormSection
+                            icon={faListCheck}
+                            title="Options for engagement staff"
+                            description="These settings control what staff can choose when adding metadata to an engagement."
+                        >
+                            <Grid>
+                                <BodyText bold>Preset options</BodyText>
+                                <BodyText size="small" sx={{ mb: 1 }}>
+                                    Staff can choose from these values when editing an engagement.
+                                </BodyText>
+                                <PresetValuesEditor control={methods.control} name="preset_values" />
+                                <Grid container m="0.5rem 0 0" p={0} gap={1}>
+                                    <SortButton methods={methods} direction="normal">
+                                        Sort A to Z
+                                    </SortButton>
+                                    <SortButton methods={methods} direction="reverse">
+                                        Sort Z to A
+                                    </SortButton>
+                                </Grid>
+                            </Grid>
+                            <Grid>
+                                <FormControlLabel
+                                    slotProps={{ typography: { fontWeight: 'bold' } }}
+                                    control={
+                                        <Controller
+                                            name="wildcard_enabled"
+                                            control={control}
+                                            render={({ field: { onChange, value } }) => (
+                                                <Switch
+                                                    checked={Boolean(value)}
+                                                    onChange={(e) => onChange(e.target.checked)}
+                                                />
+                                            )}
+                                        />
+                                    }
+                                    label="Include an 'All values' option"
+                                />
+                                <BodyText size="small" sx={{ mb: 1, ml: 6 }}>
+                                    Staff users can select this option when an engagement applies to every value in this
+                                    field.
+                                </BodyText>
+                                <Grid container ml={6}>
+                                    <BodyText bold>Label for the 'All values' option</BodyText>
+                                    <Controller
+                                        name="wildcard_name"
+                                        control={control}
+                                        render={({ field }) => (
+                                            <TextField
+                                                fullWidth
+                                                placeholder={`All "${taxonType.name}"`}
+                                                disabled={!wildcardEnabled}
+                                                error={!!methods.formState.errors.wildcard_name}
+                                                helperText={methods.formState.errors.wildcard_name?.message}
+                                                {...field}
+                                            />
+                                        )}
+                                    />
+                                </Grid>
+                            </Grid>
+                            <Grid
+                                component={Collapse}
+                                in={taxonType.supportsPresetValues && allowLimiting}
+                                timeout="auto"
+                                unmountOnExit
+                            >
+                                <FormControlLabel
+                                    slotProps={{ typography: { fontWeight: 'bold' } }}
+                                    control={
+                                        <Controller
+                                            name="freeform"
+                                            control={control}
+                                            render={({ field: { onChange, value } }) => {
+                                                return (
+                                                    <Switch
+                                                        checked={value && allowLimiting}
+                                                        onChange={(e) => onChange(e.target.checked)}
+                                                    />
+                                                );
+                                            }}
+                                        />
+                                    }
+                                    label="Allow staff to add custom options"
+                                />
+                                <BodyText size="small" sx={{ ml: 6 }}>
+                                    When enabled, staff can enter a value that is not in the preset options.
+                                </BodyText>
+                            </Grid>
+                            <Grid component={Collapse} in={taxonType.supportsMulti} timeout="auto" unmountOnExit>
+                                <FormControlLabel
+                                    slotProps={{ typography: { fontWeight: 'bold' } }}
+                                    control={
+                                        <Controller
+                                            name="one_per_engagement"
+                                            control={control}
+                                            render={({ field: { onChange, value } }) => (
+                                                <Switch
+                                                    checked={!value}
+                                                    onChange={(e) => onChange(!e.target.checked)}
+                                                />
+                                            )}
+                                        />
+                                    }
+                                    label="Allow staff to choose multiple values"
+                                />
+                                <BodyText size="small" sx={{ ml: 6 }}>
+                                    Turn this off when an engagement should have one value for this field.
+                                </BodyText>
+                            </Grid>
+                        </FormSection>
                     </Grid>
+                    {taxonType.supportedFilters && (
+                        <FormSection
+                            icon={faGlobe}
+                            title="Public search"
+                            description="Choose whether people can use this field to find engagements, and how selected choices are matched."
+                        >
+                            <Grid>
+                                <BodyText bold>Show this field as a search filter</BodyText>
+                                <FormControl fullWidth>
+                                    <Controller
+                                        name="filter_type"
+                                        control={control}
+                                        render={({ field: { onChange, value, ...fieldProps } }) => (
+                                            <Select
+                                                error={!!methods.formState.errors.filter_type}
+                                                value={value || 'none'} // Display "none" when value is null or undefined
+                                                onChange={onChange}
+                                                {...fieldProps}
+                                            >
+                                                <MenuItem value="none">
+                                                    <Grid container alignItems="center" spacing={1}>
+                                                        {!isSmallScreen && (
+                                                            <Grid>
+                                                                {/* <FilterAltOff /> */}
+                                                                <FontAwesomeIcon
+                                                                    icon={faFilterSlash}
+                                                                    style={{ fontSize: '22px' }}
+                                                                />
+                                                            </Grid>
+                                                        )}
+                                                        <Grid>Don't show this field in public search</Grid>
+                                                    </Grid>
+                                                </MenuItem>
+                                                {(taxonType.supportedFilters ?? []).map((filter) => (
+                                                    <MenuItem key={filter.code} value={filter.code}>
+                                                        <Grid container alignItems="center" spacing={1}>
+                                                            {!isSmallScreen && (
+                                                                <Grid>
+                                                                    <FontAwesomeIcon
+                                                                        icon={filter.icon}
+                                                                        style={{ fontSize: '22px' }}
+                                                                    />
+                                                                </Grid>
+                                                            )}
+                                                            <Grid>{filter.name}</Grid>
+                                                        </Grid>
+                                                    </MenuItem>
+                                                ))}
+                                            </Select>
+                                        )}
+                                    ></Controller>
+                                </FormControl>
+                                <BodyText size="small" sx={{ mt: 1 }}>
+                                    {selectedFilter
+                                        ? MetadataFilterTypes[selectedFilter.code].details
+                                        : 'People will not see this field as a filter on the public engagement search page.'}
+                                </BodyText>
+                            </Grid>
+                            <Grid
+                                component={Collapse}
+                                in={Boolean(taxonType.allowFreeformInFilter && isFreeform && isValidFilter)}
+                                timeout="auto"
+                                unmountOnExit
+                            >
+                                <FormControlLabel
+                                    slotProps={{ typography: { fontWeight: 'bold' } }}
+                                    control={
+                                        <Controller
+                                            name="include_freeform"
+                                            control={control}
+                                            render={({ field: { onChange, value } }) => (
+                                                <Switch checked={value} onChange={(e) => onChange(e.target.checked)} />
+                                            )}
+                                        />
+                                    }
+                                    label="Include staff-entered custom options in public filters"
+                                />
+                                <BodyText size="small" sx={{ ml: 6 }}>
+                                    When enabled, custom options already used on engagements can also appear as choices
+                                    in public search.
+                                </BodyText>
+                            </Grid>
+                            {taxonType.supportedFilters && (
+                                <Box
+                                    role="status"
+                                    sx={{
+                                        borderLeft: '4px solid',
+                                        borderColor: 'primary.main',
+                                        bgcolor: 'gray.10',
+                                        px: 2,
+                                        py: 1.5,
+                                    }}
+                                >
+                                    <BodyText bold>What people will see</BodyText>
+                                    <BodyText size="small">
+                                        {selectedFilter
+                                            ? `A “${taxon.name}” filter with ${isFreeform && watch('include_freeform') ? 'preset and staff-entered custom' : 'preset'} choices. ${MetadataFilterTypes[selectedFilter.code].details}`
+                                            : `“${taxon.name}” will not appear as a public search filter.`}
+                                    </BodyText>
+                                    {wildcardEnabled && wildcardName?.trim() && (
+                                        <BodyText size="small" sx={{ mt: 1 }}>
+                                            Engagements marked “{wildcardName.trim()}” will appear when any choice in
+                                            this filter is selected. “{wildcardName.trim()}” is only a staff-facing
+                                            choice; it will not appear in public search.
+                                        </BodyText>
+                                    )}
+                                </Box>
+                            )}
+                        </FormSection>
+                    )}
                     <Grid container alignItems="center" justifyContent="flex-start">
                         <Tooltip title="Discard changes to taxon" id="cancel-button-tooltip">
-                            <Button aria-label="Discard changes to taxon" onClick={() => setSelectedTaxonId(-1)}>
-                                <FontAwesomeIcon icon={faXmark} style={{ fontSize: '20px', paddingRight: '5px' }} />
-                                {}Cancel
+                            <Button
+                                icon={<FontAwesomeIcon icon={faXmark} style={{ fontSize: '20px' }} />}
+                                aria-label="Discard changes to taxon"
+                                onClick={() => setSelectedTaxonId(-1)}
+                            >
+                                Cancel
                             </Button>
                         </Tooltip>
                         <If condition={Object.keys(methods.formState.errors).length === 0}>

@@ -9,7 +9,7 @@ import logging
 from datetime import datetime
 from typing import List, Optional
 
-from sqlalchemy import and_, asc, desc, or_, select
+from sqlalchemy import and_, asc, desc, func, literal, or_, select, union_all
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.orderinglist import ordering_list
@@ -141,7 +141,44 @@ class Engagement(BaseModel):
         return cls._get_engagements_query(external_user_id, scope_options, search_options).count()
 
     @classmethod
-    def _get_engagements_query(cls, external_user_id, scope_options, search_options):
+    def count_engagements_many(
+        cls, external_user_id, scope_options: EngagementScopeOptions, search_options_list
+    ):
+        """Count engagements for multiple search filters in one database round trip."""
+        if not search_options_list:
+            return []
+
+        assigned_engagement_ids = None
+        if scope_options.restricted and scope_options.include_assigned:
+            assigned_engagement_ids = cls._get_assigned_engagement_ids(
+                external_user_id)
+
+        count_queries = []
+        for index, search_options in enumerate(search_options_list):
+            query = cls._get_engagements_query(
+                external_user_id,
+                scope_options,
+                search_options,
+                assigned_engagement_ids,
+            )
+            count_query = query.with_entities(
+                func.count(Engagement.id)
+            ).scalar_subquery()
+            count_queries.append(select(
+                literal(index).label('request_index'),
+                count_query.label('count'),
+            ))
+
+        rows = db.session.execute(union_all(*count_queries)).all()
+        counts = [0] * len(search_options_list)
+        for index, count in rows:
+            counts[index] = count
+        return counts
+
+    @classmethod
+    def _get_engagements_query(
+        cls, external_user_id, scope_options, search_options, assigned_engagement_ids=None
+    ):
         query = cls._add_tenant_filter(db.session.query(Engagement).join(EngagementStatus))
         if search_options:
             if search_options.get('public_search'):
@@ -156,7 +193,11 @@ class Engagement(BaseModel):
         if scope_options.restricted:
             if scope_options.include_assigned:
                 query = cls._filter_by_assigned_engagements(
-                    query, external_user_id, scope_options.engagement_status_ids)
+                    query,
+                    external_user_id,
+                    scope_options.engagement_status_ids,
+                    assigned_engagement_ids,
+                )
             else:
                 query = cls._filter_by_statuses(query, scope_options.engagement_status_ids)
         return query
@@ -242,7 +283,7 @@ class Engagement(BaseModel):
 
         search_text = search_options.get('search_text', '')
         # default to sort by relevance with secondary sort by created date
-        sort_by = Engagement.name.ilike('%' + (search_text or '') + '%'), Engagement.created_date.desc()
+        sort_by = Engagement.name.ilike(f"%{search_text or ''}%"), Engagement.created_date.desc()
         sort_key = pagination_options.sort_key
         if sort_key == 'newest':
             sort_by = (Engagement.created_date.desc(),)
@@ -381,52 +422,101 @@ class Engagement(BaseModel):
         if 'metadata' not in search_options:
             return query
 
+        metadata_filter_config = search_options.get('_metadata_filter_config')
         public_only = search_options.get('filterable_metadata')
-        public_filter_types = {}
-        if public_only:
-            # Only public taxa (those with a filter type) may be filtered on; the stored type is authoritative
-            public_filter_types = dict(
-                query.session.query(MetadataTaxon.id, MetadataTaxon.filter_type)
-                .filter(MetadataTaxon.filter_type.isnot(None)).all())
-
+        public_filter_types = Engagement._get_public_metadata_filter_types(
+            query, search_options, metadata_filter_config)
         for criterion in search_options['metadata']:
-            taxon_id = criterion.get('taxon_id')
-            values = criterion.get('values')
-
-            requested_type = criterion.get('filter_type')
-            if public_only:
-                requested_type = public_filter_types.get(taxon_id)
-
-            # pick the type of filtering to apply
-            filter_type = filter_map.get(requested_type)
-
-            if any([taxon_id is None, values is None, filter_type is None]):
-                continue  # skip invalid criteria
-
-            # Base query (single column)
-            taxon_query = query.session.query(
-                EngagementMetadataModel.engagement_id
-            ).filter(
-                EngagementMetadataModel.taxon_id == taxon_id
-            )
-
-            filter_result = filter_type(taxon_query, values)
-
-            if hasattr(filter_result, 'subquery'):
-                selectable = filter_result.subquery()
-            else:
-                selectable = filter_result
-
-            filter_subquery = select(selectable.c.engagement_id).distinct()
-            query = query.filter(Engagement.id.in_(filter_subquery))
+            query = Engagement._filter_by_metadata_criterion(
+                query, criterion, public_filter_types, metadata_filter_config, public_only)
         return query
 
     @staticmethod
-    def _filter_by_assigned_engagements(query, external_user_id: int, exception_status_ids: Optional[list[int]] = None):
+    def _get_public_metadata_filter_types(query, search_options, metadata_filter_config):
+        if not search_options.get('filterable_metadata'):
+            return {}
+        if metadata_filter_config is not None:
+            return {
+                taxon_id: config['filter_type']
+                for taxon_id, config in metadata_filter_config.items()
+            }
+        # Only public taxa (those with a filter type) may be filtered on; the stored type is authoritative.
+        return dict(
+            query.session.query(MetadataTaxon.id, MetadataTaxon.filter_type)
+            .filter(MetadataTaxon.filter_type.isnot(None)).all())
+
+    @staticmethod
+    def _filter_by_metadata_criterion(
+        query, criterion, public_filter_types, metadata_filter_config, public_only
+    ):
+        taxon_id = criterion.get('taxon_id')
+        values = criterion.get('values')
+        requested_type = criterion.get('filter_type')
+        if public_only:
+            requested_type = public_filter_types.get(taxon_id)
+
+        filter_type = filter_map.get(requested_type)
+        if taxon_id is None or values is None or filter_type is None:
+            return query
+
+        taxon_query = query.session.query(
+            EngagementMetadataModel.engagement_id
+        ).filter(EngagementMetadataModel.taxon_id == taxon_id)
+        filter_result = filter_type(taxon_query, values)
+        selectable = filter_result.subquery() if hasattr(filter_result, 'subquery') else filter_result
+        filter_subquery = select(selectable.c.engagement_id).distinct()
+
+        wildcard_name = Engagement._get_metadata_wildcard_name(
+            query, taxon_id, metadata_filter_config)
+        if wildcard_name:
+            wildcard_subquery = query.session.query(
+                EngagementMetadataModel.engagement_id
+            ).filter(
+                EngagementMetadataModel.taxon_id == taxon_id,
+                EngagementMetadataModel.value == wildcard_name,
+            )
+            return query.filter(or_(
+                Engagement.id.in_(filter_subquery),
+                Engagement.id.in_(wildcard_subquery),
+            ))
+        return query.filter(Engagement.id.in_(filter_subquery))
+
+    @staticmethod
+    def _get_metadata_wildcard_name(query, taxon_id, metadata_filter_config):
+        if metadata_filter_config is not None:
+            return metadata_filter_config.get(taxon_id, {}).get('wildcard_name')
+        return query.session.query(MetadataTaxon.wildcard_name).filter(
+            MetadataTaxon.id == taxon_id,
+            MetadataTaxon.wildcard_enabled.is_(True),
+        ).scalar()
+
+    @staticmethod
+    def _filter_by_assigned_engagements(
+        query,
+        external_user_id: int,
+        exception_status_ids: Optional[list[int]] = None,
+        assigned_engagement_ids: Optional[list[int]] = None,
+    ):
         if exception_status_ids is None:
             exception_status_ids = []
 
-        assigned_engagement_ids = [
+        if assigned_engagement_ids is None:
+            assigned_engagement_ids = Engagement._get_assigned_engagement_ids(
+                external_user_id)
+
+        # filter out all engagements that are not assigned to the user except ones with the exception status ids
+        query = query.filter(
+            or_(
+                Engagement.status_id.in_(exception_status_ids),
+                Engagement.id.in_(assigned_engagement_ids)
+            )
+        )
+
+        return query
+
+    @staticmethod
+    def _get_assigned_engagement_ids(external_user_id: int):
+        return [
             engagement_id
             for engagement_id, in (
                 db.session.query(Engagement.id)
@@ -438,16 +528,6 @@ class Engagement(BaseModel):
                 .all()
             )
         ]
-
-        # filter out all engagements that are not assigned to the user except ones with the exception status ids
-        query = query.filter(
-            or_(
-                Engagement.status_id.in_(exception_status_ids),
-                Engagement.id.in_(assigned_engagement_ids)
-            )
-        )
-
-        return query
 
     # filter by statuses
     @staticmethod

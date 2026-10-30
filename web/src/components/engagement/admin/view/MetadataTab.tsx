@@ -416,7 +416,11 @@ const MetadataSelect = ({
     const [selectedTaxonDataType, setSelectedTaxonDataType] = useState<string | undefined>();
     const [error, setError] = useState<string | undefined>();
     const taxonIsMulti = !taxon?.one_per_engagement;
-    const allOptions = [...(taxon?.preset_values || []), ...(customValues[taxon.position] || [])];
+    const allOptions = [
+        ...(taxon.wildcard_enabled && taxon.wildcard_name ? [{ value: taxon.wildcard_name, position: 0 }] : []),
+        ...(taxon?.preset_values || []),
+        ...(customValues[taxon.position] || []),
+    ].filter((option, index, values) => values.findIndex((value) => value.value === option.value) === index);
     const taxonHasOptions = allOptions?.length > 0;
     const customValueLinkStyles = {
         fontSize: '14px',
@@ -460,9 +464,13 @@ const MetadataSelect = ({
             return false;
         }
         // Duplicate validation
+        const matchingTaxon = taxa.find((t) => t.position === Number(selectedTaxonPosition));
         const valuesToCheck = [
-            ...(taxa.find((t) => t.position === Number(selectedTaxonPosition))?.preset_values || []),
+            ...(matchingTaxon?.preset_values || []),
             ...(customValues[selectedTaxonPosition as number] || []),
+            ...(matchingTaxon?.wildcard_enabled && matchingTaxon.wildcard_name
+                ? [{ value: matchingTaxon.wildcard_name, position: 0 }]
+                : []),
         ];
         if (valuesToCheck.some((vtc) => vtc.value === value)) {
             setError(errorPrefix + 'The option already exists.');
@@ -555,6 +563,13 @@ const MetadataSelect = ({
                                 ? ['None']
                                 : selectedValues.filter((v) => v !== 'None');
                         }
+                        if (taxon.wildcard_enabled && taxon.wildcard_name) {
+                            const wasWildcardSelected = value.some((v) => v.value === taxon.wildcard_name);
+                            selectedValues =
+                                selectedValues.includes(taxon.wildcard_name) && !wasWildcardSelected
+                                    ? [taxon.wildcard_name]
+                                    : selectedValues.filter((v) => v !== taxon.wildcard_name);
+                        }
                         const convertedValues = selectedValues.map((selectedValue) => {
                             const existingValue = value.find((v) => v.value === selectedValue);
 
@@ -582,6 +597,11 @@ const MetadataSelect = ({
                         allOptions?.map((mfv: MetadataFormValue) => (
                             <MenuItem key={`${taxon.id}-${taxon.name}-${mfv.value}-option`} value={mfv.value}>
                                 {mfv.value}
+                                {mfv.value === taxon.wildcard_name && taxon.wildcard_enabled && (
+                                    <BodyText component="span" color="textSecondary" ml={0.5}>
+                                        (Engagement applies to all)
+                                    </BodyText>
+                                )}
                             </MenuItem>
                         ))}
                 </Select>
