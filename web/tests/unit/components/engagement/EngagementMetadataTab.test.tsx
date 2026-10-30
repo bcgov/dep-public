@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import MetadataTab from '../../../../src/components/engagement/admin/view/MetadataTab';
 import { engagementMetadata, engagementMetadataTaxon } from '../factory';
@@ -197,4 +197,38 @@ test('Renders multiple selection description', async () => {
     await waitFor(() => {
         expect(screen.getByText(/multiple selection/i)).toBeInTheDocument();
     });
+});
+
+test('Selecting a wildcard clears other engagement metadata options', async () => {
+    mockLoaderData.taxa = Promise.resolve([
+        {
+            ...engagementMetadataTaxon,
+            wildcard_enabled: true,
+            wildcard_name: 'Province-wide',
+        },
+    ]);
+    mockLoaderData.metadata = Promise.resolve([
+        {
+            ...engagementMetadata,
+            value: 'Province-wide',
+        },
+    ]);
+
+    render(<MetadataTab />);
+
+    const select = await screen.findByLabelText('Select a value for the test.');
+    fireEvent.mouseDown(select);
+
+    const wildcardOption = (
+        await screen.findAllByRole('option', {
+            name: /Province-wide/,
+        })
+    )[0];
+    const regularOption = screen.getAllByRole('option', { name: 'test' })[0];
+    expect(wildcardOption).toHaveAttribute('aria-selected', 'true');
+
+    fireEvent.click(regularOption);
+
+    expect(wildcardOption).toHaveAttribute('aria-selected', 'false');
+    expect(regularOption).toHaveAttribute('aria-selected', 'true');
 });

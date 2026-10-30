@@ -3,17 +3,15 @@ import { MetadataFilterType } from './types';
 
 export const MetadataFilterTypes: { [key: string]: MetadataFilterType } = {
     chips_any: {
-        name: 'Show results matching any selected',
+        name: 'Match any selected option',
         code: 'chips_any',
-        details:
-            'Users may filter by selecting one or more values. At least one of the selected values must be present on the engagement for it to be shown.',
+        details: 'If someone selects more than one option, show engagements matching at least one of them.',
         icon: faObjectUnion,
     },
     chips_all: {
-        name: 'Show results matching all selected',
+        name: 'Match all selected options',
         code: 'chips_all',
-        details:
-            'Users may filter by selecting one or more values. All the selected values must be present on the engagement for it to be shown.',
+        details: 'If someone selects more than one option, show only engagements matching every selected option.',
         icon: faObjectIntersect,
     },
 };

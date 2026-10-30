@@ -18,7 +18,7 @@ import pytest
 from faker import Faker
 from marshmallow import ValidationError
 
-from api.models.engagement_metadata import MetadataTaxon
+from api.models.engagement_metadata import EngagementMetadata, MetadataTaxon
 from api.services.engagement_metadata_service import EngagementMetadataService
 from api.services.metadata_taxon_service import MetadataTaxonService
 from tests.utilities.factory_scenarios import TestEngagementInfo, TestEngagementMetadataTaxonInfo
@@ -349,3 +349,60 @@ def test_get_filters(session):
     assert len(filters[3]['values']) == 2
     assert 'fred' in filters[3]['values']
     assert 'quux' in filters[3]['values']
+
+
+def test_get_filters_excludes_engagement_wildcard_values(session):
+    """Wildcard values are stored on engagements but must not be public filter options."""
+    tenant, _ = factory_taxon_requirements()
+    taxon = factory_metadata_taxon_model(tenant.id, {
+        **TestEngagementMetadataTaxonInfo.taxon1,
+        'name': 'Region',
+        'data_type': 'geo_area',
+    })
+    taxon.filter_type = 'chips_any'
+    taxon.include_freeform = True
+    taxon.wildcard_enabled = True
+    taxon.wildcard_name = 'Province-wide'
+    taxon.save()
+    engagement = factory_engagement_model({
+        **TestEngagementInfo.engagement1,
+        'tenant_id': tenant.id,
+        'is_internal': False,
+    })
+    engagement_metadata_service.create(engagement.id, taxon.id, 'Province-wide')
+    engagement_metadata_service.create(engagement.id, taxon.id, 'North')
+
+    filters = MetadataTaxonService.get_filter_options(tenant.id)
+
+    assert filters == [{
+        'taxon_id': taxon.id,
+        'name': 'Region',
+        'filter_type': 'chips_any',
+        'values': ['North'],
+        'wildcard_name': 'Province-wide',
+    }]
+
+
+def test_renaming_wildcard_updates_existing_engagement_values(session):
+    """Renaming an enabled wildcard keeps previously selected engagements wildcarded."""
+    tenant, _ = factory_taxon_requirements()
+    taxon = factory_metadata_taxon_model(tenant.id, {
+        **TestEngagementMetadataTaxonInfo.taxon1,
+        'name': 'Region',
+        'data_type': 'geo_area',
+    })
+    taxon.wildcard_enabled = True
+    taxon.wildcard_name = 'Province-wide'
+    taxon.save()
+    engagement = factory_engagement_model({
+        **TestEngagementInfo.engagement1,
+        'tenant_id': tenant.id,
+        'is_internal': False,
+    })
+    engagement_metadata_service.create(engagement.id, taxon.id, 'Province-wide')
+
+    MetadataTaxonService.update(taxon.id, {'wildcard_name': 'Region-wide'})
+
+    metadata = EngagementMetadata.query.filter_by(
+        engagement_id=engagement.id, taxon_id=taxon.id).one()
+    assert metadata.value == 'Region-wide'

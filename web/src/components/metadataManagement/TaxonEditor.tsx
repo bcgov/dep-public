@@ -1,4 +1,15 @@
-import { Grid2 as Grid, Box, Paper, IconButton, Modal, Typography, Chip, Fade } from '@mui/material';
+import {
+    Grid2 as Grid,
+    Box,
+    Paper,
+    IconButton,
+    Typography,
+    Chip,
+    Fade,
+    Dialog,
+    DialogContent,
+    DialogActions,
+} from '@mui/material';
 import { ThemeProvider, useTheme } from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -163,17 +174,33 @@ export const TaxonEditor = () => {
                     Collapse All
                 </Button>
             </Grid>
-            <Grid container size={12} gap={2}>
-                <Grid
-                    size={6}
-                    component={Paper}
-                    sx={{
-                        padding: '1em',
-                        // Distinguish from child components
-                        backgroundColor: '#f5f5f5',
-                    }}
-                    elevation={3}
-                >
+            <Grid
+                container
+                size={12}
+                gap={2}
+                component={Paper}
+                sx={{
+                    bgcolor: 'gray.10',
+                    padding: '1rem',
+                    minHeight: '800px',
+                    // Enable vertical scrolling
+                    overflowY: 'scroll',
+                    // Don't hide the scrollbar
+                    scrollbarWidth: 'thin',
+                    scrollbarColor: `${theme.palette.primary.main} ${theme.palette.grey[200]}`,
+                    '&::-webkit-scrollbar': {
+                        width: '12px',
+                    },
+                    '&::-webkit-scrollbar-thumb': {
+                        backgroundColor: theme.palette.primary.main,
+                    },
+                    '&::-webkit-scrollbar-track': {
+                        backgroundColor: theme.palette.grey[200],
+                    },
+                }}
+                mb={1}
+            >
+                <Grid size={{ xs: 12, lg: 'grow' }} minWidth="320px" maxWidth="700px !important">
                     <Fade in={showScrollIndicators.top} timeout={300}>
                         <Box
                             sx={{
@@ -212,7 +239,7 @@ export const TaxonEditor = () => {
                                 backgroundColor: theme.palette.primary.main,
                             },
                             '&::-webkit-scrollbar-track': {
-                                backgroundColor: '#f5f5f5',
+                                backgroundColor: 'gray.10',
                             },
                         }}
                         ref={scrollableRef}
@@ -282,64 +309,28 @@ export const TaxonEditor = () => {
                 <If condition={isSmallScreen}>
                     <Then>
                         {selectedTaxon && (
-                            <Modal open={true} onClose={() => setSelectedTaxonId(-1)}>
-                                <Paper
-                                    sx={{
-                                        position: 'absolute',
-                                        top: '50%',
-                                        left: '50%',
-                                        transform: 'translate(-50%, -50%)',
-                                        boxShadow: 24,
-                                        p: 4,
-                                        paddingTop: '0',
-                                        width: '80%',
-                                        maxWidth: '40em',
-                                        minWidth: '320px',
-                                        maxHeight: '90vh',
-                                        overflowY: 'scroll',
-                                    }}
-                                >
-                                    <IconButton
-                                        onClick={() => setSelectedTaxonId(-1)}
-                                        sx={{
-                                            position: 'absolute',
-                                            right: '0.5em',
-                                            top: '0.5em',
-                                        }}
-                                    >
-                                        <FontAwesomeIcon icon={faXmark} style={{ fontSize: '20px' }} />
+                            <Dialog
+                                open={true}
+                                onClose={() => setSelectedTaxonId(-1)}
+                                slotProps={{
+                                    paper: { sx: { backgroundColor: 'gray.10', minWidth: '320px' } },
+                                }}
+                            >
+                                <DialogActions>
+                                    <IconButton onClick={() => setSelectedTaxonId(-1)} sx={{}}>
+                                        <FontAwesomeIcon icon={faXmark} style={{ width: '20px', height: '20px' }} />
                                     </IconButton>
-                                    <Box sx={{ height: '4em' }} />
+                                </DialogActions>
+                                <DialogContent>
                                     <TaxonEditForm taxon={selectedTaxon} />
-                                </Paper>
-                            </Modal>
+                                </DialogContent>
+                            </Dialog>
                         )}
                     </Then>
                     <Else>
                         {selectedTaxon && (
                             <Grid size="grow">
-                                <Paper
-                                    sx={{
-                                        padding: '1rem',
-                                        height: '100%',
-                                        // Enable vertical scrolling
-                                        overflowY: 'scroll',
-                                        // Don't hide the scrollbar
-                                        scrollbarWidth: 'thin',
-                                        scrollbarColor: `${theme.palette.primary.main} #f5f5f5`,
-                                        '&::-webkit-scrollbar': {
-                                            width: '12px',
-                                        },
-                                        '&::-webkit-scrollbar-thumb': {
-                                            backgroundColor: theme.palette.primary.main,
-                                        },
-                                        '&::-webkit-scrollbar-track': {
-                                            backgroundColor: '#f5f5f5',
-                                        },
-                                    }}
-                                >
-                                    <TaxonEditForm taxon={selectedTaxon} />
-                                </Paper>
+                                <TaxonEditForm taxon={selectedTaxon} />
                             </Grid>
                         )}
                     </Else>
