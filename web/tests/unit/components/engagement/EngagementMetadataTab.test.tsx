@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import MetadataTab from '../../../../src/components/engagement/admin/view/MetadataTab';
 import { engagementMetadata, engagementMetadataTaxon } from '../factory';

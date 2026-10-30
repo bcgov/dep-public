@@ -15,7 +15,6 @@ import {
 } from '@mui/material';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCheck } from '@fortawesome/pro-regular-svg-icons/faCheck';
-import { faPen } from '@fortawesome/pro-solid-svg-icons/faPen';
 import { faXmark } from '@fortawesome/pro-regular-svg-icons/faXmark';
 import { faTrash } from '@fortawesome/pro-solid-svg-icons/faTrash';
 import { faCircleExclamation } from '@fortawesome/pro-solid-svg-icons/faCircleExclamation';
