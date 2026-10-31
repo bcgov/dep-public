@@ -28,6 +28,7 @@ class UploadedFileSchema(BaseSchema):
             'size',
             'status',
             'uploaded_at',
+            'uploader_name',
             'url',
         )
         unknown = EXCLUDE
@@ -55,3 +56,9 @@ class UploadedFileSchema(BaseSchema):
     def get_url(self, obj):
         """Generate a URL for the uploaded file based on its unique filename."""
         return self.object_storage_service.get_url(obj.unique_filename)
+
+    uploader_name = fields.Method('get_uploader_name')
+
+    def get_uploader_name(self, obj):
+        """Get the uploader's full name."""
+        return obj.uploader_name
