@@ -610,7 +610,7 @@ class TestContactInfo(dict, Enum):
 
     contact1 = {
         'name': fake.name(),
-        'title': fake.job(),
+        'title': fake.job()[:50],
         'phone_number': fake.phone_number(),
         'email': fake.email(),
         'address': fake.address(),
