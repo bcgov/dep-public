@@ -211,7 +211,7 @@ jobs:
             fi
             
             helm lint . $VALUES
-            helm template . $VALUES --dry-run=$VALIDATION_METHOD > /dev/null
+            helm template "${{ matrix.chart.name }}" . $VALUES --dry-run=$VALIDATION_METHOD > /dev/null
           else
             VALIDATION_METHOD="client"
             echo "Server-side linting disabled - using dry-run=client for all environments"
@@ -225,6 +225,6 @@ jobs:
               fi
               
               helm lint . $VALUES
-              helm template . $VALUES --dry-run=$VALIDATION_METHOD > /dev/null
+              helm template "${{ matrix.chart.name }}" . $VALUES --dry-run=$VALIDATION_METHOD > /dev/null
             done
           fi
