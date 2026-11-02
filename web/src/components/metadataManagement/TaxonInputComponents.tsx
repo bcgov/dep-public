@@ -121,7 +121,7 @@ export const taxonSwitch = ({ taxon, field, setValue, errors }: TaxonInputProps)
                 onChange={(e) => {
                     setValue(taxon.id.toString(), e.target.checked);
                 }}
-                inputProps={{ 'aria-label': 'controlled' }}
+                slotProps={{ input: { 'aria-label': 'controlled' } }}
             />
         }
         label={

@@ -18,6 +18,7 @@ Test suite to ensure that the Engagement model routines are working as expected.
 
 import pytest
 from faker import Faker
+from sqlalchemy import event
 
 from api.constants.engagement_status import Status
 from api.models import db
@@ -198,6 +199,32 @@ def test_get_engagements_paginated_public_status_search(session):
 
     assert count == 1
     assert results[0].status_id == Status.Closed.value
+
+
+def test_count_engagements_many_uses_one_query(session):
+    """Multiple engagement counts are returned from a single database query."""
+    factory_engagement_model(status=Status.Published.value)
+    factory_engagement_model(status=Status.Closed.value)
+    scope_options = EngagementScopeOptions(restricted=False)
+    search_options = [
+        {'engagement_status': [str(Status.Published.value)]},
+        {'engagement_status': [str(Status.Closed.value)]},
+    ]
+    executed_statements = []
+
+    def record_statement(_connection, _cursor, statement, *_):
+        if statement.lstrip().upper().startswith('SELECT'):
+            executed_statements.append(statement)
+
+    event.listen(db.engine, 'before_cursor_execute', record_statement)
+    try:
+        counts = EngagementModel.count_engagements_many(
+            123, scope_options, search_options)
+    finally:
+        event.remove(db.engine, 'before_cursor_execute', record_statement)
+
+    assert counts == [1, 1]
+    assert len(executed_statements) == 1
 
 
 def test_public_engagement_search_excludes_unpublished(session):

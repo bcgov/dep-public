@@ -28,8 +28,8 @@ from api.models.survey import Survey as SurveyModel
 from api.schemas.engagement import EngagementSchema
 from api.schemas.suggested_engagement import SuggestedEngagementSyncItemSchema
 from api.services import authorization
-from api.services.engagement_file_service import EngagementFileService
 from api.services.engagement_details_tab_service import EngagementDetailsTabService
+from api.services.engagement_file_service import EngagementFileService
 from api.services.engagement_settings_service import EngagementSettingsService
 from api.services.metadata_taxon_service import MetadataTaxonService
 from api.services.object_storage_service import ObjectStorageService
@@ -170,10 +170,89 @@ class EngagementService:
         filters = MetadataTaxonService.get_filter_options(tenant_id)
         search_options = self._build_metadata_search_options(
             payload, filters, external_user_id)
-        status_counts = self._get_metadata_status_counts(
-            external_user_id, search_options)
-        metadata_counts, metadata_total_counts = self._get_metadata_filter_counts(
-            external_user_id, search_options, filters)
+        count_requests = self._build_metadata_count_requests(
+            search_options, filters)
+        counts = self.count_engagements_many(
+            external_user_id,
+            [options for _, _, options in count_requests],
+        )
+        return self._map_metadata_counts(count_requests, counts)
+
+    @staticmethod
+    def _build_metadata_count_requests(search_options, filters):
+        requests = [
+            ('status', status, {**search_options,
+             'engagement_status': [status]})
+            for status in ('open', 'upcoming', 'closed', 'cancelled')
+        ]
+        for filter_option in filters:
+            requests.extend(
+                EngagementService._build_filter_count_requests(
+                    search_options, filter_option)
+            )
+        return requests
+
+    @staticmethod
+    def _build_filter_count_requests(search_options, filter_option):
+        taxon_id = filter_option['taxon_id']
+        requests = []
+        current_values = next(
+            (item.get('values', []) for item in search_options['metadata']
+             if item.get('taxon_id') == taxon_id),
+            [],
+        )
+        contextual_metadata = [
+            item for item in search_options['metadata']
+            if item.get('taxon_id') != taxon_id
+        ]
+
+        for value in filter_option['values']:
+            key = f'{taxon_id}:{value}'
+            candidate_values = (
+                list(dict.fromkeys(current_values + [value]))
+                if filter_option['filter_type'] == 'chips_all'
+                else [value]
+            )
+            requests.append((
+                'metadata',
+                key,
+                {
+                    **search_options,
+                    'metadata': contextual_metadata + [{
+                        'taxon_id': taxon_id,
+                        'filter_type': filter_option['filter_type'],
+                        'values': candidate_values,
+                    }],
+                },
+            ))
+            requests.append((
+                'total',
+                key,
+                {
+                    **search_options,
+                    'search_text': '',
+                    'engagement_status': [],
+                    'metadata': [{
+                        'taxon_id': taxon_id,
+                        'filter_type': filter_option['filter_type'],
+                        'values': [value],
+                    }],
+                },
+            ))
+        return requests
+
+    @staticmethod
+    def _map_metadata_counts(count_requests, counts):
+        status_counts = {}
+        metadata_counts = {}
+        metadata_total_counts = {}
+        for (count_type, key, _), count in zip(count_requests, counts):
+            if count_type == 'status':
+                status_counts[key] = count
+            elif count_type == 'metadata':
+                metadata_counts[key] = count
+            else:
+                metadata_total_counts[key] = count
 
         return {
             'status_counts': status_counts,
@@ -209,62 +288,23 @@ class EngagementService:
             'exclude_internal': external_user_id is None,
             'has_team_access': False,
             'public_search': True,
-        }
-
-    def _get_metadata_status_counts(self, external_user_id, search_options):
-        statuses = ('open', 'upcoming', 'closed', 'cancelled')
-        return {
-            status: self.count_engagements(
-                external_user_id,
-                {**search_options, 'engagement_status': [status]},
-            )
-            for status in statuses
-        }
-
-    def _get_metadata_filter_counts(self, external_user_id, search_options, filters):
-        metadata_counts = {}
-        metadata_total_counts = {}
-
-        for filter_option in filters:
-            taxon_id = filter_option['taxon_id']
-            for value in filter_option['values']:
-                key = f'{taxon_id}:{value}'
-                current_values = next(
-                    (item.get('values', []) for item in search_options['metadata']
-                     if item.get('taxon_id') == taxon_id),
-                    [],
-                )
-                candidate_values = (
-                    list(dict.fromkeys(current_values + [value]))
-                    if filter_option['filter_type'] == 'chips_all'
-                    else [value]
-                )
-                contextual_metadata = [
-                    item for item in search_options['metadata']
-                    if item.get('taxon_id') != taxon_id
-                ] + [{
-                    'taxon_id': taxon_id,
-                    'filter_type': filter_option['filter_type'],
-                    'values': candidate_values,
-                }]
-                metadata_counts[key] = self.count_engagements(
-                    external_user_id,
-                    {**search_options, 'metadata': contextual_metadata},
-                )
-                total_options = {
-                    **search_options,
-                    'search_text': '',
-                    'engagement_status': [],
-                    'metadata': [{
-                        'taxon_id': taxon_id,
-                        'filter_type': filter_option['filter_type'],
-                        'values': [value],
-                    }],
+            '_metadata_filter_config': {
+                item['taxon_id']: {
+                    'filter_type': item['filter_type'],
+                    'wildcard_name': item.get('wildcard_name'),
                 }
-                metadata_total_counts[key] = self.count_engagements(
-                    external_user_id, total_options)
+                for item in filters
+            },
+        }
 
-        return metadata_counts, metadata_total_counts
+    def count_engagements_many(self, external_user_id, search_options_list):
+        """Count engagements for multiple search filters in one database round trip."""
+        scope_options = self._get_scope_options(
+            TokenInfo.get_user_roles(),
+            search_options_list[0].get('has_team_access', False),
+        )
+        return EngagementModel.count_engagements_many(
+            external_user_id, scope_options, search_options_list)
 
     @staticmethod
     def _get_scope_options(user_roles, has_team_access):

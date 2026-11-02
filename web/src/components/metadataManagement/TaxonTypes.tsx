@@ -10,7 +10,7 @@ import {
     faCalendarDay,
     faClock,
     faHashtag,
-    faInputText,
+    faCubes,
     faAlignLeft,
     faLinkSimple,
     faPhone,
@@ -20,13 +20,13 @@ import {
 
 export const TaxonTypes: { [key: string]: TaxonType } = {
     text: {
-        name: 'Text',
-        icon: faInputText,
+        name: 'Tag (text)',
+        icon: faCubes,
         supportsPresetValues: true,
         supportsFreeform: true,
         supportsMulti: true,
         yupValidator: yup.string(),
-        supportedFilters: [MetadataFilterTypes.chips_all, MetadataFilterTypes.chips_any],
+        supportedFilters: [MetadataFilterTypes.chips_any, MetadataFilterTypes.chips_all],
         allowFreeformInFilter: true,
     },
     long_text: {
@@ -138,7 +138,7 @@ export const TaxonTypes: { [key: string]: TaxonType } = {
         supportsPresetValues: true,
         supportsFreeform: true,
         supportsMulti: true,
-        supportedFilters: [MetadataFilterTypes.chips_all, MetadataFilterTypes.chips_any],
+        supportedFilters: [MetadataFilterTypes.chips_any, MetadataFilterTypes.chips_all],
         yupValidator: yup.string(),
     },
 };

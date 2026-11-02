@@ -671,7 +671,7 @@ const FilterMenu = ({
                         updateStatus([target.value], target.checked);
                     }}
                 >
-                    <Suspense fallback={<StatusFiltersLoading />}>
+                    <Suspense fallback={<FiltersLoading />}>
                         <Await resolve={statusCounts} errorElement={null}>
                             {(counts: Record<string, number>) =>
                                 statusLabels(translate).map(([value, label]) => (
@@ -810,7 +810,7 @@ const MetadataTaxonFilters = ({
     ));
 };
 
-const StatusFiltersLoading = () => {
+const FiltersLoading = ({ n = 4 }: { n?: number }) => {
     const { t: translate } = useAppTranslation();
     return (
         <Grid
@@ -822,12 +822,14 @@ const StatusFiltersLoading = () => {
             aria-busy="true"
         >
             <Grid aria-hidden="true">
-                {statusLabels(translate).map(([value]) => (
-                    <Grid key={value} container alignItems="center" gap={1} height={32}>
-                        <Skeleton variant="rounded" width={20} height={20} />
-                        <Skeleton variant="text" width={120} height={22} />
-                    </Grid>
-                ))}
+                {Array.from({ length: n })
+                    .map((_, index) => index)
+                    .map((x: number) => (
+                        <Grid key={x} container alignItems="center" gap={1} height={38}>
+                            <Skeleton variant="rounded" width={20} height={20} />
+                            <Skeleton variant="text" width={120} height={22} />
+                        </Grid>
+                    ))}
             </Grid>
         </Grid>
     );
@@ -846,8 +848,25 @@ const MetadataTaxaLoading = () => {
         >
             <Grid aria-hidden="true" container direction="column" size={12}>
                 {[0, 1, 2].map((index) => (
-                    <Grid key={index} container alignItems="center" height={38} px={2}>
-                        <Skeleton variant="text" width="65%" height={24} />
+                    <Grid
+                        key={index}
+                        container
+                        alignItems="center"
+                        sx={{
+                            border: '1px solid',
+                            borderColor: 'gray.40',
+                            '&:not(:last-child)': { borderBottom: 'none' },
+                        }}
+                    >
+                        <Grid size={12} sx={{ backgroundColor: 'gray.10', height: 38, px: 2, py: 1 }}>
+                            <Skeleton variant="text" width="65%" height={24} />
+                        </Grid>
+                        <Grid size={12} sx={{ backgroundColor: 'white', px: 1.5, py: 1.5 }}>
+                            <FiltersLoading n={5} />
+                            <Link fontSize="14px" component="span" sx={{ width: '65%' }}>
+                                <Skeleton variant="text" width="100%" />
+                            </Link>
+                        </Grid>
                     </Grid>
                 ))}
             </Grid>

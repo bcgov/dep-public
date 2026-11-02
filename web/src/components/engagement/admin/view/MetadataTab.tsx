@@ -91,7 +91,7 @@ export const MetadataTab = () => {
         const metadata = await meta;
         if (!metadata) return;
 
-        // Create an updated copy of taxa with any missing custom values added
+        // Create an updated copy of taxa with any missing custom options added
         const updatedTaxa = t.map((taxon) => {
             if (!selectDataTypes.includes(taxon.data_type as string)) {
                 return taxon;
@@ -227,28 +227,26 @@ export const MetadataTab = () => {
         <Grid id="admin-authoring-section" direction="column" maxWidth={'700px'}>
             <Heading2 decorated>Metadata</Heading2>
             <BodyText size="small" sx={{ mb: '1rem' }}>
-                Adding metadata to your engagement gives users new ways to filter and identify engagement content.
+                These details help staff organize engagements and, when enabled, help people find them in public search.
             </BodyText>
             <Form onSubmit={engMetaForm.handleSubmit(submitForm)} id="publishing-form">
                 <Grid container gap="0" sx={metaContainerStyles}>
                     {taxa.length > 0 &&
                         taxa?.map((taxon: MetadataTaxon) => {
                             const selectionType = taxon.one_per_engagement ? 'single' : 'multiple';
-                            const optionType = taxon.freeform ? ' and custom' : '';
+                            const howMany = selectionType === 'single' ? 'one value' : 'one or more values';
                             return (
                                 <Grid container direction="column" py={2} key={taxon.id}>
-                                    <Box component="label" htmlFor="publish_date" sx={labelStyles}>
+                                    <Box component="div" sx={labelStyles}>
                                         <BodyText bold>{taxon.name}</BodyText>
                                         <BodyText size="small">
                                             {
                                                 metadataTypes.find((mdt) => mdt.db_name === taxon.data_type)
                                                     ?.readable_name
-                                            }{' '}
-                                            data type
+                                            }
                                             {selectDataTypes.includes(String(taxon.data_type))
-                                                ? `, ${selectionType}
-                                            selection, pre-defined${optionType} options`
-                                                : ''}
+                                                ? ` · Choose ${howMany}${(taxon.freeform && ' or add a custom value') || ''}.`
+                                                : ' field'}
                                         </BodyText>
                                     </Box>
                                     <Controller

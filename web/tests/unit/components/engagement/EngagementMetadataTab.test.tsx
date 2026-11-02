@@ -54,7 +54,9 @@ describe('MetadataTab component tests', () => {
         expect(screen.getByText('Metadata')).toBeInTheDocument();
 
         expect(
-            screen.getByText(/Adding metadata to your engagement gives users new ways to filter/i),
+            screen.getByText(
+                /These details help staff organize engagements and, when enabled, help people find them in public search/i,
+            ),
         ).toBeInTheDocument();
     });
 
@@ -73,11 +75,11 @@ describe('MetadataTab component tests', () => {
         });
     });
 
-    test('Renders select data type description', async () => {
+    test('Explains how many select values staff can choose', async () => {
         render(<MetadataTab />);
 
         await waitFor(() => {
-            expect(screen.getByText(/multiple selection/i)).toBeInTheDocument();
+            expect(screen.getByText(/Choose one or more values/i)).toBeInTheDocument();
         });
     });
 
@@ -191,11 +193,11 @@ test('Update metadata button is disabled by default', async () => {
     expect(button).toBeDisabled();
 });
 
-test('Renders multiple selection description', async () => {
+test('Explains multi-value selection for staff', async () => {
     render(<MetadataTab />);
 
     await waitFor(() => {
-        expect(screen.getByText(/multiple selection/i)).toBeInTheDocument();
+        expect(screen.getByText(/Choose one or more values/i)).toBeInTheDocument();
     });
 });
 

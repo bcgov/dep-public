@@ -132,7 +132,7 @@ export const LandingHero = () => {
                     <Box component="span" style={{ fontSize: '0.75rem' }}>
                         or
                     </Box>
-                    <React.Suspense fallback={<Select sx={selectStyles} />}>
+                    <React.Suspense fallback={<Select value="" sx={selectStyles} />}>
                         <Await resolve={regionFilter}>
                             {(filterableRegion) =>
                                 filterableRegion && (
