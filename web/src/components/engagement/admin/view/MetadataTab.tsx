@@ -91,7 +91,7 @@ export const MetadataTab = () => {
         const metadata = await meta;
         if (!metadata) return;
 
-        // Create an updated copy of taxa with any missing custom values added
+        // Create an updated copy of taxa with any missing custom options added
         const updatedTaxa = t.map((taxon) => {
             if (!selectDataTypes.includes(taxon.data_type as string)) {
                 return taxon;
@@ -227,28 +227,26 @@ export const MetadataTab = () => {
         <Grid id="admin-authoring-section" direction="column" maxWidth={'700px'}>
             <Heading2 decorated>Metadata</Heading2>
             <BodyText size="small" sx={{ mb: '1rem' }}>
-                Adding metadata to your engagement gives users new ways to filter and identify engagement content.
+                These details help staff organize engagements and, when enabled, help people find them in public search.
             </BodyText>
             <Form onSubmit={engMetaForm.handleSubmit(submitForm)} id="publishing-form">
                 <Grid container gap="0" sx={metaContainerStyles}>
                     {taxa.length > 0 &&
                         taxa?.map((taxon: MetadataTaxon) => {
                             const selectionType = taxon.one_per_engagement ? 'single' : 'multiple';
-                            const optionType = taxon.freeform ? ' and custom' : '';
+                            const howMany = selectionType === 'single' ? 'one value' : 'one or more values';
                             return (
                                 <Grid container direction="column" py={2} key={taxon.id}>
-                                    <Box component="label" htmlFor="publish_date" sx={labelStyles}>
+                                    <Box component="div" sx={labelStyles}>
                                         <BodyText bold>{taxon.name}</BodyText>
                                         <BodyText size="small">
                                             {
                                                 metadataTypes.find((mdt) => mdt.db_name === taxon.data_type)
                                                     ?.readable_name
-                                            }{' '}
-                                            data type
+                                            }
                                             {selectDataTypes.includes(String(taxon.data_type))
-                                                ? `, ${selectionType}
-                                            selection, pre-defined${optionType} options`
-                                                : ''}
+                                                ? ` · Choose ${howMany}${(taxon.freeform && ' or add a custom value') || ''}.`
+                                                : ' field'}
                                         </BodyText>
                                     </Box>
                                     <Controller
@@ -416,7 +414,11 @@ const MetadataSelect = ({
     const [selectedTaxonDataType, setSelectedTaxonDataType] = useState<string | undefined>();
     const [error, setError] = useState<string | undefined>();
     const taxonIsMulti = !taxon?.one_per_engagement;
-    const allOptions = [...(taxon?.preset_values || []), ...(customValues[taxon.position] || [])];
+    const allOptions = [
+        ...(taxon.wildcard_enabled && taxon.wildcard_name ? [{ value: taxon.wildcard_name, position: 0 }] : []),
+        ...(taxon?.preset_values || []),
+        ...(customValues[taxon.position] || []),
+    ].filter((option, index, values) => values.findIndex((value) => value.value === option.value) === index);
     const taxonHasOptions = allOptions?.length > 0;
     const customValueLinkStyles = {
         fontSize: '14px',
@@ -460,9 +462,13 @@ const MetadataSelect = ({
             return false;
         }
         // Duplicate validation
+        const matchingTaxon = taxa.find((t) => t.position === Number(selectedTaxonPosition));
         const valuesToCheck = [
-            ...(taxa.find((t) => t.position === Number(selectedTaxonPosition))?.preset_values || []),
+            ...(matchingTaxon?.preset_values || []),
             ...(customValues[selectedTaxonPosition as number] || []),
+            ...(matchingTaxon?.wildcard_enabled && matchingTaxon.wildcard_name
+                ? [{ value: matchingTaxon.wildcard_name, position: 0 }]
+                : []),
         ];
         if (valuesToCheck.some((vtc) => vtc.value === value)) {
             setError(errorPrefix + 'The option already exists.');
@@ -555,6 +561,13 @@ const MetadataSelect = ({
                                 ? ['None']
                                 : selectedValues.filter((v) => v !== 'None');
                         }
+                        if (taxon.wildcard_enabled && taxon.wildcard_name) {
+                            const wasWildcardSelected = value.some((v) => v.value === taxon.wildcard_name);
+                            selectedValues =
+                                selectedValues.includes(taxon.wildcard_name) && !wasWildcardSelected
+                                    ? [taxon.wildcard_name]
+                                    : selectedValues.filter((v) => v !== taxon.wildcard_name);
+                        }
                         const convertedValues = selectedValues.map((selectedValue) => {
                             const existingValue = value.find((v) => v.value === selectedValue);
 
@@ -582,6 +595,11 @@ const MetadataSelect = ({
                         allOptions?.map((mfv: MetadataFormValue) => (
                             <MenuItem key={`${taxon.id}-${taxon.name}-${mfv.value}-option`} value={mfv.value}>
                                 {mfv.value}
+                                {mfv.value === taxon.wildcard_name && taxon.wildcard_enabled && (
+                                    <BodyText component="span" color="textSecondary" ml={0.5}>
+                                        (Engagement applies to all)
+                                    </BodyText>
+                                )}
                             </MenuItem>
                         ))}
                 </Select>

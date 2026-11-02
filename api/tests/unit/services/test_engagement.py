@@ -68,14 +68,17 @@ def test_get_metadata_counts(session):
     service = EngagementService()
     calls = []
 
-    def count_engagements(user_id, options):
-        calls.append(options)
-        return len(calls)
+    def count_engagements_many(user_id, options_list):
+        calls.extend(options_list)
+        return list(range(1, len(options_list) + 1))
 
     with patch.object(MetadataTaxonService, 'get_filter_options', return_value=filters):
-        with patch.object(service, 'count_engagements', side_effect=count_engagements):
+        with patch.object(
+            service, 'count_engagements_many', side_effect=count_engagements_many
+        ) as count_many:
             result = service.get_metadata_counts(1, payload, None)
 
+    count_many.assert_called_once()
     assert result['status_counts'] == {
         'open': 1,
         'upcoming': 2,

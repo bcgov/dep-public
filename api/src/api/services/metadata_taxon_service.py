@@ -4,7 +4,7 @@ from typing import List, Optional
 
 from api.models import db
 from api.models.db import transactional
-from api.models.engagement_metadata import MetadataTaxon, MetadataTaxonFilterType
+from api.models.engagement_metadata import EngagementMetadata, MetadataTaxon, MetadataTaxonFilterType
 from api.models.tenant import Tenant
 from api.schemas.engagement_metadata import MetadataTaxonFilterSchema, MetadataTaxonSchema
 
@@ -37,27 +37,32 @@ class MetadataTaxonService:
         filters = []
         available_filters = [e.value for e in MetadataTaxonFilterType]
         for taxon in results:
-            if taxon.filter_type in available_filters:
-                values = []
-                if taxon.freeform and taxon.include_freeform:
-                    # Include values specified on engagements as usable options
-                    # (unique values only)
-                    values = list({entry.value for entry in taxon.entries})
-                else:
-                    # Just use the preset values
-                    values = [
-                        preset_value['value']
-                        for preset_value in taxon.preset_values
-                    ]
-                # Don't return the filter if the user has no options; this prevents
-                # the frontend from displaying a useless filter
-                if values:
-                    filters.append({
-                        'taxon_id': taxon.id,
-                        'name': taxon.name,
-                        'filter_type': taxon.filter_type,
-                        'values': values
-                    })
+            if taxon.filter_type not in available_filters:
+                continue
+            values = []
+            if taxon.freeform and taxon.include_freeform:
+                # Include values specified on engagements as usable options
+                # (unique values only)
+                values = list({entry.value for entry in taxon.entries})
+            else:
+                # Just use the preset values
+                values = list({
+                    preset_value['value']
+                    for preset_value in taxon.preset_values
+                })
+            wildcard_name = taxon.wildcard_name if taxon.wildcard_enabled else None
+            if wildcard_name:
+                values = [value for value in values if value != taxon.wildcard_name]
+            # Don't return the filter if the user has no options; this prevents
+            # the frontend from displaying a useless filter
+            if values:
+                filters.append({
+                    'taxon_id': taxon.id,
+                    'name': taxon.name,
+                    'filter_type': taxon.filter_type,
+                    'values': values,
+                    'wildcard_name': wildcard_name,
+                })
         return MetadataTaxonFilterSchema(many=True).dump(filters)
 
     @staticmethod
@@ -80,7 +85,9 @@ class MetadataTaxonService:
                 'data_type': 'geo_area',
                 'filter_type': MetadataTaxonFilterType.CHIPS_ANY.value,
                 'position': 1,
-                'is_required': True
+                'is_required': True,
+                'wildcard_enabled': True,
+                'wildcard_name': 'Province-wide'
 
             },
             {
@@ -89,7 +96,9 @@ class MetadataTaxonService:
                 'data_type': 'text',
                 'filter_type': MetadataTaxonFilterType.CHIPS_ALL.value,
                 'position': 2,
-                'is_required': True
+                'is_required': True,
+                'wildcard_enabled': False,
+                'wildcard_name': None
             }
         ]
         created_taxa = []
@@ -104,9 +113,23 @@ class MetadataTaxonService:
         taxon = MetadataTaxon.query.get(taxon_id)
         if not taxon:
             raise KeyError(f'Taxon with id {taxon_id} does not exist.')
+        old_wildcard_name = taxon.wildcard_name if taxon.wildcard_enabled else None
         schema = MetadataTaxonSchema()
         taxon = schema.load(taxon_data, session=db.session,
                             instance=taxon, partial=True)
+        if (
+            old_wildcard_name and
+            taxon.wildcard_name and
+            taxon.wildcard_name != old_wildcard_name
+        ):
+            db.session.query(EngagementMetadata).filter(
+                EngagementMetadata.taxon_id == taxon_id,
+                EngagementMetadata.engagement_id.isnot(None),
+                EngagementMetadata.value == old_wildcard_name,
+            ).update(
+                {EngagementMetadata.value: taxon.wildcard_name},
+                synchronize_session=False,
+            )
         return schema.dump(taxon)
 
     @staticmethod

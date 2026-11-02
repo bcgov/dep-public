@@ -51,7 +51,7 @@ const getSecondaryButtonStyles = (color: ButtonProps['color'], isDarkMode: boole
         borderColor = 'white';
     }
 
-    let darkBorderColor = `${colors.surface.gray[100] + ''}`;
+    let darkBorderColor = `${colors.surface.gray[100]}`;
     if (isCustom) {
         darkBorderColor = `color-mix(in srgb, ${borderColor}, black 20%)`;
     } else if (isDarkMode) {

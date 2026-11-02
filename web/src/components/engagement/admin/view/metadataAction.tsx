@@ -7,7 +7,7 @@ export const metadataAction: ActionFunction = async ({ request }) => {
     const engagementId = Number(formData.get('engagement_id'));
     if (Number.isNaN(engagementId)) return 'failure';
 
-    // Update custom values
+    // Update custom options
     if (formData.get('custom_values')) {
         try {
             const customValues = JSON.parse(formData.get('custom_values') as string) as {

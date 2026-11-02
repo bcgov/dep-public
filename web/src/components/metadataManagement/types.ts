@@ -62,6 +62,7 @@ export interface MetadataFilter {
     name?: string;
     filter_type: string;
     values: string[];
+    wildcard_name?: string | null;
 }
 
 export interface TaxonType {
