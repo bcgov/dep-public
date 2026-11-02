@@ -169,7 +169,6 @@ def factory_email_verification(survey_id, type=None, submission_id=None, partici
 
 def factory_engagement_model(eng_info: dict = TestEngagementInfo.engagement1, name=None, status=None):
     """Produce an engagement model."""
-    """Produce an engagement model."""
     valid_columns = {
         column.name for column in EngagementModel.__table__.columns}
     engagement_data = {
@@ -275,6 +274,10 @@ def factory_metadata_taxon_model(
         data_type=taxon_info.get('data_type'),
         one_per_engagement=taxon_info.get('one_per_engagement'),
         position=taxon_info.get('position'),
+        filter_type=taxon_info.get('filter_type'),
+        include_freeform=taxon_info.get('include_freeform'),
+        wildcard_enabled=taxon_info.get('wildcard_enabled'),
+        wildcard_name=taxon_info.get('wildcard_name')
     )
     taxon.save()
     return taxon

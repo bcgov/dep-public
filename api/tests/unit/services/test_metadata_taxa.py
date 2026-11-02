@@ -358,11 +358,11 @@ def test_get_filters_excludes_engagement_wildcard_values(session):
         **TestEngagementMetadataTaxonInfo.taxon1,
         'name': 'Region',
         'data_type': 'geo_area',
+        'filter_type': 'chips_any',
+        'include_freeform': True,
+        'wildcard_enabled': True,
+        'wildcard_name': 'Province-wide',
     })
-    taxon.filter_type = 'chips_any'
-    taxon.include_freeform = True
-    taxon.wildcard_enabled = True
-    taxon.wildcard_name = 'Province-wide'
     taxon.save()
     engagement = factory_engagement_model({
         **TestEngagementInfo.engagement1,
@@ -390,9 +390,9 @@ def test_renaming_wildcard_updates_existing_engagement_values(session):
         **TestEngagementMetadataTaxonInfo.taxon1,
         'name': 'Region',
         'data_type': 'geo_area',
+        'wildcard_enabled': True,
+        'wildcard_name': 'Province-wide',
     })
-    taxon.wildcard_enabled = True
-    taxon.wildcard_name = 'Province-wide'
     taxon.save()
     engagement = factory_engagement_model({
         **TestEngagementInfo.engagement1,

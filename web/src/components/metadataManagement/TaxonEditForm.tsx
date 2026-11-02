@@ -511,7 +511,6 @@ const TaxonEditForm = ({ taxon }: { taxon: MetadataTaxon }): JSX.Element => {
                                                     <Grid container alignItems="center" spacing={1}>
                                                         {!isSmallScreen && (
                                                             <Grid>
-                                                                {/* <FilterAltOff /> */}
                                                                 <FontAwesomeIcon
                                                                     icon={faFilterSlash}
                                                                     style={{ fontSize: '22px' }}
