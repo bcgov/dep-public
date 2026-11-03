@@ -115,7 +115,10 @@ class MetadataTaxon(BaseModel):
     data_type = db.Column(db.String(64), nullable=True, default='text')
     one_per_engagement = db.Column(db.Boolean)
     position = db.Column(db.Integer, nullable=False, index=True)
+    # How multiple selected values combine (null means the taxon is not filterable)
     filter_type = db.Column(db.String(64), nullable=True)
+    # Where the filter is offered: 'public', 'admin' or 'both'
+    filter_scope = db.Column(db.String(16), nullable=False, default='public', server_default='public')
     # Whether to include freeform values from engagements in the user-facing filter options
     include_freeform = db.Column(db.Boolean, nullable=False, default=False)
     wildcard_enabled = db.Column(db.Boolean, nullable=False, default=False)

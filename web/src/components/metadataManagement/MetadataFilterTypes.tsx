@@ -1,5 +1,5 @@
 import { faObjectIntersect, faObjectUnion } from '@fortawesome/pro-regular-svg-icons';
-import { MetadataFilterType } from './types';
+import { MetadataFilterScope, MetadataFilterType } from './types';
 
 export const MetadataFilterTypes: { [key: string]: MetadataFilterType } = {
     chips_any: {
@@ -14,4 +14,19 @@ export const MetadataFilterTypes: { [key: string]: MetadataFilterType } = {
         details: 'If someone selects more than one option, show only engagements matching every selected option.',
         icon: faObjectIntersect,
     },
+};
+
+export const filterScopeLabels: Record<MetadataFilterScope, string> = {
+    public: 'Public search',
+    admin: 'Admin list',
+    both: 'Public search and admin list',
+};
+
+export const isScopeEnabled = (
+    taxon: { filter_type?: string | null; filter_scope?: MetadataFilterScope },
+    scope: 'public' | 'admin',
+) => {
+    if (!taxon.filter_type) return false;
+    const filterScope = taxon.filter_scope ?? 'public';
+    return filterScope === 'both' || filterScope === scope;
 };

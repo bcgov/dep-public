@@ -49,6 +49,8 @@ export interface GenericInputProps {
     ) => void;
 }
 
+export type MetadataFilterScope = 'public' | 'admin' | 'both';
+
 export interface MetadataFilterType {
     name: string;
     code: string;

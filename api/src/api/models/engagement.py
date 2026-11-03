@@ -443,7 +443,8 @@ class Engagement(BaseModel):
         # Only public taxa (those with a filter type) may be filtered on; the stored type is authoritative.
         return dict(
             query.session.query(MetadataTaxon.id, MetadataTaxon.filter_type)
-            .filter(MetadataTaxon.filter_type.isnot(None)).all())
+            .filter(MetadataTaxon.filter_type.isnot(None),
+                    MetadataTaxon.filter_scope.in_(['public', 'both'])).all())
 
     @staticmethod
     def _filter_by_metadata_criterion(

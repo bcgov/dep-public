@@ -151,8 +151,12 @@ class EngagementService:
         if scope_options.restricted or (search_options and search_options.get('filterable_metadata')):
             for engagement in engagements:
                 if 'metadata' in engagement:
+                    # Filter metadata to include only those with filter scope "public" or "both"
                     engagement['metadata'] = [
-                        md for md in engagement['metadata'] if md.get('taxon') and md['taxon'].get('filter_type')
+                        md for md in engagement['metadata']
+                        if md.get('taxon') and md['taxon'].get('filter_type') and
+                        md['taxon'].get('filter_scope', 'public') in (
+                            'public', 'both')
                     ]
 
         return {'items': engagements, 'total': total}

@@ -29,8 +29,8 @@ class MetadataTaxonService:
         return MetadataTaxonSchema(many=True).dump(sorted_results)
 
     @staticmethod
-    def get_filter_options(tenant_id: int) -> dict:
-        """Get all filterable taxa for a tenant."""
+    def get_filter_options(tenant_id: int, scope: str = 'public') -> dict:
+        """Get the filterable taxa for a tenant that are offered in the given scope ('public' or 'admin')."""
         tenant = Tenant.query.get(tenant_id)
         results = sorted(tenant.metadata_taxa,
                          key=lambda taxon: taxon.position) if tenant else []
@@ -38,6 +38,8 @@ class MetadataTaxonService:
         available_filters = [e.value for e in MetadataTaxonFilterType]
         for taxon in results:
             if taxon.filter_type not in available_filters:
+                continue
+            if (taxon.filter_scope or 'public') not in (scope, 'both'):
                 continue
             values = []
             if taxon.freeform and taxon.include_freeform:
