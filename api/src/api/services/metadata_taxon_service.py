@@ -1,7 +1,6 @@
 """Service for engagement management."""
 
 from typing import List, Optional
-from unittest import result
 
 from api.models import db
 from api.models.db import transactional
