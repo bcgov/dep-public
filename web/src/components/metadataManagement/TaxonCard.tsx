@@ -20,7 +20,7 @@ import { BodyText, Heading3 } from 'components/common/Typography';
 import { TaxonTypes } from './TaxonTypes';
 import { TaxonCardProps } from './types';
 import { Draggable, DraggableProvided } from '@hello-pangea/dnd';
-import { MetadataFilterTypes } from './MetadataFilterTypes';
+import { MetadataFilterTypes, filterScopeLabels } from './MetadataFilterTypes';
 import {
     faTag,
     faTags,
@@ -230,7 +230,7 @@ export const TaxonCard: React.FC<TaxonCardProps> = ({ taxon, isExpanded, onExpan
                                     >
                                         <Typography variant="body1" pl={1}>
                                             {taxon.filter_type
-                                                ? `${MetadataFilterTypes[taxon.filter_type].name}:`
+                                                ? `Filter on: ${filterScopeLabels[taxon.filter_scope ?? 'public']}.`
                                                 : 'Filtering by this field is turned off.'}
                                         </Typography>
                                         {taxon.filter_type && (
@@ -240,8 +240,7 @@ export const TaxonCard: React.FC<TaxonCardProps> = ({ taxon, isExpanded, onExpan
                                         )}
                                         {taxon.include_freeform && taxon.filter_type && (
                                             <Typography variant="body1" pl={1}>
-                                                Staff-entered custom options are also available as public filter
-                                                choices.
+                                                Staff-entered custom values are also available as filter choices.
                                             </Typography>
                                         )}
                                     </DetailsRow>

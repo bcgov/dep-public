@@ -65,6 +65,8 @@ taxon_modify_model = API.model('MetadataTaxon', taxon_model_dict := {
         description='The preset values for the taxon'
     ),
     'filter_type': fields.String(required=False, description='The filter type for the taxon (if any)'),
+    'filter_scope': fields.String(required=False, description="Where the filter is offered: 'public', "
+                                  "'admin' or 'both'"),
     'include_freeform': fields.Boolean(required=False, description='Whether to include freeform '
                                        'values in the user-facing filter options'),
     'wildcard_enabled': fields.Boolean(required=False, description='Whether a wildcard option is enabled'),

@@ -275,6 +275,7 @@ def factory_metadata_taxon_model(
         one_per_engagement=taxon_info.get('one_per_engagement'),
         position=taxon_info.get('position'),
         filter_type=taxon_info.get('filter_type'),
+        filter_scope=taxon_info.get('filter_scope'),
         include_freeform=taxon_info.get('include_freeform'),
         wildcard_enabled=taxon_info.get('wildcard_enabled'),
         wildcard_name=taxon_info.get('wildcard_name')

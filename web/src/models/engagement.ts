@@ -69,6 +69,7 @@ export interface MetadataTaxonModify {
     one_per_engagement?: boolean; // Whether the taxon is limited to one entry per engagement, optional
     preset_values?: MetadataFormValue[]; // The preset values for the taxon
     filter_type?: string | null; // The filter type for the taxon, optional
+    filter_scope?: 'public' | 'admin' | 'both'; // Where the filter is offered
     include_freeform?: boolean; // Whether to include freeform values in options for filtering, optional
     wildcard_enabled?: boolean;
     wildcard_name?: string | null;

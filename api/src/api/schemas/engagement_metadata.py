@@ -71,6 +71,7 @@ class MetadataTaxonSchema(SQLAlchemyAutoSchema):
         'get_preset_values', deserialize='set_preset_values')
     filter_type = fields.String(
         validate=validate.OneOf([e.value for e in MetadataTaxonFilterType]), allow_none=True)
+    filter_scope = fields.String(validate=validate.OneOf(['public', 'admin', 'both']))
     include_freeform = fields.Boolean()
     is_required = fields.Boolean()
     wildcard_enabled = fields.Boolean()

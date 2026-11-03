@@ -1,3 +1,12 @@
+## November 3, 2026
+
+- **Feature** Added support for dynamic filter scope in TaxonEditForm [🎟️ DEP-414](https://citz-gdx.atlassian.net/browse/DEP-414)
+  - Added filter_scope property to API
+  - Updated public search API to only use fields with "public" (or "both") filter scope
+    - Admin side will be able to use fields with "admin" (or "both") filter scope
+  - Updated TaxonEditForm to allow intuitive selection of filter scope and match method
+  - Updated language in TaxonEditForm surrounding filtering
+
 ## October 30, 2026
 
 - **Feature** Added "all-values" option for metadata selection, supporting "Province-wide" option [🎟️ DEP-412](https://citz-gdx.atlassian.net/browse/DEP-412)
@@ -6,6 +15,7 @@
   - Updated TaxonEditor to allow adding the "all-values" option for relevant metadata selections.
   - Updated MetadataTab component to include the "all-values" option on engagements.
   - Updated search logic to always return "all-values" engagements when filtering by the relevant taxon
+
 - **Feature** Added "Uploaded by" column to Engagement Files tab. [🎟️ DEP-408](https://citz-gdx.atlassian.net/browse/DEP-408)
   - Created a db relationship to use the created_by value in uploaded_files to extract full_name from staff_users via username
   - Added column in front-end component and mapped property

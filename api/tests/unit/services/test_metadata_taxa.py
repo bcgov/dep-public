@@ -383,6 +383,52 @@ def test_get_filters_excludes_engagement_wildcard_values(session):
     }]
 
 
+def test_get_filters_respects_filter_scope(session):
+    """Filters are only returned for the scopes they are enabled in."""
+    tenant, _ = factory_taxon_requirements()
+    expected = {}
+    for index, scope in enumerate(['public', 'admin', 'both']):
+        taxon = factory_metadata_taxon_model(tenant.id, {
+            **TestEngagementMetadataTaxonInfo.taxon1,
+            'name': f'Taxon {scope}',
+            'position': 10 + index,
+            'filter_type': 'chips_any',
+            'filter_scope': scope,
+        })
+        # Use property setter to create preset values for the taxon
+        taxon.preset_values = [{'value': 'A', 'position': 1}]
+        taxon.save()
+        expected[scope] = taxon.id
+
+    public_ids = {f['taxon_id']
+                  for f in MetadataTaxonService.get_filter_options(tenant.id)}
+    admin_ids = {f['taxon_id'] for f in MetadataTaxonService.get_filter_options(
+        tenant.id, scope='admin')}
+
+    assert expected['public'] in public_ids
+    assert expected['both'] in public_ids
+    assert expected['admin'] not in public_ids
+    assert expected['admin'] in admin_ids
+    assert expected['both'] in admin_ids
+    assert expected['public'] not in admin_ids
+
+
+def test_get_taxon_without_filters(session):
+    """Taxa without filter options are not returned."""
+    tenant, _ = factory_taxon_requirements()
+    taxon = factory_metadata_taxon_model(tenant.id, {
+        **TestEngagementMetadataTaxonInfo.taxon1,
+        'name': 'Region',
+        'position': 1,
+        'filter_type': 'chips_any',
+    })
+    taxon.preset_values = []
+    taxon.save()
+
+    filters = MetadataTaxonService.get_filter_options(tenant.id)
+    assert filters == []
+
+
 def test_renaming_wildcard_updates_existing_engagement_values(session):
     """Renaming an enabled wildcard keeps previously selected engagements wildcarded."""
     tenant, _ = factory_taxon_requirements()

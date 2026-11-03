@@ -4,14 +4,15 @@ import {
     FormControlLabel,
     FormControl,
     FormGroup,
-    Select,
     Grid2 as Grid,
+    Select,
     MenuItem,
+    Checkbox,
+    Radio,
+    RadioGroup,
     Tooltip,
     Collapse,
     Box,
-    useMediaQuery,
-    Theme,
 } from '@mui/material';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCheck } from '@fortawesome/pro-regular-svg-icons/faCheck';
@@ -26,7 +27,7 @@ import { useAppDispatch } from 'hooks';
 import { If, Then, Else } from 'react-if';
 import { TaxonTypes } from './TaxonTypes';
 import { TaxonType } from './types';
-import { MetadataFilterTypes } from './MetadataFilterTypes';
+import { isScopeEnabled } from './MetadataFilterTypes';
 import PresetValuesEditor from './presetFieldsEditor/PresetValuesEditor';
 import { useForm, SubmitHandler, Controller, FormProvider, UseFormReturn } from 'react-hook-form';
 import { openNotification } from 'services/notificationService/notificationSlice';
@@ -36,8 +37,7 @@ import {
     faArrowUpWideShort,
     faListCheck,
     faCog,
-    faGlobe,
-    faFilterSlash,
+    faFilter,
     faSave,
     IconDefinition,
 } from '@fortawesome/pro-regular-svg-icons';
@@ -94,11 +94,12 @@ const FormSection = ({
     );
 };
 
+type TaxonFormValues = MetadataTaxon & { filter_public?: boolean; filter_admin?: boolean };
+
 const TaxonEditForm = ({ taxon }: { taxon: MetadataTaxon }): JSX.Element => {
     const { setSelectedTaxonId, updateMetadataTaxon, removeMetadataTaxon } = useContext(ActionContext);
     const dispatch = useAppDispatch();
-    const isSmallScreen = useMediaQuery((theme: Theme) => theme.breakpoints.down('sm'));
-    const methods = useForm<MetadataTaxon>({
+    const methods = useForm<TaxonFormValues>({
         defaultValues: {
             name: taxon.name,
             description: taxon.description ?? '',
@@ -106,7 +107,9 @@ const TaxonEditForm = ({ taxon }: { taxon: MetadataTaxon }): JSX.Element => {
             one_per_engagement: taxon.one_per_engagement,
             data_type: taxon.data_type,
             preset_values: taxon.preset_values,
-            filter_type: taxon.filter_type,
+            filter_type: taxon.filter_type ?? 'chips_any',
+            filter_public: isScopeEnabled(taxon, 'public'),
+            filter_admin: isScopeEnabled(taxon, 'admin'),
             include_freeform: taxon.include_freeform,
             wildcard_enabled: taxon.wildcard_enabled,
             wildcard_name: taxon.wildcard_name,
@@ -129,7 +132,9 @@ const TaxonEditForm = ({ taxon }: { taxon: MetadataTaxon }): JSX.Element => {
             one_per_engagement: taxon.one_per_engagement ?? false,
             data_type: taxon.data_type ?? 'text',
             preset_values: taxon.preset_values ? parsePresetValues(taxon.preset_values) : [],
-            filter_type: taxon.filter_type ?? 'none',
+            filter_type: taxon.filter_type ?? 'chips_any',
+            filter_public: isScopeEnabled(taxon, 'public'),
+            filter_admin: isScopeEnabled(taxon, 'admin'),
             include_freeform: taxon.include_freeform ?? false,
             wildcard_enabled: taxon.wildcard_enabled ?? false,
             wildcard_name: taxon.wildcard_name ?? '',
@@ -147,7 +152,15 @@ const TaxonEditForm = ({ taxon }: { taxon: MetadataTaxon }): JSX.Element => {
     // Watch freeform to update label
     const isFreeform = watch('freeform');
     const filterType = watch('filter_type');
-    const isValidFilter = filterType !== 'none';
+    const filterPublic = watch('filter_public');
+    const filterAdmin = watch('filter_admin');
+    const isValidFilter = Boolean(filterPublic || filterAdmin);
+    const getScopeSummary = () => {
+        if (filterPublic && filterAdmin) return 'both the public engagement search and the admin engagement list';
+        if (filterPublic) return 'the public engagement search';
+        if (filterAdmin) return 'the admin engagement list';
+        return '';
+    };
     const presetValues = watch('preset_values');
     const selectedFilter = (taxonType.supportedFilters ?? []).find((filter) => filter.code === filterType);
     const wildcardEnabled = watch('wildcard_enabled');
@@ -178,7 +191,7 @@ const TaxonEditForm = ({ taxon }: { taxon: MetadataTaxon }): JSX.Element => {
             is: (value: string) => (taxonType.supportedFilters ?? []).length > 0,
             then: yup
                 .string()
-                .oneOf(['none', ...(taxonType.supportedFilters ?? []).map((filter) => filter.code)])
+                .oneOf((taxonType.supportedFilters ?? []).map((filter) => filter.code))
                 .nullable(),
             otherwise: yup.string().strip(),
         }),
@@ -210,7 +223,7 @@ const TaxonEditForm = ({ taxon }: { taxon: MetadataTaxon }): JSX.Element => {
         }),
     });
 
-    const onSubmit: SubmitHandler<MetadataTaxon> = async (data, event) => {
+    const onSubmit: SubmitHandler<TaxonFormValues> = async (data, event) => {
         let formErrors: { [key: string]: string } = {};
         // These fields don't always apply to all taxon types, so
         // if they are unsupported, we set them to the defaults
@@ -230,7 +243,7 @@ const TaxonEditForm = ({ taxon }: { taxon: MetadataTaxon }): JSX.Element => {
             }, {});
             // Set errors for each field in formState
             Object.keys(formErrors).forEach((fieldName) => {
-                setError(fieldName as keyof MetadataTaxon, {
+                setError(fieldName as keyof TaxonFormValues, {
                     type: 'validate',
                     message: formErrors[fieldName],
                 });
@@ -244,6 +257,13 @@ const TaxonEditForm = ({ taxon }: { taxon: MetadataTaxon }): JSX.Element => {
             return false;
         }
 
+        const filterEnabled = Boolean(taxonType.supportedFilters && (data.filter_public || data.filter_admin));
+        const getFilterScope = () => {
+            if (data.filter_public && !data.filter_admin) return 'public';
+            if (!data.filter_public && data.filter_admin) return 'admin';
+            if (filterEnabled) return 'both';
+            return 'public';
+        };
         const updatedTaxon: MetadataTaxon = {
             ...taxon,
             name: data.name,
@@ -252,7 +272,8 @@ const TaxonEditForm = ({ taxon }: { taxon: MetadataTaxon }): JSX.Element => {
             one_per_engagement: data.one_per_engagement || !TaxonTypes[data.data_type ?? 'text'].supportsMulti,
             data_type: data.data_type,
             preset_values: TaxonTypes[data.data_type ?? 'text'].supportsPresetValues ? data.preset_values : [],
-            filter_type: data.filter_type === 'none' ? null : data.filter_type,
+            filter_type: filterEnabled ? data.filter_type : null,
+            filter_scope: getFilterScope(),
             include_freeform: data.include_freeform,
             wildcard_enabled: taxonType.supportsPresetValues && data.wildcard_enabled,
             wildcard_name: taxonType.supportsPresetValues ? data.wildcard_name?.trim() || null : null,
@@ -381,7 +402,7 @@ const TaxonEditForm = ({ taxon }: { taxon: MetadataTaxon }): JSX.Element => {
                         <FormSection
                             icon={faListCheck}
                             title="Options for engagement staff"
-                            description="These settings control what staff can choose when adding metadata to an engagement."
+                            description="Control what staff can choose when adding metadata to an engagement."
                         >
                             <Grid>
                                 <BodyText bold>Preset options</BodyText>
@@ -490,61 +511,98 @@ const TaxonEditForm = ({ taxon }: { taxon: MetadataTaxon }): JSX.Element => {
                     </Grid>
                     {taxonType.supportedFilters && (
                         <FormSection
-                            icon={faGlobe}
-                            title="Public search"
-                            description="Choose whether people can use this field to find engagements, and how selected choices are matched."
+                            icon={faFilter}
+                            title="Search filters"
+                            description="Let people find engagements using this field."
                         >
-                            <Grid>
-                                <BodyText bold>Show this field as a search filter</BodyText>
-                                <FormControl fullWidth>
+                            <FormControl component="fieldset" variant="standard">
+                                <BodyText bold component="legend" my={1}>
+                                    Where should this filter appear?
+                                </BodyText>
+                                <FormGroup>
+                                    <Controller
+                                        name="filter_public"
+                                        control={control}
+                                        render={({ field: { onChange, value } }) => (
+                                            <FormControlLabel
+                                                control={
+                                                    <Checkbox
+                                                        checked={Boolean(value)}
+                                                        onChange={(e) => onChange(e.target.checked)}
+                                                    />
+                                                }
+                                                label={
+                                                    <>
+                                                        <BodyText bold>Public engagement search</BodyText>
+                                                        <BodyText size="small">
+                                                            Visitors can narrow the public engagement list by this
+                                                            field.
+                                                        </BodyText>
+                                                    </>
+                                                }
+                                                sx={{ alignItems: 'flex-start', mb: 1 }}
+                                            />
+                                        )}
+                                    />
+                                    <Controller
+                                        name="filter_admin"
+                                        control={control}
+                                        render={({ field: { onChange, value } }) => (
+                                            <FormControlLabel
+                                                control={
+                                                    <Checkbox
+                                                        checked={Boolean(value)}
+                                                        onChange={(e) => onChange(e.target.checked)}
+                                                    />
+                                                }
+                                                label={
+                                                    <>
+                                                        <BodyText bold>Admin engagement list</BodyText>
+                                                        <BodyText size="small">
+                                                            Staff can narrow the admin engagement list by this field,
+                                                            including engagements that are not public.
+                                                        </BodyText>
+                                                    </>
+                                                }
+                                                sx={{ alignItems: 'flex-start' }}
+                                            />
+                                        )}
+                                    />
+                                </FormGroup>
+                            </FormControl>
+                            <Collapse in={isValidFilter} timeout="auto" unmountOnExit>
+                                <FormControl fullWidth component="fieldset" variant="standard">
+                                    <BodyText bold component="legend" my={1}>
+                                        When several choices are selected, show engagements that…
+                                    </BodyText>
                                     <Controller
                                         name="filter_type"
                                         control={control}
-                                        render={({ field: { onChange, value, ...fieldProps } }) => (
-                                            <Select
-                                                error={!!methods.formState.errors.filter_type}
-                                                value={value || 'none'} // Display "none" when value is null or undefined
+                                        render={({ field: { onChange, value } }) => (
+                                            <RadioGroup
+                                                value={value && value !== 'none' ? value : 'chips_any'}
                                                 onChange={onChange}
-                                                {...fieldProps}
+                                                aria-label="Filter match mode"
                                             >
-                                                <MenuItem value="none">
-                                                    <Grid container alignItems="center" spacing={1}>
-                                                        {!isSmallScreen && (
-                                                            <Grid>
-                                                                <FontAwesomeIcon
-                                                                    icon={faFilterSlash}
-                                                                    style={{ fontSize: '22px' }}
-                                                                />
-                                                            </Grid>
-                                                        )}
-                                                        <Grid>Don't show this field in public search</Grid>
-                                                    </Grid>
-                                                </MenuItem>
                                                 {(taxonType.supportedFilters ?? []).map((filter) => (
-                                                    <MenuItem key={filter.code} value={filter.code}>
-                                                        <Grid container alignItems="center" spacing={1}>
-                                                            {!isSmallScreen && (
-                                                                <Grid>
-                                                                    <FontAwesomeIcon
-                                                                        icon={filter.icon}
-                                                                        style={{ fontSize: '22px' }}
-                                                                    />
-                                                                </Grid>
-                                                            )}
-                                                            <Grid>{filter.name}</Grid>
-                                                        </Grid>
-                                                    </MenuItem>
+                                                    <FormControlLabel
+                                                        key={filter.code}
+                                                        value={filter.code}
+                                                        control={<Radio />}
+                                                        sx={{ alignItems: 'flex-start', mb: 1 }}
+                                                        label={
+                                                            <>
+                                                                <BodyText bold>{filter.name}</BodyText>
+                                                                <BodyText size="small">{filter.details}</BodyText>
+                                                            </>
+                                                        }
+                                                    />
                                                 ))}
-                                            </Select>
+                                            </RadioGroup>
                                         )}
-                                    ></Controller>
+                                    />
                                 </FormControl>
-                                <BodyText size="small" sx={{ mt: 1 }}>
-                                    {selectedFilter
-                                        ? MetadataFilterTypes[selectedFilter.code].details
-                                        : 'People will not see this field as a filter on the public engagement search page.'}
-                                </BodyText>
-                            </Grid>
+                            </Collapse>
                             <Grid
                                 component={Collapse}
                                 in={Boolean(taxonType.allowFreeformInFilter && isFreeform && isValidFilter)}
@@ -562,39 +620,37 @@ const TaxonEditForm = ({ taxon }: { taxon: MetadataTaxon }): JSX.Element => {
                                             )}
                                         />
                                     }
-                                    label="Include staff-entered custom options in public filters"
+                                    label="Include staff-entered custom values as filter choices"
                                 />
                                 <BodyText size="small" sx={{ ml: 6 }}>
-                                    When enabled, custom options already used on engagements can also appear as choices
-                                    in public search.
+                                    When enabled, custom values already used on engagements can also be chosen in the
+                                    filter.
                                 </BodyText>
                             </Grid>
-                            {taxonType.supportedFilters && (
-                                <Box
-                                    role="status"
-                                    sx={{
-                                        borderLeft: '4px solid',
-                                        borderColor: 'primary.main',
-                                        bgcolor: 'gray.10',
-                                        px: 2,
-                                        py: 1.5,
-                                    }}
-                                >
-                                    <BodyText bold>What people will see</BodyText>
-                                    <BodyText size="small">
-                                        {(selectedFilter &&
-                                            `A “${taxon.name}” filter with ${isFreeform && watch('include_freeform') ? 'preset and staff-entered custom' : 'preset'} choices. ${MetadataFilterTypes[selectedFilter.code].details}`) ||
-                                            `“${taxon.name}” will not appear as a public search filter.`}
+                            <Box
+                                role="status"
+                                sx={{
+                                    borderLeft: '4px solid',
+                                    borderColor: 'primary.main',
+                                    bgcolor: 'gray.10',
+                                    px: 2,
+                                    py: 1.5,
+                                }}
+                            >
+                                <BodyText bold>Filter summary</BodyText>
+                                <BodyText size="small">
+                                    {isValidFilter
+                                        ? `“${taxon.name}” will be a filter on ${getScopeSummary()}. ${selectedFilter?.details ?? ''}`
+                                        : `“${taxon.name}” will not be offered as a filter anywhere.`}
+                                </BodyText>
+                                {isValidFilter && wildcardEnabled && wildcardName?.trim() && (
+                                    <BodyText size="small" sx={{ mt: 1 }}>
+                                        Engagements marked “{wildcardName.trim()}” will appear when any choice in this
+                                        filter is selected. “{wildcardName.trim()}” is a staff-only choice and is not
+                                        listed in the filters.
                                     </BodyText>
-                                    {wildcardEnabled && wildcardName?.trim() && (
-                                        <BodyText size="small" sx={{ mt: 1 }}>
-                                            Engagements marked “{wildcardName.trim()}” will appear when any choice in
-                                            this filter is selected. “{wildcardName.trim()}” is only a staff-facing
-                                            choice; it will not appear in public search.
-                                        </BodyText>
-                                    )}
-                                </Box>
-                            )}
+                                )}
+                            </Box>
                         </FormSection>
                     )}
                     <Grid container alignItems="center" justifyContent="flex-start">
