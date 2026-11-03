@@ -110,6 +110,16 @@ const mockUploadedFile = {
     url: 'https://example.com/test.zip',
     unique_filename: 'a11718dc-75f4-4495-80c9-71571bfdb621.zip',
     path: '/a11718dc-75f4-4495-80c9-71571bfdb621.zip',
+    uploader_name: 'Test Name',
+};
+
+const mockEngagementFile = {
+    id: 1,
+    engagement_id: 1,
+    widget_id: 1,
+    widget: null,
+    location: 'banner',
+    uploaded_file: mockUploadedFile,
 };
 
 const mockEventItem: EventItem = {
@@ -354,6 +364,8 @@ export {
     engagementMetadataTaxon,
     engagementSlugData,
     engagementSetting,
+    mockEngagementFile,
+    mockUploadedFile,
     mockPoll,
     pollWidget,
     videoWidget,

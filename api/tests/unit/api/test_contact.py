@@ -105,7 +105,7 @@ def test_patch_contact(client, jwt, session, contact_info, side_effect,
     contact_edits = {
         'id': rv.json[0].get('id'),
         'name': fake.name(),
-        'title': fake.job(),
+        'title': fake.job()[:50],
     }
 
     rv = client.patch('/api/contacts/', data=json.dumps(contact_edits),

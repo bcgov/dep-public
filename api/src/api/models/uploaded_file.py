@@ -49,3 +49,20 @@ class UploadedFile(BaseModel):
     tenant = relationship('Tenant', back_populates='uploaded_files')
     engagement_associations = relationship(
         'EngagementFile', back_populates='uploaded_file')
+
+    created_by_user = relationship(
+        'StaffUser',
+        primaryjoin='foreign(UploadedFile.created_by) == StaffUser.username',
+        uselist=False,
+        viewonly=True,
+        lazy='selectin',
+    )
+
+    @property
+    def uploader_name(self):
+        """Return the uploader's full name, falling back to username."""
+        return (
+            self.created_by_user.full_name
+            if self.created_by_user and self.created_by_user.full_name
+            else self.created_by
+        )

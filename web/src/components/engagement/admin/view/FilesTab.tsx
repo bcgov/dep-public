@@ -61,6 +61,7 @@ const tableHeadCells: HeadCell<EngagementFile>[] = [
     { key: 'uploaded_file', nestedSortKey: 'uploaded_file.size', label: 'Size', allowSort: true },
     { key: 'location', label: 'Location', numeric: false, disablePadding: false, allowSort: true },
     { key: 'uploaded_file', nestedSortKey: 'uploaded_file.mimetype', label: 'File Type', allowSort: true },
+    { key: 'uploaded_file', nestedSortKey: 'uploaded_file.uploader_name', label: 'Uploaded by', allowSort: true },
 ];
 
 const FilesTab = () => {
@@ -543,6 +544,9 @@ const FilesTab = () => {
                                                         })(row)}
                                                     </TableCell>
                                                     <TableCell align="left">{row.uploaded_file.mimetype}</TableCell>
+                                                    <TableCell align="left">
+                                                        {row.uploaded_file.uploader_name}
+                                                    </TableCell>
                                                     <TableCell
                                                         sx={{ maxWidth: 170, width: 170, boxSizing: 'content-box' }}
                                                         align="left"
@@ -571,6 +575,7 @@ const FilesTab = () => {
                                                 onClose={handleClose}
                                                 anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
                                                 transformOrigin={{ vertical: 'top', horizontal: 'center' }}
+                                                disableScrollLock
                                             >
                                                 <MenuItem
                                                     onClick={handleSingleAction(handlePreview)}

@@ -100,7 +100,7 @@ export const FilesLightbox = ({ open, onClose, files }: FilesLightboxProps) => {
     };
 
     return (
-        <Dialog open={open} onClose={handleClose} maxWidth="lg" fullWidth>
+        <Dialog open={open} onClose={handleClose} maxWidth="lg" fullWidth disableScrollLock>
             <DialogTitle
                 component={Grid}
                 container
@@ -264,8 +264,13 @@ export const FilesLightbox = ({ open, onClose, files }: FilesLightboxProps) => {
                                         currentFile.uploaded_at ? formatToPacific(currentFile.uploaded_at) : undefined
                                     }
                                 >
-                                    <b>Uploaded:</b> {displayDate(currentFile.uploaded_at)}
+                                    <b>Uploaded on:</b> {displayDate(currentFile.uploaded_at)}
                                 </BodyText>
+                                {currentFile.uploader_name && (
+                                    <BodyText>
+                                        <b>Uploaded by:</b> {currentFile.uploader_name}
+                                    </BodyText>
+                                )}
                             </Grid>
                         ) : (
                             <p>No file selected</p>

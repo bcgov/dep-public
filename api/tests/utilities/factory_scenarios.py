@@ -53,7 +53,7 @@ class TestUserInfo(dict, Enum):
         'last_name': fake.name(),
         'email_address': fake.email(),
         'status_id': UserStatus.ACTIVE.value,
-        'tenant_id': '1'
+        'tenant_id': '1',
     }
 
     user_staff_2 = {
@@ -62,7 +62,7 @@ class TestUserInfo(dict, Enum):
         'last_name': fake.name(),
         'email_address': fake.email(),
         'status_id': UserStatus.ACTIVE.value,
-        'tenant_id': '2'
+        'tenant_id': '2',
     }
 
     user_staff_3 = {
@@ -71,7 +71,7 @@ class TestUserInfo(dict, Enum):
         'last_name': fake.name(),
         'email_address': fake.email(),
         'status_id': UserStatus.ACTIVE.value,
-        'tenant_id': '3'
+        'tenant_id': '3',
     }
 
 
@@ -610,7 +610,7 @@ class TestContactInfo(dict, Enum):
 
     contact1 = {
         'name': fake.name(),
-        'title': fake.job(),
+        'title': fake.job()[:50],
         'phone_number': fake.phone_number(),
         'email': fake.email(),
         'address': fake.address(),
