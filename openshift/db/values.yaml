@@ -29,6 +29,8 @@ db:
       role: cron
     - app: engagement-db
       role: backup
+    - app: engagement-analytics
+      role: server
 
 backup:
   role: backup
