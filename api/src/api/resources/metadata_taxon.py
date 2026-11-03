@@ -66,7 +66,9 @@ taxon_modify_model = API.model('MetadataTaxon', taxon_model_dict := {
     ),
     'filter_type': fields.String(required=False, description='The filter type for the taxon (if any)'),
     'include_freeform': fields.Boolean(required=False, description='Whether to include freeform '
-                                       'values in the user-facing filter options')
+                                       'values in the user-facing filter options'),
+    'wildcard_enabled': fields.Boolean(required=False, description='Whether a wildcard option is enabled'),
+    'wildcard_name': fields.String(required=False, description='The label for the wildcard option')
 })
 
 taxon_return_model = API.model('MetadataTaxonReturn', {
@@ -82,7 +84,8 @@ taxon_filter_model = API.model('MetadataTaxonFilter', {
     'taxon_id': fields.Integer(required=True, description='The id of the taxon'),
     'name': fields.String(required=False, description='The name of the taxon'),
     'values': fields.List(fields.String, required=True, description='The values to filter by'),
-    'filter_type': fields.String(required=True, description='The filter type')
+    'filter_type': fields.String(required=True, description='The filter type'),
+    'wildcard_name': fields.String(required=False, description='A staff-only option that matches every filter value')
 })
 
 taxon_ids_model = API.model('TaxonIDs', {

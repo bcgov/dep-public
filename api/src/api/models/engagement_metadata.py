@@ -118,6 +118,8 @@ class MetadataTaxon(BaseModel):
     filter_type = db.Column(db.String(64), nullable=True)
     # Whether to include freeform values from engagements in the user-facing filter options
     include_freeform = db.Column(db.Boolean, nullable=False, default=False)
+    wildcard_enabled = db.Column(db.Boolean, nullable=False, default=False)
+    wildcard_name = db.Column(db.String(64), nullable=True)
 
     def __init__(self, **kwargs) -> None:
         """Initialize a new instance of the MetadataTaxon class."""

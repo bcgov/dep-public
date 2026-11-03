@@ -4,6 +4,7 @@ site:
   # The URL of the site. This is used to set the REACT_APP_PUBLIC_URL environment variable.
   # Do not include a trailing slash when updating this URL
   url: "https://dep-web-test.apps.gold.devops.gov.bc.ca"
+  analytics_api: "https://dep-analytics-api-test.apps.gold.devops.gov.bc.ca"
 
 image:
   # The image tag to use for the deployment.

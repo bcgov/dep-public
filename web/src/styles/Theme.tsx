@@ -261,10 +261,13 @@ export const BaseTheme = createTheme({
                     width: '100%',
                     m: 0,
                     overflow: 'clip',
-                    border: '1px solid',
+                    borderWidth: '1px',
                     borderColor: Palette.gray[40],
-                    '&:not(:last-of-type)': {
-                        borderBottomStyle: 'hidden',
+                    borderLeftStyle: 'solid',
+                    borderRightStyle: 'solid',
+                    borderTopStyle: 'solid',
+                    '&:last-of-type': {
+                        borderBottomStyle: 'solid',
                     },
                 },
             },
@@ -419,6 +422,7 @@ export const BaseTheme = createTheme({
                     color: Palette.gray[90],
                     '& .MuiSvgIcon-root': {
                         fontSize: '1.2rem',
+                        transition: 'transform 0s',
                         '&[data-testid=RadioButtonCheckedIcon]': {
                             border: '1px solid transparent',
                             fontSize: '1.2rem',
@@ -435,7 +439,9 @@ export const BaseTheme = createTheme({
                             color: Palette.blue.bc,
                         },
                         '& .MuiSvgIcon-root[data-testid=RadioButtonCheckedIcon]': {
-                            transform: 'scale(0.8333333333333)',
+                            fontSize: '0.925rem',
+                            top: '0.125rem',
+                            left: '0.15rem',
                         },
                     },
                 },

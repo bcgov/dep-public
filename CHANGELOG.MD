@@ -1,5 +1,11 @@
 ## October 30, 2026
 
+- **Feature** Added "all-values" option for metadata selection, supporting "Province-wide" option [🎟️ DEP-412](https://citz-gdx.atlassian.net/browse/DEP-412)
+  - Updated DB schema to allow storing whether a taxon has the "all-values" option and the option's label.
+    - During migration, the required Region field has its all-values option enabled and set to "Province-wide".
+  - Updated TaxonEditor to allow adding the "all-values" option for relevant metadata selections.
+  - Updated MetadataTab component to include the "all-values" option on engagements.
+  - Updated search logic to always return "all-values" engagements when filtering by the relevant taxon
 - **Feature** Added "Uploaded by" column to Engagement Files tab. [🎟️ DEP-408](https://citz-gdx.atlassian.net/browse/DEP-408)
   - Created a db relationship to use the created_by value in uploaded_files to extract full_name from staff_users via username
   - Added column in front-end component and mapped property

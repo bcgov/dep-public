@@ -70,6 +70,8 @@ export interface MetadataTaxonModify {
     preset_values?: MetadataFormValue[]; // The preset values for the taxon
     filter_type?: string | null; // The filter type for the taxon, optional
     include_freeform?: boolean; // Whether to include freeform values in options for filtering, optional
+    wildcard_enabled?: boolean;
+    wildcard_name?: string | null;
 }
 
 export interface MetadataTaxon extends MetadataTaxonModify {
