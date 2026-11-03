@@ -94,7 +94,7 @@ const EngagementAccordionContent = ({
                                 </Grid>
                             </Grid>
                         </AccordionSummary>
-                        <AccordionDetails sx={{ borderTop: `2px solid ${borderColor}` }}>
+                        <AccordionDetails sx={{ borderTop: `1px solid ${borderColor}` }}>
                             <When condition={isExpanded(engagement.id)}>
                                 <Grid container size={12} spacing={3} data-testid={`dashboard-frame-${engagement.id}`}>
                                     <Grid size={{ xs: 12, sm: mapExists ? 4 : 6 }}>
