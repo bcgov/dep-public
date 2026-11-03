@@ -29,45 +29,46 @@ class MetadataTaxonService:
         return MetadataTaxonSchema(many=True).dump(sorted_results)
 
     @staticmethod
+    def _get_filter_values(taxon: MetadataTaxon) -> list:
+        """Get the unique selectable values for a taxon, excluding its wildcard."""
+        if taxon.freeform and taxon.include_freeform:
+            # Include values specified on engagements as usable options
+            values = {entry.value for entry in taxon.entries}
+        else:
+            values = {preset['value'] for preset in taxon.preset_values}
+        if taxon.wildcard_enabled and taxon.wildcard_name:
+            values.discard(taxon.wildcard_name)
+        return list(values)
+
+    @staticmethod
+    def _is_offered(taxon: MetadataTaxon, scope: str) -> bool:
+        """Check whether a taxon is a filter offered in the given scope."""
+        available_filters = [e.value for e in MetadataTaxonFilterType]
+        return (taxon.filter_type in available_filters
+                and (taxon.filter_scope or 'public') in (scope, 'both'))
+
+    @staticmethod
     def get_filter_options(tenant_id: int, scope: str = 'public') -> dict:
         """Get the filterable taxa for a tenant that are offered in the given scope ('public' or 'admin')."""
         tenant = Tenant.query.get(tenant_id)
         results = sorted(tenant.metadata_taxa,
                          key=lambda taxon: taxon.position) if tenant else []
         filters = []
-        available_filters = [e.value for e in MetadataTaxonFilterType]
-        results = [
-            taxon for taxon in results if taxon.filter_type in available_filters and
-            (taxon.filter_scope or 'public') in (scope, 'both')]
         for taxon in results:
-            if taxon.filter_type not in available_filters:
+            if not MetadataTaxonService._is_offered(taxon, scope):
                 continue
-            if (taxon.filter_scope or 'public') not in (scope, 'both'):
-                continue
-            values = []
-            if taxon.freeform and taxon.include_freeform:
-                # Include values specified on engagements as usable options
-                # (unique values only)
-                values = list({entry.value for entry in taxon.entries})
-            else:
-                # Just use the preset values
-                values = list({
-                    preset_value['value']
-                    for preset_value in taxon.preset_values
-                })
-            wildcard_name = taxon.wildcard_name if taxon.wildcard_enabled else None
-            if wildcard_name:
-                values = [value for value in values if value != taxon.wildcard_name]
+            values = MetadataTaxonService._get_filter_values(taxon)
             # Don't return the filter if the user has no options; this prevents
             # the frontend from displaying a useless filter
-            if values:
-                filters.append({
-                    'taxon_id': taxon.id,
-                    'name': taxon.name,
-                    'filter_type': taxon.filter_type,
-                    'values': values,
-                    'wildcard_name': wildcard_name,
-                })
+            if not values:
+                continue
+            filters.append({
+                'taxon_id': taxon.id,
+                'name': taxon.name,
+                'filter_type': taxon.filter_type,
+                'values': values,
+                'wildcard_name': taxon.wildcard_name if taxon.wildcard_enabled else None,
+            })
         return MetadataTaxonFilterSchema(many=True).dump(filters)
 
     @staticmethod
