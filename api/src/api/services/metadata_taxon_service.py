@@ -44,8 +44,8 @@ class MetadataTaxonService:
     def _is_offered(taxon: MetadataTaxon, scope: str) -> bool:
         """Check whether a taxon is a filter offered in the given scope."""
         available_filters = [e.value for e in MetadataTaxonFilterType]
-        return (taxon.filter_type in available_filters
-                and (taxon.filter_scope or 'public') in (scope, 'both'))
+        return (taxon.filter_type in available_filters and
+                (taxon.filter_scope or 'public') in (scope, 'both'))
 
     @staticmethod
     def get_filter_options(tenant_id: int, scope: str = 'public') -> dict:
