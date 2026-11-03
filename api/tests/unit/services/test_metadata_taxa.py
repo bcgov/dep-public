@@ -413,6 +413,22 @@ def test_get_filters_respects_filter_scope(session):
     assert expected['public'] not in admin_ids
 
 
+def test_get_taxon_without_filters(session):
+    """Taxa without filter options are not returned."""
+    tenant, _ = factory_taxon_requirements()
+    taxon = factory_metadata_taxon_model(tenant.id, {
+        **TestEngagementMetadataTaxonInfo.taxon1,
+        'name': 'Region',
+        'position': 1,
+        'filter_type': 'chips_any',
+    })
+    taxon.preset_values = []
+    taxon.save()
+
+    filters = MetadataTaxonService.get_filter_options(tenant.id)
+    assert filters == []
+
+
 def test_renaming_wildcard_updates_existing_engagement_values(session):
     """Renaming an enabled wildcard keeps previously selected engagements wildcarded."""
     tenant, _ = factory_taxon_requirements()
