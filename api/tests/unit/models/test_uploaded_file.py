@@ -19,11 +19,11 @@ def test_uploaded_file_returns_uploader_name(session):
     assert uploaded_file.uploader_name == expected_name
 
 
-def test_uploaded_file_returns_none_when_no_uploader(session):
-    """Uploaded file returns None when uploader is unavailable."""
+def test_uploaded_file_returns_created_by_when_no_uploader(session):
+    """Uploaded file returns created_by when uploader is unavailable."""
     uploaded_file = factory_uploaded_file_model(
         1,
         created_by='missing-user@idir',
     )
 
-    assert uploaded_file.uploader_name is None
+    assert uploaded_file.uploader_name == 'missing-user@idir'
