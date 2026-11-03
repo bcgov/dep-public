@@ -405,9 +405,11 @@ def test_get_filters_respects_filter_scope(session):
     admin_ids = {f['taxon_id'] for f in MetadataTaxonService.get_filter_options(
         tenant.id, scope='admin')}
 
-    assert expected['public'] in public_ids and expected['both'] in public_ids
+    assert expected['public'] in public_ids
+    assert expected['both'] in public_ids
     assert expected['admin'] not in public_ids
-    assert expected['admin'] in admin_ids and expected['both'] in admin_ids
+    assert expected['admin'] in admin_ids
+    assert expected['both'] in admin_ids
     assert expected['public'] not in admin_ids
 
 

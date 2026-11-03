@@ -155,12 +155,12 @@ const TaxonEditForm = ({ taxon }: { taxon: MetadataTaxon }): JSX.Element => {
     const filterPublic = watch('filter_public');
     const filterAdmin = watch('filter_admin');
     const isValidFilter = Boolean(filterPublic || filterAdmin);
-    const scopeSummary =
-        filterPublic && filterAdmin
-            ? 'both the public engagement search and the admin engagement list'
-            : filterPublic
-              ? 'the public engagement search'
-              : 'the admin engagement list';
+    const getScopeSummary = () => {
+        if (filterPublic && filterAdmin) return 'both the public engagement search and the admin engagement list';
+        if (filterPublic) return 'the public engagement search';
+        if (filterAdmin) return 'the admin engagement list';
+        return '';
+    };
     const presetValues = watch('preset_values');
     const selectedFilter = (taxonType.supportedFilters ?? []).find((filter) => filter.code === filterType);
     const wildcardEnabled = watch('wildcard_enabled');
@@ -640,7 +640,7 @@ const TaxonEditForm = ({ taxon }: { taxon: MetadataTaxon }): JSX.Element => {
                                 <BodyText bold>Filter summary</BodyText>
                                 <BodyText size="small">
                                     {isValidFilter
-                                        ? `“${taxon.name}” will be a filter on ${scopeSummary}. ${selectedFilter?.details ?? ''}`
+                                        ? `“${taxon.name}” will be a filter on ${getScopeSummary()}. ${selectedFilter?.details ?? ''}`
                                         : `“${taxon.name}” will not be offered as a filter anywhere.`}
                                 </BodyText>
                                 {isValidFilter && wildcardEnabled && wildcardName?.trim() && (

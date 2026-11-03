@@ -1,6 +1,7 @@
 """Service for engagement management."""
 
 from typing import List, Optional
+from unittest import result
 
 from api.models import db
 from api.models.db import transactional
@@ -36,6 +37,9 @@ class MetadataTaxonService:
                          key=lambda taxon: taxon.position) if tenant else []
         filters = []
         available_filters = [e.value for e in MetadataTaxonFilterType]
+        results = [
+            taxon for taxon in results if taxon.filter_type in available_filters and
+            (taxon.filter_scope or 'public') in (scope, 'both')]
         for taxon in results:
             if taxon.filter_type not in available_filters:
                 continue
