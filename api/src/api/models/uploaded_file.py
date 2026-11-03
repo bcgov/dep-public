@@ -60,5 +60,9 @@ class UploadedFile(BaseModel):
 
     @property
     def uploader_name(self):
-        """Return the full name of the created user as uploader_name if it exists."""
-        return self.created_by_user.full_name if self.created_by_user else None
+        """Return the uploader's full name, falling back to username."""
+        return (
+            self.created_by_user.full_name
+            if self.created_by_user and self.created_by_user.full_name
+            else self.created_by
+        )

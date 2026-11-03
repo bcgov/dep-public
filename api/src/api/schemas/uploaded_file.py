@@ -57,7 +57,7 @@ class UploadedFileSchema(BaseSchema):
         """Generate a URL for the uploaded file based on its unique filename."""
         return self.object_storage_service.get_url(obj.unique_filename)
 
-    uploader_name = fields.Method('get_uploader_name')
+    uploader_name = fields.Method('get_uploader_name', dump_only=True)
 
     def get_uploader_name(self, obj):
         """Get the uploader's full name."""
