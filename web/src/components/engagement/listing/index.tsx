@@ -7,15 +7,17 @@ import { faMagnifyingGlass } from '@fortawesome/pro-regular-svg-icons/faMagnifyi
 import { faMessageCheck } from '@fortawesome/pro-solid-svg-icons/faMessageCheck';
 import { faCheck } from '@fortawesome/pro-regular-svg-icons/faCheck';
 import { faCircleExclamation } from '@fortawesome/pro-regular-svg-icons/faCircleExclamation';
+import { faStar as faStarSolid } from '@fortawesome/pro-solid-svg-icons/faStar';
+import { faStar as faStarLight } from '@fortawesome/pro-light-svg-icons/faStar';
 import { faXmark } from '@fortawesome/pro-regular-svg-icons/faXmark';
 import { faCommentsQuestionCheck } from '@fortawesome/pro-regular-svg-icons/faCommentsQuestionCheck';
 import Collapse from '@mui/material/Collapse';
 import { useNavigate, useFetcher, createSearchParams, useSearchParams } from 'react-router';
 import { Engagement } from 'models/engagement';
-import { useAppSelector } from 'hooks';
+import { useAppDispatch, useAppSelector } from 'hooks';
 import { createDefaultPageInfo, HeadCell, PageInfo, PaginationOptions } from 'components/common/Table/types';
 import { formatToPacific } from 'components/common/dateHelper';
-import { Link, useMediaQuery, Theme, Tooltip } from '@mui/material';
+import { IconButton, Link, useMediaQuery, Theme, Tooltip } from '@mui/material';
 import Stack from '@mui/material/Stack';
 import CustomTable from 'components/common/Table';
 import { EngagementStatus, SubmissionStatus } from 'constants/engagementStatus';
@@ -31,6 +33,14 @@ import { faPlus } from '@fortawesome/pro-regular-svg-icons';
 import { EngagementListLoaderData } from 'engagements/public/view/EngagementListLoader';
 import { ROUTES, getPath } from 'routes/routes';
 import { RouterLinkRenderer } from 'components/common/Navigation/Link';
+import { patchEngagement } from 'services/engagementService';
+import {
+    acquireEngagementSectionLock,
+    LOCK_TOKEN_HEADER,
+    releaseLock,
+    SECTION_CONFIG_GENERAL,
+} from 'services/resourceLockService';
+import { openNotification } from 'services/notificationService/notificationSlice';
 
 interface SearchFilter {
     key?: string;
@@ -45,6 +55,8 @@ const EngagementListing = () => {
         key: 'name',
         value: '',
     });
+    const dispatch = useAppDispatch();
+    const [featuredOverrides, setFeaturedOverrides] = useState<Record<number, boolean>>({});
     const fetcher = useFetcher();
     const fetcherData = fetcher.data as EngagementListLoaderData;
     const engagementPage = fetcherData?.engagements;
@@ -115,6 +127,32 @@ const EngagementListing = () => {
         return [SubmissionStatus.Open, SubmissionStatus.Closed].includes(engagement.submission_status);
     };
 
+    const toggleFeatured = async (engagement: Engagement) => {
+        const next = !(featuredOverrides[engagement.id] ?? engagement.is_featured ?? false);
+        setFeaturedOverrides((prev) => ({ ...prev, [engagement.id]: next }));
+        let lockToken: string | undefined;
+        try {
+            const lock = await acquireEngagementSectionLock({
+                engagementId: engagement.id,
+                sectionKey: SECTION_CONFIG_GENERAL,
+            });
+            lockToken = lock.lock_token;
+            await patchEngagement({ id: engagement.id, is_featured: next }, { [LOCK_TOKEN_HEADER]: lockToken });
+        } catch {
+            setFeaturedOverrides((prev) => ({ ...prev, [engagement.id]: !next }));
+            dispatch(
+                openNotification({
+                    text: 'Unable to update the featured status of this engagement',
+                    severity: 'error',
+                }),
+            );
+        } finally {
+            if (lockToken) {
+                await releaseLock(lockToken).catch(() => undefined);
+            }
+        }
+    };
+
     const handleSearchBarClick = (engagementNameFilter: string) => {
         setSearchFilter({
             ...searchFilter,
@@ -123,6 +161,40 @@ const EngagementListing = () => {
     };
 
     const headCells: HeadCell<Engagement>[] = [
+        {
+            key: 'is_featured',
+            numeric: false,
+            disablePadding: true,
+            customStyle: { width: 48, padding: 2 },
+            align: 'center',
+            hideSorticon: true,
+            allowSort: true,
+            nestedSortKey: 'engagement.is_featured',
+            label: 'Featured',
+            renderCell: (row: Engagement) => {
+                const featured = featuredOverrides[row.id] ?? row.is_featured ?? false;
+                const label = featured ? 'Unmark as featured' : 'Mark as featured';
+                return (
+                    <PermissionsGate scopes={[USER_ROLES.EDIT_ENGAGEMENT]} errorProps={{ disabled: true }}>
+                        <Tooltip title={label}>
+                            <IconButton
+                                size="small"
+                                color="info"
+                                aria-label={label}
+                                aria-pressed={featured}
+                                data-testid={`engagement/listing/featured-${row.id}`}
+                                onClick={() => toggleFeatured(row)}
+                            >
+                                <FontAwesomeIcon
+                                    icon={featured ? faStarSolid : faStarLight}
+                                    style={{ color: featured ? '#F5B800' : undefined }}
+                                />
+                            </IconButton>
+                        </Tooltip>
+                    </PermissionsGate>
+                );
+            },
+        },
         {
             key: 'name',
             nestedSortKey: 'engagement.name',

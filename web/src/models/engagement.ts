@@ -38,6 +38,7 @@ export interface Engagement {
     submissions_meta_data: SurveySubmissionData;
     status_block: EngagementStatusBlock[];
     is_internal: boolean;
+    is_featured?: boolean;
     consent_message: string;
     subscribe_consent_message?: string;
     sponsor_name: string;
@@ -130,6 +131,7 @@ export const createDefaultEngagement = (sponsorName?: string): Engagement => {
         },
         status_block: [],
         is_internal: false,
+        is_featured: false,
         consent_message: '',
         subscribe_consent_message: '',
         sponsor_name: sponsorName ?? '',
