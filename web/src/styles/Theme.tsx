@@ -664,6 +664,18 @@ export const AdminTheme = createTheme({
                 },
             },
         },
+        MuiTextField: {
+            defaultProps: {
+                size: 'small',
+            },
+            styleOverrides: {
+                root: {
+                    '& .MuiOutlinedInput-root': {
+                        borderRadius: '0.5rem',
+                    },
+                },
+            },
+        },
     },
 });
 

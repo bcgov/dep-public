@@ -1,5 +1,4 @@
 import {
-    TextField,
     Switch,
     FormControlLabel,
     FormControl,
@@ -42,6 +41,7 @@ import {
     IconDefinition,
 } from '@fortawesome/pro-regular-svg-icons';
 import { BodyText, Heading3 } from 'components/common/Typography';
+import { TextField } from 'components/common/Input/TextInput';
 
 const FormSection = ({
     title,
@@ -340,30 +340,9 @@ const TaxonEditForm = ({ taxon }: { taxon: MetadataTaxon }): JSX.Element => {
                                     <TextField
                                         disabled={taxon.is_required}
                                         placeholder="Enter taxon name"
-                                        error={!!methods.formState.errors.name}
-                                        helperText={methods.formState.errors.name?.message}
+                                        error={methods.formState.errors.name?.message}
                                         value={field.value}
                                         onChange={field.onChange}
-                                    />
-                                )}
-                            />
-                        </Grid>
-                        <Grid>
-                            <BodyText bold>Field description</BodyText>
-                            <Controller
-                                name="description"
-                                control={control}
-                                render={({ field, fieldState }) => (
-                                    <TextField
-                                        fullWidth
-                                        multiline
-                                        minRows={2}
-                                        maxRows={8}
-                                        placeholder="[Optional] Enter a description"
-                                        value={field.value}
-                                        onChange={field.onChange}
-                                        error={!!fieldState?.error}
-                                        helperText={fieldState?.error?.message}
                                     />
                                 )}
                             />
@@ -396,6 +375,24 @@ const TaxonEditForm = ({ taxon }: { taxon: MetadataTaxon }): JSX.Element => {
                                     )}
                                 />
                             </FormControl>
+                        </Grid>
+                        <Grid>
+                            <BodyText bold>Field description</BodyText>
+                            <Controller
+                                name="description"
+                                control={control}
+                                render={({ field, fieldState }) => (
+                                    <TextField
+                                        multiline
+                                        minRows={2}
+                                        maxRows={8}
+                                        placeholder="[Optional] Enter a description"
+                                        value={field.value}
+                                        onChange={field.onChange}
+                                        error={fieldState?.error?.message}
+                                    />
+                                )}
+                            />
                         </Grid>
                     </FormSection>
                     <Grid component={Collapse} in={taxonType.supportsPresetValues} timeout="auto" unmountOnExit>
@@ -445,13 +442,12 @@ const TaxonEditForm = ({ taxon }: { taxon: MetadataTaxon }): JSX.Element => {
                                     <Controller
                                         name="wildcard_name"
                                         control={control}
-                                        render={({ field }) => (
+                                        render={({ field: { value, ...field } }) => (
                                             <TextField
-                                                fullWidth
                                                 placeholder={`All "${taxonType.name}"`}
                                                 disabled={!wildcardEnabled}
-                                                error={!!methods.formState.errors.wildcard_name}
-                                                helperText={methods.formState.errors.wildcard_name?.message}
+                                                error={methods.formState.errors.wildcard_name?.message}
+                                                value={value ?? ''}
                                                 {...field}
                                             />
                                         )}
@@ -480,7 +476,7 @@ const TaxonEditForm = ({ taxon }: { taxon: MetadataTaxon }): JSX.Element => {
                                             }}
                                         />
                                     }
-                                    label="Allow staff to add custom options"
+                                    label="Allow staff to add custom options to engagements"
                                 />
                                 <BodyText size="small" sx={{ ml: 6 }}>
                                     When enabled, staff can enter a value that is not in the preset options.
