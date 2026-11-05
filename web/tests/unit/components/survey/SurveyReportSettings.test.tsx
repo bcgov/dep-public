@@ -250,7 +250,7 @@ describe('Survey report settings tests', () => {
         const originalNumberOfRows = SurveyReportSettings.length + 1;
 
         await waitFor(() => {
-            expect(tableBody?.children.length).toBe(originalNumberOfRows - 1);
+            expect(tableBody?.children.length).toBe(originalNumberOfRows);
         });
     });
 

@@ -87,6 +87,7 @@ class ResourceLockService:
             'published_date',
             'scheduled_date',
             'is_internal',
+            'is_featured',
             'languages',
             'surveys',
             'tenant_id',

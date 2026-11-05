@@ -175,7 +175,7 @@ function CustomTable<T>({
     };
 
     // Avoid a layout jump when reaching the last page with empty filteredRows.
-    const emptyRows = page > 1 ? Math.max(0, page * rowsPerPage - total) : 0;
+    const emptyRows = Math.max(rowsPerPage - rows.length, 0);
 
     return (
         <Box data-testid="listing-table">
@@ -240,7 +240,7 @@ function CustomTable<T>({
                             {emptyRows > 0 && (
                                 <TableRow
                                     style={{
-                                        height: 53 * emptyRows,
+                                        height: 73 * emptyRows,
                                     }}
                                 >
                                     <TableCell
