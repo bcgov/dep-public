@@ -31,7 +31,7 @@ class RestService:
     def _invoke(rest_method, endpoint, token=None,  # pylint: disable=too-many-arguments,too-many-positional-arguments
                 auth_header_type: AuthHeaderType = AuthHeaderType.BEARER,
                 content_type: ContentType = ContentType.JSON, data=None, raise_for_status: bool = True,
-                additional_headers: dict = None, generate_token: bool = True):
+                additional_headers: dict = {}, generate_token: bool = True):
         """Invoke different method depending on the input."""
         # just to avoid the duplicate code for PUT and POSt
         current_app.logger.debug(f'<_invoke-{rest_method}')
@@ -46,8 +46,7 @@ class RestService:
         if token:
             headers.update({'Authorization': auth_header_type.value.format(token)})
 
-        if additional_headers:
-            headers.update(additional_headers)
+        headers.update(additional_headers)
 
         if content_type == ContentType.JSON:
             data = json.dumps(data)
