@@ -31,29 +31,25 @@ class RestService:
     def _invoke(rest_method, endpoint, token=None,  # pylint: disable=too-many-arguments,too-many-positional-arguments
                 auth_header_type: AuthHeaderType = AuthHeaderType.BEARER,
                 content_type: ContentType = ContentType.JSON, data=None, raise_for_status: bool = True,
-                additional_headers: dict | None = None, generate_token: bool = True):
+                additional_headers: dict = None, generate_token: bool = True):
         """Invoke different method depending on the input."""
         # just to avoid the duplicate code for PUT and POSt
         current_app.logger.debug(f'<_invoke-{rest_method}')
 
-        headers = {
-            'Content-Type': content_type.value
-        }
-
         if not token and generate_token:
             token = _get_token()
 
-        if token:
-            headers.update({'Authorization': auth_header_type.value.format(token)})
-
-        headers.update(additional_headers or {})
+        headers = RestService._get_headers(
+            content_type.value, token=token, additional_headers=additional_headers, auth_header_type=auth_header_type
+        )
 
         if content_type == ContentType.JSON:
             data = json.dumps(data)
 
         current_app.logger.debug(f'Endpoint : {endpoint}')
         # Mask Authorization headers and other sensitive keys before logging
-        current_app.logger.debug(f'headers : {mask_dict(headers)}')
+        current_app.logger.debug(
+            f'headers : {mask_dict(headers)}')
         response = None
         try:
             invoke_rest_method = getattr(requests, rest_method)
@@ -68,7 +64,8 @@ class RestService:
             current_app.logger.error(exc)
             raise ValueError('Error on POST') from exc
         except HTTPError as exc:
-            current_app.logger.error(f"HTTPError on POST with status code {response.status_code if response else ''}")
+            current_app.logger.error(
+                f"HTTPError on POST with status code {response.status_code if response else ''}")
             if response and response.status_code >= 500:
                 raise ValueError(
                     f"HTTPError on POST with status code {response.status_code if response else ''}") from exc
@@ -80,13 +77,26 @@ class RestService:
         return response
 
     @staticmethod
+    def _get_headers(content_type: str, token=None, additional_headers: dict = None,
+                     auth_header_type: AuthHeaderType = AuthHeaderType.BEARER):
+        headers = {
+            'Content-Type': content_type
+        }
+        if token:
+            headers.update(
+                {'Authorization': auth_header_type.value.format(token)})
+        headers.update(additional_headers or {})
+        return headers
+
+    @staticmethod
     def __log_response(response):
         if response is not None:
             current_app.logger.info(f'Response Headers {response.headers}')
             if response.headers and isinstance(response.headers, Iterable) and \
                     'Content-Type' in response.headers and \
                     response.headers['Content-Type'] == ContentType.JSON.value:
-                current_app.logger.info(f"response : {response.text if response else ''}")
+                current_app.logger.info(
+                    f"response : {response.text if response else ''}")
 
     @staticmethod
     def post(endpoint, token=None,  # pylint: disable=too-many-arguments,too-many-positional-arguments
@@ -140,7 +150,8 @@ class RestService:
             'client_id': client_id
         }
 
-        auth_response = requests.post(token_url, headers=headers, data=data, timeout=None)
+        auth_response = requests.post(
+            token_url, headers=headers, data=data, timeout=None)
         auth_response.raise_for_status()
 
         return auth_response.json().get('access_token')
