@@ -179,7 +179,7 @@ const EngagementListing = () => {
                         <Tooltip title={label}>
                             <IconButton
                                 size="small"
-                                color="info"
+                                color={featured ? 'secondary' : 'inherit'}
                                 aria-label={label}
                                 aria-pressed={featured}
                                 data-testid={`engagement/listing/featured-${row.id}`}
@@ -187,7 +187,7 @@ const EngagementListing = () => {
                             >
                                 <FontAwesomeIcon
                                     icon={featured ? faStarSolid : faStarLight}
-                                    style={{ color: featured ? '#F5B800' : undefined }}
+                                    style={{ color: 'inherit' }}
                                 />
                             </IconButton>
                         </Tooltip>

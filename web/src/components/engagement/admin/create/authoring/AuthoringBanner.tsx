@@ -318,7 +318,7 @@ const AuthoringBanner = () => {
                             id="cta_link_radio"
                             {...field}
                         >
-                            <Grid container size={6} direction="column">
+                            <Grid container size={{ xs: 12, sm: 6 }} direction="column">
                                 <FormControlLabel
                                     value="internal"
                                     control={<Radio color={'info'} />}
@@ -342,8 +342,8 @@ const AuthoringBanner = () => {
                                             disabled={watch('open_cta_link_type') !== 'internal'}
                                             aria-label="Section Link"
                                             sx={{
-                                                width: 'calc(100% - 1.5rem)',
-                                                ml: 3,
+                                                width: 'calc(100% - 2.5rem)',
+                                                ml: 4.5,
                                                 mt: 1,
                                                 height: '3em',
                                                 '& fieldset': { borderColor: '#7A7876' },
@@ -355,7 +355,7 @@ const AuthoringBanner = () => {
                                     )}
                                 />
                             </Grid>
-                            <Grid container direction="column" size={6}>
+                            <Grid container direction="column" size={{ xs: 12, sm: 6 }}>
                                 <FormControlLabel
                                     value="external"
                                     control={<Radio color="info" />}
@@ -377,10 +377,9 @@ const AuthoringBanner = () => {
                                     render={({ field }) => (
                                         <TextField
                                             {...field}
-                                            width="calc(100% - 1.5rem)"
                                             value={field.value || undefined}
                                             disabled={watch('open_cta_link_type') !== 'external'}
-                                            sx={{ ml: 3 }}
+                                            sx={{ ml: 4.5 }}
                                             id="external_link"
                                             placeholder="Paste or type URL here"
                                             error={errors.open_external_link?.message}
@@ -446,8 +445,18 @@ const AuthoringBanner = () => {
                     name="view_results_link_type"
                     control={control}
                     render={({ field }) => (
-                        <RadioGroup row id="cta_view_results_radio" defaultValue="internal" {...field}>
-                            <Grid size={6} direction="column" sx={{ paddingRight: '2rem' }}>
+                        <Grid
+                            container
+                            size={12}
+                            direction="row"
+                            columnSpacing={4}
+                            component={RadioGroup}
+                            row
+                            defaultValue="internal"
+                            id="cta_view_results_radio"
+                            {...field}
+                        >
+                            <Grid size={{ xs: 12, sm: 6 }} direction="column">
                                 <FormControlLabel value="internal" control={<Radio />} label="In-Page Section Link" />
                                 <br />
                                 <Controller
@@ -459,7 +468,13 @@ const AuthoringBanner = () => {
                                             aria-label="Section Link"
                                             fullWidth
                                             disabled={watch('view_results_link_type') !== 'internal'}
-                                            sx={{ mt: 1, height: '3em', '& fieldset': { borderColor: '#7A7876' } }}
+                                            sx={{
+                                                width: 'calc(100% - 2.5rem)',
+                                                mt: 1,
+                                                ml: 4.5,
+                                                height: '3em',
+                                                '& fieldset': { borderColor: '#7A7876' },
+                                            }}
                                             id="view_results_link"
                                         >
                                             {sectionOptions}
@@ -467,7 +482,7 @@ const AuthoringBanner = () => {
                                     )}
                                 />
                             </Grid>
-                            <Grid size={6}>
+                            <Grid size={{ xs: 12, sm: 6 }} direction="column">
                                 <FormControlLabel value="external" control={<Radio />} label="External URL" />
                                 <br />
 
@@ -477,6 +492,7 @@ const AuthoringBanner = () => {
                                     render={({ field }) => (
                                         <TextField
                                             {...field}
+                                            sx={{ ml: 4.5 }}
                                             value={field.value || undefined}
                                             disabled={watch('view_results_link_type') !== 'external'}
                                             id="view_results_link"
@@ -485,7 +501,7 @@ const AuthoringBanner = () => {
                                     )}
                                 />
                             </Grid>
-                        </RadioGroup>
+                        </Grid>
                     )}
                 />
             </AuthoringFormSection>
