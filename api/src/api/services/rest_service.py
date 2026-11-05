@@ -29,7 +29,7 @@ class RestService:
     """Service to invoke Rest services which uses OAuth 2.0 implementation."""
 
     @staticmethod
-    def _invoke(rest_method, endpoint, token=None,  # pylint: disable=too-many-arguments
+    def _invoke(rest_method, endpoint, token=None,  # pylint: disable=too-many-arguments,too-many-positional-arguments
                 auth_header_type: AuthHeaderType = AuthHeaderType.BEARER,
                 content_type: ContentType = ContentType.JSON, data=None, raise_for_status: bool = True,
                 additional_headers: dict = None, generate_token: bool = True):
@@ -91,7 +91,7 @@ class RestService:
                 current_app.logger.info(f"response : {response.text if response else ''}")
 
     @staticmethod
-    def post(endpoint, token=None,  # pylint: disable=too-many-arguments
+    def post(endpoint, token=None,  # pylint: disable=too-many-arguments,too-many-positional-arguments
              auth_header_type: AuthHeaderType = AuthHeaderType.BEARER,
              content_type: ContentType = ContentType.JSON, data=None, raise_for_status: bool = True,
              additional_headers: dict = None, generate_token: bool = True):
@@ -101,7 +101,7 @@ class RestService:
                                    additional_headers, generate_token)
 
     @staticmethod
-    def put(endpoint, token=None,  # pylint: disable=too-many-arguments
+    def put(endpoint, token=None,  # pylint: disable=too-many-arguments,too-many-positional-arguments
             auth_header_type: AuthHeaderType = AuthHeaderType.BEARER,
             content_type: ContentType = ContentType.JSON, data=None, raise_for_status: bool = True):
         """POST service."""

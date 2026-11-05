@@ -130,7 +130,7 @@ class EmailVerificationService:
                 status_code=HTTPStatus.INTERNAL_SERVER_ERROR) from exc
 
     @staticmethod
-    # pylint: disable-msg=too-many-arguments
+    # pylint: disable-msg=too-many-arguments,too-many-positional-arguments
     def _render_email_template(
         survey: SurveyModel,
         token,
