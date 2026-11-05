@@ -17,9 +17,8 @@ from typing import Iterable
 
 import requests
 from flask import current_app, request
-from requests.exceptions import ConnectTimeout, HTTPError
-# pylint:disable=ungrouped-imports
 from requests.exceptions import ConnectionError as ReqConnectionError
+from requests.exceptions import ConnectTimeout, HTTPError
 
 from api.utils.enums import AuthHeaderType, ContentType
 from api.utils.logging_masker import mask_dict
