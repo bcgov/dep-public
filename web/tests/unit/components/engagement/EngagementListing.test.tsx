@@ -11,7 +11,13 @@ import { EngagementDisplayStatus } from 'constants/engagementStatus';
 import assert from 'assert';
 import { USER_ROLES } from 'services/userService/constants';
 import { createMemoryRouter, RouterProvider } from 'react-router';
-import { deleteEngagement } from 'services/engagementService';
+import { deleteEngagement, patchEngagement } from 'services/engagementService';
+import {
+    acquireEngagementSectionLock,
+    LOCK_TOKEN_HEADER,
+    releaseLock,
+    SECTION_CONFIG_GENERAL,
+} from 'services/resourceLockService';
 import { useSelector } from 'react-redux';
 
 global['Request'] = jest.fn().mockImplementation((input: string = '', init: RequestInit = {}) => ({
@@ -143,6 +149,13 @@ jest.mock('react-redux', () => ({
 
 jest.mock('services/engagementService', () => ({
     deleteEngagement: jest.fn(),
+    patchEngagement: jest.fn(),
+}));
+
+jest.mock('services/resourceLockService', () => ({
+    ...jest.requireActual('services/resourceLockService'),
+    acquireEngagementSectionLock: jest.fn(),
+    releaseLock: jest.fn(),
 }));
 
 const openActionsFor = async (engagementId: number) => {
@@ -207,6 +220,115 @@ describe('Engagement listing page tests', () => {
         });
 
         expect(screen.getByText('Create Engagement', { exact: false })).toBeInTheDocument();
+    });
+
+    describe('Featured star', () => {
+        const setEngagements = (...items: Array<typeof mockEngagementOne & { is_featured?: boolean }>) => {
+            mockFetcher.data = { engagements: { items, total: items.length } };
+        };
+        afterEach(() => {
+            mockFetcher.data = mockFetcherData;
+        });
+
+        const getStar = async (id: number) => screen.findByTestId(`engagement/listing/featured-${id}`);
+
+        beforeEach(() => {
+            (acquireEngagementSectionLock as jest.Mock).mockReset().mockResolvedValue({ lock_token: 'lock-123' });
+            (releaseLock as jest.Mock).mockReset().mockResolvedValue({ released: true });
+            (patchEngagement as jest.Mock).mockReset().mockResolvedValue({});
+            (notificationSlice.openNotification as unknown as jest.Mock).mockClear();
+        });
+
+        test('marks an engagement as featured under a lock and releases the lock', async () => {
+            setEngagements(mockEngagementOne);
+            render(<RouterProvider router={router} />);
+
+            const star = await getStar(mockEngagementOne.id);
+            expect(star).toHaveAttribute('aria-pressed', 'false');
+            expect(star).toHaveAccessibleName('Mark as featured');
+
+            fireEvent.click(star);
+
+            await waitFor(() => {
+                expect(star).toHaveAttribute('aria-pressed', 'true');
+                expect(releaseLock).toHaveBeenCalledWith('lock-123');
+            });
+            expect(acquireEngagementSectionLock).toHaveBeenCalledWith({
+                engagementId: mockEngagementOne.id,
+                sectionKey: SECTION_CONFIG_GENERAL,
+            });
+            expect(patchEngagement).toHaveBeenCalledWith(
+                { id: mockEngagementOne.id, is_featured: true },
+                { [LOCK_TOKEN_HEADER]: 'lock-123' },
+            );
+            expect(star).toHaveAccessibleName('Unmark as featured');
+        });
+
+        test('unmarks an engagement that is already featured', async () => {
+            setEngagements({ ...mockEngagementOne, is_featured: true });
+            render(<RouterProvider router={router} />);
+
+            const star = await getStar(mockEngagementOne.id);
+            expect(star).toHaveAttribute('aria-pressed', 'true');
+
+            fireEvent.click(star);
+
+            await waitFor(() => {
+                expect(patchEngagement).toHaveBeenCalledWith(
+                    { id: mockEngagementOne.id, is_featured: false },
+                    { [LOCK_TOKEN_HEADER]: 'lock-123' },
+                );
+                expect(star).toHaveAttribute('aria-pressed', 'false');
+            });
+        });
+
+        test('reverts, notifies and still releases the lock when the patch fails', async () => {
+            setEngagements(mockEngagementOne);
+            (patchEngagement as jest.Mock).mockRejectedValue(new Error('boom'));
+            render(<RouterProvider router={router} />);
+
+            const star = await getStar(mockEngagementOne.id);
+            fireEvent.click(star);
+
+            await waitFor(() => {
+                expect(notificationSlice.openNotification).toHaveBeenCalledWith(
+                    expect.objectContaining({ severity: 'error', text: expect.stringMatching(/featured status/i) }),
+                );
+                expect(releaseLock).toHaveBeenCalledWith('lock-123');
+            });
+            expect(star).toHaveAttribute('aria-pressed', 'false');
+        });
+
+        test('reverts and does not release or patch when the lock cannot be acquired', async () => {
+            setEngagements(mockEngagementOne);
+            (acquireEngagementSectionLock as jest.Mock).mockRejectedValue(new Error('locked'));
+            render(<RouterProvider router={router} />);
+
+            const star = await getStar(mockEngagementOne.id);
+            fireEvent.click(star);
+
+            await waitFor(() => {
+                expect(notificationSlice.openNotification).toHaveBeenCalledWith(
+                    expect.objectContaining({ severity: 'error' }),
+                );
+            });
+            expect(patchEngagement).not.toHaveBeenCalled();
+            expect(releaseLock).not.toHaveBeenCalled();
+            expect(star).toHaveAttribute('aria-pressed', 'false');
+        });
+
+        test('ignores a failure while releasing the lock', async () => {
+            setEngagements(mockEngagementOne);
+            (releaseLock as jest.Mock).mockRejectedValue(new Error('release failed'));
+            render(<RouterProvider router={router} />);
+
+            const star = await getStar(mockEngagementOne.id);
+            fireEvent.click(star);
+
+            await waitFor(() => expect(releaseLock).toHaveBeenCalled());
+            expect(star).toHaveAttribute('aria-pressed', 'true');
+            expect(notificationSlice.openNotification).not.toHaveBeenCalled();
+        });
     });
 
     test('Search filter works and fetches engagements with the search text as a param', async () => {
