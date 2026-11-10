@@ -254,8 +254,8 @@ const EngagementCarousel = ({ engagements, heading, ariaLabel }: EngagementCarou
                         scrollSnapType: 'x mandatory',
                         scrollbarWidth: 'none',
                         '&::-webkit-scrollbar': { display: 'none' },
-                        pt: '24px',
-                        pb: '16px',
+                        pt: '1.5rem',
+                        pb: '1rem',
                         // Expand the scrollport to display box shadows, but
                         // keep its content aligned with the viewport.
                         mx: `-${SHADOW_INSET}px`,
