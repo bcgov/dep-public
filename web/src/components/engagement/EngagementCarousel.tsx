@@ -20,6 +20,12 @@ export const getItemsPerSlide = (containerWidth: number) =>
         Math.max(1, Math.floor((containerWidth + MIN_TILE_GAP) / (TILE_WIDTH + MIN_TILE_GAP))),
     );
 
+const getTileWidth = (itemsPerSlide: number) => {
+    if (itemsPerSlide === 1) return '100%';
+    if (itemsPerSlide === 2) return `calc(50% - ${MIN_TILE_GAP / 2}px)`;
+    return TILE_WIDTH;
+};
+
 // Three fixed-width tiles are spread evenly; slides use the same gap as the tiles.
 export const getTileGap = (containerWidth: number, itemsPerSlide: number) =>
     itemsPerSlide === MAX_ITEMS_PER_SLIDE
@@ -69,8 +75,7 @@ const EngagementCarousel = ({ engagements, heading }: EngagementCarouselProps) =
     const slides = chunk(engagements, itemsPerSlide);
     const slideCount = slides.length;
     const showControls = slideCount > 1;
-    const tileWidth =
-        itemsPerSlide === 1 ? '100%' : itemsPerSlide === 2 ? `calc(50% - ${MIN_TILE_GAP / 2}px)` : TILE_WIDTH;
+    const tileWidth = getTileWidth(itemsPerSlide);
 
     // Refresh items-per-slide and tile gap when the viewport width changes.
     useLayoutEffect(() => {

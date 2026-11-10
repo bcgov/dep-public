@@ -8,7 +8,7 @@ import { EngagementTallyRowProps } from './types';
 import { colors } from 'styles/Theme';
 import { useAppTranslation } from 'hooks';
 
-const LandingStats = () => {
+export const LandingStats = () => {
     const { t: translate } = useAppTranslation();
 
     // Replace counts with real values when they are available from the API
@@ -52,7 +52,6 @@ const LandingStats = () => {
                 position: 'relative',
                 background: colors.surface.blue[90],
                 py: '1.5rem',
-                px: { xs: '1rem', sm: '2rem' },
             }}
             innerStyles={{
                 position: 'relative',

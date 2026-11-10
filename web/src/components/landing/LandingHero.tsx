@@ -34,7 +34,6 @@ export const LandingHero = () => {
     const landingOuterStyles = {
         pt: isAuthenticated ? '11.9375rem' : '8rem',
         pb: '8em',
-        px: { xs: '1em', sm: '2em' },
         minHeight: { xs: 'auto', md: '17.625rem' },
     };
 
