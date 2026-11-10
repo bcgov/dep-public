@@ -22,6 +22,7 @@ interface EngagementTileProps {
     passedEngagement?: Engagement;
     engagementId: number;
     orientation?: ResponsiveStyleValue<'horizontal' | 'vertical'>;
+    fullWidth?: boolean;
 }
 
 export function mapOrientation<T extends string>(
@@ -47,7 +48,12 @@ export function mapOrientation<T extends string>(
     return orientation === 'horizontal' ? horizontalValue : verticalValue;
 }
 
-const EngagementTile = ({ passedEngagement, engagementId, orientation = 'vertical' }: EngagementTileProps) => {
+const EngagementTile = ({
+    passedEngagement,
+    engagementId,
+    orientation = 'vertical',
+    fullWidth = false,
+}: EngagementTileProps) => {
     const { t: translate } = useAppTranslation();
     const [loadedEngagement, setLoadedEngagement] = useState<Engagement | null>(passedEngagement || null);
     const [isLoadingEngagement, setIsLoadingEngagement] = useState(true);
@@ -87,7 +93,7 @@ const EngagementTile = ({ passedEngagement, engagementId, orientation = 'vertica
     }, [passedEngagement, engagementId]);
 
     if (isLoadingEngagement) {
-        return <TileSkeleton orientation={orientation} />;
+        return <TileSkeleton orientation={orientation} fullWidth={fullWidth} />;
     }
 
     if (!loadedEngagement) {
@@ -127,10 +133,10 @@ const EngagementTile = ({ passedEngagement, engagementId, orientation = 'vertica
 
     const { name, banner_url } = loadedEngagement;
 
-    const cardMinWidth = mapOrientation(orientation, '620px', '343px');
-    const cardMaxWidth = mapOrientation(orientation, '806px', '343px');
+    const cardMinWidth = mapOrientation(orientation, '620px', fullWidth ? '0px' : '343px');
+    const cardMaxWidth = mapOrientation(orientation, '806px', fullWidth ? '100%' : '343px');
     const mediaHeight = mapOrientation(orientation, '289px', '147px');
-    const mediaWidth = mapOrientation(orientation, '33.3%', '343px');
+    const mediaWidth = mapOrientation(orientation, '33.3%', fullWidth ? '100%' : '343px');
     const contentWidth = mapOrientation(orientation, '440px', '100%');
     const contentHeight = mapOrientation(orientation, '289px', '345px');
 

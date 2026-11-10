@@ -10,15 +10,17 @@ import { mapOrientation } from './EngagementTile';
 
 export const TileSkeleton = ({
     orientation = 'vertical',
+    fullWidth = false,
 }: {
     orientation?: ResponsiveStyleValue<'horizontal' | 'vertical'>;
+    fullWidth?: boolean;
 }) => {
     const randomBetween = (min: number, max: number) => Math.floor(Math.random() * (max - min + 1)) + min; //NOSONAR: non-cryptographically secure random() for UI purposes only
 
-    const cardMinWidth = mapOrientation(orientation, '620px', '343px');
-    const cardMaxWidth = mapOrientation(orientation, '806px', '343px');
+    const cardMinWidth = mapOrientation(orientation, '620px', fullWidth ? '0px' : '343px');
+    const cardMaxWidth = mapOrientation(orientation, '806px', fullWidth ? '100%' : '343px');
     const mediaHeight = mapOrientation(orientation, '289px', '147px');
-    const mediaWidth = mapOrientation(orientation, '33.3%', '343px');
+    const mediaWidth = mapOrientation(orientation, '33.3%', fullWidth ? '100%' : '343px');
     const contentWidth = mapOrientation(orientation, '440px', '100%');
     const contentHeight = mapOrientation(orientation, '289px', '345px');
 

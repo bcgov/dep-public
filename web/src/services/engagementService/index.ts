@@ -39,6 +39,7 @@ export interface GetEngagementsParams {
     filterable_metadata?: boolean;
     metadata?: string;
     tenant_id?: number;
+    is_featured?: boolean;
 }
 
 export interface EngagementSearchParams extends Omit<GetEngagementsParams, 'engagement_status'> {

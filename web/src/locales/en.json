@@ -107,7 +107,8 @@
             "totalEngagements": "Total engagements",
             "openOpportunities": "Open opportunities",
             "upcomingOpportunities": "Upcoming opportunities"
-        }
+        },
+        "featuredEngagements": "Featured engagements"
     },
     "search": {
         "sectionHeading": "Find engagements",
