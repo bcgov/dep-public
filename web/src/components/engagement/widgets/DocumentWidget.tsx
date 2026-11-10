@@ -129,8 +129,9 @@ const DocumentLabel = ({ documentItem, expandedItems }: DocumentTreeProps) =>
         </BodyText>
     ) : (
         <BodyText lineHeight="inherit" sx={{ '&:dir(rtl) svg': { transform: 'rotateY(180deg)' } }}>
+            {/* Prevent browser caching by adding version param based on updated date. */}
             <Link
-                to={documentItem.url ?? ''}
+                to={documentItem.url + '?v=' + documentItem.file?.updated_date}
                 underline="hover"
                 color="text.primary"
                 lineHeight="inherit"

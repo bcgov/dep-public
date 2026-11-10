@@ -107,6 +107,7 @@ export const FilesLightbox = ({ open, onClose, files }: FilesLightboxProps) => {
                 justifyContent="space-between"
                 spacing={1}
                 px={{ xs: 2, sm: 3, md: matchButtonPadding }}
+                sx={{ pt: 3 }}
             >
                 <Grid size="auto" display={{ xs: 'flex', md: 'none' }}>
                     <Button
@@ -281,7 +282,7 @@ export const FilesLightbox = ({ open, onClose, files }: FilesLightboxProps) => {
                     </Grid>
                 </Grid>
             </DialogContent>
-            <DialogActions sx={{ display: { xs: 'none', md: 'flex' }, px: matchButtonPadding }}>
+            <DialogActions sx={{ display: { xs: 'none', md: 'flex' }, px: matchButtonPadding, pb: 3 }}>
                 <Button size="small" icon={<FontAwesomeIcon icon={faCheck} />} onClick={handleClose}>
                     Done
                 </Button>

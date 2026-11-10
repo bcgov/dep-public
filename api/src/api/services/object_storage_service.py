@@ -1,4 +1,5 @@
 """Service for object storage management."""
+
 import os
 import uuid
 from typing import Any, List, Union
@@ -7,6 +8,7 @@ from urllib.parse import urlparse
 import requests
 from aws_requests_auth.aws_auth import AWSRequestsAuth
 
+from api.models.uploaded_file import UploadedFile
 from api.config import Config
 
 
@@ -130,23 +132,38 @@ class ObjectStorageService:
             }, 500
 
         for file in documents:
-            s3sourceuri = file.get('s3sourceuri', None)
             filename = file.get('filename')
+
             if not filename:
                 raise ValueError('filename is required')
-            uniquefilename = self.generate_unique_filename(filename)
 
-            s3uri = s3sourceuri or self.get_url(uniquefilename)
+            s3sourceuri = file.get('s3sourceuri', None)
+            file_id = file.get('id', None)
 
-            if s3sourceuri is None:
-                response = requests.put(
-                    s3uri, data=None, auth=self.s3_auth, timeout=None)
-            else:
+            if s3sourceuri is not None:
+                # Download an object
+                uniquefilename = ''
+                s3uri = s3sourceuri
                 response = requests.get(s3uri, auth=self.s3_auth, timeout=None)
+            elif file_id is not None:
+                # Replace an existing object
+                uploaded_file = UploadedFile.find_by_id(file_id)
+
+                if not uploaded_file:
+                    raise ValueError('No matching file found for replacement.')
+
+                uniquefilename = uploaded_file.unique_filename
+                s3uri = self.get_url(uniquefilename)
+                response = requests.put(s3uri, data=None, auth=self.s3_auth, timeout=None)
+            else:
+                # Create a new object
+                uniquefilename = self.generate_unique_filename(filename)
+                s3uri = self.get_url(uniquefilename)
+                response = requests.put(s3uri, data=None, auth=self.s3_auth, timeout=None)
 
             file['filepath'] = s3uri
             file['authheader'] = response.request.headers['Authorization']
             file['amzdate'] = response.request.headers['x-amz-date']
-            file['uniquefilename'] = uniquefilename if not s3sourceuri else ''
+            file['uniquefilename'] = uniquefilename
 
         return documents

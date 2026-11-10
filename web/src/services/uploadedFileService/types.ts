@@ -9,6 +9,7 @@ export interface ObjectStorageHeaderDetails {
 }
 
 export interface ObjectStorageFileDetails {
+    id?: string;
     filename: string;
     s3sourceuri?: string;
     content_type?: string;

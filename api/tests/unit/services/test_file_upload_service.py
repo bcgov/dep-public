@@ -1,7 +1,8 @@
 """Tests for persistence and finalization of managed file uploads."""
 from datetime import UTC, datetime
 from http import HTTPStatus
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
+from flask import g
 
 import pytest
 
@@ -83,14 +84,26 @@ def test_prepare_file_upload_rejects_engagement_from_another_tenant():
     assert error.value.status_code == HTTPStatus.NOT_FOUND
 
 
-@patch('api.services.file_upload_service.requests.head')
-def test_finalize_file_upload_marks_uploaded_and_preserves_declared_mimetype(mock_head):
+def test_finalize_file_upload_marks_uploaded_and_preserves_declared_mimetype(
+    app,
+    mocker,
+):
     """Finalization uses the persisted MIME type and records S3 metadata."""
     service = _service_with_storage()
-    file_record = MagicMock(mimetype='application/pdf',
-                            filename='document.pdf')
+
+    file_record = MagicMock(
+        mimetype='application/pdf',
+        filename='document.pdf',
+        updated_at=None,
+    )
+
     service.get_file_upload = MagicMock(return_value=file_record)
     service.object_storage.get_object_key.return_value = 'uploads/file-id.pdf'
+
+    mock_head = mocker.patch(
+        'api.services.file_upload_service.requests.head'
+    )
+
     mock_head.return_value = MagicMock(
         status_code=200,
         headers={
@@ -100,27 +113,96 @@ def test_finalize_file_upload_marks_uploaded_and_preserves_declared_mimetype(moc
         },
     )
 
-    result, status_code = service.finalize_file_upload('file-id')
+    with app.app_context():
+        g.jwt_oidc_token_info = {
+            'sub': 'test-user'
+        }
+
+        result, status_code = service.finalize_file_upload('file-id')
 
     assert result is file_record
     assert status_code == HTTPStatus.OK
     assert file_record.status == UploadedFileStatus.UPLOADED
     assert file_record.mimetype == 'application/pdf'
     assert file_record.size == 2048
-    assert file_record.uploaded_at == datetime(2026, 9, 17, 12, 30, tzinfo=UTC)
+    assert file_record.uploaded_at == datetime(
+        2026, 9, 17, 12, 30, tzinfo=UTC
+    )
 
 
-@patch('api.services.file_upload_service.requests.head')
-def test_finalize_file_upload_marks_failed_when_object_is_missing(mock_head):
+def test_finalize_file_upload_marks_failed_when_object_is_missing(
+    app,
+    mocker,
+):
     """Finalization records failure when object storage cannot find the file."""
     service = _service_with_storage()
-    file_record = MagicMock(path='uploads/file-id.pdf')
+
+    file_record = MagicMock(
+        path='uploads/file-id.pdf',
+        updated_at=None,
+    )
+
     service.get_file_upload = MagicMock(return_value=file_record)
     service.object_storage.get_object_key.return_value = 'uploads/file-id.pdf'
-    mock_head.return_value = MagicMock(status_code=404)
 
-    result, status_code = service.finalize_file_upload('file-id')
+    mock_head = mocker.patch(
+        'api.services.file_upload_service.requests.head'
+    )
+
+    mock_head.return_value = MagicMock(
+        status_code=404
+    )
+
+    with app.app_context():
+        g.jwt_oidc_token_info = {
+            'sub': 'test-user'
+        }
+
+        result, status_code = service.finalize_file_upload('file-id')
 
     assert result is file_record
     assert status_code == HTTPStatus.NOT_FOUND
     assert file_record.status == UploadedFileStatus.FAILED
+
+
+def test_finalize_file_upload_sets_updated_by_for_replacement(
+    app,
+    mocker,
+):
+    """Replacement uploads update updated_by."""
+    service = _service_with_storage()
+
+    file_record = MagicMock()
+    file_record.mimetype = 'application/pdf'
+    file_record.filename = 'document.pdf'
+    file_record.updated_at = datetime.now(UTC)
+
+    service.get_file_upload = MagicMock(
+        return_value=file_record
+    )
+
+    service.object_storage.get_object_key.return_value = (
+        'uploads/file-id.pdf'
+    )
+
+    mock_head = mocker.patch(
+        'api.services.file_upload_service.requests.head'
+    )
+
+    mock_head.return_value = MagicMock(
+        status_code=200,
+        headers={
+            'Last-Modified': 'Wed, 17 Sep 2026 12:30:00 GMT',
+            'Content-Type': 'application/pdf',
+            'Content-Length': '2048',
+        },
+    )
+
+    with app.app_context():
+        g.jwt_oidc_token_info = {
+            'sub': 'replacement-user'
+        }
+
+        service.finalize_file_upload('file-id')
+
+    assert file_record.updated_by == 'replacement-user'
