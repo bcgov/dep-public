@@ -188,8 +188,8 @@ describe('EngagementCarousel', () => {
             marginRight: '-14px',
             paddingLeft: '14px',
             paddingRight: '14px',
-            paddingTop: '24px',
-            paddingBottom: '16px',
+            paddingTop: '1.5rem',
+            paddingBottom: '1rem',
             scrollPaddingInline: '14px',
         });
         expect(slides()).toHaveLength(2);
