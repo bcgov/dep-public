@@ -222,6 +222,11 @@ def _get_engagements(public_search=False):
                 default=False,
                 type=lambda v: v.lower() == 'true'
             ),
+            'is_featured': args.get(
+                'is_featured',
+                default=False,
+                type=lambda v: v.lower() == 'true'
+            ),
             'public_search': public_search,
         }
 

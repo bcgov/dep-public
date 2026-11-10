@@ -52,6 +52,44 @@ describe('EngagementTile', () => {
         expect(screen.queryByText(baseEngagement.name)).not.toBeInTheDocument();
     });
 
+    it.each([false, true])('uses the requested width for loaded tiles (fullWidth=%s)', async (fullWidth) => {
+        const { container } = render(
+            <MemoryRouter>
+                <EngagementTile
+                    engagementId={baseEngagement.id}
+                    passedEngagement={baseEngagement}
+                    fullWidth={fullWidth}
+                />
+            </MemoryRouter>,
+        );
+        await screen.findByText(baseEngagement.name);
+        const card = container.querySelector('.MuiCard-root');
+        const media = container.querySelector('.MuiCardMedia-root');
+        expect(card).toHaveStyle({
+            width: '100%',
+            minWidth: fullWidth ? '0px' : '343px',
+            maxWidth: fullWidth ? '100%' : '343px',
+        });
+        expect(media).toHaveStyle({ minWidth: fullWidth ? '100%' : '343px' });
+    });
+
+    it.each([false, true])('uses the requested width for loading tiles (fullWidth=%s)', (fullWidth) => {
+        mockGetEngagement.mockReturnValue(new Promise(() => undefined));
+        const { container } = render(
+            <MemoryRouter>
+                <EngagementTile engagementId={1} fullWidth={fullWidth} />
+            </MemoryRouter>,
+        );
+        const card = container.querySelector('.MuiCard-root');
+        const media = container.querySelector('.MuiCardMedia-root');
+        expect(card).toHaveStyle({
+            width: '100%',
+            minWidth: fullWidth ? '0px' : '343px',
+            maxWidth: fullWidth ? '100%' : '343px',
+        });
+        expect(media).toHaveStyle({ width: fullWidth ? '100%' : '343px' });
+    });
+
     it('fetches the engagement by id when no engagement is passed in', async () => {
         mockGetEngagement.mockResolvedValue(baseEngagement);
         render(

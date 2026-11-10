@@ -191,6 +191,7 @@ class Engagement(BaseModel):
             query = cls._filter_by_metadata(query, search_options)
 
         query = cls._filter_by_internal(query, search_options)
+        query = cls._filter_by_featured(query, search_options)
         if scope_options.restricted:
             if scope_options.include_assigned:
                 query = cls._filter_by_assigned_engagements(
@@ -411,6 +412,12 @@ class Engagement(BaseModel):
     def _filter_by_internal(query, search_options):
         if search_options.get('exclude_internal'):
             query = query.filter(Engagement.is_internal.is_(False))
+        return query
+
+    @staticmethod
+    def _filter_by_featured(query, search_options):
+        if search_options and search_options.get('is_featured'):
+            query = query.filter(Engagement.is_featured.is_(True))
         return query
 
     @staticmethod

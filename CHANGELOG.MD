@@ -1,3 +1,10 @@
+## November 10, 2026
+
+- **Feature** Added Featured Engagement section to landing page [🎟️ DEP-416](https://citz-gdx.atlassian.net/browse/DEP-416)
+  - Added new Engagement Carousel component to display a responsive carousel of engagements.
+  - Adjusted engagement tiles to support responsive layout within the carousel.
+  - Added a landing page section to display a carousel of selected engagements.
+
 ## November 9, 2026
 
 - **Feature** Added ability to replace an existing PDF with a new file [🎟️ DEP-409](https://citz-gdx.atlassian.net/browse/DEP-409)
@@ -10,6 +17,7 @@
 - Tidied up the action section padding of all engagement file tab modals
 
 ## November 4, 2026
+
 - **Feature** Added ability to feature engagements [🎟️ DEP-415](https://citz-gdx.atlassian.net/browse/DEP-415)
   - Added featured status to API resource for engagements
   - Updated front-end to display and toggle featured status for engagements

@@ -15,6 +15,7 @@ const LandingSection = ({ children, image, colour, outerStyles = {}, innerStyles
                 backgroundColor: image ? 'transparent' : colour || colors.surface.white,
                 width: '100%',
                 padding: Layout.padding.default, // Outer padding
+                px: { xs: '1rem', sm: '2rem' },
                 ...outerStyles,
             }}
         >
