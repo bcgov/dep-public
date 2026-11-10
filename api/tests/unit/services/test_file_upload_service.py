@@ -87,6 +87,7 @@ def test_prepare_file_upload_rejects_engagement_from_another_tenant():
 def test_finalize_file_upload_marks_uploaded_and_preserves_declared_mimetype(
     app,
     mocker,
+    monkeypatch
 ):
     """Finalization uses the persisted MIME type and records S3 metadata."""
     service = _service_with_storage()
@@ -114,9 +115,11 @@ def test_finalize_file_upload_marks_uploaded_and_preserves_declared_mimetype(
     )
 
     with app.app_context():
-        g.jwt_oidc_token_info = {
-            'sub': 'test-user'
-        }
+        monkeypatch.setitem(
+            g.__dict__,
+            'jwt_oidc_token_info',
+            {'sub': 'test-user'},
+        )
 
         result, status_code = service.finalize_file_upload('file-id')
 
@@ -133,6 +136,7 @@ def test_finalize_file_upload_marks_uploaded_and_preserves_declared_mimetype(
 def test_finalize_file_upload_marks_failed_when_object_is_missing(
     app,
     mocker,
+    monkeypatch
 ):
     """Finalization records failure when object storage cannot find the file."""
     service = _service_with_storage()
@@ -154,9 +158,11 @@ def test_finalize_file_upload_marks_failed_when_object_is_missing(
     )
 
     with app.app_context():
-        g.jwt_oidc_token_info = {
-            'sub': 'test-user'
-        }
+        monkeypatch.setitem(
+            g.__dict__,
+            'jwt_oidc_token_info',
+            {'sub': 'test-user'},
+        )
 
         result, status_code = service.finalize_file_upload('file-id')
 
@@ -168,6 +174,7 @@ def test_finalize_file_upload_marks_failed_when_object_is_missing(
 def test_finalize_file_upload_sets_updated_by_for_replacement(
     app,
     mocker,
+    monkeypatch
 ):
     """Replacement uploads update updated_by."""
     service = _service_with_storage()
@@ -175,7 +182,7 @@ def test_finalize_file_upload_sets_updated_by_for_replacement(
     file_record = MagicMock()
     file_record.mimetype = 'application/pdf'
     file_record.filename = 'document.pdf'
-    file_record.updated_at = datetime.now(UTC)
+    file_record.uploaded_at = datetime.now(UTC)
 
     service.get_file_upload = MagicMock(
         return_value=file_record
@@ -199,9 +206,11 @@ def test_finalize_file_upload_sets_updated_by_for_replacement(
     )
 
     with app.app_context():
-        g.jwt_oidc_token_info = {
-            'sub': 'replacement-user'
-        }
+        monkeypatch.setitem(
+            g.__dict__,
+            'jwt_oidc_token_info',
+            {'sub': 'replacement-user'},
+        )
 
         service.finalize_file_upload('file-id')
 

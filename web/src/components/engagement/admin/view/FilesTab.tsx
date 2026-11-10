@@ -251,7 +251,7 @@ const FilesTab = () => {
         }
     };
 
-    const handleReplacePdfConfirm = async () => {
+    const handleReplacePdfConfirm = () => {
         if (!engagementId || !replacingPdf?.id || !replacingPdfFileData) return;
         const newFile = replacingPdf;
         const newFileData = replacingPdfFileData;
@@ -273,7 +273,7 @@ const FilesTab = () => {
                         formData.append('id', newFile.uploaded_file.id);
 
                         submit(formData, {
-                            action: `./uploaded-files/${formData.get('id')}`,
+                            action: `./uploaded-files/${newFile.uploaded_file.id}`,
                             method: 'put',
                             encType: 'multipart/form-data',
                             navigate: false,

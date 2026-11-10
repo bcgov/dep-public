@@ -79,7 +79,7 @@ class FileUploadService:
         """Validate that the file has been uploaded to S3 and update its status accordingly."""
         file_record = self.get_file_upload(uploaded_file_id)
         token_info = g.jwt_oidc_token_info
-        is_update = file_record.updated_at is not None
+        is_update = file_record.uploaded_at is not None
         key = self.object_storage.get_object_key(file_record.path)
         s3uri = f'https://{self.object_storage.s3_auth.aws_host}/{self.object_storage.s3_bucket}/{key}'
 

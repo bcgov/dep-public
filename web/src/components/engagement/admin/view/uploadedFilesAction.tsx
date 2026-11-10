@@ -33,10 +33,10 @@ export const uploadedFilesAction: ActionFunction = async ({ request, params }: A
                 throw new Error(`${errorString} Missing required form data.`);
             }
             if (typeof filename !== 'string' || typeof id !== 'string') {
-                throw new Error(`${errorString} Form data is invalid.`);
+                throw new TypeError(`${errorString} Form data is invalid.`);
             }
             if (!(file instanceof File)) {
-                throw new Error(`${errorString} Replacement file is invalid.`);
+                throw new TypeError(`${errorString} Replacement file is invalid.`);
             }
             if (file.type !== 'application/pdf') {
                 throw new Error(`${errorString} Replacement file must be a PDF.`);
