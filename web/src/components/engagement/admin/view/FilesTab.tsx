@@ -11,6 +11,7 @@ import {
     faHardDrive,
     faFileCircleExclamation,
     faPenField,
+    faArrowRightArrowLeft,
 } from '@fortawesome/pro-regular-svg-icons';
 import {
     Checkbox,
@@ -45,7 +46,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { bytesToSize } from 'helper';
 import { BodyText, Heading2 } from 'components/common/Typography';
 import { getFileIcon } from 'helper/getFileIcon';
-import { Await, useRouteLoaderData, useSubmit } from 'react-router';
+import { Await, useParams, useRouteLoaderData, useSubmit } from 'react-router';
 import { EngagementLoaderAdminData } from '../EngagementLoaderAdmin';
 import { FilesLightbox, canBePreviewed } from './FilesLightbox';
 import { UploadedFile } from 'models/uploadedFile';
@@ -55,6 +56,7 @@ import { WidgetLocation } from 'models/widget';
 import { useAppDispatch } from 'hooks';
 import { openNotification } from 'services/notificationService/notificationSlice';
 import { openNotificationModal } from 'services/notificationModalService/notificationModalSlice';
+import FileUpload from 'components/common/FileUpload';
 
 const tableHeadCells: HeadCell<EngagementFile>[] = [
     { key: 'uploaded_file', nestedSortKey: 'uploaded_file.filename', label: 'Name', allowSort: true },
@@ -73,6 +75,8 @@ const FilesTab = () => {
     const [renamingFile, setRenamingFile] = React.useState<EngagementFile | null>(null);
     const [renamingFileName, setRenamingFileName] = React.useState<string>('');
     const [renamingExtension, setRenamingExtension] = React.useState<string>('');
+    const [replacingPdf, setReplacingPdf] = React.useState<EngagementFile | null>(null);
+    const [replacingPdfFileData, setReplacingPdfFileData] = React.useState<File | null>(null);
     const loaderData = useRouteLoaderData('single-engagement') as EngagementLoaderAdminData;
     const submit = useSubmit();
 
@@ -80,6 +84,7 @@ const FilesTab = () => {
     const [menuTargetId, setMenuTargetId] = React.useState<string | null>(null);
 
     const dispatch = useAppDispatch();
+    const engagementId = useParams().engagementId;
 
     const unlinkedFiles = (files: EngagementFile[]) => {
         return files.filter((file) => !file.location);
@@ -237,6 +242,53 @@ const FilesTab = () => {
         setRenamingFile(null);
         setRenamingFileName('');
         setRenamingExtension('');
+    };
+
+    const handleReplacePdf = (files: EngagementFile[]) => {
+        const currentFile = files[0];
+        if (currentFile) {
+            setReplacingPdf(currentFile);
+        }
+    };
+
+    const handleReplacePdfConfirm = () => {
+        if (!engagementId || !replacingPdf?.id || !replacingPdfFileData) return;
+        const newFile = replacingPdf;
+        const newFileData = replacingPdfFileData;
+        resetPdfState();
+
+        dispatch(
+            openNotificationModal({
+                open: true,
+                data: {
+                    icon: faArrowRightArrowLeft,
+                    style: 'warning',
+                    header: `Are you sure you want to replace the existing PDF with the selected file?`,
+                    subText: [{ text: 'This action cannot be undone.' }],
+                    cancelButtonText: 'Cancel',
+                    confirmButtonText: 'Replace',
+                    handleConfirm() {
+                        const formData = new FormData();
+                        formData.append('file', newFileData);
+                        formData.append('filename', newFile.uploaded_file.filename);
+                        formData.append('id', newFile.uploaded_file.id);
+
+                        submit(formData, {
+                            action: `./uploaded-files/${newFile.uploaded_file.id}`,
+                            method: 'put',
+                            encType: 'multipart/form-data',
+                            navigate: false,
+                        });
+                    },
+                },
+                type: 'confirm',
+            }),
+        );
+    };
+
+    const resetPdfState = () => {
+        setReplacingPdf(null);
+        setReplacingPdfFileData(null);
     };
 
     const handleSingleAction = (action: (files: EngagementFile[]) => void) => {
@@ -604,6 +656,15 @@ const FilesTab = () => {
                                                     </ListItemIcon>
                                                     Rename
                                                 </MenuItem>
+                                                {/* Hide this menu item when the file is not a PDF */}
+                                                {currentMenuTarget?.uploaded_file?.mimetype === 'application/pdf' && (
+                                                    <MenuItem onClick={handleSingleAction(handleReplacePdf)}>
+                                                        <ListItemIcon>
+                                                            <FontAwesomeIcon icon={faArrowRightArrowLeft} />
+                                                        </ListItemIcon>
+                                                        Replace PDF
+                                                    </MenuItem>
+                                                )}
                                                 <MenuItem
                                                     onClick={handleSingleAction(handleUnlink)}
                                                     disabled={isUnlinked}
@@ -670,6 +731,7 @@ const FilesTab = () => {
                 onClose={resetRenamingState}
                 maxWidth="md"
                 slotProps={{ paper: { sx: { borderTop: '8px solid', borderColor: 'primary.main' } } }}
+                disableScrollLock
             >
                 <DialogTitle mb={2} width={700} maxWidth="100%">
                     <FontAwesomeIcon icon={faPenField} style={{ marginRight: '0.5rem' }} />
@@ -687,12 +749,37 @@ const FilesTab = () => {
                         renderSuffix={() => <Chip label={`.${renamingExtension}`} />}
                     />
                 </DialogContent>
-                <DialogActions>
+                <DialogActions sx={{ padding: 3, pt: 0 }}>
                     <Button variant="secondary" onClick={resetRenamingState}>
                         Cancel
                     </Button>
                     <Button variant="primary" onClick={handleSaveRename}>
                         Save
+                    </Button>
+                </DialogActions>
+            </Dialog>
+            <Dialog
+                open={!!replacingPdf}
+                disableScrollLock
+                slotProps={{ paper: { sx: { borderTop: '8px solid', borderColor: 'primary.main' } } }}
+            >
+                <DialogTitle mb={2} width={700} maxWidth="100%">
+                    <FontAwesomeIcon icon={faArrowRightArrowLeft} style={{ marginRight: '0.5rem' }} />
+                    Replacing PDF for {replacingPdf?.uploaded_file?.filename}
+                </DialogTitle>
+                <DialogContent sx={{ overflow: 'visible' }}>
+                    <FileUpload
+                        handleAddFile={(file) => setReplacingPdfFileData(file[0])}
+                        acceptedFormat={{ 'application/pdf': ['.pdf'] }}
+                        helpText={replacingPdfFileData?.name ?? 'Drag and drop or click here to select a new PDF file.'}
+                    />
+                </DialogContent>
+                <DialogActions sx={{ padding: 3, pt: 0 }}>
+                    <Button variant="secondary" onClick={resetPdfState}>
+                        Cancel
+                    </Button>
+                    <Button disabled={!replacingPdfFileData} variant="primary" onClick={handleReplacePdfConfirm}>
+                        Replace
                     </Button>
                 </DialogActions>
             </Dialog>

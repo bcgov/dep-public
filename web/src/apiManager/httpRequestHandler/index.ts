@@ -80,6 +80,8 @@ interface OSSRequestOptions {
 export const OSSGetRequest = <T>(url: string, requestOptions: OSSRequestOptions) => {
     return axios.get<T>(url, {
         headers: {
+            'Cache-Control': 'no-cache',
+            Pragma: 'no-cache',
             'X-Amz-Date': requestOptions.amzDate,
             Authorization: requestOptions.authHeader,
         },

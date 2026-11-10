@@ -30,6 +30,7 @@ class UploadedFileSchema(BaseSchema):
             'uploaded_at',
             'uploader_name',
             'url',
+            'updated_date',
         )
         unknown = EXCLUDE
 

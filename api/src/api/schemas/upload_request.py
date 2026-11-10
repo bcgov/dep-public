@@ -10,6 +10,7 @@ class UploadRequestSchema(Schema):
 
         unknown = EXCLUDE
 
+    id = fields.Str(data_key='id', allow_none=True)
     filename = fields.Str(data_key='filename', allow_none=False)
     filepath = fields.Str(data_key='filepath', allow_none=True)
     authheader = fields.Str(data_key='authheader', allow_none=True)
