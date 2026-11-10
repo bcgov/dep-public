@@ -65,7 +65,7 @@ describe('LandingFeatured', () => {
             'aria-label',
             'Featured engagements carousel, 1 engagements available.',
         );
-        expect(screen.getByRole('heading', { name: 'Featured Engagements' })).toBeInTheDocument();
+        expect(screen.getByRole('heading', { name: 'Featured engagements' })).toBeInTheDocument();
         expect(screen.getByText('Featured engagement')).toBeInTheDocument();
     });
 });
