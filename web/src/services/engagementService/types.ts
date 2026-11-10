@@ -36,6 +36,7 @@ export interface PutEngagementRequest {
 
 export interface PatchEngagementRequest {
     id: number;
+    is_featured?: boolean;
     name?: string;
     slug?: string;
     start_date?: string;

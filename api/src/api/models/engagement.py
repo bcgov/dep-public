@@ -9,7 +9,7 @@ import logging
 from datetime import datetime
 from typing import List, Optional
 
-from sqlalchemy import and_, asc, desc, func, literal, or_, select, union_all
+from sqlalchemy import and_, asc, desc, false, func, literal, or_, select, union_all
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.orderinglist import ordering_list
@@ -67,6 +67,7 @@ class Engagement(BaseModel):
         db.Integer, db.ForeignKey('tenant.id'), nullable=True)
     tenant = db.relationship('Tenant', backref='engagements')
     is_internal = db.Column(db.Boolean, nullable=False)
+    is_featured = db.Column(db.Boolean, nullable=False, default=False, server_default=false())
     banner_file = db.relationship(
         'UploadedFile', foreign_keys=[banner_file_id], backref='banner_usages')
     file_assignments = db.relationship(

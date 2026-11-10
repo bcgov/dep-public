@@ -75,6 +75,7 @@ export const TextInput: React.FC<TextInputProps> = ({
             placeholder={placeholder}
             disabled={disabled}
             sx={{
+                height: '48px',
                 color: 'text.primary',
                 bgcolor: 'background.default',
                 ...textInputStyles,

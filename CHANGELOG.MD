@@ -9,6 +9,11 @@
   - Updated date search param on download links prevents cached PDF versions from opening to the public
 - Tidied up the action section padding of all engagement file tab modals
 
+## November 4, 2026
+- **Feature** Added ability to feature engagements [🎟️ DEP-415](https://citz-gdx.atlassian.net/browse/DEP-415)
+  - Added featured status to API resource for engagements
+  - Updated front-end to display and toggle featured status for engagements
+
 ## November 3, 2026
 
 - **Feature** Added support for dynamic filter scope in TaxonEditForm [🎟️ DEP-414](https://citz-gdx.atlassian.net/browse/DEP-414)
