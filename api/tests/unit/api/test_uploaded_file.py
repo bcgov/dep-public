@@ -160,12 +160,82 @@ def test_public_delete_removes_verified_file(client, monkeypatch):
         'tenant_7/survey_12/verification_44/file-id.pdf')
 
 
-@patch('api.resources.uploaded_file.FileUploadService')
-def test_finalize_missing_file_returns_not_found(mock_service, client):
+def test_finalize_missing_file_returns_not_found(
+    client,
+    jwt,
+    session,
+    setup_admin_user_and_claims,
+    mocker,
+):
     """Finalization maps a missing UploadedFile to a 404 response."""
-    mock_service.return_value.finalize_file_upload.side_effect = ValueError(
-        'file not found')
+    _, claims = setup_admin_user_and_claims
+    headers = factory_auth_header(jwt=jwt, claims=claims)
 
-    response = client.post('/api/uploaded_files/missing-file/finalize')
+    mocker.patch(
+        'api.resources.uploaded_file.FileUploadService'
+    ).return_value.finalize_file_upload.side_effect = (
+        ValueError('file not found')
+    )
+
+    response = client.post(
+        '/api/uploaded_files/missing-file/finalize',
+        headers=headers,
+    )
 
     assert response.status_code == HTTPStatus.NOT_FOUND
+
+
+def test_upload_authorization_replacement_uses_object_storage(
+    client,
+    jwt,
+    session,
+    setup_admin_user_and_claims,
+    mocker,
+):
+    """Replacement uploads should use object storage authorization instead of creating a new upload."""
+    _, claims = setup_admin_user_and_claims
+    headers = factory_auth_header(jwt=jwt, claims=claims)
+
+    mock_object_storage = mocker.patch(
+        'api.resources.uploaded_file.ObjectStorageService'
+    )
+
+    mock_file_upload_service = mocker.patch(
+        'api.resources.uploaded_file.FileUploadService'
+    )
+
+    mock_object_storage.return_value.get_auth_headers.return_value = [
+        {
+            'filepath': 'https://objects.example.com/test.pdf',
+            'authheader': 'auth',
+            'amzdate': 'date',
+            'uniquefilename': 'existing-file.pdf',
+        }
+    ]
+
+    response = client.post(
+        '/api/uploaded_files/',
+        data=json.dumps([
+            {
+                'id': 'existing-file-id',
+                'filename': 'replacement.pdf',
+            }
+        ]),
+        headers=headers,
+        content_type='application/json',
+    )
+
+    assert response.status_code == HTTPStatus.OK
+
+    mock_object_storage.return_value.get_auth_headers.assert_called_once()
+
+    mock_file_upload_service.return_value.prepare_file_upload.assert_not_called()
+
+
+def test_finalize_requires_authentication(client):
+    """Finalization requires authentication."""
+    response = client.post(
+        '/api/uploaded_files/test-file-id/finalize'
+    )
+
+    assert response.status_code == HTTPStatus.UNAUTHORIZED

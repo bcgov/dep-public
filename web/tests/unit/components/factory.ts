@@ -113,6 +113,18 @@ const mockUploadedFile = {
     uploader_name: 'Test Name',
 };
 
+const mockUploadedPdfFile = {
+    id: 'b51718dc-75f4-4495-80c9-71571bfdb641',
+    filename: 'test.pdf',
+    name: 'test.pdf',
+    size: 12345,
+    mimetype: 'application/pdf',
+    url: 'https://example.com/test.pdf',
+    unique_filename: 'b51718dc-75f4-4495-80c9-71571bfdb641.pdf',
+    path: '/b51718dc-75f4-4495-80c9-71571bfdb641.pdf',
+    uploader_name: 'Test Name',
+};
+
 const mockEngagementFile = {
     id: 1,
     engagement_id: 1,
@@ -120,6 +132,15 @@ const mockEngagementFile = {
     widget: null,
     location: 'banner',
     uploaded_file: mockUploadedFile,
+};
+
+const mockEngagementPdfFile = {
+    id: 2,
+    engagement_id: 2,
+    widget_id: 2,
+    widget: null,
+    location: 'widget',
+    uploaded_file: mockUploadedPdfFile,
 };
 
 const mockEventItem: EventItem = {
@@ -365,6 +386,7 @@ export {
     engagementSlugData,
     engagementSetting,
     mockEngagementFile,
+    mockEngagementPdfFile,
     mockUploadedFile,
     mockPoll,
     pollWidget,

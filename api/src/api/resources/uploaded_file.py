@@ -80,7 +80,7 @@ class UploadedFileUploadAuthorization(Resource):
                                    UploadRequestSchema().load(requestfilejson, many=True))
             auth_headers = []
             for upload_request in upload_requests:
-                if upload_request.get('s3sourceuri'):
+                if upload_request.get('s3sourceuri') or upload_request.get('id'):
                     object_storage = object_storage or ObjectStorageService()
                     auth_headers.append(
                         object_storage.get_auth_headers([upload_request])[0])
@@ -138,6 +138,8 @@ class FinalizeUploadedFile(Resource):
     """Finalizes the upload of a file to the storage service."""
 
     @staticmethod
+    @auth.requires_auth
+    @require_role([Role.EDIT_ENGAGEMENT.value])
     @cross_origin(origins=allowedorigins())
     def post(file_id: str):
         """Finalize the upload of a file to the storage service."""

@@ -78,6 +78,8 @@ class FileUploadService:
     def finalize_file_upload(self, uploaded_file_id: str):
         """Validate that the file has been uploaded to S3 and update its status accordingly."""
         file_record = self.get_file_upload(uploaded_file_id)
+        token_info = g.jwt_oidc_token_info
+        is_update = file_record.uploaded_at is not None
         key = self.object_storage.get_object_key(file_record.path)
         s3uri = f'https://{self.object_storage.s3_auth.aws_host}/{self.object_storage.s3_bucket}/{key}'
 
@@ -99,6 +101,11 @@ class FileUploadService:
             file_record.uploaded_at = uploaded_at
             file_record.mimetype = content_type
             file_record.size = int(content_length) if content_length else None
+
+            # Include updater username for updates
+            if token_info.get('sub') is not None and is_update:
+                file_record.updated_by = token_info.get('sub')
+
             file_record.status = UploadedFileStatus.UPLOADED
         else:
             file_record.status = UploadedFileStatus.FAILED

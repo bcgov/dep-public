@@ -155,3 +155,60 @@ def test_get_auth_headers_returns_configuration_issue_when_missing_credentials(m
 
     assert status == 500
     assert result.get('status') == 'Configuration Issue'
+
+
+@patch('api.services.object_storage_service.requests.get')
+@patch('api.services.object_storage_service.AWSRequestsAuth', side_effect=_FakeAWSAuth)
+@patch('api.services.object_storage_service.Config')
+def test_get_auth_headers_downloads_existing_object(
+    mock_config,
+    _mock_auth,
+    mock_get,
+):
+    """Existing object downloads use GET authorization."""
+    mock_config.return_value.S3_CONFIG = TEST_S3_CONFIG
+
+    mock_get.return_value.request.headers = {
+        'Authorization': 'auth-header',
+        'x-amz-date': 'date-header',
+    }
+
+    service = ObjectStorageService()
+
+    result = service.get_auth_headers([
+        {
+            'filename': 'doc.pdf',
+            's3sourceuri': 'https://objects.example.com/file.pdf',
+        }
+    ])
+
+    assert result[0]['filepath'] == 'https://objects.example.com/file.pdf'
+    assert result[0]['uniquefilename'] == ''
+
+    mock_get.assert_called_once()
+
+
+@patch('api.services.object_storage_service.requests.put')
+@patch('api.services.object_storage_service.AWSRequestsAuth', side_effect=_FakeAWSAuth)
+@patch('api.services.object_storage_service.Config')
+def test_get_auth_headers_creates_new_upload(
+    mock_config,
+    _mock_auth,
+    mock_put,
+):
+    """New uploads generate a unique filename."""
+    mock_config.return_value.S3_CONFIG = TEST_S3_CONFIG
+
+    mock_put.return_value.request.headers = {
+        'Authorization': 'auth-header',
+        'x-amz-date': 'date-header',
+    }
+
+    service = ObjectStorageService()
+
+    result = service.get_auth_headers([
+        {'filename': 'document.pdf'}
+    ])
+
+    assert result[0]['uniquefilename'].endswith('.pdf')
+    mock_put.assert_called_once()

@@ -12,4 +12,5 @@ export interface UploadedFile {
     status?: EngagementFileStatus;
     uploaded_at?: string;
     uploader_name?: string;
+    updated_date?: string;
 }
