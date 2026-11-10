@@ -5,6 +5,19 @@ import EngagementCarousel, { getItemsPerSlide, getTileGap } from 'components/eng
 import { createDefaultEngagement } from 'models/engagement';
 import { useMediaQuery } from '@mui/material';
 
+jest.mock('hooks', () => ({
+    useAppTranslation: () => ({
+        t: (key: string) => {
+            const translations: Record<string, string> = {
+                'engagementCarousel.label': 'Engagements carousel, {0} engagements available.',
+                'engagementCarousel.slideAnnouncement': 'Slide {0} of {1}',
+                'landing.featuredEngagements': 'Featured engagements',
+            };
+            return translations[key] ?? key;
+        },
+    }),
+}));
+
 jest.mock('components/engagement/EngagementTile', () => ({
     __esModule: true,
     default: ({ engagementId, fullWidth }: { engagementId: number; fullWidth?: boolean }) => (
@@ -54,12 +67,60 @@ describe('EngagementCarousel', () => {
         const { rerender } = render(<EngagementCarousel engagements={makeEngagements(4)} />);
 
         expect(screen.getAllByTestId('tile')).toHaveLength(4);
-        expect(screen.queryByText('default:landing.featuredEngagements')).not.toBeInTheDocument();
+        expect(screen.queryByText('Featured engagements')).not.toBeInTheDocument();
         expect(pips()).toHaveLength(2);
 
         rerender(<EngagementCarousel engagements={makeEngagements(2)} />);
         expect(screen.getAllByTestId('tile')).toHaveLength(2);
         expect(pips()).toHaveLength(0);
+    });
+
+    test('constrains the carousel region to its parent instead of its content width', () => {
+        setTrackWidth(1200);
+        render(<EngagementCarousel engagements={makeEngagements(7)} />);
+
+        expect(screen.getByRole('region')).toHaveStyle({ width: '100%', minWidth: '0' });
+    });
+
+    test('labels the carousel and announces navigation without announcing on initial render', () => {
+        setTrackWidth(1200);
+        render(
+            <EngagementCarousel
+                engagements={makeEngagements(7)}
+                ariaLabel="Featured engagements carousel, 7 engagements available."
+            />,
+        );
+
+        const region = screen.getByRole('region', { name: 'Featured engagements carousel, 7 engagements available.' });
+        const status = screen.getByRole('status');
+        expect(region).toContainElement(status);
+        expect(status).toHaveAttribute('aria-live', 'polite');
+        expect(status).toHaveAttribute('aria-atomic', 'true');
+        expect(status).toBeEmptyDOMElement();
+
+        fireEvent.click(screen.getByRole('button', { name: 'Next' }));
+        expect(status).toHaveTextContent('Slide 2 of 3');
+        fireEvent.click(pips()[2]);
+        expect(status).toHaveTextContent('Slide 3 of 3');
+        fireEvent.click(screen.getByRole('button', { name: 'Previous' }));
+        expect(status).toHaveTextContent('Slide 2 of 3');
+    });
+
+    test('announces user scrolling and updates the generic carousel label', () => {
+        setTrackWidth(1200);
+        const { rerender } = render(<EngagementCarousel engagements={makeEngagements(7)} />);
+
+        expect(
+            screen.getByRole('region', { name: 'Engagements carousel, 7 engagements available.' }),
+        ).toBeInTheDocument();
+        const track = screen.getByTestId('featured-carousel-track');
+        track.scrollLeft = 1285.5;
+        fireEvent.scroll(track);
+        expect(screen.getByRole('status')).toHaveTextContent('Slide 2 of 3');
+        rerender(<EngagementCarousel engagements={makeEngagements(4)} />);
+        expect(
+            screen.getByRole('region', { name: 'Engagements carousel, 4 engagements available.' }),
+        ).toBeInTheDocument();
     });
 
     test('hides controls and pips when everything fits on one slide', () => {

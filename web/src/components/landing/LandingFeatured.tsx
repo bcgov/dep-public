@@ -1,6 +1,6 @@
 import React, { Suspense } from 'react';
 import { useLoaderData, Await } from 'react-router';
-import { Skeleton } from '@mui/material';
+import { Box, Skeleton } from '@mui/material';
 import { Heading2 } from 'components/common/Typography';
 import EngagementCarousel from 'components/engagement/EngagementCarousel';
 import { Engagement } from 'models/engagement';
@@ -22,6 +22,10 @@ export const LandingFeatured = () => {
                         <LandingSection>
                             <EngagementCarousel
                                 engagements={engagements}
+                                ariaLabel={translate('landing.featuredCarouselLabel').replace(
+                                    '{0}',
+                                    engagements.length.toString(),
+                                )}
                                 heading={
                                     <Heading2 decorated mt={4}>
                                         {translate('landing.featuredEngagements')}
@@ -39,9 +43,12 @@ export const LandingFeatured = () => {
 const FeaturedEngagementsSkeleton = () => {
     return (
         <LandingSection>
-            <Heading2 decorated>
+            <Heading2 decorated mt={4}>
                 <Skeleton variant="text" width="280px" />
             </Heading2>
+            <Box pt={3} pb={2} mb="44px">
+                <Skeleton variant="rounded" width="100%" height="492px" sx={{ borderRadius: '24px' }} />
+            </Box>
         </LandingSection>
     );
 };

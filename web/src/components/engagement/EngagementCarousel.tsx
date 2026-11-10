@@ -3,10 +3,12 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faChevronLeft, faChevronRight } from '@fortawesome/pro-solid-svg-icons';
 import Grid from '@mui/material/Grid2';
 import { Box, ButtonProps, Stack, Theme, useMediaQuery } from '@mui/material';
+import { visuallyHidden } from '@mui/utils';
 import { Engagement } from 'models/engagement';
 import EngagementTile from 'components/engagement/EngagementTile';
 import { colors } from 'styles/Theme';
 import { PrimaryButton } from 'components/common/Input/Button';
+import { useAppTranslation } from 'hooks';
 
 const TILE_WIDTH = 343;
 const MIN_TILE_GAP = 16;
@@ -60,9 +62,11 @@ const NavigationButton = (props: ButtonProps) => {
 interface EngagementCarouselProps {
     engagements: Engagement[];
     heading?: ReactNode;
+    ariaLabel?: string;
 }
 
-const EngagementCarousel = ({ engagements, heading }: EngagementCarouselProps) => {
+const EngagementCarousel = ({ engagements, heading, ariaLabel }: EngagementCarouselProps) => {
+    const { t: translate } = useAppTranslation();
     const isMobile = useMediaQuery((theme: Theme) => theme.breakpoints.down('sm'));
     const viewportRef = useRef<HTMLDivElement>(null);
     const trackRef = useRef<HTMLDivElement>(null);
@@ -71,11 +75,24 @@ const EngagementCarousel = ({ engagements, heading }: EngagementCarouselProps) =
     const [itemsPerSlide, setItemsPerSlide] = useState(MAX_ITEMS_PER_SLIDE);
     const [tileGap, setTileGap] = useState(MIN_TILE_GAP);
     const [currentSlide, setCurrentSlide] = useState(0);
+    const [announcement, setAnnouncement] = useState('');
+    const previousSlide = useRef(0);
 
     const slides = chunk(engagements, itemsPerSlide);
     const slideCount = slides.length;
     const showControls = slideCount > 1;
     const tileWidth = getTileWidth(itemsPerSlide);
+
+    useEffect(() => {
+        if (currentSlide !== previousSlide.current && currentSlide < slideCount) {
+            setAnnouncement(
+                translate('engagementCarousel.slideAnnouncement')
+                    .replace('{0}', (currentSlide + 1).toString())
+                    .replace('{1}', slideCount.toString()),
+            );
+            previousSlide.current = currentSlide;
+        }
+    }, [currentSlide, slideCount, translate]);
 
     // Refresh items-per-slide and tile gap when the viewport width changes.
     useLayoutEffect(() => {
@@ -182,7 +199,16 @@ const EngagementCarousel = ({ engagements, heading }: EngagementCarouselProps) =
     };
 
     return (
-        <>
+        <Box
+            role="region"
+            sx={{ width: '100%', minWidth: 0 }}
+            aria-label={
+                ariaLabel ?? translate('engagementCarousel.label').replace('{0}', engagements.length.toString())
+            }
+        >
+            <Box role="status" aria-live="polite" aria-atomic="true" sx={visuallyHidden}>
+                {announcement}
+            </Box>
             <Grid
                 container
                 size={12}
@@ -326,7 +352,7 @@ const EngagementCarousel = ({ engagements, heading }: EngagementCarouselProps) =
                     </Stack>
                 </Grid>
             )}
-        </>
+        </Box>
     );
 };
 

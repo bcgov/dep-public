@@ -108,7 +108,12 @@
             "openOpportunities": "Open opportunities",
             "upcomingOpportunities": "Upcoming opportunities"
         },
-        "featuredEngagements": "Featured engagements"
+        "featuredEngagements": "Featured engagements",
+        "featuredCarouselLabel": "Featured engagements carousel, {0} engagements available."
+    },
+    "engagementCarousel": {
+        "label": "Engagements carousel, {0} engagements available.",
+        "slideAnnouncement": "Slide {0} of {1}"
     },
     "search": {
         "sectionHeading": "Find engagements",
