@@ -262,6 +262,7 @@ const FilesTab = () => {
                 open: true,
                 data: {
                     icon: faArrowRightArrowLeft,
+                    style: 'warning',
                     header: `Are you sure you want to replace the existing PDF with the selected file?`,
                     subText: [{ text: 'This action cannot be undone.' }],
                     cancelButtonText: 'Cancel',

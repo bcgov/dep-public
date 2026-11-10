@@ -190,7 +190,7 @@ export const FilesLightbox = ({ open, onClose, files }: FilesLightboxProps) => {
                                     (currentFile?.mimetype?.startsWith('application/pdf') && (
                                         <iframe
                                             title={currentFile.filename}
-                                            src={currentFile.url}
+                                            src={`${currentFile.url}?v=${currentFile.updated_date}`}
                                             style={{ width: '100%', height: 'calc(100vh - 400px)', minHeight: '300px' }}
                                         >
                                             Your browser does not support embedding PDF files.
