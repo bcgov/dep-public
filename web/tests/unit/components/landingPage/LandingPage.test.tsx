@@ -71,6 +71,8 @@ const renderLanding = (initialEntry = '/') => {
                         filter_type: 'multi',
                         values: ['North Coast'],
                     }),
+                    regions: Promise.resolve([{ name: 'North Coast', count: 2, searchParam: 'meta-region' }]),
+                    featuredEngagements: Promise.resolve([]),
                 }),
                 element: (
                     <>
@@ -145,6 +147,16 @@ describe('Landing page tests', () => {
         const regionDropdown = await screen.findByLabelText(/Select an area to filter the engagements./i);
 
         expect(regionDropdown).toBeInTheDocument();
+    });
+
+    test('Region chip navigates to the filtered search', async () => {
+        renderLanding();
+
+        fireEvent.click(await screen.findByText('North Coast (2)'));
+
+        await waitFor(() => {
+            expect(screen.getByTestId('current-location')).toHaveTextContent('/search?meta-region=North+Coast');
+        });
     });
 
     test('Stats counters are rendered correctly', async () => {
