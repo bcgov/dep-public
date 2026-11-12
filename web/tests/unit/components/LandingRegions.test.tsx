@@ -27,6 +27,6 @@ it('renders open counts and disables regions with no open engagements', async ()
     expect(screen.getByText('South (0)').closest('a')).not.toHaveAttribute('href');
     expect(screen.getByText('North & Coast (3)').closest('a')).toHaveAttribute(
         'href',
-        '/search?meta-region-12=North+%26+Coast',
+        '/search?meta-region-12=North+%26+Coast&status=open',
     );
 });
