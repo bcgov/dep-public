@@ -34,7 +34,7 @@ export const landingLoader = () => {
             const total = counts.metadata_total_counts[key];
             const count = counts.metadata_counts[key];
             if (typeof total !== 'number' || typeof count !== 'number') {
-                throw new Error(`Missing engagement counts for region: ${value}`);
+                throw new TypeError(`Missing engagement counts for region: ${value}`);
             }
             return total > 0 ? [{ name: value, count, searchParam }] : [];
         });
