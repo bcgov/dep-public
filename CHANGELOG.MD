@@ -1,3 +1,7 @@
+## November 12, 2026
+- **Feature** Added region section to public landing page [🎟️ DEP-420](https://citz-gdx.atlassian.net/browse/DEP-420)
+  - Update landingLoader to include more info about regions and their search parameters
+
 ## November 10, 2026
 
 - **Feature** Added Featured Engagement section to landing page [🎟️ DEP-416](https://citz-gdx.atlassian.net/browse/DEP-416)
