@@ -9,8 +9,10 @@ import { Skeleton, Stack } from '@mui/material';
 import { Link } from 'components/common/Navigation';
 import { getPath, ROUTES } from 'routes/routes';
 import { FilterChip } from './FilterChip';
+import { useAppTranslation } from 'hooks';
 
 export const LandingRegions = () => {
+    const { t: translate } = useAppTranslation();
     const loaderData = useLoaderData() as LandingLoaderData;
     return (
         <Suspense fallback={<RegionsSkeleton />}>
@@ -19,7 +21,7 @@ export const LandingRegions = () => {
                     if (!regions.length) return null;
                     return (
                         <LandingSection innerStyles={{ flexDirection: 'row' }}>
-                            <Heading2 decorated>Find open engagements near an area</Heading2>
+                            <Heading2 decorated>{translate('landing.regionSection.title')}</Heading2>
                             <Stack direction="row" gap={2} flexWrap="wrap" mb={3}>
                                 {regions.map((region) => (
                                     <FilterChip
@@ -33,8 +35,8 @@ export const LandingRegions = () => {
                                     />
                                 ))}
                             </Stack>
-                            <Link width="auto" to={getPath(ROUTES.PUBLIC_SEARCH)}>
-                                View all of B.C.
+                            <Link size="large" to={getPath(ROUTES.PUBLIC_SEARCH)}>
+                                {translate('landing.regionSection.viewAll')}
                                 <FontAwesomeIcon icon={faArrowRight} style={{ marginInlineStart: '8px' }} />
                             </Link>
                         </LandingSection>
