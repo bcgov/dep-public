@@ -112,7 +112,12 @@
             "upcomingOpportunities": "Upcoming opportunities"
         },
         "featuredEngagements": "Featured engagements",
-        "featuredCarouselLabel": "Featured engagements carousel, {0} engagements available."
+        "featuredCarouselLabel": "Featured engagements carousel, {0} engagements available.",
+        "regionSection": {
+            "titleOpen": "Find open engagements near an area",
+            "title": "Find engagements near an area",
+            "viewAll": "View all of B.C."
+        }
     },
     "engagementCarousel": {
         "label": "Engagements carousel, {0} engagements available.",
