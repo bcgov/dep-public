@@ -16,11 +16,11 @@ export const LandingRegions = () => {
     const loaderData = useLoaderData() as LandingLoaderData;
     return (
         <Suspense fallback={<RegionsSkeleton />}>
-            <Await resolve={loaderData.regions}>
+            <Await resolve={loaderData.regions} errorElement={<RegionsSkeleton />}>
                 {({ items: regions, hasOpenEngagements }) => {
                     if (!regions.length) return null;
                     return (
-                        <LandingSection innerStyles={{ flexDirection: 'row' }}>
+                        <LandingSection>
                             <Heading2 decorated>
                                 {translate(
                                     hasOpenEngagements
@@ -69,6 +69,9 @@ const RegionsSkeleton = () => (
                 />
             ))}
         </Stack>
+        <Link size="large" to={getPath(ROUTES.PUBLIC_SEARCH)}>
+            <Skeleton variant="text" width="120px" />
+        </Link>
     </LandingSection>
 );
 
