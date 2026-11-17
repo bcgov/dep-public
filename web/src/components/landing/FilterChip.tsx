@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'components/common/Navigation';
 import { Chip } from '@mui/material';
-import { colors } from 'styles/Theme';
+import { colors, elevations } from 'styles/Theme';
 
 export const FilterChip = ({
     label,
@@ -35,8 +35,7 @@ export const FilterChip = ({
                 outlineOffset: '5px',
             },
             '&:hover:not(.Mui-disabled)': {
-                boxShadow:
-                    '0 5px 6px 0 rgba(0, 0, 0, 0.20), 0 9px 12px 0 rgba(0, 0, 0, 0.14), 0 3px 16px 0 rgba(0, 0, 0, 0.12)',
+                boxShadow: elevations.hover,
             },
             '&:active:not(.Mui-disabled), &.Mui-active:not(.Mui-disabled)': {
                 boxShadow: '0 0 8px 12px rgba(0, 0, 0, 0.10) inset',
@@ -50,16 +49,14 @@ export const FilterChip = ({
             justifyContent: 'center',
             alignItems: 'center',
             fontSize: '16px',
-            boxShadow:
-                '0 12px 10px 0 rgba(0, 0, 0, 0.01), 0 7px 9px 0 rgba(0, 0, 0, 0.05), 0 3px 6px 0 rgba(0, 0, 0, 0.09), 0 1px 3px 0 rgba(0, 0, 0, 0.10)',
+            boxShadow: elevations.default,
 
             '&.Mui-disabled, &.Mui-disabled:hover': {
                 opacity: '1',
                 background: 'gray.10',
                 color: colors.type.regular.disabled,
                 cursor: 'not-allowed',
-                boxShadow:
-                    '0 12px 10px 0 rgba(0, 0, 0, 0.01), 0 7px 9px 0 rgba(0, 0, 0, 0.05), 0 3px 6px 0 rgba(0, 0, 0, 0.09), 0 1px 3px 0 rgba(0, 0, 0, 0.10);',
+                boxShadow: elevations.default,
             },
         }}
     />
