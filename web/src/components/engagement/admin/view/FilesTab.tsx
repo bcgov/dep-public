@@ -341,6 +341,12 @@ const FilesTab = () => {
         return firstLocation.localeCompare(secondLocation) * (asc ? 1 : -1);
     };
 
+    const getUnlinkToolTip = (isUnlinked: boolean, isPublished: boolean) => {
+        if (isUnlinked) return 'File is already unlinked';
+        if (isPublished) return "Files can't be unlinked from a published engagement section";
+        return '';
+    };
+
     return (
         <Grid container direction="column" gap={1} width="100%">
             <Grid container size={12}>
@@ -676,13 +682,7 @@ const FilesTab = () => {
                                                                 slotProps={{
                                                                     popper: { placement: 'left' },
                                                                 }}
-                                                                title={
-                                                                    isUnlinked
-                                                                        ? 'File is already unlinked'
-                                                                        : isPublished
-                                                                          ? `Files can't be unlinked from a published engagement section`
-                                                                          : ''
-                                                                }
+                                                                title={getUnlinkToolTip(isUnlinked, isPublished)}
                                                             >
                                                                 <span>
                                                                     <MenuItem
