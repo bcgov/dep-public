@@ -71,7 +71,10 @@ const renderLanding = (initialEntry = '/') => {
                         filter_type: 'multi',
                         values: ['North Coast'],
                     }),
-                    regions: Promise.resolve([{ name: 'North Coast', count: 2, searchParam: 'meta-region' }]),
+                    regions: Promise.resolve({
+                        hasOpenEngagements: true,
+                        items: [{ name: 'North Coast', count: 2, searchParam: 'meta-region' }],
+                    }),
                     featuredEngagements: Promise.resolve([]),
                 }),
                 element: (

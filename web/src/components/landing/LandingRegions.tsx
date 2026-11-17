@@ -17,11 +17,17 @@ export const LandingRegions = () => {
     return (
         <Suspense fallback={<RegionsSkeleton />}>
             <Await resolve={loaderData.regions}>
-                {(regions) => {
+                {({ items: regions, hasOpenEngagements }) => {
                     if (!regions.length) return null;
                     return (
                         <LandingSection innerStyles={{ flexDirection: 'row' }}>
-                            <Heading2 decorated>{translate('landing.regionSection.title')}</Heading2>
+                            <Heading2 decorated>
+                                {translate(
+                                    hasOpenEngagements
+                                        ? 'landing.regionSection.titleOpen'
+                                        : 'landing.regionSection.title',
+                                )}
+                            </Heading2>
                             <Stack direction="row" gap={2} flexWrap="wrap" mb={3}>
                                 {regions.map((region) => (
                                     <FilterChip
@@ -29,7 +35,7 @@ export const LandingRegions = () => {
                                         label={`${region.name} (${region.count})`}
                                         linkTo={`${getPath(ROUTES.PUBLIC_SEARCH)}?${new URLSearchParams({
                                             [region.searchParam]: region.name,
-                                            status: 'open',
+                                            ...(hasOpenEngagements ? { status: 'open' } : {}),
                                         })}`}
                                         disabled={!region.count}
                                     />

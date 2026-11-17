@@ -20,17 +20,20 @@ beforeEach(() => {
 
 it('returns open counts for regions with engagements, including regions with only closed engagements', async () => {
     mockCounts.mockResolvedValue({
-        status_counts: {},
+        status_counts: { open: 3 },
         metadata_counts: { '12:North': 3, '12:South': 0, '12:West': 0 },
         metadata_total_counts: { '12:North': 5, '12:South': 2, '12:West': 0 },
     });
 
     const data = landingLoader();
 
-    await expect(data.regions).resolves.toEqual([
-        { name: 'North', count: 3, searchParam: 'meta-region' },
-        { name: 'South', count: 0, searchParam: 'meta-region' },
-    ]);
+    await expect(data.regions).resolves.toEqual({
+        hasOpenEngagements: true,
+        items: [
+            { name: 'North', count: 3, searchParam: 'meta-region' },
+            { name: 'South', count: 0, searchParam: 'meta-region' },
+        ],
+    });
     await expect(data.regionFilter).resolves.toMatchObject({ values: ['North', 'South', 'West'] });
     expect(mockCounts).toHaveBeenCalledWith({
         published_from_date: '1970-01-01',
@@ -45,14 +48,44 @@ it('uses the disambiguated metadata parameter when region filter names collide',
         { taxon_id: 13, name: 'Region', filter_type: 'chips_any', values: ['Other'] },
     ]);
     mockCounts.mockResolvedValue({
-        status_counts: {},
+        status_counts: { open: 1 },
         metadata_counts: { '12:North': 1 },
         metadata_total_counts: { '12:North': 1 },
     });
 
-    await expect(landingLoader().regions).resolves.toEqual([
-        { name: 'North', count: 1, searchParam: 'meta-region-12' },
-    ]);
+    await expect(landingLoader().regions).resolves.toEqual({
+        hasOpenEngagements: true,
+        items: [{ name: 'North', count: 1, searchParam: 'meta-region-12' }],
+    });
+});
+
+it('uses all-status region counts when no engagements are open', async () => {
+    mockCounts.mockResolvedValue({
+        status_counts: { open: 0, upcoming: 1, closed: 3 },
+        metadata_counts: { '12:North': 0, '12:South': 0, '12:West': 0 },
+        metadata_total_counts: { '12:North': 3, '12:South': 1, '12:West': 0 },
+    });
+
+    await expect(landingLoader().regions).resolves.toEqual({
+        hasOpenEngagements: false,
+        items: [
+            { name: 'North', count: 3, searchParam: 'meta-region' },
+            { name: 'South', count: 1, searchParam: 'meta-region' },
+        ],
+    });
+});
+
+it('uses the global open count even when no region has an open engagement', async () => {
+    mockCounts.mockResolvedValue({
+        status_counts: { open: 1 },
+        metadata_counts: { '12:North': 0, '12:South': 0, '12:West': 0 },
+        metadata_total_counts: { '12:North': 1, '12:South': 0, '12:West': 0 },
+    });
+
+    await expect(landingLoader().regions).resolves.toEqual({
+        hasOpenEngagements: true,
+        items: [{ name: 'North', count: 0, searchParam: 'meta-region' }],
+    });
 });
 
 it('does not request counts when there is no required region filter', async () => {
@@ -61,7 +94,7 @@ it('does not request counts when there is no required region filter', async () =
     const data = landingLoader();
 
     await expect(data.regionFilter).resolves.toBeNull();
-    await expect(data.regions).resolves.toEqual([]);
+    await expect(data.regions).resolves.toEqual({ hasOpenEngagements: false, items: [] });
     expect(mockCounts).not.toHaveBeenCalled();
 });
 
@@ -73,10 +106,16 @@ it('propagates count request failures', async () => {
 
 it('rejects incomplete count responses instead of displaying incorrect counts', async () => {
     mockCounts.mockResolvedValue({
-        status_counts: {},
+        status_counts: { open: 0 },
         metadata_counts: {},
         metadata_total_counts: { '12:North': 1 },
     });
 
     await expect(landingLoader().regions).rejects.toThrow('Missing engagement counts for region: North');
+});
+
+it('rejects responses without the global open count', async () => {
+    mockCounts.mockResolvedValue({ status_counts: {}, metadata_counts: {}, metadata_total_counts: {} });
+
+    await expect(landingLoader().regions).rejects.toThrow('Missing open engagement count');
 });

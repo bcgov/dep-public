@@ -6,7 +6,10 @@ import { metadataCountKey, metadataParam } from 'components/engagement/search/en
 
 export type LandingLoaderData = {
     regionFilter: Promise<MetadataFilter | null>;
-    regions: Promise<Array<{ name: string; count: number; searchParam: string }>>;
+    regions: Promise<{
+        hasOpenEngagements: boolean;
+        items: Array<{ name: string; count: number; searchParam: string }>;
+    }>;
     featuredEngagements: Promise<Engagement[]>;
 };
 
@@ -23,21 +26,26 @@ export const landingLoader = () => {
     const regionFilter = regionData.then(({ filter }) => filter);
 
     const regions = regionData.then(async ({ filter, searchParam }) => {
-        if (!filter || !searchParam) return [];
+        if (!filter || !searchParam) return { hasOpenEngagements: false, items: [] };
         const counts = await getEngagementSearchCounts({
             published_from_date: '1970-01-01',
             engagement_status: ['open'],
             metadata: [],
         });
-        return filter.values.flatMap((value) => {
+        if (typeof counts.status_counts.open !== 'number') {
+            throw new TypeError('Missing open engagement count');
+        }
+        const hasOpenEngagements = counts.status_counts.open > 0;
+        const items = filter.values.flatMap((value) => {
             const key = metadataCountKey(filter.taxon_id, value);
             const total = counts.metadata_total_counts[key];
             const count = counts.metadata_counts[key];
             if (typeof total !== 'number' || typeof count !== 'number') {
                 throw new TypeError(`Missing engagement counts for region: ${value}`);
             }
-            return total > 0 ? [{ name: value, count, searchParam }] : [];
+            return total > 0 ? [{ name: value, count: hasOpenEngagements ? count : total, searchParam }] : [];
         });
+        return { hasOpenEngagements, items };
     });
 
     const featuredEngagements = getPublicEngagementSearch({
