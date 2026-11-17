@@ -41,7 +41,10 @@ export const LandingRegions = () => {
                                     />
                                 ))}
                             </Stack>
-                            <Link size="large" to={getPath(ROUTES.PUBLIC_SEARCH)}>
+                            <Link
+                                size="large"
+                                to={`${getPath(ROUTES.PUBLIC_SEARCH)}${hasOpenEngagements ? '?status=open' : ''}`}
+                            >
                                 {translate('landing.regionSection.viewAll')}
                                 <FontAwesomeIcon icon={faArrowRight} style={{ marginInlineStart: '8px' }} />
                             </Link>
@@ -69,7 +72,7 @@ const RegionsSkeleton = () => (
                 />
             ))}
         </Stack>
-        <Link size="large" to={getPath(ROUTES.PUBLIC_SEARCH)}>
+        <Link size="large">
             <Skeleton variant="text" width="120px" />
         </Link>
     </LandingSection>
