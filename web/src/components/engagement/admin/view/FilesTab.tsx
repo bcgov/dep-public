@@ -57,6 +57,7 @@ import { useAppDispatch } from 'hooks';
 import { openNotification } from 'services/notificationService/notificationSlice';
 import { openNotificationModal } from 'services/notificationModalService/notificationModalSlice';
 import FileUpload from 'components/common/FileUpload';
+import { EngagementStatus } from 'constants/engagementStatus';
 
 const tableHeadCells: HeadCell<EngagementFile>[] = [
     { key: 'uploaded_file', nestedSortKey: 'uploaded_file.filename', label: 'Name', allowSort: true },
@@ -665,15 +666,39 @@ const FilesTab = () => {
                                                         Replace PDF
                                                     </MenuItem>
                                                 )}
-                                                <MenuItem
-                                                    onClick={handleSingleAction(handleUnlink)}
-                                                    disabled={isUnlinked}
-                                                >
-                                                    <ListItemIcon>
-                                                        <FontAwesomeIcon icon={faLinkSlash} />
-                                                    </ListItemIcon>
-                                                    Unlink
-                                                </MenuItem>
+                                                <Await resolve={loaderData.engagement}>
+                                                    {(engagement) => {
+                                                        const isPublished =
+                                                            engagement.status_id === EngagementStatus.Published;
+                                                        return (
+                                                            <Tooltip
+                                                                arrow
+                                                                slotProps={{
+                                                                    popper: { placement: 'left' },
+                                                                }}
+                                                                title={
+                                                                    isUnlinked
+                                                                        ? 'File is already unlinked'
+                                                                        : isPublished
+                                                                          ? `Files can't be unlinked from a published engagement section`
+                                                                          : ''
+                                                                }
+                                                            >
+                                                                <span>
+                                                                    <MenuItem
+                                                                        onClick={handleSingleAction(handleUnlink)}
+                                                                        disabled={isUnlinked || isPublished}
+                                                                    >
+                                                                        <ListItemIcon>
+                                                                            <FontAwesomeIcon icon={faLinkSlash} />
+                                                                        </ListItemIcon>
+                                                                        <span>Unlink</span>
+                                                                    </MenuItem>
+                                                                </span>
+                                                            </Tooltip>
+                                                        );
+                                                    }}
+                                                </Await>
                                                 <Tooltip
                                                     arrow
                                                     slotProps={{
