@@ -2,13 +2,23 @@ import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import FilesTab from '../../../../src/components/engagement/admin/view/FilesTab';
-import { mockEngagementFile, mockEngagementPdfFile } from '../factory';
+import { draftEngagement, mockEngagementFile, mockEngagementPdfFile, openEngagement } from '../factory';
 import userEvent from '@testing-library/user-event';
+import { EngagementFile } from 'models/engagementFile';
+import { Engagement } from 'models/engagement';
 
 const mockDispatch = jest.fn();
 const mockSubmit = jest.fn();
 const mockFiles = [mockEngagementPdfFile, mockEngagementFile];
-const mockLoaderData = { files: Promise.resolve(mockFiles) };
+const mockLoaderData = {
+    files: Promise.resolve(mockFiles),
+    engagement: Promise.resolve(openEngagement),
+} as {
+    files: Promise<EngagementFile[]>;
+    engagement: Promise<Engagement>;
+};
+
+let currentEngagement: Engagement = openEngagement;
 
 jest.mock('react-router', () => ({
     ...jest.requireActual('react-router'),
@@ -16,7 +26,16 @@ jest.mock('react-router', () => ({
     useSubmit: jest.fn(() => mockSubmit),
     useParams: jest.fn(() => ({ engagementId: '1' })),
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    Await: ({ children }: any) => children(mockFiles),
+    Await: ({ resolve, children }: any) => {
+        if (resolve === mockLoaderData.files) {
+            return children(mockFiles);
+        }
+
+        if (resolve === mockLoaderData.engagement) {
+            return children(currentEngagement);
+        }
+        return null;
+    },
 }));
 
 jest.mock('hooks', () => ({ useAppDispatch: jest.fn(() => mockDispatch) }));
@@ -56,6 +75,7 @@ jest.mock('components/common/FileUpload', () => ({
 describe('FilesTab component tests', () => {
     beforeEach(() => {
         jest.clearAllMocks();
+        currentEngagement = openEngagement;
     });
 
     test('Renders files heading', () => {
@@ -199,6 +219,75 @@ describe('FilesTab component tests', () => {
                 method: 'put',
                 navigate: false,
                 encType: 'multipart/form-data',
+            }),
+        );
+    });
+
+    test('Disables unlink action when engagement is published', async () => {
+        const user = userEvent.setup();
+        render(<FilesTab />);
+
+        const actionButtons = await screen.findAllByRole('button', {
+            name: /select action/i,
+        });
+
+        await user.click(actionButtons[0]);
+        const unlinkMenuItem = await screen.findByText('Unlink');
+        expect(unlinkMenuItem.closest('li')).toHaveAttribute('aria-disabled', 'true');
+    });
+
+    test('Enables unlink action when engagement is not published', async () => {
+        const user = userEvent.setup();
+        currentEngagement = draftEngagement;
+        render(<FilesTab />);
+
+        const actionButtons = await screen.findAllByRole('button', {
+            name: /select action/i,
+        });
+
+        await user.click(actionButtons[0]);
+        const unlinkMenuItem = await screen.findByText('Unlink');
+        expect(unlinkMenuItem.closest('li')).not.toHaveAttribute('aria-disabled', 'true');
+    });
+
+    test('Unlink action dispatches confirmation modal when engagement is not published', async () => {
+        const user = userEvent.setup();
+        currentEngagement = draftEngagement;
+        render(<FilesTab />);
+
+        const actionButtons = await screen.findAllByRole('button', {
+            name: /select action/i,
+        });
+
+        await user.click(actionButtons[0]);
+        await user.click(await screen.findByText('Unlink'));
+        expect(mockDispatch).toHaveBeenCalled();
+        const dispatchedModal = mockDispatch.mock.calls[mockDispatch.mock.calls.length - 1][0];
+        expect(dispatchedModal.data.confirmButtonText).toBe('Unlink');
+    });
+
+    test('Unlink confirmation submits PATCH request', async () => {
+        const user = userEvent.setup();
+        currentEngagement = draftEngagement;
+        render(<FilesTab />);
+
+        const actionButtons = await screen.findAllByRole('button', {
+            name: /select action/i,
+        });
+
+        await user.click(actionButtons[0]);
+        await user.click(await screen.findByText('Unlink'));
+        const dispatchedModal = mockDispatch.mock.calls[mockDispatch.mock.calls.length - 1][0];
+        dispatchedModal.data.handleConfirm();
+
+        expect(mockSubmit).toHaveBeenCalledWith(
+            {
+                id: mockEngagementPdfFile.id,
+                location: null,
+            },
+            expect.objectContaining({
+                method: 'patch',
+                navigate: false,
             }),
         );
     });
