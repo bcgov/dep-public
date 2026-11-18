@@ -120,8 +120,8 @@
             "viewAll": "Browse all {0} engagements",
             "allTopics": "All topics",
             "filtersLabel": "Filter engagements by topic",
-            "scrollLeft": "Scroll topics left",
-            "scrollRight": "Scroll topics right"
+            "scrollBack": "Scroll topics left",
+            "scrollForward": "Scroll topics right"
         }
     },
     "engagementCarousel": {

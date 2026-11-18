@@ -127,7 +127,7 @@ export const LandingCategories = () => {
                         <Grid container direction="row">
                             <SolidIconButton
                                 onClick={() => nudgeScroll('left')}
-                                aria-label={translate('landing.categorySection.scrollLeft')}
+                                aria-label={translate('landing.categorySection.scrollBack')}
                                 sx={{
                                     mr: '-44px',
                                     zIndex: 3,
@@ -176,7 +176,7 @@ export const LandingCategories = () => {
                             </Stack>
                             <SolidIconButton
                                 onClick={() => nudgeScroll('right')}
-                                aria-label={translate('landing.categorySection.scrollRight')}
+                                aria-label={translate('landing.categorySection.scrollForward')}
                                 sx={{
                                     ml: '-44px',
                                     zIndex: 3,
