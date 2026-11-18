@@ -47,6 +47,7 @@ const draftEngagement: Engagement = {
     description: 'Test description',
     description_title: 'Test description title',
     start_date: '2026-01-17 12:00:00',
+    status_id: EngagementStatus.Draft,
     end_date: '2026-09-30 12:00:00',
     surveys: surveys,
     engagement_status: {
@@ -75,6 +76,7 @@ const closedEngagement = {
         rejected: 0,
         approved: 1,
     },
+    status_id: EngagementStatus.Closed,
 };
 
 const openEngagement = {
@@ -129,7 +131,7 @@ const mockEngagementFile = {
     id: 1,
     engagement_id: 1,
     widget_id: 1,
-    widget: null,
+    widget: undefined,
     location: 'banner',
     uploaded_file: mockUploadedFile,
 };
@@ -138,7 +140,7 @@ const mockEngagementPdfFile = {
     id: 2,
     engagement_id: 2,
     widget_id: 2,
-    widget: null,
+    widget: undefined,
     location: 'widget',
     uploaded_file: mockUploadedPdfFile,
 };

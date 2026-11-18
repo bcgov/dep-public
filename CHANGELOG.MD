@@ -1,9 +1,15 @@
 ## November 17, 2026
+
 - **Feature** Added category section to public landing page [🎟️ DEP-427](https://citz-gdx.atlassian.net/browse/DEP-427)
   - Updated landingLoader to include broader metadata information
   - Added category section component to the landing page
 
+- **Feature** Added unlinking limitation for published engagements [🎟️ DEP-410](https://citz-gdx.atlassian.net/browse/DEP-410)
+  - Limitation is localized to the file tab component so that files can still be replaced (such as hero image and widget files)
+  - Created tooltips so that the user always knows why they can't unlink a file when the option is disabled
+
 ## November 12, 2026
+
 - **Feature** Added region section to public landing page [🎟️ DEP-420](https://citz-gdx.atlassian.net/browse/DEP-420)
   - Update landingLoader to include more info about regions and their search parameters
 
