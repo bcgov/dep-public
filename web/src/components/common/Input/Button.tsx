@@ -435,3 +435,25 @@ export const IconButton: React.FC<IconButtonProps> = ({
         </MuiIconButton>
     );
 };
+
+/**
+ * A solid icon button is typically used for carousel controls or similar UI elements.
+ * @param props The properties for the solid icon button.
+ * @returns A styled solid icon button component.
+ */
+export const SolidIconButton = (props: ButtonProps) => {
+    return (
+        <PrimaryButton
+            {...props}
+            sx={{
+                backgroundColor: 'blue.90',
+                borderRadius: '999px',
+                minWidth: '44px',
+                height: '44px',
+                fontSize: '18px',
+                p: 0,
+                ...props.sx,
+            }}
+        />
+    );
+};

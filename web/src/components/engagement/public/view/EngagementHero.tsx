@@ -20,7 +20,7 @@ import { EngagementPreviewTag } from './EngagementPreviewTag';
 import { useEngagementLoaderData } from 'components/engagement/preview/PreviewLoaderDataContext';
 import { TranslationBundle, resolveTranslationValue } from './engagementTranslationResolution';
 import { EngagementStatusDateRow, EngagementStatusDateRowSkeleton } from './EngagementStatusDateRow';
-import { Layout } from 'styles/Theme';
+import { elevations, Layout } from 'styles/Theme';
 import { AuthKeyCloakContext } from 'components/auth/AuthKeycloakContext';
 
 const getStatusMessageFromTranslation = (
@@ -264,8 +264,7 @@ const EngagementHeroCard = () => {
                                 pb={{ xs: '5.5rem', md: '5.875rem' }}
                                 sx={{
                                     bgcolor: colors.surface.white,
-                                    boxShadow:
-                                        '0px 20px 11px 0px rgba(0, 0, 0, 0.00), 0px 12px 10px 0px rgba(0, 0, 0, 0.01), 0px 7px 9px 0px rgba(0, 0, 0, 0.05), 0px 3px 6px 0px rgba(0, 0, 0, 0.09), 0px 1px 3px 0px rgba(0, 0, 0, 0.10)',
+                                    boxShadow: elevations.default,
                                     '@supports (backdrop-filter: blur(10px)) or (-webkit-backdrop-filter: blur(10px))':
                                         {
                                             bgcolor: `color-mix(in srgb, ${colors.surface.white} 90%, transparent)`,

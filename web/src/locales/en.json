@@ -114,6 +114,14 @@
             "titleOpen": "Find open engagements near an area",
             "title": "Find engagements near an area",
             "viewAll": "View all of B.C."
+        },
+        "categorySection": {
+            "title": "Explore engagements by topic",
+            "viewAll": "Browse all {0} engagements",
+            "allTopics": "All topics",
+            "filtersLabel": "Filter engagements by topic",
+            "scrollLeft": "Scroll topics left",
+            "scrollRight": "Scroll topics right"
         }
     },
     "engagementCarousel": {

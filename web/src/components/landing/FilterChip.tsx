@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'components/common/Navigation';
-import { Chip } from '@mui/material';
+import { Chip, ChipProps } from '@mui/material';
 import { colors, elevations } from 'styles/Theme';
 
 export const FilterChip = ({
@@ -9,16 +9,21 @@ export const FilterChip = ({
     pressed,
     onClick,
     disabled,
+    sx,
 }: {
     label: string;
     linkTo?: string;
     pressed?: boolean;
     onClick?: () => void;
     disabled?: boolean;
+    sx?: ChipProps['sx'];
 }) => (
     <Chip
-        component={Link}
-        to={disabled ? undefined : linkTo}
+        component={disabled ? 'span' : linkTo ? Link : 'button'}
+        to={linkTo && !disabled ? linkTo : undefined}
+        type={!disabled && !linkTo ? 'button' : undefined}
+        aria-disabled={disabled || undefined}
+        aria-pressed={onClick ? pressed : undefined}
         disabled={disabled}
         variant="outlined"
         className={pressed ? 'Mui-active' : undefined}
@@ -58,6 +63,7 @@ export const FilterChip = ({
                 cursor: 'not-allowed',
                 boxShadow: elevations.default,
             },
+            ...sx,
         }}
     />
 );

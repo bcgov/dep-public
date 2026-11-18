@@ -2,6 +2,7 @@ import React from 'react';
 import { LandingHero } from './LandingHero';
 import { LandingStats } from './LandingStats';
 import { LandingFeatured } from './LandingFeatured';
+import { LandingCategories } from './LandingCategories';
 import { LandingRegions } from './LandingRegions';
 
 export const Landing = () => {
@@ -10,6 +11,7 @@ export const Landing = () => {
             <LandingHero />
             <LandingStats />
             <LandingFeatured />
+            <LandingCategories />
             <LandingRegions />
         </>
     );

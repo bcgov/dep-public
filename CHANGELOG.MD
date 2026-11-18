@@ -1,3 +1,8 @@
+## November 17, 2026
+- **Feature** Added category section to public landing page [🎟️ DEP-427](https://citz-gdx.atlassian.net/browse/DEP-427)
+  - Updated landingLoader to include broader metadata information
+  - Added category section component to the landing page
+
 ## November 12, 2026
 - **Feature** Added region section to public landing page [🎟️ DEP-420](https://citz-gdx.atlassian.net/browse/DEP-420)
   - Update landingLoader to include more info about regions and their search parameters

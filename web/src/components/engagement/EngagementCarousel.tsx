@@ -2,12 +2,12 @@ import React, { ReactNode, useCallback, useEffect, useLayoutEffect, useRef, useS
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faChevronLeft, faChevronRight } from '@fortawesome/pro-solid-svg-icons';
 import Grid from '@mui/material/Grid2';
-import { Box, ButtonProps, Stack, Theme, useMediaQuery } from '@mui/material';
+import { Box, Stack, Theme, useMediaQuery } from '@mui/material';
 import { visuallyHidden } from '@mui/utils';
 import { Engagement } from 'models/engagement';
 import EngagementTile from 'components/engagement/EngagementTile';
 import { colors } from 'styles/Theme';
-import { PrimaryButton } from 'components/common/Input/Button';
+import { SolidIconButton } from 'components/common/Input/Button';
 import { useAppTranslation } from 'hooks';
 
 const TILE_WIDTH = 343;
@@ -22,7 +22,7 @@ export const getItemsPerSlide = (containerWidth: number) =>
         Math.max(1, Math.floor((containerWidth + MIN_TILE_GAP) / (TILE_WIDTH + MIN_TILE_GAP))),
     );
 
-const getTileWidth = (itemsPerSlide: number) => {
+export const getTileWidth = (itemsPerSlide: number) => {
     if (itemsPerSlide === 1) return '100%';
     if (itemsPerSlide === 2) return `calc(50% - ${MIN_TILE_GAP / 2}px)`;
     return TILE_WIDTH;
@@ -40,23 +40,6 @@ const chunk = <T,>(items: T[], size: number): T[][] => {
         chunks.push(items.slice(i, i + size));
     }
     return chunks;
-};
-
-const NavigationButton = (props: ButtonProps) => {
-    return (
-        <PrimaryButton
-            {...props}
-            sx={{
-                backgroundColor: 'blue.90',
-                borderRadius: '999px',
-                minWidth: '44px',
-                height: '44px',
-                fontSize: '18px',
-                p: 0,
-                ...props.sx,
-            }}
-        />
-    );
 };
 
 interface EngagementCarouselProps {
@@ -219,22 +202,22 @@ const EngagementCarousel = ({ engagements, heading, ariaLabel }: EngagementCarou
                 {heading}
                 {showControls && !isMobile && (
                     <Grid container columnSpacing={1}>
-                        <NavigationButton
+                        <SolidIconButton
                             color="primary"
                             aria-label="Previous"
                             disabled={currentSlide <= 0}
                             onClick={() => scrollToSlide(currentSlide - 1)}
                         >
                             <FontAwesomeIcon icon={faChevronLeft} />
-                        </NavigationButton>
-                        <NavigationButton
+                        </SolidIconButton>
+                        <SolidIconButton
                             color="primary"
                             aria-label="Next"
                             disabled={currentSlide >= slideCount - 1}
                             onClick={() => scrollToSlide(currentSlide + 1)}
                         >
                             <FontAwesomeIcon icon={faChevronRight} />
-                        </NavigationButton>
+                        </SolidIconButton>
                     </Grid>
                 )}
             </Grid>
