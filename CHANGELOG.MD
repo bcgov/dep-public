@@ -1,3 +1,7 @@
+## November 18, 2026
+
+- Removed Kyle Shapka as a codeowner in .github/CODEOWNERS so that he isn't unnecessarily notified
+
 ## November 17, 2026
 
 - **Feature** Added unlinking limitation for published engagements [🎟️ DEP-410](https://citz-gdx.atlassian.net/browse/DEP-410)
