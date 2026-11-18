@@ -225,7 +225,6 @@ describe('FilesTab component tests', () => {
 
     test('Disables unlink action when engagement is published', async () => {
         const user = userEvent.setup();
-        currentEngagement = openEngagement;
         render(<FilesTab />);
 
         const actionButtons = await screen.findAllByRole('button', {
