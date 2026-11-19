@@ -1,4 +1,4 @@
-import { render, waitFor, screen, fireEvent } from '@testing-library/react';
+import { render, waitFor, screen, fireEvent, within, act } from '@testing-library/react';
 import { ThemeProvider } from '@mui/material';
 import { DarkTheme } from 'styles/Theme';
 import React from 'react';
@@ -76,6 +76,7 @@ const renderLanding = (initialEntry = '/') => {
                         items: [{ name: 'North Coast', count: 2, searchParam: 'meta-region' }],
                     }),
                     featuredEngagements: Promise.resolve([]),
+                    categories: Promise.resolve([]),
                 }),
                 element: (
                     <>
@@ -83,6 +84,11 @@ const renderLanding = (initialEntry = '/') => {
                         <CurrentLocation />
                     </>
                 ),
+            },
+            {
+                path: '/search',
+                loader: () => ({ engagements: Promise.resolve({ items: [], total: 0 }) }),
+                element: <CurrentLocation />,
             },
             { path: '*', element: <CurrentLocation /> },
         ],
@@ -116,13 +122,25 @@ describe('Landing page tests', () => {
         });
     });
 
+    test('Topic filters have an accessible group name and selected state', async () => {
+        renderLanding();
+
+        const filters = await screen.findByRole('group', { name: 'landing.categorySection.filtersLabel' });
+        expect(within(filters).getByRole('button', { name: 'landing.categorySection.allTopics' })).toHaveAttribute(
+            'aria-pressed',
+            'true',
+        );
+    });
+
     test('Search field accepts input', async () => {
         renderLanding();
 
         const searchInput = await screen.findByPlaceholderText('landing.hero.searchPlaceholder');
 
-        fireEvent.change(searchInput, {
-            target: { value: 'New Search' },
+        await act(async () => {
+            fireEvent.change(searchInput, {
+                target: { value: 'New Search' },
+            });
         });
 
         expect(searchInput).toHaveValue('New Search');
@@ -132,10 +150,14 @@ describe('Landing page tests', () => {
         renderLanding('/?region=North%20Coast&campaign=spring');
 
         const searchInput = await screen.findByPlaceholderText('landing.hero.searchPlaceholder');
-        fireEvent.change(searchInput, {
-            target: { value: 'New Search' },
+        await act(async () => {
+            await fireEvent.change(searchInput, {
+                target: { value: 'New Search' },
+            });
         });
-        fireEvent.click(screen.getByText('landing.hero.search'));
+        await act(async () => {
+            fireEvent.click(screen.getByText('landing.hero.search'));
+        });
 
         await waitFor(() => {
             expect(screen.getByTestId('current-location')).toHaveTextContent(
@@ -155,7 +177,10 @@ describe('Landing page tests', () => {
     test('Region chip navigates to the filtered search', async () => {
         renderLanding();
 
-        fireEvent.click(await screen.findByText('North Coast (2)'));
+        await waitFor(() => screen.findByText('North Coast (2)'));
+        await act(async () => {
+            fireEvent.click(await screen.findByText('North Coast (2)'));
+        });
 
         await waitFor(() => {
             expect(screen.getByTestId('current-location')).toHaveTextContent('/search?meta-region=North+Coast');

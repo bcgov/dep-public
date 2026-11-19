@@ -1,5 +1,5 @@
 import React from 'react';
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import MetadataTab from '../../../../src/components/engagement/admin/view/MetadataTab';
 import { engagementMetadata, engagementMetadataTaxon } from '../factory';
@@ -219,7 +219,9 @@ test('Selecting a wildcard clears other engagement metadata options', async () =
     render(<MetadataTab />);
 
     const select = await screen.findByLabelText('Select a value for the test.');
-    fireEvent.mouseDown(select);
+    await act(async () => {
+        fireEvent.mouseDown(select);
+    });
 
     const wildcardOption = (
         await screen.findAllByRole('option', {
@@ -229,7 +231,9 @@ test('Selecting a wildcard clears other engagement metadata options', async () =
     const regularOption = screen.getAllByRole('option', { name: 'test' })[0];
     expect(wildcardOption).toHaveAttribute('aria-selected', 'true');
 
-    fireEvent.click(regularOption);
+    await act(async () => {
+        fireEvent.click(regularOption);
+    });
 
     expect(wildcardOption).toHaveAttribute('aria-selected', 'false');
     expect(regularOption).toHaveAttribute('aria-selected', 'true');

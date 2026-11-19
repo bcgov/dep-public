@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, act } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import SingleLineInputModal from '../../../../src/components/common/Modals/SingleLineInputModal';
 
@@ -53,18 +53,22 @@ describe('SingleLineInputModal component tests', () => {
         expect(screen.getByPlaceholderText('Enter a value here')).toBeInTheDocument();
     });
 
-    test('Calls handleClose when cancel button is clicked', () => {
+    test('Calls handleClose when cancel button is clicked', async () => {
         render(<SingleLineInputModal {...defaultProps} />);
 
-        fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+        await act(async () => {
+            fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+        });
 
         expect(handleClose).toHaveBeenCalledTimes(1);
     });
 
-    test('Calls handleConfirm when confirm button is clicked', () => {
+    test('Calls handleConfirm when confirm button is clicked', async () => {
         render(<SingleLineInputModal {...defaultProps} />);
 
-        fireEvent.click(screen.getByRole('button', { name: 'Confirm' }));
+        await act(async () => {
+            fireEvent.click(screen.getByRole('button', { name: 'Confirm' }));
+        });
 
         expect(handleConfirm).toHaveBeenCalledTimes(1);
     });

@@ -10,13 +10,17 @@ export type LandingLoaderData = {
         hasOpenEngagements: boolean;
         items: Array<{ name: string; count: number; searchParam: string }>;
     }>;
+    categories: Promise<Array<MetadataFilter | null>>;
+    taxa: Promise<MetadataTaxon[]>;
     featuredEngagements: Promise<Engagement[]>;
 };
 
 const FEATURED_ENGAGEMENT_LIMIT = 24;
 
 export const landingLoader = () => {
-    const regionData = Promise.all([getMetadataTaxa(), getMetadataFilters()]).then(([taxa, filters]) => {
+    const metadataFilters = getMetadataFilters();
+    const taxa = getMetadataTaxa();
+    const regionData = Promise.all([taxa, metadataFilters]).then(([taxa, filters]) => {
         const requiredRegion = taxa.find(
             (taxon: MetadataTaxon) => taxon.is_required && taxon.name?.trim().toLowerCase() === 'region',
         );
@@ -48,6 +52,15 @@ export const landingLoader = () => {
         return { hasOpenEngagements, items };
     });
 
+    const categories = Promise.all([taxa, metadataFilters]).then(([taxa, filters]) => {
+        return taxa
+            .filter((taxon: MetadataTaxon) => taxon.is_required && taxon.name?.trim().toLowerCase() !== 'region')
+            .map((taxon: MetadataTaxon) => {
+                const filter = filters.find((item) => item.taxon_id === taxon.id) ?? null;
+                return filter;
+            });
+    });
+
     const featuredEngagements = getPublicEngagementSearch({
         is_featured: true,
         // Only include engagements that have been published
@@ -62,7 +75,7 @@ export const landingLoader = () => {
         // The featured section is optional; a failure should hide it rather than break the landing page.
         .catch(() => [] as Engagement[]);
 
-    return { regionFilter, regions, featuredEngagements };
+    return { regionFilter, regions, featuredEngagements, categories, taxa };
 };
 
 export default landingLoader;

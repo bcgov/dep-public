@@ -177,7 +177,7 @@ export const SuggestedEngagements = () => {
                                             '&:dir(rtl) svg': { transform: 'rotateY(180deg)' },
                                         }}
                                     >
-                                        <FontAwesomeIcon icon={faArrowLeftLong} style={{ paddingInlineStart: '8px' }} />
+                                        <FontAwesomeIcon icon={faArrowLeftLong} style={{ paddingInlineEnd: '8px' }} />
                                         All engagements
                                     </Link>
                                 </Grid>

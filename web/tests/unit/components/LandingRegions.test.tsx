@@ -31,8 +31,11 @@ it('renders open counts and disables regions with no open engagements', async ()
 
     expect(await screen.findByText('North & Coast (3)')).toBeInTheDocument();
     expect(screen.getByText('landing.regionSection.titleOpen')).toBeInTheDocument();
-    expect(screen.getByText('South (0)').closest('.MuiChip-root')).toHaveClass('Mui-disabled');
-    expect(screen.getByText('South (0)').closest('a')).not.toHaveAttribute('href');
+    const disabledRegion = screen.getByText('South (0)').closest('.MuiChip-root');
+    expect(disabledRegion).toHaveClass('Mui-disabled');
+    expect(disabledRegion).toHaveAttribute('aria-disabled', 'true');
+    expect(disabledRegion).not.toHaveAttribute('href');
+    expect(disabledRegion).not.toHaveAttribute('role', 'button');
     expect(screen.getByText('North & Coast (3)').closest('a')).toHaveAttribute(
         'href',
         '/search?meta-region-12=North+%26+Coast&status=open',
