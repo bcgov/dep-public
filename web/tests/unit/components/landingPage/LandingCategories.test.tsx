@@ -185,7 +185,7 @@ describe('LandingCategories', () => {
         const viewport = screen.getByTestId('engagement-tile').parentElement?.parentElement;
         expect(viewport).not.toBeNull();
         Object.defineProperty(viewport, 'clientWidth', { configurable: true, value: 600 });
-        act(() => TestResizeObserver.instances[0].trigger());
+        await act(() => TestResizeObserver.instances[0].trigger());
 
         Object.defineProperties(scrollNode, {
             clientWidth: { configurable: true, value: 700 },
@@ -199,10 +199,10 @@ describe('LandingCategories', () => {
         fireEvent.scroll(scrollNode);
 
         const leftButton = scrollContainer.parentElement?.querySelector<HTMLButtonElement>(
-            '[aria-label="landing.categorySection.scrollLeft"]',
+            '[aria-label="landing.categorySection.scrollBack"]',
         );
         expect(leftButton).not.toBeNull();
-        const rightButton = screen.getByRole('button', { name: 'landing.categorySection.scrollRight' });
+        const rightButton = screen.getByRole('button', { name: 'landing.categorySection.scrollForward' });
         expect(rightButton).toHaveStyle({ display: 'flex' });
 
         fireEvent.click(rightButton);
@@ -243,13 +243,13 @@ describe('LandingCategories', () => {
         Object.defineProperty(scrollNode.parentElement, 'clientWidth', { configurable: true, value: 250 });
         fireEvent.scroll(scrollNode);
         const rightButton = scrollNode.parentElement?.querySelector<HTMLButtonElement>(
-            '[aria-label="landing.categorySection.scrollRight"]',
+            '[aria-label="landing.categorySection.scrollForward"]',
         );
         expect(rightButton).toHaveStyle({ display: 'none' });
 
         const unmountedObserverCount = TestResizeObserver.instances.length;
         expect(unmountedObserverCount).toBe(2);
-        act(() => TestResizeObserver.instances.forEach((observer) => observer.trigger()));
+        await act(() => TestResizeObserver.instances.forEach((observer) => observer.trigger()));
         unmountWithObserver();
 
         Object.defineProperty(global, 'ResizeObserver', { configurable: true, value: undefined });
@@ -268,7 +268,7 @@ describe('LandingCategories', () => {
         Object.defineProperty(noObserverScroll.parentElement, 'clientWidth', { configurable: true, value: 250 });
         fireEvent.scroll(noObserverScroll);
         expect(
-            noObserverScroll.parentElement?.querySelector('[aria-label="landing.categorySection.scrollRight"]'),
+            noObserverScroll.parentElement?.querySelector('[aria-label="landing.categorySection.scrollForward"]'),
         ).toHaveStyle({
             display: 'flex',
         });

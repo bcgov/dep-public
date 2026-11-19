@@ -1,4 +1,4 @@
-import { render, waitFor, screen, fireEvent, within } from '@testing-library/react';
+import { render, waitFor, screen, fireEvent, within, act } from '@testing-library/react';
 import { ThemeProvider } from '@mui/material';
 import { DarkTheme } from 'styles/Theme';
 import React from 'react';
@@ -137,8 +137,10 @@ describe('Landing page tests', () => {
 
         const searchInput = await screen.findByPlaceholderText('landing.hero.searchPlaceholder');
 
-        fireEvent.change(searchInput, {
-            target: { value: 'New Search' },
+        await act(async () => {
+            fireEvent.change(searchInput, {
+                target: { value: 'New Search' },
+            });
         });
 
         expect(searchInput).toHaveValue('New Search');
@@ -148,10 +150,14 @@ describe('Landing page tests', () => {
         renderLanding('/?region=North%20Coast&campaign=spring');
 
         const searchInput = await screen.findByPlaceholderText('landing.hero.searchPlaceholder');
-        fireEvent.change(searchInput, {
-            target: { value: 'New Search' },
+        await act(async () => {
+            await fireEvent.change(searchInput, {
+                target: { value: 'New Search' },
+            });
         });
-        fireEvent.click(screen.getByText('landing.hero.search'));
+        await act(async () => {
+            fireEvent.click(screen.getByText('landing.hero.search'));
+        });
 
         await waitFor(() => {
             expect(screen.getByTestId('current-location')).toHaveTextContent(
@@ -171,7 +177,10 @@ describe('Landing page tests', () => {
     test('Region chip navigates to the filtered search', async () => {
         renderLanding();
 
-        fireEvent.click(await screen.findByText('North Coast (2)'));
+        await waitFor(() => screen.findByText('North Coast (2)'));
+        await act(async () => {
+            fireEvent.click(await screen.findByText('North Coast (2)'));
+        });
 
         await waitFor(() => {
             expect(screen.getByTestId('current-location')).toHaveTextContent('/search?meta-region=North+Coast');
