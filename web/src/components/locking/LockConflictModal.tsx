@@ -3,7 +3,7 @@ import { Modal, Grid2 as Grid, Stack } from '@mui/material';
 import { modalStyle } from 'components/common';
 import { Heading2, BodyText } from 'components/common/Typography';
 import { Button } from 'components/common/Input/Button';
-import { faHammerCrash, faLockAlt } from '@fortawesome/pro-regular-svg-icons';
+import { faArrowUpRightFromSquare, faHammerCrash, faLockAlt } from '@fortawesome/pro-regular-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { ResourceLockRecord, getLockOwnerDisplayName } from 'services/resourceLockService';
 import { UserAvatar } from 'components/common/Layout/UserAvatar';
@@ -11,6 +11,8 @@ import { EngagementLoaderAdminData } from 'engagements/admin/EngagementLoaderAdm
 import { useRouteLoaderData } from 'react-router';
 import { useAppSelector } from 'hooks';
 import { formatRelative } from 'components/common/dateHelper';
+import { Link } from 'components/common/Navigation';
+import { lockingHelpURL } from 'components/layout/SideNav/UserGuideNav';
 
 export const LockConflictModal = ({
     open,
