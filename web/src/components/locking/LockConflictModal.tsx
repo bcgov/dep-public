@@ -131,6 +131,10 @@ export const LockConflictModal = ({
                             ? 'You can save from that other tab, then try again here. If needed, you can also break that lock from this tab.'
                             : 'Please return to the main page and try again later.'}
                     </BodyText>
+                    <Link target="_blank" href={lockingHelpURL}>
+                        Learn more about resource locking
+                        <FontAwesomeIcon icon={faArrowUpRightFromSquare} style={{ marginInlineStart: '4px' }} />
+                    </Link>
                 </Grid>
                 <Grid>
                     <Stack direction={{ xs: 'column', sm: 'row' }} justifyContent="flex-end" spacing={1}>
