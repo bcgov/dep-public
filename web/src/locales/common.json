@@ -55,6 +55,7 @@
         "apiVersion": "API version"
     },
     "feedback": {
+        "question": "How was your visit today?",
         "websiteFeedback": "Share feedback",
         "notification": {
             "success": "Your Feedback has been sent.",
