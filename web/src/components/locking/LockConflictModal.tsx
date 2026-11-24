@@ -130,8 +130,9 @@ export const LockConflictModal = ({
 
                     <BodyText>
                         {isCurrentUserLock
-                            ? 'You can save from that other tab, then try again here. If needed, you can also break that lock from this tab.'
+                            ? 'You can save from that other tab, then try again here.'
                             : 'Please return to the main page and try again later.'}
+                        {onBreakLock ? ' If needed, you can also break that lock from this tab.' : ''}
                     </BodyText>
                     <Link target="_blank" href={lockingHelpURL}>
                         Learn more about resource locking
