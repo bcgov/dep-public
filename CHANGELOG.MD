@@ -1,3 +1,7 @@
+## November 23, 2026
+
+- **Feature** Updated lock modal to link to guide entry for resource locking [🎟️ DEP-360](https://citz-gdx.atlassian.net/browse/DEP-360), [🎟️ DEP-364](https://citz-gdx.atlassian.net/browse/DEP-364)
+
 ## November 18, 2026
 
 - Removed Kyle Shapka as a codeowner in .github/CODEOWNERS so that he isn't unnecessarily notified

@@ -20,6 +20,8 @@ const SAMPLE_IDS = {
     languageId: 'en',
 } as const;
 
+export const lockingHelpURL = `${HELP_URL}/posts/resource-locking/`;
+
 const UserGuideNav = () => {
     const { pathname } = useLocation();
 

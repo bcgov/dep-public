@@ -10,9 +10,15 @@ import { USER_ROLES } from 'services/userService/constants';
 const AUTHORING_UNSAVED_CHANGES_KEY = 'authoring-unsaved-changes';
 export type NavigationRequestResult = 'navigated' | 'pending' | 'blocked';
 
-const getSectionLockState = (lock: ResourceLockRecord | null | undefined, currentUserRoles?: string[]) => {
-    const canBreakLock = Boolean(lock?.is_mine || currentUserRoles?.includes(USER_ROLES.EDIT_MEMBERS));
-    const isLockedByOther = Boolean(lock && !lock.is_mine);
+const getSectionLockState = (
+    lock: ResourceLockRecord | null | undefined,
+    currentUserRoles?: string[],
+    currentUserSub?: string,
+) => {
+    const canBreakLock = Boolean(
+        lock?.owner.user_sub === currentUserSub || currentUserRoles?.includes(USER_ROLES.EDIT_MEMBERS),
+    );
+    const isLockedByOther = Boolean(lock && lock?.owner.user_sub !== currentUserSub);
 
     return {
         canBreakLock,
@@ -23,7 +29,11 @@ const getSectionLockState = (lock: ResourceLockRecord | null | undefined, curren
 
 export const useSectionLockState = ({ lock }: { lock?: ResourceLockRecord | null }) => {
     const currentUserRoles = useAppSelector((state) => state.user.roles);
-    return getSectionLockState(lock, currentUserRoles);
+    return getSectionLockState(
+        lock,
+        currentUserRoles,
+        useAppSelector((state) => state.user.userDetail.sub),
+    );
 };
 
 type PendingNavigation = {
@@ -54,12 +64,13 @@ export const useResourceSectionLockNavigation = ({ conflictModal }: { conflictMo
     const [isBreakingLock, setIsBreakingLock] = useState(false);
     const [isConflictActionRunning, setIsConflictActionRunning] = useState(false);
     const currentUserRoles = useAppSelector((state) => state.user.roles);
+    const currentUserSub = useAppSelector((state) => state.user.userDetail.sub);
 
     const resolveSectionLockState = useCallback(
         (lock?: ResourceLockRecord | null) => {
-            return getSectionLockState(lock, currentUserRoles);
+            return getSectionLockState(lock, currentUserRoles, currentUserSub);
         },
-        [currentUserRoles],
+        [currentUserRoles, currentUserSub],
     );
 
     const requestNavigation = useCallback(
@@ -171,7 +182,9 @@ export const useResourceSectionLockNavigation = ({ conflictModal }: { conflictMo
             return null;
         }
 
-        const canBreakLock = Boolean(currentLock?.is_mine || currentUserRoles?.includes(USER_ROLES.EDIT_MEMBERS));
+        const canBreakLock = Boolean(
+            currentLock?.owner.user_sub === currentUserSub || currentUserRoles?.includes(USER_ROLES.EDIT_MEMBERS),
+        );
 
         const handleRetry = conflictModal.onRetry;
 

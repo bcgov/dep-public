@@ -3,7 +3,7 @@ import { Modal, Grid2 as Grid, Stack } from '@mui/material';
 import { modalStyle } from 'components/common';
 import { Heading2, BodyText } from 'components/common/Typography';
 import { Button } from 'components/common/Input/Button';
-import { faHammerCrash, faLockAlt } from '@fortawesome/pro-regular-svg-icons';
+import { faArrowUpRightFromSquare, faHammerCrash, faLockAlt } from '@fortawesome/pro-regular-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { ResourceLockRecord, getLockOwnerDisplayName } from 'services/resourceLockService';
 import { UserAvatar } from 'components/common/Layout/UserAvatar';
@@ -11,6 +11,8 @@ import { EngagementLoaderAdminData } from 'engagements/admin/EngagementLoaderAdm
 import { useRouteLoaderData } from 'react-router';
 import { useAppSelector } from 'hooks';
 import { formatRelative } from 'components/common/dateHelper';
+import { Link } from 'components/common/Navigation';
+import { lockingHelpURL } from 'components/layout/SideNav/UserGuideNav';
 
 export const LockConflictModal = ({
     open,
@@ -128,9 +130,14 @@ export const LockConflictModal = ({
 
                     <BodyText>
                         {isCurrentUserLock
-                            ? 'You can save from that other tab, then try again here. If needed, you can also break that lock from this tab.'
+                            ? 'You can save from that other tab, then try again here.'
                             : 'Please return to the main page and try again later.'}
+                        {onBreakLock ? ' If needed, you can also break that lock from this tab.' : ''}
                     </BodyText>
+                    <Link target="_blank" href={lockingHelpURL}>
+                        Learn more about resource locking
+                        <FontAwesomeIcon icon={faArrowUpRightFromSquare} style={{ marginInlineStart: '4px' }} />
+                    </Link>
                 </Grid>
                 <Grid>
                     <Stack direction={{ xs: 'column', sm: 'row' }} justifyContent="flex-end" spacing={1}>
