@@ -201,4 +201,59 @@ describe('Footer component tests', () => {
 
         expect(screen.getByText(/footer\.copyrightNotice/i)).toBeInTheDocument();
     });
+
+    test('Feedback modal opens when feedback button is clicked', () => {
+        render(
+            <Router>
+                <Footer />
+            </Router>,
+        );
+
+        fireEvent.click(screen.getByTestId('feedback-button'));
+        expect(screen.getByText('feedback.feedbackModal.label.0')).toBeInTheDocument();
+        expect(screen.getByText('feedback.feedbackModal.label.1')).toBeInTheDocument();
+    });
+
+    test('Submit button is disabled when no feedback is provided', () => {
+        render(
+            <Router>
+                <Footer />
+            </Router>,
+        );
+
+        fireEvent.click(screen.getByTestId('feedback-button'));
+        expect(screen.getByTestId('submit-button')).toBeDisabled();
+    });
+
+    test('Selecting issue displays comment field', () => {
+        render(
+            <Router>
+                <Footer />
+            </Router>,
+        );
+
+        fireEvent.click(screen.getByTestId('feedback-button'));
+        fireEvent.click(screen.getByTestId('comment-type-issue-button'));
+        expect(screen.getByTestId('comment-input')).toBeInTheDocument();
+    });
+
+    test('Comment field updates when text is entered', () => {
+        render(
+            <Router>
+                <Footer />
+            </Router>,
+        );
+
+        fireEvent.click(screen.getByTestId('feedback-button'));
+        fireEvent.click(screen.getByTestId('comment-type-issue-button'));
+        const input = screen.getByRole('textbox');
+
+        fireEvent.change(input, {
+            target: {
+                value: 'Test feedback',
+            },
+        });
+
+        expect(input).toHaveValue('Test feedback');
+    });
 });
