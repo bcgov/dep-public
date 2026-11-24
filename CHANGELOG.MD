@@ -1,3 +1,12 @@
+## November 23, 2026
+
+- Updated footer to match design system [🎟️ DEP-433](https://citz-gdx.atlassian.net/browse/DEP-433)
+    - Modified styles to match Figma hi-fi prototype
+    - Moved feedback component to top of footer
+    - Changed Home link to public base URL
+        - All other links are still going to the usual external gov.bc.ca places
+    - Checked that copyright date is always the current year (already working)
+
 ## November 18, 2026
 
 - Removed Kyle Shapka as a codeowner in .github/CODEOWNERS so that he isn't unnecessarily notified

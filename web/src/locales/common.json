@@ -55,7 +55,7 @@
         "apiVersion": "API version"
     },
     "feedback": {
-        "websiteFeedback": "Website Feedback",
+        "websiteFeedback": "Share feedback",
         "notification": {
             "success": "Your Feedback has been sent.",
             "error": "Error occurred while sending your feedback."

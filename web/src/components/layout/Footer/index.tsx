@@ -2,7 +2,7 @@ import { Divider, Grid2 as Grid, Stack, Box } from '@mui/material';
 import { BodyText } from 'components/common/Typography/Body';
 import React, { Suspense, useState } from 'react';
 import { ReactComponent as BCLogo } from 'assets/images/BritishColumbiaLogoDarkCropped.svg';
-import { Layout, Palette } from 'styles/Theme';
+import { Layout, Palette, colors } from 'styles/Theme';
 import { faCodePullRequest, faCodeFork } from '@fortawesome/pro-solid-svg-icons';
 import UserService from 'services/userService';
 import { useAppSelector, useAppTranslation } from 'hooks';
@@ -16,6 +16,7 @@ import { useRouteLoaderData, Await } from 'react-router';
 import { AuthenticatedRootLoaderData } from 'routes/AuthenticatedRootRouteLoader';
 import { getPath, ROUTES } from 'routes/routes';
 import { Heading2 } from 'components/common/Typography';
+import { FeedbackModal } from 'components/feedback/FeedbackModal';
 
 interface VersionInfoProps {
     label: string;
@@ -101,7 +102,7 @@ const Footer = () => {
     const base = 'https://www2.gov.bc.ca/gov/content';
 
     const moreInfoLinks = [
-        { label: translate('footer.moreInfo.home'), href: `${base}/home` },
+        { label: translate('footer.moreInfo.home'), href: baseURL }, // Tenant home, not gov.bc.ca
         { label: translate('footer.moreInfo.about'), href: `${base}/about-gov-bc-ca` },
         { label: translate('footer.moreInfo.disclaimer'), href: `${base}/home/disclaimer` },
         { label: translate('footer.moreInfo.privacy'), href: `${base}/home/privacy` },
@@ -116,18 +117,20 @@ const Footer = () => {
             container
             component="footer"
             spacing={0}
-            sx={{ mt: isEngagementPage ? 0 : '2rem' }}
+            mt={isEngagementPage ? 0 : '2rem'}
             aria-label="footer"
         >
+            {/* Feedback banner and modal */}
+            <FeedbackModal />
+
             {/* Footer acknowledgement container */}
             <Grid
                 size={12}
-                sx={{
-                    backgroundColor: Palette.acknowledgement.background,
-                    borderTop: `0.375rem solid ${Palette.acknowledgement.border}`,
-                    borderBottom: `0.375rem solid ${Palette.acknowledgement.border}`,
-                    padding: '2rem',
-                }}
+                p="2rem"
+                px={{ xs: '1rem', sm: '2rem' }}
+                borderTop="4px solid #fbd389"
+                borderBottom="4px solid #fbd389"
+                sx={{ backgroundColor: '#252423' }}
             >
                 <p
                     style={{
@@ -147,43 +150,45 @@ const Footer = () => {
             <Grid
                 size={12}
                 direction="column"
-                sx={{
-                    padding: '3.5rem 2rem 3rem',
-                    gap: '0',
-                }}
+                pt="2rem"
+                pb="1.5rem"
+                px={{ xs: '1rem', sm: '2rem' }}
+                gap={0}
                 container
                 rowSpacing={2}
             >
                 <Stack
                     direction={{ xs: 'column', md: 'row' }}
-                    sx={{
-                        maxWidth: Layout.width.default,
-                        width: '100%',
-                        ml: 'auto',
-                        mr: 'auto',
-                        flexWrap: 'nowrap',
-                        gap: '2rem',
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                    }}
+                    width="100%"
+                    maxWidth={Layout.width.default}
+                    mx="auto"
+                    flexWrap="nowrap"
+                    display="flex"
+                    justifyContent="space-between"
                 >
                     {/* Footer BC Gov Logo */}
-                    <Stack spacing={3} height="100%" direction="column" width={{ xs: '100%', md: '50%' }}>
+                    <Stack spacing={3} height="100%" direction="column" p={0} width={{ xs: '100%', md: '50%' }}>
                         <Link underline="none" href="https://www2.gov.bc.ca">
                             <Box
                                 component={BCLogo}
-                                sx={{
-                                    padding: '0.5rem',
-                                    mb: '1rem',
-                                    width: '130px',
-                                    maxWidth: '100%',
-                                }}
+                                p="0.5rem 0 0"
+                                mb="1rem"
+                                width="8.125rem"
+                                maxWidth="100%"
                                 alt="Government of British Columbia Logo"
                             />
                         </Link>
 
                         {/* Footer accessibility paragraph and link */}
-                        <p style={{ margin: '0', fontSize: '14px', display: 'inline', maxWidth: '600px' }}>
+                        <p
+                            style={{
+                                margin: '0',
+                                fontSize: '14px',
+                                display: 'inline',
+                                maxWidth: '20.25rem',
+                                paddingBottom: '2rem',
+                            }}
+                        >
                             <span>{translate('footer.statement.sentence')} </span>
                             <Link
                                 sx={linkStyles}
@@ -202,17 +207,19 @@ const Footer = () => {
                     <Grid
                         container
                         direction="column"
-                        width={{ xs: '100%', md: '368px' }}
-                        sx={{ flexBasis: 'auto', maxWidth: '100%' }}
+                        width={{ xs: '100%', md: '20rem' }}
+                        flexBasis="auto"
+                        maxWidth="100%"
                     >
-                        <Heading2 sx={{ fontSize: '14px', margin: '1rem 0 !important', color: 'rgb(70, 67, 65)' }}>
+                        <Heading2 sx={{ fontSize: '14px', m: '0 0 1rem', color: colors.type.regular.secondary }}>
                             {translate('footer.moreInfo.title')}
                         </Heading2>
                         <ul
                             style={{
-                                gap: '4rem',
-                                margin: '0 0 1rem',
+                                gap: '0',
+                                margin: '0',
                                 columns: '2',
+                                columnWidth: '50%',
                                 padding: '0',
                                 listStyleType: 'none',
                             }}
@@ -231,9 +238,9 @@ const Footer = () => {
                 {/* Footer divider */}
                 <Divider
                     sx={{
-                        mb: '2rem',
+                        mb: '1.5rem',
                         pb: '2rem',
-                        borderColor: 'rgb(1, 51, 102)',
+                        borderColor: '#353433',
                         width: '100%',
                         maxWidth: Layout.width.default,
                         ml: 'auto',
@@ -242,14 +249,23 @@ const Footer = () => {
                 />
 
                 {/* Footer copyright date */}
-                <Grid container sx={{ width: '100%', maxWidth: Layout.width.default, margin: '0 auto 1.5rem' }}>
+                <Grid container width="100%" maxWidth={Layout.width.default} margin="0 auto">
                     <p style={{ margin: '0', fontSize: '14px' }}>
                         © {new Date().getFullYear()} {translate('footer.copyrightNotice')}
                     </p>
                 </Grid>
+                {/* End of main footer container */}
+            </Grid>
 
-                {/* Footer admin area */}
-                <Grid container sx={{ width: '100%', maxWidth: Layout.width.default, margin: '0 auto' }}>
+            {/* Footer admin area */}
+            <Grid
+                container
+                width="100%"
+                py="1.5rem"
+                px={{ xs: '1rem', sm: '2rem' }}
+                sx={{ backgroundColor: colors.surface.gray[10] }}
+            >
+                <Grid container maxWidth="100%" width={Layout.width.default} margin="0 auto">
                     {/* Footer login link */}
                     <Unless condition={isLoggedIn}>
                         <Link
