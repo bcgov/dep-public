@@ -1,10 +1,6 @@
 import { Box, Grid2 as Grid, IconContainerProps, InputAdornment, Modal, Stack, SvgIcon } from '@mui/material';
 import * as React from 'react';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faXmark } from '@fortawesome/pro-regular-svg-icons/faXmark';
-import { faFaceSmile } from '@fortawesome/pro-regular-svg-icons/faFaceSmile';
-import { faFaceMeh } from '@fortawesome/pro-regular-svg-icons/faFaceMeh';
-import { faFaceFrown } from '@fortawesome/pro-regular-svg-icons/faFaceFrown';
 import { ReactComponent as CheckIcon } from 'assets/images/check.svg';
 import { useState } from 'react';
 import { DisclaimerBox, modalStyle } from 'components/common';
@@ -18,8 +14,7 @@ import { useAppDispatch } from 'hooks';
 import { customRatings, commentTypes } from './constants';
 import { useAppTranslation } from 'hooks';
 import { Button, IconButton, CustomTextField } from 'components/common/Input';
-import { useTheme } from '@mui/material/styles';
-import { ZIndex } from 'styles/Theme';
+import { colors } from 'styles/Theme';
 
 export const FeedbackModal = () => {
     const { t: translate } = useAppTranslation();
@@ -79,41 +74,29 @@ export const FeedbackModal = () => {
     const isFeedbackTypeNotSelected = rating === RatingTypeEnum.None && comment_type === CommentTypeEnum.None;
     const isCommentNotProvided = comment_type !== CommentTypeEnum.None && !comment;
 
-    const theme = useTheme();
-    const bottomSpacing = theme.spacing(52);
-    const rightSpacing = theme.spacing(0);
-
     return (
-        <>
+        <Grid
+            container
+            width="100%"
+            direction="row"
+            justifyContent="center"
+            alignItems="center"
+            border="1px solid #cccccc"
+            gap={2}
+            p="1rem 2rem"
+        >
+            <BodyText bold color={colors.surface.blue[100]}>
+                {translate('feedback.question')}
+            </BodyText>
             <Button
-                variant="primary"
+                variant="secondary"
                 data-testid="feedback-button"
                 onClick={() => setIsOpen(true)}
-                sx={{
-                    borderRadius: '20px 20px 0px 0px',
-                    position: 'fixed',
-                    bottom: bottomSpacing,
-                    right: rightSpacing,
-                    transform: 'rotate(-90deg)',
-                    transformOrigin: 'bottom right',
-                    zIndex: ZIndex.feedback,
-                }}
+                sx={{ boxShadow: 'none' }}
             >
-                <FontAwesomeIcon
-                    icon={faFaceFrown}
-                    style={{ fontSize: '20px', marginRight: 1, padding: 5, transform: 'rotate(90deg)' }}
-                />
-                <FontAwesomeIcon
-                    icon={faFaceMeh}
-                    style={{ fontSize: '20px', marginRight: 1, padding: 5, transform: 'rotate(90deg)' }}
-                />
-                <FontAwesomeIcon
-                    icon={faFaceSmile}
-                    style={{ fontSize: '20px', marginRight: 1, padding: 5, transform: 'rotate(90deg)' }}
-                />
                 {translate('feedback.websiteFeedback')}
             </Button>
-            <Modal aria-labelledby="modal-title" open={isOpen} onClose={() => handleClose()}>
+            <Modal disableScrollLock aria-labelledby="modal-title" open={isOpen} onClose={() => handleClose()}>
                 <Grid
                     container
                     direction="row"
@@ -154,7 +137,7 @@ export const FeedbackModal = () => {
                                 display="flex"
                                 alignItems={'flex-start'}
                                 justifyContent={'flex-end'}
-                                sx={{ marginTop: -2 }}
+                                mt={-2}
                             >
                                 <Box sx={{ padding: 0 }}>
                                     <IconButton onClick={handleClose} icon={faXmark} />
@@ -265,6 +248,6 @@ export const FeedbackModal = () => {
                     </If>
                 </Grid>
             </Modal>
-        </>
+        </Grid>
     );
 };

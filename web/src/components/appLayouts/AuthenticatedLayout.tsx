@@ -5,7 +5,6 @@ import { Box, Grid2 as Grid, ThemeProvider } from '@mui/material';
 import InternalHeader from '../layout/Header/InternalHeader';
 import { Notification } from 'components/common/notification';
 import { NotificationModal } from 'components/common/modal';
-import { FeedbackModal } from 'components/feedback/FeedbackModal';
 import Footer from 'components/layout/Footer';
 import { AdminTheme, ZIndex } from 'styles/Theme';
 import DocumentTitle from 'DocumentTitle';
@@ -19,18 +18,19 @@ export const AuthenticatedLayout = () => {
     return (
         <ThemeProvider theme={AdminTheme}>
             <DocumentTitle />
-            <Box sx={{ display: 'flex' }}>
-                <InternalHeader />
-                <Notification />
-                <NotificationModal />
-                <ScrollToTop />
-                <FormioListener />
-                <LocalizationProvider
-                    dateFormats={{
-                        keyboardDate: 'YYYY-MM-DD',
-                    }}
-                    dateAdapter={AdapterDayjs}
-                >
+
+            <LocalizationProvider
+                dateFormats={{
+                    keyboardDate: 'YYYY-MM-DD',
+                }}
+                dateAdapter={AdapterDayjs}
+            >
+                <Box sx={{ display: 'flex' }}>
+                    <InternalHeader />
+                    <Notification />
+                    <NotificationModal />
+                    <ScrollToTop />
+                    <FormioListener />
                     <Box
                         component="main"
                         sx={{
@@ -51,19 +51,18 @@ export const AuthenticatedLayout = () => {
                             </Grid>
                             <Outlet />
                         </Grid>
-                        <FeedbackModal />
                     </Box>
-                </LocalizationProvider>
-            </Box>
-            <Box
-                sx={{
-                    backgroundColor: 'Background',
-                    zIndex: ZIndex.footer,
-                    position: 'relative',
-                }}
-            >
-                <Footer />
-            </Box>
+                </Box>
+                <Box
+                    sx={{
+                        backgroundColor: 'Background',
+                        zIndex: ZIndex.footer,
+                        position: 'relative',
+                    }}
+                >
+                    <Footer />
+                </Box>
+            </LocalizationProvider>
         </ThemeProvider>
     );
 };

@@ -4,7 +4,6 @@ import { Outlet } from 'react-router';
 import { Box } from '@mui/material';
 import { Notification } from 'components/common/notification';
 import { NotificationModal } from 'components/common/modal';
-import { FeedbackModal } from 'components/feedback/FeedbackModal';
 import Footer from 'components/layout/Footer';
 import { ZIndex } from 'styles/Theme';
 import DocumentTitle from 'DocumentTitle';
@@ -30,7 +29,6 @@ export const SimplifiedLayout = () => {
                     <LocalizationProvider dateFormats={{ keyboardDate: 'YYYY-MM-DD' }} dateAdapter={AdapterDayjs}>
                         <Outlet />
                     </LocalizationProvider>
-                    <FeedbackModal />
                 </Box>
             </Box>
             <Box position="relative" zIndex={ZIndex.footer} bgcolor="background.default">

@@ -6,7 +6,6 @@ import InternalHeader from '../layout/Header/InternalHeader';
 import { Notification } from 'components/common/notification';
 import PageViewTracker from 'routes/PageViewTracker';
 import { NotificationModal } from 'components/common/modal';
-import { FeedbackModal } from 'components/feedback/FeedbackModal';
 import Footer from 'components/layout/Footer';
 import DocumentTitle from 'DocumentTitle';
 import ScrollToTop from 'components/scrollToTop';
@@ -42,7 +41,6 @@ export const PublicLayout = () => {
                 <Box component="main" sx={{ marginTop: isAuthenticated ? '3em' : 0 }}>
                     <Outlet />
                 </Box>
-                <FeedbackModal />
                 <Footer />
             </Box>
         </Box>
