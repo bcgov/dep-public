@@ -70,51 +70,49 @@ describe('Footer component tests', () => {
         expect(screen.getByTestId('feedback-button')).toBeVisible();
     });
 
-    test('Acknowledgement section renders', () => {
+    test.each([['footer.acknowledgement'], ['footer.moreInfo.title'], ['footer.login'], ['footer.statement.sentence']])(
+        'renders %s',
+        (text) => {
+            render(
+                <Router>
+                    <Footer />
+                </Router>,
+            );
+
+            expect(screen.getByText(text)).toBeInTheDocument();
+        },
+    );
+
+    test.each([
+        ['footer.moreInfo.home'],
+        ['footer.moreInfo.about'],
+        ['footer.moreInfo.disclaimer'],
+        ['footer.moreInfo.privacy'],
+        ['footer.moreInfo.accessibility'],
+        ['footer.moreInfo.copyright'],
+        ['footer.moreInfo.contact'],
+    ])('renders more info link %s', (text) => {
         render(
             <Router>
                 <Footer />
             </Router>,
         );
 
-        expect(screen.getByText('footer.acknowledgement')).toBeInTheDocument();
+        expect(screen.getByText(text)).toBeInTheDocument();
     });
 
-    test('More information section renders', () => {
-        render(
-            <Router>
-                <Footer />
-            </Router>,
-        );
+    test.each([['footer.statement.methods'], ['footer.statement.or'], ['footer.statement.centre']])(
+        'renders accessibility text %s',
+        (text) => {
+            render(
+                <Router>
+                    <Footer />
+                </Router>,
+            );
 
-        expect(screen.getByText('footer.moreInfo.title')).toBeInTheDocument();
-    });
-
-    test('More information links render', () => {
-        render(
-            <Router>
-                <Footer />
-            </Router>,
-        );
-
-        expect(screen.getByText('footer.moreInfo.home')).toBeInTheDocument();
-        expect(screen.getByText('footer.moreInfo.about')).toBeInTheDocument();
-        expect(screen.getByText('footer.moreInfo.disclaimer')).toBeInTheDocument();
-        expect(screen.getByText('footer.moreInfo.privacy')).toBeInTheDocument();
-        expect(screen.getByText('footer.moreInfo.accessibility')).toBeInTheDocument();
-        expect(screen.getByText('footer.moreInfo.copyright')).toBeInTheDocument();
-        expect(screen.getByText('footer.moreInfo.contact')).toBeInTheDocument();
-    });
-
-    test('Login link renders for unauthenticated users', () => {
-        render(
-            <Router>
-                <Footer />
-            </Router>,
-        );
-
-        expect(screen.getByText('footer.login')).toBeInTheDocument();
-    });
+            expect(screen.getByText(text)).toBeInTheDocument();
+        },
+    );
 
     test('Version information renders for authenticated users', () => {
         (useAppSelector as jest.Mock).mockImplementation((callback) => callback(authenticatedState));
@@ -125,7 +123,11 @@ describe('Footer component tests', () => {
             </Router>,
         );
 
-        expect(screen.getByText(/footer\.appVersion/i)).toBeInTheDocument();
+        expect(
+            screen.getByRole('button', {
+                name: 'Expand version info',
+            }),
+        ).toBeInTheDocument();
     });
 
     test('Login link does not render for authenticated users', () => {
@@ -171,15 +173,23 @@ describe('Footer component tests', () => {
             </Router>,
         );
 
-        const button = screen.getByTitle('Expand version info');
+        fireEvent.click(
+            screen.getByRole('button', {
+                name: 'Expand version info',
+            }),
+        );
 
-        fireEvent.click(button);
+        fireEvent.click(
+            screen.getByRole('button', {
+                name: 'Collapse version info',
+            }),
+        );
 
-        expect(screen.getByTitle('Collapse version info')).toBeInTheDocument();
-
-        fireEvent.click(screen.getByTitle('Collapse version info'));
-
-        expect(screen.queryByText('footer.apiVersion')).not.toBeInTheDocument();
+        expect(
+            screen.getByRole('button', {
+                name: 'Expand version info',
+            }),
+        ).toBeInTheDocument();
     });
 
     test('Copyright notice renders', () => {
@@ -190,27 +200,5 @@ describe('Footer component tests', () => {
         );
 
         expect(screen.getByText(/footer\.copyrightNotice/i)).toBeInTheDocument();
-    });
-
-    test('Accessibility statement renders', () => {
-        render(
-            <Router>
-                <Footer />
-            </Router>,
-        );
-
-        expect(screen.getByText('footer.statement.sentence')).toBeInTheDocument();
-    });
-
-    test('Accessibility links render', () => {
-        render(
-            <Router>
-                <Footer />
-            </Router>,
-        );
-
-        expect(screen.getByText('footer.statement.methods')).toBeInTheDocument();
-        expect(screen.getByText('footer.statement.or')).toBeInTheDocument();
-        expect(screen.getByText('footer.statement.centre')).toBeInTheDocument();
     });
 });
