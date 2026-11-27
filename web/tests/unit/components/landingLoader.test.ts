@@ -1,6 +1,7 @@
 import { landingLoader } from 'components/landing/landingLoader';
 import { getEngagementSearchCounts, getPublicEngagementSearch } from 'services/engagementService';
 import { getMetadataFilters, getMetadataTaxa } from 'services/engagementMetadataService';
+import { createDefaultEngagement } from 'models/engagement';
 
 jest.mock('services/engagementService');
 jest.mock('services/engagementMetadataService');
@@ -118,4 +119,59 @@ it('rejects responses without the global open count', async () => {
     mockCounts.mockResolvedValue({ status_counts: {}, metadata_counts: {}, metadata_total_counts: {} });
 
     await expect(landingLoader().regions).rejects.toThrow('Missing open engagement count');
+});
+
+it('requests the dynamic date windows from public search', async () => {
+    const newItems = [{ ...createDefaultEngagement(), id: 1 }];
+    const openItems = [{ ...createDefaultEngagement(), id: 2 }];
+    mockTaxa.mockResolvedValue([]);
+    mockSearch.mockImplementation(async (params = {}) => ({
+        items:
+            params.date_window === 'closing_soon'
+                ? openItems
+                : params.date_window === 'recently_opened'
+                  ? newItems
+                  : [],
+        total: 0,
+    }));
+
+    const data = landingLoader();
+    await expect(data.newEngagements).resolves.toEqual({ engagements: newItems, loadNextPage: undefined });
+    await expect(data.closingSoonEngagements).resolves.toEqual({ engagements: openItems, loadNextPage: undefined });
+    expect(mockSearch).toHaveBeenCalledWith(
+        expect.objectContaining({
+            published_from_date: '1970-01-01',
+            engagement_status: ['published', 'closed'],
+            date_window: 'recently_opened',
+            page: 1,
+            size: 6,
+        }),
+    );
+    expect(mockSearch).toHaveBeenCalledWith(
+        expect.objectContaining({ engagement_status: ['open'], date_window: 'closing_soon', page: 1, size: 6 }),
+    );
+});
+
+it('fetches subsequent pages once, retries failures, and stops at the last page', async () => {
+    mockTaxa.mockResolvedValue([]);
+    const items = Array.from({ length: 6 }, (_, index) => ({ ...createDefaultEngagement(), id: index + 1 }));
+    mockSearch.mockImplementation(async (params = {}) => {
+        if (params.date_window !== 'recently_opened') return { items: [], total: 0 };
+        if (params.page === 1) return { items, total: 7 };
+        return { items: [{ ...createDefaultEngagement(), id: 7 }], total: 7 };
+    });
+    const first = await landingLoader().newEngagements;
+    expect(first.engagements).toEqual(items);
+    expect(mockSearch).not.toHaveBeenCalledWith(expect.objectContaining({ date_window: 'recently_opened', page: 2 }));
+    expect(first.loadNextPage).toBeDefined();
+    const loadNext = first.loadNextPage!;
+    mockSearch.mockRejectedValueOnce(new Error('Unavailable'));
+    await expect(loadNext()).rejects.toThrow('Unavailable');
+    const [last, sameLast] = await Promise.all([loadNext(), loadNext()]);
+    expect(last).toBe(sameLast);
+    expect(last.engagements.map((engagement) => engagement.id)).toEqual([7]);
+    expect(last.loadNextPage).toBeUndefined();
+    expect(
+        mockSearch.mock.calls.filter(([params]) => params?.date_window === 'recently_opened' && params.page === 2),
+    ).toHaveLength(2);
 });

@@ -44,6 +44,7 @@ export interface GetEngagementsParams {
 
 export interface EngagementSearchParams extends Omit<GetEngagementsParams, 'engagement_status'> {
     engagement_status?: string[];
+    date_window?: 'recently_opened' | 'closing_soon';
 }
 
 export interface EngagementSearchCounts {

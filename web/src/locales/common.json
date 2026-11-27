@@ -125,11 +125,19 @@
             "filtersLabel": "Filter engagements by topic",
             "scrollBack": "Scroll topics left",
             "scrollForward": "Scroll topics right"
+        },
+        "dynamicDateSection": {
+            "new": "New engagements",
+            "newAria": "New engagements carousel, {0} engagements available.",
+            "closingSoon": "Engagements closing soon",
+            "closingSoonAria": "Engagements closing soon carousel, {0} engagements available."
         }
     },
     "engagementCarousel": {
         "label": "Engagements carousel, {0} engagements available.",
-        "slideAnnouncement": "Slide {0} of {1}"
+        "slideAnnouncement": "Slide {0} of {1}",
+        "loadError": "Unable to load more engagements.",
+        "retry": "Retry"
     },
     "search": {
         "sectionHeading": "Find engagements",

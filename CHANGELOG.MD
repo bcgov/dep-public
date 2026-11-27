@@ -1,3 +1,12 @@
+## November 27, 2026
+
+- **Feature** Added dynamic date section to public landing page [🎟️ DEP-431](https://citz-gdx.atlassian.net/browse/DEP-431)
+  - Added LandingDynamicDate component to display engagement carousels for engagements that opened recently or are closing soon
+  - Updated landingLoader to include dynamic date sections for engagements
+  - Updated carousel behaviour. To reduce time to interactible state and reduce initial load, carousels now request paginated results and recursively load additional pages of engagements.
+  - Moved carousel layout to reusable component for consistency across different sections
+  - Created reusable carousel skeleton component
+
 ## November 23, 2026
 
 - **Feature** Updated lock modal to link to guide entry for resource locking [🎟️ DEP-360](https://citz-gdx.atlassian.net/browse/DEP-360), [🎟️ DEP-364](https://citz-gdx.atlassian.net/browse/DEP-364)

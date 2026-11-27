@@ -4,6 +4,7 @@ import { LandingStats } from './LandingStats';
 import { LandingFeatured } from './LandingFeatured';
 import { LandingCategories } from './LandingCategories';
 import { LandingRegions } from './LandingRegions';
+import { LandingDynamicDate } from './LandingDynamicDate';
 
 export const Landing = () => {
     return (
@@ -13,6 +14,7 @@ export const Landing = () => {
             <LandingFeatured />
             <LandingCategories />
             <LandingRegions />
+            <LandingDynamicDate />
         </>
     );
 };

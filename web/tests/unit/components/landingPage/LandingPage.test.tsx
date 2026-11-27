@@ -75,8 +75,10 @@ const renderLanding = (initialEntry = '/') => {
                         hasOpenEngagements: true,
                         items: [{ name: 'North Coast', count: 2, searchParam: 'meta-region' }],
                     }),
-                    featuredEngagements: Promise.resolve([]),
+                    featuredEngagements: Promise.resolve({ engagements: [] }),
                     categories: Promise.resolve([]),
+                    newEngagements: Promise.resolve({ engagements: [] }),
+                    closingSoonEngagements: Promise.resolve({ engagements: [] }),
                 }),
                 element: (
                     <>
