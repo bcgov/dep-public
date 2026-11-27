@@ -45,9 +45,7 @@ export const LandingDate = ({ variant = 'new' }: { variant?: 'closingSoon' | 'ne
 };
 
 export const LandingDynamicDate = () => {
-    {
-        /* TODO: Connect to tenant config page once implemented */
-    }
+    /* TODO: Connect to tenant config page once implemented */
     const enabledSections = { new: true, closingSoon: true };
     return (
         <>

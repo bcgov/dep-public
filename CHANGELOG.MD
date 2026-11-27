@@ -4,6 +4,8 @@
   - Added LandingDynamicDate component to display engagement carousels for engagements that opened recently or are closing soon
   - Updated landingLoader to include dynamic date sections for engagements
   - Updated carousel behaviour. To reduce time to interactible state and reduce initial load, carousels now request paginated results and recursively load additional pages of engagements.
+  - Moved carousel layout to reusable component for consistency across different sections
+  - Created reusable carousel skeleton component
 
 ## November 23, 2026
 

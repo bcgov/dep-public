@@ -31,14 +31,13 @@ const loadCarouselPage = async (params: EngagementSearchParams, page: number): P
     const loadNextPage =
         result.items.length > 0 && page * DYNAMIC_ENGAGEMENT_PAGE_SIZE < result.total
             ? () => {
-                  if (!pending) {
-                      pending = loadCarouselPage(params, page + 1).catch((error: unknown) => {
-                          pending = undefined;
-                          throw error;
-                      });
-                  }
-                  return pending;
-              }
+                pending ??= loadCarouselPage(params, page + 1).catch((error: unknown) => {
+                    pending = undefined;
+                    throw error;
+                });
+
+                return pending;
+            }
             : undefined;
     return { engagements: result.items, loadNextPage };
 };
