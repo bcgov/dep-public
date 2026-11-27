@@ -9,8 +9,14 @@ let mockLoaderData: { featuredEngagements: unknown };
 jest.mock('react-router', () => ({
     ...jest.requireActual('react-router'),
     useLoaderData: () => mockLoaderData,
-    Await: ({ resolve, children }: { resolve: unknown; children: (value: unknown) => React.ReactNode }) =>
-        children(resolve),
+    Await: ({ resolve, children }: { resolve: unknown; children: (value: unknown) => React.ReactNode }) => {
+        if (resolve instanceof Promise) throw resolve;
+        return children(resolve);
+    },
+}));
+
+jest.mock('components/engagement/EngagementCarouselSkeleton', () => ({
+    EngagementCarouselSkeleton: () => <div data-testid="carousel-skeleton" />,
 }));
 
 jest.mock('hooks', () => ({
@@ -48,15 +54,23 @@ jest.mock('components/engagement/EngagementCarousel', () => ({
 }));
 
 describe('LandingFeatured', () => {
+    test('shows the shared carousel skeleton while featured engagements load', () => {
+        mockLoaderData = { featuredEngagements: new Promise(() => {}) };
+        render(<LandingFeatured />);
+        expect(screen.getByTestId('carousel-skeleton')).toBeInTheDocument();
+    });
+
     test('renders nothing when there are no featured engagements', () => {
-        mockLoaderData = { featuredEngagements: [] };
+        mockLoaderData = { featuredEngagements: { engagements: [] } };
         const { container } = render(<LandingFeatured />);
         expect(container).toBeEmptyDOMElement();
     });
 
     test('passes featured engagements and the heading to the carousel', () => {
         mockLoaderData = {
-            featuredEngagements: [{ ...createDefaultEngagement(), id: 1, name: 'Featured engagement' }],
+            featuredEngagements: {
+                engagements: [{ ...createDefaultEngagement(), id: 1, name: 'Featured engagement' }],
+            },
         };
         render(<LandingFeatured />);
 
