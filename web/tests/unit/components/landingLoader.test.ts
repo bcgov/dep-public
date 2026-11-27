@@ -144,21 +144,21 @@ it('requests the dynamic date windows from public search', async () => {
             engagement_status: ['published', 'closed'],
             date_window: 'recently_opened',
             page: 1,
-            size: 12,
+            size: 6,
         }),
     );
     expect(mockSearch).toHaveBeenCalledWith(
-        expect.objectContaining({ engagement_status: ['open'], date_window: 'closing_soon', page: 1, size: 12 }),
+        expect.objectContaining({ engagement_status: ['open'], date_window: 'closing_soon', page: 1, size: 6 }),
     );
 });
 
 it('fetches subsequent pages once, retries failures, and stops at the last page', async () => {
     mockTaxa.mockResolvedValue([]);
-    const items = Array.from({ length: 12 }, (_, index) => ({ ...createDefaultEngagement(), id: index + 1 }));
+    const items = Array.from({ length: 6 }, (_, index) => ({ ...createDefaultEngagement(), id: index + 1 }));
     mockSearch.mockImplementation(async (params = {}) => {
         if (params.date_window !== 'recently_opened') return { items: [], total: 0 };
-        if (params.page === 1) return { items, total: 13 };
-        return { items: [{ ...createDefaultEngagement(), id: 13 }], total: 13 };
+        if (params.page === 1) return { items, total: 7 };
+        return { items: [{ ...createDefaultEngagement(), id: 7 }], total: 7 };
     });
     const first = await landingLoader().newEngagements;
     expect(first.engagements).toEqual(items);
@@ -169,7 +169,7 @@ it('fetches subsequent pages once, retries failures, and stops at the last page'
     await expect(loadNext()).rejects.toThrow('Unavailable');
     const [last, sameLast] = await Promise.all([loadNext(), loadNext()]);
     expect(last).toBe(sameLast);
-    expect(last.engagements.map((engagement) => engagement.id)).toEqual([13]);
+    expect(last.engagements.map((engagement) => engagement.id)).toEqual([7]);
     expect(last.loadNextPage).toBeUndefined();
     expect(
         mockSearch.mock.calls.filter(([params]) => params?.date_window === 'recently_opened' && params.page === 2),

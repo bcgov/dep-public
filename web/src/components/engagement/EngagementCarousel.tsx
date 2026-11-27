@@ -364,6 +364,6 @@ const EngagementCarousel = ({ engagements, heading, ariaLabel, loadNextPage }: E
             )}
         </Box>
     );
-};;;;;;;;
+};
 
 export default EngagementCarousel;

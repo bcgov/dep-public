@@ -2,7 +2,6 @@ import React, { Suspense } from 'react';
 import { useLoaderData, Await } from 'react-router';
 import { Heading2 } from 'components/common/Typography';
 import EngagementCarousel from 'components/engagement/EngagementCarousel';
-import { Engagement } from 'models/engagement';
 import LandingSection from './LandingSection';
 import { LandingLoaderData } from './landingLoader';
 import { useAppTranslation } from 'hooks';

@@ -1,5 +1,5 @@
 import { MetadataFilter } from 'components/metadataManagement/types';
-import { Engagement, MetadataTaxon } from 'models/engagement';
+import { MetadataTaxon } from 'models/engagement';
 import {
     EngagementSearchParams,
     getEngagementSearchCounts,
