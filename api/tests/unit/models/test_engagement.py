@@ -100,6 +100,28 @@ def test_get_engagements_paginated_sort_options(session, sort_key):
     assert len(results) == 1
 
 
+@pytest.mark.parametrize('sort_key', ['newest', 'oldest'])
+def test_public_search_pagination_has_stable_tie_order(session, sort_key):
+    """Equal creation dates do not make public search page ordering ambiguous."""
+    first = factory_engagement_model()
+    second = factory_engagement_model()
+    second.created_date = first.created_date
+    session.flush()
+    scope = EngagementScopeOptions(restricted=False)
+    options = PaginationOptions(page=1, size=1, sort_key=sort_key, sort_order='asc')
+    first_page, count = EngagementModel.get_engagements_paginated(
+        123, options, scope, {'public_search': True},
+    )
+    options.page = 2
+    second_page, _ = EngagementModel.get_engagements_paginated(
+        123, options, scope, {'public_search': True},
+    )
+
+    expected = [first.id, second.id] if sort_key == 'oldest' else [second.id, first.id]
+    assert count == 2
+    assert [first_page[0].id, second_page[0].id] == expected
+
+
 def test_get_engagements_paginated_status_search(session):
     """Assert that an engagement can be created and fetched."""
     for _ in range(0, 11):

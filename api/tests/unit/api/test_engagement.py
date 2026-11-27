@@ -18,6 +18,7 @@ Test-Suite to ensure that the /Engagement endpoint is working as expected.
 """
 import copy
 import json
+from datetime import timedelta
 from http import HTTPStatus
 from unittest.mock import patch
 
@@ -26,10 +27,11 @@ from faker import Faker
 from flask import current_app
 from marshmallow import ValidationError
 
-from api.constants.engagement_status import EngagementDisplayStatus, SubmissionStatus
+from api.constants.engagement_status import EngagementDisplayStatus, Status, SubmissionStatus
 from api.models.tenant import Tenant as TenantModel
 from api.services.engagement_service import EngagementService
 from api.utils.constants import TENANT_ID_HEADER
+from api.utils.datetime import utc_now
 from api.utils.enums import CompositeRoleId, ContentType
 from tests.utilities.factory_scenarios import (
     TestEngagementInfo, TestJwtClaims, TestSubmissionInfo, TestTenantInfo, TestUserInfo)
@@ -322,6 +324,45 @@ def test_admin_and_public_engagement_search_use_separate_contracts(
     assert public_options['public_search'] is True
     assert get_engagements.call_args_list[0].args[1].sort_key == 'engagement.created_date'
     assert get_engagements.call_args_list[1].args[1].sort_key == 'newest'
+
+
+def test_public_search_date_windows(client, session):  # pylint:disable=unused-argument
+    """Public search applies date windows together with status and visibility filters."""
+    now = utc_now()
+    engagements = []
+    for index, (start, end, internal) in enumerate([
+        (now - timedelta(days=30), now + timedelta(days=14), False),
+        (now - timedelta(days=31), now + timedelta(days=15), False),
+        (now - timedelta(days=1), now - timedelta(seconds=1), False),
+        (now + timedelta(days=1), now + timedelta(days=2), False),
+        (now - timedelta(days=1), now + timedelta(days=1), True),
+    ]):
+        info = {
+            **TestEngagementInfo.engagement1,
+            'slug': f'date-window-{index}',
+            'start_date': start,
+            'end_date': end,
+            'is_internal': internal,
+        }
+        engagement = factory_engagement_model(info, status=Status.Published.value)
+        engagement.published_date = now - timedelta(days=60)
+        engagements.append(engagement)
+    session.flush()
+
+    with patch('api.models.engagement.utc_now', return_value=now):
+        recent = client.get(
+            '/api/engagements/search?date_window=recently_opened&published_from_date=1970-01-01'
+            '&engagement_status%5B%5D=published&engagement_status%5B%5D=closed&size=0',
+        )
+        closing = client.get(
+            '/api/engagements/search?date_window=closing_soon&published_from_date=1970-01-01'
+            '&engagement_status%5B%5D=open&size=0',
+        )
+
+    assert recent.status_code == HTTPStatus.OK
+    assert {int(item['id']) for item in recent.json['items']} == {engagements[0].id, engagements[2].id}
+    assert closing.status_code == HTTPStatus.OK
+    assert {int(item['id']) for item in closing.json['items']} == {engagements[0].id}
 
 
 def test_search_engagements(client, jwt, session,

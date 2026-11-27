@@ -188,6 +188,10 @@ def _get_engagements(public_search=False):
         args = request.args
         external_user_id = TokenInfo.get_id()
 
+        date_window = args.get('date_window')
+        if date_window is not None and (not public_search or date_window not in ('recently_opened', 'closing_soon')):
+            return 'Invalid engagement date window', HTTPStatus.BAD_REQUEST
+
         pagination_options = PaginationOptions(
             page=args.get('page', 1, int),
             size=args.get('size', 10, int),
@@ -210,6 +214,7 @@ def _get_engagements(public_search=False):
             'created_to_date': args.get('created_to_date', None, type=str),
             'published_from_date': args.get('published_from_date', None, type=str),
             'published_to_date': args.get('published_to_date', None, type=str),
+            'date_window': date_window,
             'metadata': metadata,
             'exclude_internal': external_user_id is None,
             'filterable_metadata': args.get(

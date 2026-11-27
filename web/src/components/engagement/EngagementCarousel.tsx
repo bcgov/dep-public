@@ -1,4 +1,4 @@
-import React, { ReactNode, useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import React, { ReactNode, useCallback, useEffect, useRef, useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faChevronLeft, faChevronRight } from '@fortawesome/pro-solid-svg-icons';
 import Grid from '@mui/material/Grid2';
@@ -7,32 +7,14 @@ import { visuallyHidden } from '@mui/utils';
 import { Engagement } from 'models/engagement';
 import EngagementTile from 'components/engagement/EngagementTile';
 import { colors } from 'styles/Theme';
-import { SolidIconButton } from 'components/common/Input/Button';
+import { SecondaryButton, SolidIconButton } from 'components/common/Input/Button';
 import { useAppTranslation } from 'hooks';
+import { MAX_ITEMS_PER_SLIDE, useCarouselLayout } from './useCarouselLayout';
 
-const TILE_WIDTH = 343;
-const MIN_TILE_GAP = 16;
-const MAX_ITEMS_PER_SLIDE = 3;
 const SCROLL_SETTLE_DELAY = 200;
 const SHADOW_INSET = 14; // enough to show the full box shadow without letting neighboring slides peek through
 
-export const getItemsPerSlide = (containerWidth: number) =>
-    Math.min(
-        MAX_ITEMS_PER_SLIDE,
-        Math.max(1, Math.floor((containerWidth + MIN_TILE_GAP) / (TILE_WIDTH + MIN_TILE_GAP))),
-    );
-
-export const getTileWidth = (itemsPerSlide: number) => {
-    if (itemsPerSlide === 1) return '100%';
-    if (itemsPerSlide === 2) return `calc(50% - ${MIN_TILE_GAP / 2}px)`;
-    return TILE_WIDTH;
-};
-
-// Three fixed-width tiles are spread evenly; slides use the same gap as the tiles.
-export const getTileGap = (containerWidth: number, itemsPerSlide: number) =>
-    itemsPerSlide === MAX_ITEMS_PER_SLIDE
-        ? Math.max(MIN_TILE_GAP, (containerWidth - itemsPerSlide * TILE_WIDTH) / (itemsPerSlide - 1))
-        : MIN_TILE_GAP;
+export { getItemsPerSlide, getTileWidth, getTileGap } from './useCarouselLayout';
 
 const chunk = <T,>(items: T[], size: number): T[][] => {
     const chunks: T[][] = [];
@@ -46,25 +28,74 @@ interface EngagementCarouselProps {
     engagements: Engagement[];
     heading?: ReactNode;
     ariaLabel?: string;
+    loadNextPage?: () => Promise<EngagementCarouselPage>;
 }
 
-const EngagementCarousel = ({ engagements, heading, ariaLabel }: EngagementCarouselProps) => {
+export interface EngagementCarouselPage {
+    engagements: Engagement[];
+    loadNextPage?: () => Promise<EngagementCarouselPage>;
+}
+
+const EngagementCarousel = ({ engagements, heading, ariaLabel, loadNextPage }: EngagementCarouselProps) => {
     const { t: translate } = useAppTranslation();
+    // States for traversal and loading of engagement pages
+    const [pageState, setPageState] = useState<{
+        source: Engagement[];
+        sourceNext: typeof loadNextPage;
+        extra: Engagement[];
+        next: typeof loadNextPage;
+        failed: boolean;
+    }>({ source: engagements, sourceNext: loadNextPage, extra: [], next: loadNextPage, failed: false });
+    const isCurrentSource = pageState.source === engagements && pageState.sourceNext === loadNextPage;
+    const allEngagements = isCurrentSource ? [...engagements, ...pageState.extra] : engagements;
+
+    // Recursively load the next page of engagements
+    useEffect(() => {
+        if (!isCurrentSource || !pageState.next || pageState.failed) return;
+        let cancelled = false;
+        const next = pageState.next;
+        void Promise.resolve()
+            .then(next)
+            .then(
+                (page) => {
+                    if (cancelled) return;
+                    setPageState((state) => {
+                        if (state.source !== engagements || state.sourceNext !== loadNextPage) return state;
+                        const seen = new Set([...engagements, ...state.extra].map((engagement) => engagement.id));
+                        const extra = page.engagements.filter((engagement) => {
+                            if (seen.has(engagement.id)) return false;
+                            seen.add(engagement.id);
+                            return true;
+                        });
+                        return { ...state, extra: [...state.extra, ...extra], next: page.loadNextPage };
+                    });
+                },
+                () => {
+                    if (!cancelled) setPageState((state) => ({ ...state, failed: true }));
+                },
+            );
+        return () => {
+            cancelled = true;
+        };
+    }, [engagements, loadNextPage, isCurrentSource, pageState.next, pageState.failed]);
+
+    // Reset the whole promise chain when the source engagements or loadNextPage function changes
+    useEffect(() => {
+        setPageState({ source: engagements, sourceNext: loadNextPage, extra: [], next: loadNextPage, failed: false });
+    }, [engagements, loadNextPage]);
+
     const isMobile = useMediaQuery((theme: Theme) => theme.breakpoints.down('sm'));
-    const viewportRef = useRef<HTMLDivElement>(null);
+    const { viewportRef, setViewportRef, itemsPerSlide, tileGap, tileWidth } = useCarouselLayout();
     const trackRef = useRef<HTMLDivElement>(null);
     const programmaticScroll = useRef(false);
     const scrollTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-    const [itemsPerSlide, setItemsPerSlide] = useState(MAX_ITEMS_PER_SLIDE);
-    const [tileGap, setTileGap] = useState(MIN_TILE_GAP);
     const [currentSlide, setCurrentSlide] = useState(0);
     const [announcement, setAnnouncement] = useState('');
     const previousSlide = useRef(0);
 
-    const slides = chunk(engagements, itemsPerSlide);
+    const slides = chunk(allEngagements, itemsPerSlide);
     const slideCount = slides.length;
     const showControls = slideCount > 1;
-    const tileWidth = getTileWidth(itemsPerSlide);
 
     useEffect(() => {
         if (currentSlide !== previousSlide.current && currentSlide < slideCount) {
@@ -76,24 +107,6 @@ const EngagementCarousel = ({ engagements, heading, ariaLabel }: EngagementCarou
             previousSlide.current = currentSlide;
         }
     }, [currentSlide, slideCount, translate]);
-
-    // Refresh items-per-slide and tile gap when the viewport width changes.
-    useLayoutEffect(() => {
-        const viewport = viewportRef.current;
-        if (!viewport) return;
-        const update = () => {
-            if (viewport.clientWidth > 0) {
-                const items = getItemsPerSlide(viewport.clientWidth);
-                setItemsPerSlide(items);
-                setTileGap(getTileGap(viewport.clientWidth, items));
-            }
-        };
-        update();
-        if (typeof ResizeObserver === 'undefined') return;
-        const observer = new ResizeObserver(update);
-        observer.observe(viewport);
-        return () => observer.disconnect();
-    }, []);
 
     // Callback to clear the scroll timer and prevent multiple triggers of the scroll fallback.
     const clearScrollTimer = useCallback(() => {
@@ -186,7 +199,7 @@ const EngagementCarousel = ({ engagements, heading, ariaLabel }: EngagementCarou
             role="region"
             sx={{ width: '100%', minWidth: 0 }}
             aria-label={
-                ariaLabel ?? translate('engagementCarousel.label').replace('{0}', engagements.length.toString())
+                ariaLabel ?? translate('engagementCarousel.label').replace('{0}', allEngagements.length.toString())
             }
         >
             <Box role="status" aria-live="polite" aria-atomic="true" sx={visuallyHidden}>
@@ -221,7 +234,7 @@ const EngagementCarousel = ({ engagements, heading, ariaLabel }: EngagementCarou
                     </Grid>
                 )}
             </Grid>
-            <Grid ref={viewportRef} size={12}>
+            <Grid ref={setViewportRef} size={12}>
                 <Box
                     ref={trackRef}
                     data-testid="featured-carousel-track"
@@ -289,6 +302,20 @@ const EngagementCarousel = ({ engagements, heading, ariaLabel }: EngagementCarou
                     ))}
                 </Box>
             </Grid>
+            {isCurrentSource && pageState.failed && (
+                <Box role="alert">
+                    {translate('engagementCarousel.loadError')}{' '}
+                    <SecondaryButton
+                        type="button"
+                        size="small"
+                        onClick={() => {
+                            setPageState((state) => ({ ...state, failed: false }));
+                        }}
+                    >
+                        {translate('engagementCarousel.retry')}
+                    </SecondaryButton>
+                </Box>
+            )}
             {showControls && (
                 <Grid size={12}>
                     <Stack direction="row" justifyContent="center" data-testid="featured-carousel-pips">
@@ -337,6 +364,6 @@ const EngagementCarousel = ({ engagements, heading, ariaLabel }: EngagementCarou
             )}
         </Box>
     );
-};
+};;;;;;;;
 
 export default EngagementCarousel;

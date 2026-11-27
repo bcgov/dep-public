@@ -6,7 +6,7 @@ Manages the engagement
 from __future__ import annotations
 
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import List, Optional
 
 from sqlalchemy import and_, asc, desc, false, func, literal, or_, select, union_all
@@ -188,6 +188,7 @@ class Engagement(BaseModel):
             query = cls._filter_by_created_date(query, search_options)
             query = cls._filter_by_published_date(query, search_options)
             query = cls._filter_by_engagement_status(query, search_options)
+            query = cls._filter_by_date_window(query, search_options)
             query = cls._filter_by_metadata(query, search_options)
 
         query = cls._filter_by_internal(query, search_options)
@@ -288,9 +289,9 @@ class Engagement(BaseModel):
         sort_by = Engagement.name.ilike(f"%{search_text or ''}%"), Engagement.created_date.desc()
         sort_key = pagination_options.sort_key
         if sort_key == 'newest':
-            sort_by = (Engagement.created_date.desc(),)
+            sort_by = (Engagement.created_date.desc(), Engagement.id.desc())
         elif sort_key == 'oldest':
-            sort_by = (Engagement.created_date.asc(),)
+            sort_by = (Engagement.created_date.asc(), Engagement.id.asc())
         return sort_by
 
     @staticmethod
@@ -399,6 +400,23 @@ class Engagement(BaseModel):
             query = query.filter(Engagement.created_date >= created_from_date)
         if created_to_date := search_options.get('created_to_date'):
             query = query.filter(Engagement.created_date <= created_to_date)
+        return query
+
+    @staticmethod
+    def _filter_by_date_window(query, search_options):
+        date_window = search_options.get('date_window')
+        if date_window == 'recently_opened':
+            now = utc_now()
+            return query.filter(
+                Engagement.start_date >= now - timedelta(days=30),
+                Engagement.start_date <= now,
+            )
+        if date_window == 'closing_soon':
+            now = utc_now()
+            return query.filter(
+                Engagement.end_date > now,
+                Engagement.end_date <= now + timedelta(days=14),
+            )
         return query
 
     @staticmethod

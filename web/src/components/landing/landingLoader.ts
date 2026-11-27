@@ -1,8 +1,13 @@
 import { MetadataFilter } from 'components/metadataManagement/types';
 import { Engagement, MetadataTaxon } from 'models/engagement';
-import { getEngagementSearchCounts, getPublicEngagementSearch } from 'services/engagementService';
+import {
+    EngagementSearchParams,
+    getEngagementSearchCounts,
+    getPublicEngagementSearch,
+} from 'services/engagementService';
 import { getMetadataFilters, getMetadataTaxa } from 'services/engagementMetadataService';
 import { metadataCountKey, metadataParam } from 'components/engagement/search/engagementSearchLoader';
+import type { EngagementCarouselPage } from 'components/engagement/EngagementCarousel';
 
 export type LandingLoaderData = {
     regionFilter: Promise<MetadataFilter | null>;
@@ -12,10 +17,31 @@ export type LandingLoaderData = {
     }>;
     categories: Promise<Array<MetadataFilter | null>>;
     taxa: Promise<MetadataTaxon[]>;
-    featuredEngagements: Promise<Engagement[]>;
+    featuredEngagements: Promise<EngagementCarouselPage>;
+    newEngagements: Promise<EngagementCarouselPage>;
+    closingSoonEngagements: Promise<EngagementCarouselPage>;
 };
 
-const FEATURED_ENGAGEMENT_LIMIT = 24;
+const DYNAMIC_ENGAGEMENT_PAGE_SIZE = 6;
+
+// Bundle each promise result with another promise for the next page if available
+const loadCarouselPage = async (params: EngagementSearchParams, page: number): Promise<EngagementCarouselPage> => {
+    const result = await getPublicEngagementSearch({ ...params, page, size: DYNAMIC_ENGAGEMENT_PAGE_SIZE });
+    let pending: Promise<EngagementCarouselPage> | undefined;
+    const loadNextPage =
+        result.items.length > 0 && page * DYNAMIC_ENGAGEMENT_PAGE_SIZE < result.total
+            ? () => {
+                  if (!pending) {
+                      pending = loadCarouselPage(params, page + 1).catch((error: unknown) => {
+                          pending = undefined;
+                          throw error;
+                      });
+                  }
+                  return pending;
+              }
+            : undefined;
+    return { engagements: result.items, loadNextPage };
+};
 
 export const landingLoader = () => {
     const metadataFilters = getMetadataFilters();
@@ -61,21 +87,40 @@ export const landingLoader = () => {
             });
     });
 
-    const featuredEngagements = getPublicEngagementSearch({
-        is_featured: true,
+    const publicSearchParams = {
         // Only include engagements that have been published
         published_from_date: '1970-01-01',
         filterable_metadata: true,
         include_banner_url: true,
-        page: 1,
-        size: FEATURED_ENGAGEMENT_LIMIT,
         sort_key: 'newest',
-    })
-        .then((page) => page.items)
-        // The featured section is optional; a failure should hide it rather than break the landing page.
-        .catch(() => [] as Engagement[]);
+    };
 
-    return { regionFilter, regions, featuredEngagements, categories, taxa };
+    const featuredEngagements = loadCarouselPage(
+        {
+            ...publicSearchParams,
+            is_featured: true,
+        },
+        1,
+    );
+
+    const newEngagements = loadCarouselPage(
+        {
+            ...publicSearchParams,
+            engagement_status: ['published', 'closed'],
+            date_window: 'recently_opened',
+        },
+        1,
+    );
+    const closingSoonEngagements = loadCarouselPage(
+        {
+            ...publicSearchParams,
+            engagement_status: ['open'],
+            date_window: 'closing_soon',
+        },
+        1,
+    );
+
+    return { regionFilter, regions, featuredEngagements, newEngagements, closingSoonEngagements, categories, taxa };
 };
 
 export default landingLoader;

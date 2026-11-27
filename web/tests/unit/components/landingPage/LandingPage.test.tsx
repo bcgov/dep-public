@@ -77,6 +77,8 @@ const renderLanding = (initialEntry = '/') => {
                     }),
                     featuredEngagements: Promise.resolve([]),
                     categories: Promise.resolve([]),
+                    newEngagements: Promise.resolve({engagements: []}),
+                    closingSoonEngagements: Promise.resolve({engagements: []}),
                 }),
                 element: (
                     <>
